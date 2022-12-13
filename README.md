@@ -1,4 +1,4 @@
-_<h1 align='center'>nuxt-simple-sitemap</h1>
+<h1 align='center'>nuxt-simple-sitemap</h1>
 
 <p align="center">
 <a href='https://github.com/harlan-zw/nuxt-simple-sitemap/actions/workflows/test.yml'>
@@ -184,4 +184,4 @@ export default defineNuxtConfig({
 
 ## License
 
-MIT License © 2022-PRESENT [Harlan Wilton](https://github.com/harlan-zw)_
+MIT License © 2022-PRESENT [Harlan Wilton](https://github.com/harlan-zw)
