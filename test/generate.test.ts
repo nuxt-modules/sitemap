@@ -35,8 +35,8 @@ describe('generate', () => {
       },
     })
 
-    nuxt.options.schema = nuxt.options.schema || {}
-    nuxt.options.schema.trailingSlash = true
+    nuxt.options.sitemap = nuxt.options.sitemap || {}
+    nuxt.options.sitemap.trailingSlash = true
 
     await buildNuxt(nuxt)
 

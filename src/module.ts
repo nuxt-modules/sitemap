@@ -106,8 +106,7 @@ declare module 'nitropack' {
         const urlFilter = createFilter(config)
         const stream = new SitemapStream(config)
 
-        // @ts-expect-error untyped
-        const fixSlashes = (url: string) => nuxt.options.schema?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
+        const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
         const urls = sitemapRoutes
           // filter for config
