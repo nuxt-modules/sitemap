@@ -8,7 +8,6 @@ export default defineNuxtConfig({
   modules: [
     'nuxt-simple-sitemap',
   ],
-
   nitro: {
     prerender: {
       crawlLinks: true,

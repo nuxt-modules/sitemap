@@ -1,15 +1,22 @@
 import { writeFile } from 'node:fs/promises'
 import { Readable } from 'node:stream'
-import { addTemplate, createResolver, defineNuxtModule } from '@nuxt/kit'
+import { addServerHandler, addTemplate, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import type { Nitro } from 'nitropack'
+import chalk from 'chalk'
 import type { CreateFilterOptions } from './urlFilter'
 import { createFilter } from './urlFilter'
 
 export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions {
+  /**
+   * Whether the sitemap.xml should be generated.
+   *
+   * @default process.env.NODE_ENV === 'production'
+   */
+  enabled: boolean
 }
 
 export interface ModuleHooks {
@@ -30,6 +37,7 @@ export default defineNuxtModule<ModuleOptions>({
     return {
       include: ['/**'],
       hostname: nuxt.options.runtimeConfig.host,
+      enabled: process.env.NODE_ENV === 'production',
     }
   },
   setup(config, nuxt) {
@@ -59,13 +67,26 @@ declare module 'nitropack' {
       references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-seo-kit.d.ts') })
     })
 
-    if (nuxt.options.dev)
+    if (nuxt.options.dev) {
+      // give a warning when accessing sitemap in dev mode
+      addServerHandler({
+        route: '/sitemap.xml',
+        handler: resolve('./runtime/dev-sitemap'),
+      })
       return
-
+    }
     nuxt.hooks.hook('nitro:init', async (nitro: Nitro) => {
+      // tell the user if the sitemap isn't being generated
+      const logger = useLogger('nuxt-simple-sitemap')
+      if (!config.enabled) {
+        logger.warn('Sitemap generation is disabled. Set `sitemap.enabled` to `true` to enable it.')
+        return
+      }
+
       const sitemapRoutes: string[] = []
 
       const outputSitemap = async () => {
+        const start = Date.now()
         const _routeRulesMatcher = toRouteMatcher(
           createRadixRouter({ routes: nitro.options.routeRules }),
         )
@@ -95,6 +116,10 @@ declare module 'nitropack' {
           .then(data => data.toString())
 
         await writeFile(resolve(nitro.options.output.publicDir, 'sitemap.xml'), sitemapXml)
+        const generateTimeMS = Date.now() - start
+        nitro.logger.log(chalk.gray(
+          `  └─ /sitemap.xml (${generateTimeMS}ms)`,
+        ))
       }
 
       nitro.hooks.hook('prerender:route', async ({ route }) => {
@@ -102,14 +127,20 @@ declare module 'nitropack' {
         if (!route.includes('.'))
           sitemapRoutes.push(route)
       })
-      //
-      nitro.hooks.hook('rollup:before', async () => {
-        await outputSitemap()
-      })
 
-      nitro.hooks.hook('close', async () => {
-        await outputSitemap()
-      })
+      // SSR mode
+      if (!process.env.prerender) {
+        nitro.hooks.hook('rollup:before', async () => {
+          await outputSitemap()
+        })
+      }
+
+      // SSG mode
+      if (process.env.prerender) {
+        nitro.hooks.hook('close', async () => {
+          await outputSitemap()
+        })
+      }
     })
   },
 })

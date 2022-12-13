@@ -29,9 +29,9 @@ A simple sitemap module for Nuxt v3.
 
 ## Features
 
-- Minimal code
-- 🧙 Easy route config using route rules
-- 📦 Uses [sitemap](https://www.npmjs.com/package/sitemap)
+- 🔄 Route config using route rules
+- 🪝 Easily hook into the sitemap generation
+- 📦 Uses [sitemap.js](https://github.com/ekalinin/sitemap.js/)
 
 ## Background
 
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
 })
 ```
 
-Pre-render routes
+To have routes included in the sitemap.xml automatically, they need to be pre-rendered by Nitro.
 
 ```ts
 export default defineNuxtConfig({
