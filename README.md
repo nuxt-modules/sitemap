@@ -10,7 +10,7 @@
 
 
 <p align="center">
-A simple sitemap module for Nuxt v3.
+A simple sitemap module for pre-rendered Nuxt v3 apps.
 </p>
 
 <p align="center">
@@ -32,10 +32,6 @@ A simple sitemap module for Nuxt v3.
 - 🔄 Route config using route rules
 - 🪝 Easily hook into the sitemap generation
 - 📦 Uses [sitemap.js](https://github.com/ekalinin/sitemap.js/)
-
-## Background
-
-Provides a sitemap with minimal configuration for pre-rendered SSG and SSR Nuxt v3 apps. SPA is not supported.
 
 ## Install
 

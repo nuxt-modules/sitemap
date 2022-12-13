@@ -83,9 +83,12 @@ declare module 'nitropack' {
         return
       }
 
-      const sitemapRoutes: string[] = []
+      let sitemapRoutes: string[] = []
 
       const outputSitemap = async () => {
+        if (sitemapRoutes.length === 0)
+          return
+
         const start = Date.now()
         const _routeRulesMatcher = toRouteMatcher(
           createRadixRouter({ routes: nitro.options.routeRules }),
@@ -120,6 +123,7 @@ declare module 'nitropack' {
         nitro.logger.log(chalk.gray(
           `  └─ /sitemap.xml (${generateTimeMS}ms)`,
         ))
+        sitemapRoutes = []
       }
 
       nitro.hooks.hook('prerender:route', async ({ route }) => {
@@ -129,18 +133,14 @@ declare module 'nitropack' {
       })
 
       // SSR mode
-      if (!process.env.prerender) {
-        nitro.hooks.hook('rollup:before', async () => {
-          await outputSitemap()
-        })
-      }
+      nitro.hooks.hook('rollup:before', async () => {
+        await outputSitemap()
+      })
 
       // SSG mode
-      if (process.env.prerender) {
-        nitro.hooks.hook('close', async () => {
-          await outputSitemap()
-        })
-      }
+      nitro.hooks.hook('close', async () => {
+        await outputSitemap()
+      })
     })
   },
 })
