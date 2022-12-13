@@ -36,7 +36,7 @@ export default defineNuxtModule<ModuleOptions>({
   defaults(nuxt) {
     return {
       include: ['/**'],
-      hostname: nuxt.options.runtimeConfig.host,
+      hostname: nuxt.options.runtimeConfig.siteUrl,
       enabled: true,
     }
   },

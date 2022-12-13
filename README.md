@@ -73,6 +73,25 @@ export default defineNuxtConfig({
 
 Note: The sitemap.xml will only be generated once you build your site.
 
+
+### Set host
+
+You'll need to provide the host of your site in order to generate the sitemap.xml.
+
+```ts
+export default defineNuxtConfig({
+  // Recommended 
+  runtimeConfig: {
+    siteUrl: 'https://example.com',
+  },
+  // OR 
+  sitemap: {
+    hostname: 'https://example.com',
+  },
+})
+```
+
+
 ## Route Rules
 
 To change the behavior of the sitemap, you can use route rules. Route rules are provided as [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules).
@@ -144,20 +163,6 @@ export default defineNuxtConfig({
 Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 
 ## Examples
-
-### Change host
-
-```ts
-export default defineNuxtConfig({
-  sitemap: {
-    hostname: 'https://example.com',
-  },
-  // OR 
-  runtimeConfig: {
-    host: 'https://example.com',
-  }
-})
-```
 
 ### Add custom routes without pre-rendering
 
