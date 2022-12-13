@@ -119,6 +119,21 @@ The following options are available for each route rule:
 
 If you need further control over the sitemap URLs, you can provide config on the `sitemap` key.
 
+### `host`
+
+- Type: `string`
+- Default: `undefined`
+- Required: `true`
+
+The host of your site. This is required to generate the sitemap.xml.
+
+### `trailingSlash`
+
+- Type: `boolean`
+- Default: `false`
+
+Whether to add a trailing slash to the URLs in the sitemap.xml.
+
 ### `enabled`
 
 - Type: `boolean`

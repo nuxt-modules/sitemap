@@ -7,6 +7,7 @@ import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import type { Nitro } from 'nitropack'
 import chalk from 'chalk'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { CreateFilterOptions } from './urlFilter'
 import { createFilter } from './urlFilter'
 
@@ -17,6 +18,12 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions
    * @default true
    */
   enabled: boolean
+  /**
+   * Should the URLs be inserted with a trailing slash.
+   *
+   * @default false
+   */
+  trailingSlash: boolean
 }
 
 export interface ModuleHooks {
@@ -36,7 +43,8 @@ export default defineNuxtModule<ModuleOptions>({
   defaults(nuxt) {
     return {
       include: ['/**'],
-      hostname: nuxt.options.runtimeConfig.siteUrl,
+      hostname: nuxt.options.runtimeConfig.public?.siteUrl,
+      trailingSlash: nuxt.options.runtimeConfig.public.trailingSlash,
       enabled: true,
     }
   },
@@ -96,6 +104,8 @@ declare module 'nitropack' {
         const urlFilter = createFilter(config)
         const stream = new SitemapStream(config)
 
+        const fixSlashes = (url: string) => nuxt.options.schema?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
+
         const urls = sitemapRoutes
           // filter for config
           .filter(urlFilter)
@@ -109,8 +119,9 @@ declare module 'nitropack' {
               return false
 
             // @ts-expect-error untyped
-            return { url: path, ...(routeRules.sitemap || {}) }
-          }).filter(Boolean)
+            return { url: fixSlashes(path), ...(routeRules.sitemap || {}) }
+          })
+          .filter(Boolean)
 
         const sitemapContext = { stream, urls }
         // @ts-expect-error untyped
