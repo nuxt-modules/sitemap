@@ -1,4 +1,4 @@
-<h1 align='center'>nuxt-simple-sitemap</h1>
+_<h1 align='center'>nuxt-simple-sitemap</h1>
 
 <p align="center">
 <a href='https://github.com/harlan-zw/nuxt-simple-sitemap/actions/workflows/test.yml'>
@@ -35,10 +35,7 @@ A simple sitemap module for Nuxt v3.
 
 ## Background
 
-Nuxt v3 does not have an official supported version of the sitemap module. This module aims to be a simple 
-replacement. 
-
-It does not provide support for SPA and it assumes that all routes you want in your sitemap are pre-generated.
+Provides a sitemap with minimal configuration for pre-rendered SSG and SSR Nuxt v3 apps. SPA is not supported.
 
 ## Install
 
@@ -80,18 +77,39 @@ export default defineNuxtConfig({
 
 Note: The sitemap.xml will only be generated once you build your site.
 
+## Route Rules
 
-## Config
+To change the behavior of the sitemap, you can use route rules. Route rules are provided as [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules).
 
-Provide config on the `sitemap` key.
+_nuxt.config.ts_
 
+```ts
+export default defineNuxtConfig({
+  routeRules: {
+    // Don't add any /secret/** URLs to the sitemap  
+    '/secret/**': { index: false },
+    // modify the sitemap entry for specific URLs
+    '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
+  }
+})
+```
+
+The following options are available for each route rule:
+
+- `index`: Whether to include the route in the sitemap.xml. Defaults to `true`.
+- `sitemap.changefreq`: The change frequency of the route.
+- `sitemap.priority`: The priority of the route. 
+
+## Module Config
+
+If you need further control over the sitemap URLs, you can provide config on the `sitemap` key.
 
 ### `include`
 
 - Type: `string[]`
 - Default: `undefined`
 
-Include routes that match the given rules.
+Filter routes that match the given rules.
 
 ```ts
 export default defineNuxtConfig({
@@ -108,7 +126,7 @@ export default defineNuxtConfig({
 - Type: `string[]`
 - Default: `undefined`
 
-Exclude routes that match the given rules.
+Filter routes that match the given rules.
 
 ```ts
 export default defineNuxtConfig({
@@ -131,29 +149,9 @@ export default defineNuxtConfig({
   sitemap: {
     hostname: 'https://example.com',
   },
-  // OR
+  // OR 
   runtimeConfig: {
     host: 'https://example.com',
-  }
-})
-```
-
-### Exclude routes using route rules
-
-```ts
-export default defineNuxtConfig({
-  routeRules: {
-    '/secret': { indexable: false },
-  }
-})
-```
-
-### Change route sitemap config
-
-```ts
-export default defineNuxtConfig({
-  routeRules: {
-    '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
   }
 })
 ```
@@ -163,8 +161,13 @@ export default defineNuxtConfig({
 ```ts
 export default defineNuxtConfig({
   hooks: {
-      'sitemap:generate': () => {
-          
+      'sitemap:generate': (ctx) => {
+          // add custom URLs
+          ctx.urls.push({
+              url: '/my-custom-url',
+              changefreq: 'daily',
+              priority: 0.3
+          })
       }
   }
 })
@@ -181,4 +184,4 @@ export default defineNuxtConfig({
 
 ## License
 
-MIT License © 2022-PRESENT [Harlan Wilton](https://github.com/harlan-zw)
+MIT License © 2022-PRESENT [Harlan Wilton](https://github.com/harlan-zw)_

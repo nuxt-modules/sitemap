@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/secret': { indexable: false },
+    '/secret': { index: false },
     '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
   }
 })
