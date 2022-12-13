@@ -49,8 +49,6 @@ export default defineNuxtModule<ModuleOptions>({
     }
   },
   setup(config, nuxt) {
-    // make sure a hostname is set so we can generate the sitemap
-    config.hostname = config.hostname || 'https://example.com'
     const { resolve } = createResolver(import.meta.url)
 
     // paths.d.ts
@@ -86,6 +84,10 @@ declare module 'nitropack' {
     nuxt.hooks.hook('nitro:init', async (nitro: Nitro) => {
       // tell the user if the sitemap isn't being generated
       const logger = useLogger('nuxt-simple-sitemap')
+      if (!config.hostname) {
+        logger.warn('Please set a `hostname` in your `sitemap` config to use `nuxt-simple-sitemap`.')
+        return
+      }
       if (!config.enabled) {
         logger.warn('Sitemap generation is disabled. Set `sitemap.enabled` to `true` to enable it.')
         return
