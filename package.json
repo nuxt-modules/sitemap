@@ -1,7 +1,7 @@
 {
   "name": "nuxt-simple-sitemap",
   "type": "module",
-  "version": "1.0.6",
+  "version": "0.0.0",
   "packageManager": "pnpm@7.8.0",
   "license": "MIT",
   "funding": "https://github.com/sponsors/harlan-zw",
@@ -45,12 +45,10 @@
     "@nuxt/test-utils": "3.0.0",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "bumpp": "^8.2.1",
-    "cheerio": "1.0.0-rc.12",
     "eslint": "8.29.0",
+    "execa": "^6.1.0",
     "nuxt": "^3.0.0",
     "pathe": "^1.0.0",
-    "playwright": "^1.28.1",
-    "sass": "^1.56.1",
     "vitest": "^0.25.5"
   }
 }
