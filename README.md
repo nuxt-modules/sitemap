@@ -18,7 +18,7 @@ A simple sitemap module for pre-rendered Nuxt v3 apps.
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> Pre-release</b> <br>
+<i>Status:</i> Early Access</b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
