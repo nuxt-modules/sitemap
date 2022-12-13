@@ -100,6 +100,13 @@ The following options are available for each route rule:
 
 If you need further control over the sitemap URLs, you can provide config on the `sitemap` key.
 
+### `enabled`
+
+- Type: `boolean`
+- Default: `true`
+
+Whether to generate the sitemap.xml.
+
 ### `include`
 
 - Type: `string[]`

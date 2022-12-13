@@ -14,7 +14,7 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions
   /**
    * Whether the sitemap.xml should be generated.
    *
-   * @default process.env.NODE_ENV === 'production'
+   * @default true
    */
   enabled: boolean
 }
@@ -37,7 +37,7 @@ export default defineNuxtModule<ModuleOptions>({
     return {
       include: ['/**'],
       hostname: nuxt.options.runtimeConfig.host,
-      enabled: process.env.NODE_ENV === 'production',
+      enabled: true,
     }
   },
   setup(config, nuxt) {

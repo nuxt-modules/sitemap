@@ -1,34 +1,47 @@
 lockfileVersion: 5.4
 
-specifiers:
-  '@antfu/eslint-config': ^0.33.1
-  '@nuxt/kit': 3.0.0
-  '@nuxt/module-builder': ^0.2.1
-  '@nuxt/test-utils': 3.0.0
-  '@nuxtjs/eslint-config-typescript': ^12.0.0
-  bumpp: ^8.2.1
-  eslint: 8.29.0
-  execa: ^6.1.0
-  nuxt: ^3.0.0
-  pathe: ^1.0.0
-  sitemap: ^7.1.1
-  vitest: ^0.25.5
+importers:
 
-dependencies:
-  '@nuxt/kit': 3.0.0
-  sitemap: 7.1.1
+  .:
+    specifiers:
+      '@antfu/eslint-config': ^0.33.1
+      '@nuxt/kit': 3.0.0
+      '@nuxt/module-builder': ^0.2.1
+      '@nuxt/test-utils': 3.0.0
+      '@nuxtjs/eslint-config-typescript': ^12.0.0
+      bumpp: ^8.2.1
+      chalk: ^5.2.0
+      defu: ^6.1.1
+      eslint: 8.29.0
+      execa: ^6.1.0
+      nuxt: ^3.0.0
+      pathe: ^1.0.0
+      radix3: ^1.0.0
+      sitemap: ^7.1.1
+      vitest: ^0.25.5
+    dependencies:
+      '@nuxt/kit': 3.0.0
+      chalk: 5.2.0
+      defu: 6.1.1
+      radix3: 1.0.0
+      sitemap: 7.1.1
+    devDependencies:
+      '@antfu/eslint-config': 0.33.1_eslint@8.29.0
+      '@nuxt/module-builder': 0.2.1
+      '@nuxt/test-utils': 3.0.0
+      '@nuxtjs/eslint-config-typescript': 12.0.0_eslint@8.29.0
+      bumpp: 8.2.1
+      eslint: 8.29.0
+      execa: 6.1.0
+      nuxt: 3.0.0_eslint@8.29.0
+      pathe: 1.0.0
+      vitest: 0.25.5
 
-devDependencies:
-  '@antfu/eslint-config': 0.33.1_eslint@8.29.0
-  '@nuxt/module-builder': 0.2.1
-  '@nuxt/test-utils': 3.0.0
-  '@nuxtjs/eslint-config-typescript': 12.0.0_eslint@8.29.0
-  bumpp: 8.2.1
-  eslint: 8.29.0
-  execa: 6.1.0
-  nuxt: 3.0.0_eslint@8.29.0
-  pathe: 1.0.0
-  vitest: 0.25.5
+  .playground:
+    specifiers:
+      nuxt-simple-sitemap: link:../
+    dependencies:
+      nuxt-simple-sitemap: link:..
 
 packages:
 
@@ -705,7 +718,7 @@ packages:
     hasBin: true
     dependencies:
       '@nuxt/kit': 3.0.0
-      chalk: 5.1.2
+      chalk: 5.2.0
       ci-info: 3.6.1
       consola: 2.15.3
       create-require: 1.1.1
@@ -2003,10 +2016,9 @@ packages:
       supports-color: 7.2.0
     dev: true
 
-  /chalk/5.1.2:
-    resolution: {integrity: sha512-E5CkT4jWURs1Vy5qGJye+XwCkNj7Od3Af7CP6SujMetSMkLs8Do2RWJK5yx1wamHV/op8Rz+9rltjaTQWDnEFQ==}
+  /chalk/5.2.0:
+    resolution: {integrity: sha512-ree3Gqw/nazQAPuJJEy+avdl7QfZMcUvmHIKgEZkGL+xOBzRvup5Hxo6LHuMceSxOabuJLJm5Yp/92R9eMmMvA==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
-    dev: true
 
   /character-entities-legacy/1.1.4:
     resolution: {integrity: sha512-3Xnr+7ZFS1uxeiUDvV02wQ+QDbc55o97tIV5zHScSPJpcLm/r0DFPcoY3tYRp+VZukxuMeKgXYmsXQHO05zQeA==}
@@ -4202,7 +4214,7 @@ packages:
     engines: {node: '>=12.0.0'}
     dependencies:
       ansi-escapes: 6.0.0
-      chalk: 5.1.2
+      chalk: 5.2.0
       cli-cursor: 4.0.0
       cli-width: 4.0.0
       external-editor: 3.1.0
@@ -4685,7 +4697,7 @@ packages:
     resolution: {integrity: sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==}
     engines: {node: '>=12'}
     dependencies:
-      chalk: 5.1.2
+      chalk: 5.2.0
       is-unicode-supported: 1.3.0
     dev: true
 
@@ -4973,7 +4985,7 @@ packages:
       '@vercel/nft': 0.22.1
       archiver: 5.3.1
       c12: 1.0.1
-      chalk: 5.1.2
+      chalk: 5.2.0
       chokidar: 3.5.3
       consola: 2.15.3
       cookie-es: 0.5.0
@@ -5316,7 +5328,7 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       bl: 5.1.0
-      chalk: 5.1.2
+      chalk: 5.2.0
       cli-cursor: 4.0.0
       cli-spinners: 2.7.0
       is-interactive: 2.0.0
@@ -5863,7 +5875,6 @@ packages:
 
   /radix3/1.0.0:
     resolution: {integrity: sha512-6n3AEXth91ASapMVKiEh2wrbFJmI+NBilrWE0AbiGgfm0xet0QXC8+a3K19r1UVYjUjctUgB053c3V/J6V0kCQ==}
-    dev: true
 
   /randombytes/2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -6699,7 +6710,7 @@ packages:
       '@rollup/plugin-node-resolve': 15.0.1_rollup@3.3.0
       '@rollup/plugin-replace': 5.0.1_rollup@3.3.0
       '@rollup/pluginutils': 5.0.2_rollup@3.3.0
-      chalk: 5.1.2
+      chalk: 5.2.0
       consola: 2.15.3
       defu: 6.1.1
       esbuild: 0.15.14
