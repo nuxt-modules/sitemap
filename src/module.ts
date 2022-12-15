@@ -33,7 +33,6 @@ export interface ModuleHooks {
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-simple-sitemap',
-    version: '3.0.0',
     compatibility: {
       nuxt: '^3.0.0',
       bridge: false,

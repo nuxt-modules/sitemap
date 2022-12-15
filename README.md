@@ -119,13 +119,13 @@ The following options are available for each route rule:
 
 If you need further control over the sitemap URLs, you can provide config on the `sitemap` key.
 
-### `host`
+### `hostname`
 
 - Type: `string`
 - Default: `undefined`
 - Required: `true`
 
-The host of your site. This is required to generate the sitemap.xml.
+The host of your site. This is required to generate the sitemap.xml. Example: https://example.com
 
 ### `trailingSlash`
 
