@@ -27,6 +27,8 @@ A simple sitemap module for pre-rendered Nuxt v3 apps.
 </table>
 </p>
 
+ℹ️ Looking for a complete SEO solution? Check out [nuxt-seo-kit](https://github.com/harlan-zw/nuxt-seo-kit).
+
 ## Features
 
 - 🔄 Route config using route rules
