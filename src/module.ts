@@ -92,9 +92,6 @@ declare module 'nitropack' {
         return
       }
 
-      nitro.options.prerender.routes = nitro.options.prerender.routes || []
-      nitro.options.prerender.routes.push('/sitemap.xml')
-
       let sitemapRoutes: string[] = []
 
       const outputSitemap = async () => {
