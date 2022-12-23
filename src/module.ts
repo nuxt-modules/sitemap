@@ -5,7 +5,6 @@ import { defu } from 'defu'
 import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import type { Nitro } from 'nitropack'
 import chalk from 'chalk'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { CreateFilterOptions } from './urlFilter'
@@ -80,7 +79,7 @@ declare module 'nitropack' {
       })
       return
     }
-    nuxt.hooks.hook('nitro:init', async (nitro: Nitro) => {
+    nuxt.hooks.hook('nitro:init', async (nitro) => {
       // tell the user if the sitemap isn't being generated
       const logger = useLogger('nuxt-simple-sitemap')
       if (!config.hostname) {
@@ -140,6 +139,7 @@ declare module 'nitropack' {
         sitemapRoutes = []
       }
 
+      // @ts-expect-error untyped
       nitro.hooks.hook('prerender:route', async ({ route }) => {
         // check if the route path is not for a file
         if (!route.includes('.'))
