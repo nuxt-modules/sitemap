@@ -126,7 +126,7 @@ declare module 'nitropack' {
 
         const sitemapContext = { stream, urls }
         // @ts-expect-error untyped
-        await nuxt.hooks.hook('sitemap:generate', sitemapContext)
+        await nuxt.hooks.callHook('sitemap:generate', sitemapContext)
         // Return a promise that resolves with your XML string
         const sitemapXml = await streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
           .then(data => data.toString())
