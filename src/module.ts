@@ -71,6 +71,9 @@ declare module 'nitropack' {
       references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-simple-sitemap.d.ts') })
     })
 
+    // @ts-expect-error untyped
+    const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
+
     if (nuxt.options.dev) {
       // give a warning when accessing sitemap in dev mode
       addServerHandler({
@@ -83,7 +86,7 @@ declare module 'nitropack' {
       // tell the user if the sitemap isn't being generated
       const logger = useLogger('nuxt-simple-sitemap')
       if (!config.hostname) {
-        logger.warn('Please set a `hostname` in your `sitemap` config to use `nuxt-simple-sitemap`.')
+        logger.warn('Please set a `hostname` on the `sitemap` config to use `nuxt-simple-sitemap`.')
         return
       }
       if (!config.enabled) {
@@ -103,9 +106,6 @@ declare module 'nitropack' {
         )
         const urlFilter = createFilter(config)
         const stream = new SitemapStream(config)
-
-        // @ts-expect-error untyped
-        const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
         const urls = [...sitemapRoutes]
           // filter for config
@@ -143,7 +143,8 @@ declare module 'nitropack' {
       nitro.hooks.hook('prerender:route', async ({ route }) => {
         // check if the route path is not for a file
         if (!route.includes('.'))
-          sitemapRoutes.add(route)
+          // ensure we add routes with consistent slashes
+          sitemapRoutes.add(fixSlashes(route))
       })
 
       // SSR mode
