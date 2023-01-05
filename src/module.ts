@@ -95,10 +95,10 @@ declare module 'nitropack' {
       nitro.options.prerender.routes = nitro.options.prerender.routes || []
       nitro.options.prerender.routes.push('/sitemap.xml')
 
-      let sitemapRoutes: string[] = []
+      const sitemapRoutes = new Set<string>()
 
       const outputSitemap = async () => {
-        if (sitemapRoutes.length === 0)
+        if (sitemapRoutes.size === 0)
           return
 
         const start = Date.now()
@@ -111,7 +111,7 @@ declare module 'nitropack' {
         // @ts-expect-error untyped
         const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
-        const urls = sitemapRoutes
+        const urls = [...sitemapRoutes]
           // filter for config
           .filter(urlFilter)
           // fix order
@@ -140,13 +140,13 @@ declare module 'nitropack' {
         nitro.logger.log(chalk.gray(
           `  └─ /sitemap.xml (${generateTimeMS}ms)`,
         ))
-        sitemapRoutes = []
+        sitemapRoutes.clear()
       }
 
       nitro.hooks.hook('prerender:route', async ({ route }) => {
         // check if the route path is not for a file
         if (!route.includes('.'))
-          sitemapRoutes.push(route)
+          sitemapRoutes.add(route)
       })
 
       // SSR mode
