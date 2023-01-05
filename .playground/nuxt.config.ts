@@ -22,6 +22,6 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/secret': { index: false },
-    '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
+    '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } },
   }
 })

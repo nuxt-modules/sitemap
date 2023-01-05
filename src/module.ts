@@ -113,14 +113,15 @@ declare module 'nitropack' {
           // fix order
           .sort()
           // check route rules
-          .map((path) => {
-            const routeRules = defu({}, ..._routeRulesMatcher.matchAll(path).reverse())
+          .map((route) => {
+            // route matcher assumes all routes have no trailing slash
+            const routeRules = defu({}, ..._routeRulesMatcher.matchAll(withoutTrailingSlash(route)).reverse())
             // @ts-expect-error untyped
             if (routeRules.index === false)
               return false
 
             // @ts-expect-error untyped
-            return { url: fixSlashes(path), ...(routeRules.sitemap || {}) }
+            return { url: route, ...(routeRules.sitemap || {}) }
           })
           .filter(Boolean)
 
