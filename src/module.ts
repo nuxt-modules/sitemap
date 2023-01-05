@@ -5,7 +5,6 @@ import { defu } from 'defu'
 import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import type { Nitro } from 'nitropack'
 import chalk from 'chalk'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { CreateFilterOptions } from './urlFilter'
@@ -80,7 +79,7 @@ declare module 'nitropack' {
       })
       return
     }
-    nuxt.hooks.hook('nitro:init', async (nitro: Nitro) => {
+    nuxt.hooks.hook('nitro:init', async (nitro) => {
       // tell the user if the sitemap isn't being generated
       const logger = useLogger('nuxt-simple-sitemap')
       if (!config.hostname) {
@@ -91,9 +90,6 @@ declare module 'nitropack' {
         logger.warn('Sitemap generation is disabled. Set `sitemap.enabled` to `true` to enable it.')
         return
       }
-
-      nitro.options.prerender.routes = nitro.options.prerender.routes || []
-      nitro.options.prerender.routes.push('/sitemap.xml')
 
       const sitemapRoutes = new Set<string>()
 
@@ -130,7 +126,7 @@ declare module 'nitropack' {
 
         const sitemapContext = { stream, urls }
         // @ts-expect-error untyped
-        await nuxt.hooks.hook('sitemap:generate', sitemapContext)
+        await nuxt.hooks.callHook('sitemap:generate', sitemapContext)
         // Return a promise that resolves with your XML string
         const sitemapXml = await streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
           .then(data => data.toString())
@@ -143,6 +139,7 @@ declare module 'nitropack' {
         sitemapRoutes.clear()
       }
 
+      // @ts-expect-error untyped
       nitro.hooks.hook('prerender:route', async ({ route }) => {
         // check if the route path is not for a file
         if (!route.includes('.'))
