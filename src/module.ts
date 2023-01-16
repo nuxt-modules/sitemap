@@ -26,7 +26,7 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions
 }
 
 export interface ModuleHooks {
-  'sitemap:generate': (ctx: { urls: string[]; sitemap: SitemapStream }) => Promise<void>
+  'sitemap:generate': (ctx: { urls: string[]; sitemap: SitemapStream }) => Promise<void> | void
 }
 
 export default defineNuxtModule<ModuleOptions>({
