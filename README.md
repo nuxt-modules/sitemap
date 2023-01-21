@@ -10,7 +10,7 @@
 
 
 <p align="center">
-A simple sitemap module Nuxt 3.
+A simple sitemap.xml module Nuxt 3.
 </p>
 
 <p align="center">
@@ -83,6 +83,26 @@ By default, all static routes are included within the sitemap.xml
 
 To enable dynamic routes to be included, you can either manually provide them via the `urls` config or enable the Nitro crawler.
 
+#### Automatic dynamic URLs - Recommended
+
+If your dynamic links are linked on your site, you can enable the Nitro crawler to automatically include them.
+
+This is recommended as having internal links for all your pages is a good practice for SEO.
+
+```ts
+export default defineNuxtConfig({
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      routes: [
+        '/',
+      ]
+    }
+  }
+})
+```  
+
+
 #### Manual dynamic URLs
 
 ```ts
@@ -102,37 +122,19 @@ export default defineNuxtConfig({
 })
 ```
 
-#### Automatic dynamic URLs
 
-If your dynamic links are linked on your site, you can enable the Nitro crawler to automatically include them.
+### Configure sitemap.xml entries
 
-```ts
-export default defineNuxtConfig({
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      routes: [
-        '/',
-      ]
-    }
-  }
-})
-```  
-
-## Configuring route rules
-
-To change the behavior of sitemap entries, you can use route rules. 
-
-Route rules are provided as [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules).
+To change the behavior of sitemap.xml entries, you can use [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules). 
 
 _nuxt.config.ts_
 
 ```ts
 export default defineNuxtConfig({
   routeRules: {
-    // Don't add any /secret/** URLs to the sitemap  
+    // Don't add any /secret/** URLs to the sitemap.xml  
     '/secret/**': { index: false },
-    // modify the sitemap entry for specific URLs
+    // modify the sitemap.xml entry for specific URLs
     '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
   }
 })
@@ -144,11 +146,11 @@ See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available opt
 
 In development, you can visit `/sitemap.preview.xml`.
 
-If you're using the Nitro crawler, this sitemap will only be a preview, as the dynamic URLs won't be resolved.
+If you're using the Nitro crawler, this sitemap.xml will only be a preview, as the dynamic URLs won't be resolved.
 
 ## Module Config
 
-If you need further control over the sitemap URLs, you can provide config on the `sitemap` key.
+If you need further control over the sitemap.xml URLs, you can provide config on the `sitemap` key.
 
 ### `hostname`
 
@@ -177,7 +179,7 @@ Whether to generate the sitemap.xml.
 - Type: `object`
 - Default: `{}`
 
-Default values for the sitemap entries. See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
+Default values for the sitemap.xml entries. See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
 
 ### `include`
 
@@ -220,7 +222,7 @@ Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 - Type: `boolean`
 - Default: `true`
 
-Whether to generate the sitemap preview in development.
+Whether to generate the sitemap.xml preview in development.
 It Can be useful to disable if you have fetch requests to external APIs.
 
 ## Examples
