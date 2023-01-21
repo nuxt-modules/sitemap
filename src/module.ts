@@ -105,6 +105,10 @@ export {}
       references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-simple-sitemap.d.ts') })
     })
 
+    // don't run with `nuxi prepare`
+    if (nuxt.options._prepare)
+      return
+
     const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
     const prerendedRoutes: SitemapItemLoose[] = []
