@@ -10,7 +10,7 @@
 
 
 <p align="center">
-A simple sitemap.xml module Nuxt 3.
+A simple sitemap.xml module for Nuxt 3.
 </p>
 
 <p align="center">
