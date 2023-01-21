@@ -31,14 +31,14 @@ export default defineNuxtConfig({
     },
     '/users-test/*': {
       sitemap: {
-        lastmod: new Date().toString(),
+        lastmod: '2023-01-21T08:50:52.000Z',
         changefreq: 'weekly',
         priority: 0.3
       }
     },
     '/about': {
       sitemap: {
-        lastmod: new Date().toString(),
+        lastmod: '2023-01-21T08:50:52.000Z',
         changefreq: 'daily',
         priority: 0.3
       }
