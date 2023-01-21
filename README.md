@@ -27,7 +27,7 @@ A simple sitemap.xml module Nuxt 3.
 </table>
 </p>
 
-ℹ️ Looking for a complete SEO solution? Check out [nuxt-seo-kit](https://github.com/harlan-zw/nuxt-seo-kit).
+ℹ️ Looking for a complete SEO solution? Check out [Nuxt SEO Kit](https://github.com/harlan-zw/nuxt-seo-kit).
 
 ## Features
 
@@ -180,6 +180,13 @@ Whether to generate the sitemap.xml.
 - Default: `{}`
 
 Default values for the sitemap.xml entries. See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
+
+### `urls`
+
+- Type: `() => MaybePromise<SitemapEntry[]> | MaybePromise<SitemapEntry[]>`
+- Default: `[]`
+
+Provide custom URLs to be included in the sitemap.xml.
 
 ### `include`
 

@@ -109,6 +109,7 @@ export {}
     if (nuxt.options._prepare)
       return
 
+    // @ts-expect-error untyped
     const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
     const prerendedRoutes: SitemapItemLoose[] = []
