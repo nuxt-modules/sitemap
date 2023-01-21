@@ -10,7 +10,7 @@
 
 
 <p align="center">
-A simple sitemap module for pre-rendered Nuxt v3 apps.
+A simple sitemap module Nuxt 3.
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@ A simple sitemap module for pre-rendered Nuxt v3 apps.
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> Early Access</b> <br>
+<i>Status:</i> v1 Stable</b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
@@ -31,9 +31,10 @@ A simple sitemap module for pre-rendered Nuxt v3 apps.
 
 ## Features
 
+- 🪝 Minimal config, powerful API
 - 🔄 Route config using route rules
-- 🪝 Easily hook into the sitemap generation
-- 📦 Uses [sitemap.js](https://github.com/ekalinin/sitemap.js/)
+- 🏞️ Handle trailing slashes 
+- 📦 Uses [sitemap.js](https://github.com/ekalinin/sitemap.js)
 
 ## Install
 
@@ -56,25 +57,6 @@ export default defineNuxtConfig({
 })
 ```
 
-To have routes included in the sitemap.xml automatically, they need to be pre-rendered by Nitro.
-
-```ts
-export default defineNuxtConfig({
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      routes: [
-        '/',
-        // any URLs that can't be discovered by crawler
-        '/my-hidden-url'
-      ]
-    }
-  }
-})
-```  
-
-Note: The sitemap.xml will only be generated once you build your site.
-
 
 ### Set host
 
@@ -93,10 +75,55 @@ export default defineNuxtConfig({
 })
 ```
 
+## Usage
 
-## Route Rules
+### Handling dynamic routes
 
-To change the behavior of the sitemap, you can use route rules. Route rules are provided as [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules).
+By default, all static routes are included within the sitemap.xml
+
+To enable dynamic routes to be included, you can either manually provide them via the `urls` config or enable the Nitro crawler.
+
+#### Manual dynamic URLs
+
+```ts
+export default defineNuxtConfig({
+  sitemap: {
+    // provide dynamic URLs to be included 
+    urls: async () => {
+      const blogPages = await getBlogPages()
+      return blogPages.map((page) => ({
+          url: `/blog/${page.slug}`,
+          lastmod: page.updatedAt,
+          changefreq: 'daily',
+          priority: 0.8,
+      }))
+    },
+  },
+})
+```
+
+#### Automatic dynamic URLs
+
+If your dynamic links are linked on your site, you can enable the Nitro crawler to automatically include them.
+
+```ts
+export default defineNuxtConfig({
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      routes: [
+        '/',
+      ]
+    }
+  }
+})
+```  
+
+## Configuring route rules
+
+To change the behavior of sitemap entries, you can use route rules. 
+
+Route rules are provided as [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules).
 
 _nuxt.config.ts_
 
@@ -111,11 +138,13 @@ export default defineNuxtConfig({
 })
 ```
 
-The following options are available for each route rule:
+See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
 
-- `index`: Whether to include the route in the sitemap.xml. Defaults to `true`.
-- `sitemap.changefreq`: The change frequency of the route.
-- `sitemap.priority`: The priority of the route. 
+## Previewing sitemap
+
+In development, you can visit `/sitemap.preview.xml`.
+
+If you're using the Nitro crawler, this sitemap will only be a preview, as the dynamic URLs won't be resolved.
 
 ## Module Config
 
@@ -142,6 +171,13 @@ Whether to add a trailing slash to the URLs in the sitemap.xml.
 - Default: `true`
 
 Whether to generate the sitemap.xml.
+
+### `defaults`
+
+- Type: `object`
+- Default: `{}`
+
+Default values for the sitemap entries. See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
 
 ### `include`
 
@@ -178,6 +214,14 @@ export default defineNuxtConfig({
 ```
 
 Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
+
+### `devPreview`
+
+- Type: `boolean`
+- Default: `true`
+
+Whether to generate the sitemap preview in development.
+It Can be useful to disable if you have fetch requests to external APIs.
 
 ## Examples
 

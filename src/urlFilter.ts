@@ -3,7 +3,6 @@ import { createRouter, toRouteMatcher } from 'radix3'
 export interface CreateFilterOptions {
   include?: (string | RegExp)[]
   exclude?: (string | RegExp)[]
-  strictTrailingSlash?: boolean
 }
 
 export function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
