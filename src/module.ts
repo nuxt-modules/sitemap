@@ -5,8 +5,6 @@ import {
   addTemplate,
   createResolver,
   defineNuxtModule,
-  extendPages,
-  logger,
   useLogger,
 } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -18,7 +16,7 @@ import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { SitemapItemLoose } from 'sitemap/dist/lib/types'
 import type { CreateFilterOptions } from './urlFilter'
 import { createFilter } from './urlFilter'
-import { exposeConfig } from './utils'
+import { exposeModuleConfig } from './nuxt-utils'
 import { resolvePagesRoutes, uniqueBy } from './page-utils'
 
 export type MaybeFunction<T> = T | (() => T)
@@ -64,10 +62,12 @@ export default defineNuxtModule<ModuleOptions>({
     configKey: 'sitemap',
   },
   defaults(nuxt) {
+    const trailingSlash = nuxt.options.runtimeConfig.public.trailingSlash
     return {
       include: ['/**'],
       hostname: nuxt.options.runtimeConfig.public?.siteUrl,
-      trailingSlash: nuxt.options.runtimeConfig.public.trailingSlash,
+      // false by default
+      trailingSlash: typeof trailingSlash !== 'undefined' ? trailingSlash : false,
       enabled: true,
       urls: [],
       defaults: {},
@@ -147,11 +147,9 @@ export {}
 
     // not needed if preview is disabled
     if (nuxt.options.dev) {
+      let urls: any[] = ['/']
       if (config.devPreview) {
-        exposeConfig('#nuxt-simple-sitemap/config', 'nuxt-simple-sitemap.mjs', {
-          ...config,
-          urls: await generateUrls(),
-        })
+        urls = await generateUrls()
         // give a warning when accessing sitemap in dev mode
         addServerHandler({
           route: '/sitemap.xml',
@@ -162,6 +160,10 @@ export {}
           handler: resolve('./runtime/sitemap.preview.xml'),
         })
       }
+      exposeModuleConfig('nuxt-simple-sitemap', {
+        ...config,
+        urls,
+      })
       return
     }
 

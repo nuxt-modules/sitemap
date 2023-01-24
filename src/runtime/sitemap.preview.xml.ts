@@ -3,15 +3,20 @@ import { defineEventHandler, setHeader } from 'h3'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
-import * as configExport from '#nuxt-simple-sitemap/config'
+import { urls as configUrls, defaults, trailingSlash } from '#nuxt-simple-sitemap/config'
+import * as sitemapConfig from '#nuxt-simple-sitemap/config'
 
 export default defineEventHandler(async (e) => {
-  const config = { ...configExport }
-  const stream = new SitemapStream(config)
+  const stream = new SitemapStream(sitemapConfig)
 
-  const fixSlashes = (url: string) => configExport.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
+  const fixSlashes = (url: string) => trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
-  const urls = config.urls
+  // @ts-expect-error runtime type
+  let urls = [...configUrls]
+  if (urls.length)
+    urls = [{ url: '/' }]
+
+  urls = urls
     // check route rules
     .map((entry) => {
       // route matcher assumes all routes have no trailing slash
@@ -19,9 +24,8 @@ export default defineEventHandler(async (e) => {
       if (routeRules.index === false)
         return false
 
-      return { ...entry, url: fixSlashes(entry.url), ...config.defaults, ...(routeRules.sitemap || {}) }
+      return { ...entry, url: fixSlashes(entry.url), ...defaults, ...(routeRules.sitemap || {}) }
     })
-    .filter(Boolean)
 
   const sitemapContext = { stream, urls }
   // set xml header
