@@ -46,6 +46,8 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions
   urls: MaybeFunction<MaybePromise<SitemapEntry[]>>
 
   devPreview: boolean
+
+  inferStaticPagesAsRoutes: boolean
 }
 
 export interface ModuleHooks {
@@ -72,6 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
       urls: [],
       defaults: {},
       devPreview: true,
+      inferStaticPagesAsRoutes: true,
     }
   },
   async setup(config, nuxt) {
@@ -117,6 +120,8 @@ export {}
 
     async function generateUrls() {
       let urls: SitemapEntry[] = []
+      if (!config.inferStaticPagesAsRoutes)
+        return urls
       if (typeof config.urls === 'function')
         urls = [...await config.urls()]
 
