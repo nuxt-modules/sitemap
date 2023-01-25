@@ -121,7 +121,7 @@ export {}
     async function generateUrls() {
       let urls: SitemapEntry[] = []
       if (!config.inferStaticPagesAsRoutes)
-        return urls
+        return urls as SitemapItemLoose[]
       if (typeof config.urls === 'function')
         urls = [...await config.urls()]
 
