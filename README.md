@@ -191,7 +191,7 @@ Provide custom URLs to be included in the sitemap.xml.
 ### `include`
 
 - Type: `string[]`
-- Default: `undefined`
+- Default: `['/**']`
 
 Filter routes that match the given rules.
 
