@@ -232,6 +232,13 @@ Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 Whether to generate the sitemap.xml preview in development.
 It Can be useful to disable if you have fetch requests to external APIs.
 
+### `inferStaticPagesAsRoutes`
+
+- Type: `boolean`
+- Default: `true`
+
+Will generate routes from your static page files. Useful to disable if you're using the i18n module with custom routes. 
+
 ## Examples
 
 ### Add custom routes without pre-rendering
