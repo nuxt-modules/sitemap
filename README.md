@@ -230,7 +230,7 @@ Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 - Default: `true`
 
 Whether to generate the sitemap.xml preview in development.
-It Can be useful to disable if you have fetch requests to external APIs.
+It can be useful to disable if you have fetch requests to external APIs.
 
 ### `inferStaticPagesAsRoutes`
 
