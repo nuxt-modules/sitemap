@@ -3,10 +3,11 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   alias: {
-    'nuxt-simple-sitemap': resolve(__dirname, '../src/module'),
+    // 'nuxt-simple-sitemap': resolve(__dirname, '../src/module'),
   },
   modules: [
-    'nuxt-simple-sitemap',
+    // 'nuxt-simple-sitemap',
+    resolve(__dirname, '../src/module')
   ],
   nitro: {
     prerender: {
