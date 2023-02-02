@@ -66,7 +66,9 @@ You'll need to provide the host of your site in order to generate the sitemap.xm
 export default defineNuxtConfig({
   // Recommended 
   runtimeConfig: {
-    siteUrl: 'https://example.com',
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://example.com',
+    }
   },
   // OR 
   sitemap: {

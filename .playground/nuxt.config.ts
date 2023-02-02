@@ -16,8 +16,12 @@ export default defineNuxtConfig({
       ]
     }
   },
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000/',
+    }
+  },
   sitemap: {
-    hostname: 'https://example.com',
     urls: () => [
       '/hidden-path-but-in-sitemap',
       '/users-test',
