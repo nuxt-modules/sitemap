@@ -7,7 +7,8 @@ import { urls as configUrls, defaults, trailingSlash } from '#nuxt-simple-sitema
 import * as sitemapConfig from '#nuxt-simple-sitemap/config'
 
 export default defineEventHandler(async (e) => {
-  const stream = new SitemapStream(sitemapConfig)
+  // need to clone the config object to make it writable
+  const stream = new SitemapStream({ ...sitemapConfig })
 
   const fixSlashes = (url: string) => trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
 
