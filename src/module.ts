@@ -80,8 +80,6 @@ export default defineNuxtModule<ModuleOptions>({
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
 
-    const hasI18nModule = nuxt.options.modules.includes('@nuxtjs/i18n')
-
     // paths.d.ts
     addTemplate({
       filename: 'nuxt-simple-sitemap.d.ts',
