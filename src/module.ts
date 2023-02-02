@@ -64,10 +64,10 @@ export default defineNuxtModule<ModuleOptions>({
     configKey: 'sitemap',
   },
   defaults(nuxt) {
-    const trailingSlash = nuxt.options.runtimeConfig.public.trailingSlash
+    const trailingSlash = process.env.NUXT_PUBLIC_TRAILING_SLASH || nuxt.options.runtimeConfig.public.trailingSlash
     return {
       include: ['/**'],
-      hostname: nuxt.options.runtimeConfig.public?.siteUrl,
+      hostname: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
       // false by default
       trailingSlash: typeof trailingSlash !== 'undefined' ? trailingSlash : false,
       enabled: true,
