@@ -127,7 +127,7 @@ export default defineNuxtConfig({
 
 ### Configure sitemap.xml entries
 
-To change the behavior of sitemap.xml entries, you can use [Nitro route rules](https://v3.nuxtjs.org/docs/directory-structure/nitro/#route-rules). 
+To change the behavior of sitemap.xml entries, you can use [Nitro route rules](https://nuxt.com/docs/api/configuration/nuxt-config/#routerules). 
 
 _nuxt.config.ts_
 
