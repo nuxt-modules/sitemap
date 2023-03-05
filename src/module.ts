@@ -12,7 +12,7 @@ import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { SitemapItemLoose } from 'sitemap/dist/lib/types'
 import type { CreateFilterOptions } from './urlFilter'
 import { createFilter } from './urlFilter'
@@ -140,12 +140,15 @@ export {}
         // only include static pages
         if (!page.path.includes(':') && urlFilter(page.path)) {
           normalisedUrls.push({
-            url: fixSlashes(page.path),
+            url: page.path,
           })
         }
       })
       // make sure each urls entry has a unique url
-      return uniqueBy(normalisedUrls, 'url')
+      return uniqueBy(
+        normalisedUrls.map(url => ({ ...url, url: withBase(fixSlashes(url.url), nuxt.options.app.baseURL) })),
+        'url',
+      )
         // shorter urls should be first
         .sort((a, b) => a.url.length - b.url.length)
     }
