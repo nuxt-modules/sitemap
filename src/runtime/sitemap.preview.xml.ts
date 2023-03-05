@@ -14,7 +14,7 @@ export default defineEventHandler(async (e) => {
 
   // @ts-expect-error runtime type
   let urls = [...configUrls]
-  if (urls.length)
+  if (!urls.length)
     urls = [{ url: '/' }]
 
   urls = urls
@@ -27,6 +27,7 @@ export default defineEventHandler(async (e) => {
 
       return { ...entry, url: fixSlashes(entry.url), ...defaults, ...(routeRules.sitemap || {}) }
     })
+    .filter(Boolean)
 
   const sitemapContext = { stream, urls }
   // set xml header
