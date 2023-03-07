@@ -12,7 +12,7 @@ import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
-import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { withBase, withTrailingSlash, withoutBase, withoutTrailingSlash } from 'ufo'
 import type { SitemapItemLoose } from 'sitemap/dist/lib/types'
 import type { CreateFilterOptions } from './urlFilter'
 import { createFilter } from './urlFilter'
@@ -69,7 +69,7 @@ export default defineNuxtModule<ModuleOptions>({
       include: ['/**'],
       hostname: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
       // false by default
-      trailingSlash: typeof trailingSlash !== 'undefined' ? trailingSlash : false,
+      trailingSlash: (typeof trailingSlash !== 'undefined' ? trailingSlash : false) as boolean,
       enabled: true,
       urls: [],
       defaults: {},
@@ -113,7 +113,18 @@ export {}
       return
 
     // @ts-expect-error untyped
-    const fixSlashes = (url: string) => nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
+    const fixUrl = (url: string) => withBase(nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url), nuxt.options.app.baseURL)
+
+    function normaliseUrls(urls: (string | SitemapEntry)[]) {
+      return uniqueBy(
+        urls
+          .map(url => typeof url === 'string' ? { url } : url)
+          .map(url => ({ ...config.defaults, ...url }))
+          .map(url => ({ ...url, url: fixUrl(url.url) })),
+        'url',
+      )
+        .sort((a, b) => a.url.length - b.url.length)
+    }
 
     const prerendedRoutes: SitemapItemLoose[] = []
     const urlFilter = createFilter(config)
@@ -128,29 +139,18 @@ export {}
       else if (Array.isArray(config.urls))
         urls = [...await config.urls]
 
-      // convert to object format, mix in defaults
-      const normalisedUrls = [
-        ...urls
-          .map(url => typeof url === 'string' ? { url } : url)
-          .map(url => ({ ...config.defaults, ...url })),
-      ]
       // @todo this is hacky, have nuxt expose this earlier
       const pages = await resolvePagesRoutes()
       pages.forEach((page) => {
         // only include static pages
         if (!page.path.includes(':') && urlFilter(page.path)) {
-          normalisedUrls.push({
+          urls.push({
             url: page.path,
           })
         }
       })
       // make sure each urls entry has a unique url
-      return uniqueBy(
-        normalisedUrls.map(url => ({ ...url, url: withBase(fixSlashes(url.url), nuxt.options.app.baseURL) })),
-        'url',
-      )
-        // shorter urls should be first
-        .sort((a, b) => a.url.length - b.url.length)
+      return normaliseUrls(urls)
     }
 
     // not needed if preview is disabled
@@ -201,21 +201,20 @@ export {}
 
         // shorter urls should be first
         const sitemapUrls = uniqueBy(
-          ([...urls, ...prerendedRoutes])
+          (normaliseUrls([...urls, ...prerendedRoutes]))
             // filter for config
             .filter(entry => urlFilter(entry.url))
-            .sort((a, b) => a.url.length - b.url.length)
             // check route rules
             .map((entry) => {
               const url = entry.url
               // route matcher assumes all routes have no trailing slash
-              const routeRules = defu({}, ..._routeRulesMatcher.matchAll(withoutTrailingSlash(url)).reverse())
+              const routeRules = defu({}, ..._routeRulesMatcher.matchAll(withoutBase(withoutTrailingSlash(url), nuxt.options.app.baseURL)).reverse())
               // @ts-expect-error untyped
               if (routeRules.index === false)
                 return false
 
               // @ts-expect-error untyped
-              return { ...entry, url: fixSlashes(url), ...config.defaults, ...(routeRules.sitemap || {}) }
+              return { ...config.defaults, ...entry, ...(routeRules.sitemap || {}) }
             })
             .filter(Boolean),
           'url',
