@@ -40,6 +40,7 @@
     "defu": "^6.1.2",
     "escape-string-regexp": "^5.0.0",
     "knitwork": "^1.0.0",
+    "next-sitemap": "^4.0.5",
     "pathe": "^1.1.0",
     "radix3": "^1.0.0",
     "sitemap": "^7.1.1",

@@ -31,6 +31,9 @@ A simple sitemap.xml module for Nuxt 3.
 
 ## Features
 
+- Dynamic runtime URL support
+- Multi-sitemap support
+- Automatic lastmod
 - 🪝 Minimal config, powerful API
 - 🔄 Route config using route rules
 - 🏞️ Handle trailing slashes 

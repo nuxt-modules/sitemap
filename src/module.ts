@@ -12,16 +12,19 @@ import type { SitemapStreamOptions } from 'sitemap'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
-import { withBase, withTrailingSlash, withoutBase, withoutTrailingSlash } from 'ufo'
+import { withoutBase, withoutTrailingSlash } from 'ufo'
 import type { SitemapItemLoose } from 'sitemap/dist/lib/types'
 import type { CreateFilterOptions } from './urlFilter'
-import { createFilter } from './urlFilter'
 import { exposeModuleConfig } from './nuxt-utils'
-import { resolvePagesRoutes, uniqueBy } from './page-utils'
+import { generateRoutes } from './runtime/util/generateRoutes'
+import { buildSitemapIndex } from './runtime/util/builder'
+// import {generateRoutes} from "./runtime/util/generateRoutes";
 
 export type MaybeFunction<T> = T | (() => T)
 export type MaybePromise<T> = T | Promise<T>
 export type SitemapEntry = SitemapItemLoose | string
+
+export type SitemapRoot = CreateFilterOptions & Omit<Partial<SitemapItemLoose>, 'url'>
 
 export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions {
   /**
@@ -30,24 +33,25 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapStreamOptions
    * @default true
    */
   enabled: boolean
+
   /**
    * Should the URLs be inserted with a trailing slash.
    *
    * @default false
    */
   trailingSlash: boolean
+
+  inferStaticPagesAsRoutes: boolean
   /**
    * Default options to pass for each sitemap entry.
    */
-  defaults: Partial<SitemapItemLoose>
+  defaults: Omit<Partial<SitemapItemLoose>, 'url'>
   /**
    * Defaults URLS to be included in the sitemap.
    */
   urls: MaybeFunction<MaybePromise<SitemapEntry[]>>
 
-  devPreview: boolean
-
-  inferStaticPagesAsRoutes: boolean
+  sitemaps: Record<string, SitemapRoot>
 }
 
 export interface ModuleHooks {
@@ -67,6 +71,7 @@ export default defineNuxtModule<ModuleOptions>({
     const trailingSlash = process.env.NUXT_PUBLIC_TRAILING_SLASH || nuxt.options.runtimeConfig.public.trailingSlash
     return {
       include: ['/**'],
+      exclude: [],
       hostname: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
       // false by default
       trailingSlash: (typeof trailingSlash !== 'undefined' ? trailingSlash : false) as boolean,
@@ -108,74 +113,49 @@ export {}
       references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-simple-sitemap.d.ts') })
     })
 
-    // don't run with `nuxi prepare`
-    if (nuxt.options._prepare)
-      return
+    const pagesDirs = nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+    )
+    let urls: SitemapEntry[] = []
+    if (typeof config.urls === 'function')
+      urls = [...await config.urls()]
 
-    // @ts-expect-error untyped
-    const fixUrl = (url: string) => withBase(nuxt.options.sitemap?.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url), nuxt.options.app.baseURL)
+    else if (Array.isArray(config.urls))
+      urls = [...await config.urls]
 
-    function normaliseUrls(urls: (string | SitemapEntry)[]) {
-      return uniqueBy(
-        urls
-          .map(url => typeof url === 'string' ? { url } : url)
-          .map(url => ({ ...config.defaults, ...url }))
-          .map(url => ({ ...url, url: fixUrl(url.url) })),
-        'url',
-      )
-        .sort((a, b) => a.url.length - b.url.length)
+    const exposeConfig = {
+      ...config,
+      urls,
+      pagesDirs,
+      extensions: nuxt.options.extensions,
     }
+    exposeModuleConfig('nuxt-simple-sitemap', exposeConfig)
 
-    const prerendedRoutes: SitemapItemLoose[] = []
-    const urlFilter = createFilter(config)
+    // always add the styles
+    addServerHandler({
+      route: '/_sitemap/style.xml',
+      handler: resolve('./runtime/routes/sitemap.xsl'),
+    })
 
-    async function generateUrls() {
-      let urls: SitemapEntry[] = []
-      if (!config.inferStaticPagesAsRoutes)
-        return urls as SitemapItemLoose[]
-      if (typeof config.urls === 'function')
-        urls = [...await config.urls()]
-
-      else if (Array.isArray(config.urls))
-        urls = [...await config.urls]
-
-      // @todo this is hacky, have nuxt expose this earlier
-      const pages = await resolvePagesRoutes()
-      pages.forEach((page) => {
-        // only include static pages
-        if (!page.path.includes(':') && urlFilter(page.path)) {
-          urls.push({
-            url: page.path,
-          })
-        }
+    // multi sitemap support
+    if (config.sitemaps) {
+      addServerHandler({
+        route: '/sitemap_index.xml',
+        handler: resolve('./runtime/routes/sitemap_index.xml'),
       })
-      // make sure each urls entry has a unique url
-      return normaliseUrls(urls)
-    }
-
-    // not needed if preview is disabled
-    if (nuxt.options.dev) {
-      let urls: any[] = ['/']
-      if (config.devPreview) {
-        urls = await generateUrls()
-        // give a warning when accessing sitemap in dev mode
-        addServerHandler({
-          route: '/sitemap.xml',
-          handler: resolve('./runtime/sitemap.xml'),
-        })
-        addServerHandler({
-          route: '/sitemap.preview.xml',
-          handler: resolve('./runtime/sitemap.preview.xml'),
-        })
-      }
-      exposeModuleConfig('nuxt-simple-sitemap', {
-        ...config,
-        urls,
+      addServerHandler({
+        handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
       })
-      return
+    }
+    else {
+      addServerHandler({
+        route: '/sitemap.xml',
+        handler: resolve('./runtime/routes/sitemap.xml'),
+      })
     }
 
-    const urls = await generateUrls()
+    // check if the user provided route /api/_sitemap-urls exists
+    console.log(nuxt.options)
 
     nuxt.hooks.hook('nitro:init', async (nitro) => {
       // tell the user if the sitemap isn't being generated
@@ -191,59 +171,66 @@ export {}
 
       let sitemapGenerate = false
       const outputSitemap = async () => {
+        if (!nuxt.options._build && !nuxt.options._generate)
+          return
+
         if (sitemapGenerate)
           return
-        const start = Date.now()
+        const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
+          .map(r => ({ url: r.route })) || []
+        const configUrls = [...prerenderRoutes, ...urls]
+
+        let start = Date.now()
+
         const _routeRulesMatcher = toRouteMatcher(
           createRadixRouter({ routes: nitro.options.routeRules }),
         )
-        const stream = new SitemapStream(config)
 
-        // shorter urls should be first
-        const sitemapUrls = uniqueBy(
-          (normaliseUrls([...urls, ...prerendedRoutes]))
-            // filter for config
-            .filter(entry => urlFilter(entry.url))
-            // check route rules
-            .map((entry) => {
-              const url = entry.url
-              // route matcher assumes all routes have no trailing slash
-              const routeRules = defu({}, ..._routeRulesMatcher.matchAll(withoutBase(withoutTrailingSlash(url), nuxt.options.app.baseURL)).reverse())
-              // @ts-expect-error untyped
-              if (routeRules.index === false)
-                return false
+        const routeMatcher = (path: string) => defu({}, ..._routeRulesMatcher.matchAll(withoutBase(withoutTrailingSlash(path), nuxt.options.app.baseURL)).reverse())
 
-              // @ts-expect-error untyped
-              return { ...config.defaults, ...entry, ...(routeRules.sitemap || {}) }
-            })
-            .filter(Boolean),
-          'url',
-        )
-
-        const sitemapContext = { stream, urls: sitemapUrls }
-        // @ts-expect-error untyped
-        await nuxt.hooks.callHook('sitemap:generate', sitemapContext)
-        if (sitemapContext.urls.length === 0)
-          return
-        // Return a promise that resolves with your XML string
-        const sitemapXml = await streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
-          .then(data => data.toString())
-
-        await writeFile(resolve(nitro.options.output.publicDir, 'sitemap.xml'), sitemapXml)
-        const generateTimeMS = Date.now() - start
-        nitro.logger.log(chalk.gray(
-          `  └─ /sitemap.xml (${generateTimeMS}ms)`,
-        ))
+        if (config.sitemaps) {
+          start = Date.now()
+          // rendering a sitemap_index
+          const sitemapIndex = await buildSitemapIndex({ ...exposeConfig, urls: configUrls }, nuxt.options.app.baseURL, routeMatcher)
+          await writeFile(resolve(nitro.options.output.publicDir, 'sitemap_index.xml'), sitemapIndex)
+          const generateTimeMS = Date.now() - start
+          nitro.logger.log(chalk.gray(
+            `  └─ /sitemap_index.xml (${generateTimeMS}ms)`,
+          ))
+          // now generate all sub sitemaps
+          for (const sitemap of Object.keys(config.sitemaps)) {
+            const urls = await generateRoutes({ ...exposeConfig, ...config.sitemaps[sitemap], urls: configUrls }, nuxt.options.app.baseURL, routeMatcher)
+            const stream = new SitemapStream({ ...config, xslUrl: `${config.hostname}sitemap.xsl` })
+            const sitemapContext = { stream, urls }
+            // Return a promise that resolves with your XML string
+            const sitemapXml = await streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
+              .then(data => data.toString())
+            await writeFile(resolve(nitro.options.output.publicDir, `${sitemap}-sitemap.xml`), sitemapXml)
+            const generateTimeMS = Date.now() - start
+            nitro.logger.log(chalk.gray(
+              `  └─ /\`${sitemap}-sitemap.xml (${generateTimeMS}ms)`,
+            ))
+          }
+        }
+        else {
+          const routes = await generateRoutes(exposeConfig, nuxt.options.app.baseURL, routeMatcher)
+          const stream = new SitemapStream(config)
+          const sitemapContext = { stream, urls: routes }
+          // @ts-expect-error untyped
+          await nuxt.hooks.callHook('sitemap:generate', sitemapContext)
+          if (sitemapContext.urls.length === 0)
+            return
+          // Return a promise that resolves with your XML string
+          const sitemapXml = await streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
+            .then(data => data.toString())
+          await writeFile(resolve(nitro.options.output.publicDir, 'sitemap.xml'), sitemapXml)
+          const generateTimeMS = Date.now() - start
+          nitro.logger.log(chalk.gray(
+            `  └─ /sitemap.xml (${generateTimeMS}ms)`,
+          ))
+        }
         sitemapGenerate = true
       }
-
-      nitro.hooks.hook('prerender:route', async ({ route }) => {
-        // check if the route path is not for a file
-        if (!route.includes('.')) {
-          // ensure we add routes with consistent slashes
-          prerendedRoutes.push({ url: route })
-        }
-      })
 
       // SSR mode
       nitro.hooks.hook('rollup:before', async () => {

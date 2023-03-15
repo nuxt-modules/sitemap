@@ -39,16 +39,10 @@ export function uniqueBy<T, K extends keyof T>(arr: T[], key: K) {
   return res
 }
 
-export async function resolvePagesRoutes(): Promise<NuxtPage[]> {
-  const nuxt = useNuxt()
-
-  const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-  )
-
+export async function resolvePagesRoutes(pagesDirs: string[], extensions: string[]): Promise<NuxtPage[]> {
   const allRoutes = (await Promise.all(
     pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+      const files = await resolveFiles(dir, `**/*{${extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
       return generateRoutesFromFiles(files, dir)

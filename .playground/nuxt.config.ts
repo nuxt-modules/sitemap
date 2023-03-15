@@ -1,13 +1,9 @@
-import { resolve } from 'pathe'
 import { defineNuxtConfig } from 'nuxt/config'
+import NuxtSimpleSitemap from '../src/module'
 
 export default defineNuxtConfig({
-  alias: {
-    // 'nuxt-simple-sitemap': resolve(__dirname, '../src/module'),
-  },
   modules: [
-    // 'nuxt-simple-sitemap',
-    resolve(__dirname, '../src/module')
+    NuxtSimpleSitemap,
   ],
   nitro: {
     prerender: {
@@ -23,12 +19,14 @@ export default defineNuxtConfig({
     }
   },
   sitemap: {
-    urls: () => [
-      '/hidden-path-but-in-sitemap',
-      '/users-test',
-      '/users-test/1',
-      '/users-test/2',
-    ]
+    sitemaps: {
+      'posts': {
+        include: ['/blog/**']
+      },
+      'pages': {
+        exclude: ['/blog/**']
+      }
+    },
   },
   routeRules: {
     '/secret': {
