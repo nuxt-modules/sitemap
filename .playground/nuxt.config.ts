@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     NuxtSimpleSitemap,
   ],
   nitro: {
+    plugins: ['plugins/sitemap.ts'],
     prerender: {
       crawlLinks: true,
       routes: [
@@ -20,13 +21,13 @@ export default defineNuxtConfig({
   },
   sitemap: {
     sitemaps: {
-      'posts': {
+      posts: {
         include: ['/blog/**']
       },
-      'pages': {
+      pages: {
         exclude: ['/blog/**']
       }
-    },
+    }
   },
   routeRules: {
     '/secret': {

@@ -1,7 +1,7 @@
-import { extname, normalize, relative, resolve } from 'pathe'
+import { extname, normalize, relative } from 'pathe'
 import { encodePath } from 'ufo'
 import type { NuxtPage } from '@nuxt/schema'
-import { resolveFiles, useNuxt } from '@nuxt/kit'
+import { resolveFiles } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 

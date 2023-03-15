@@ -1,11 +1,10 @@
-import { Readable } from 'node:stream'
-import { defineEventHandler } from 'h3'
-import { SitemapStream, streamToPromise } from 'sitemap'
+import { defineEventHandler, setHeader } from 'h3'
 import { parseURL } from 'ufo'
-import { generateRoutes } from '../util/generateRoutes'
+import { buildSitemap } from '../util/builder'
 import { useHostname } from '../util/nuxt'
+import type { SitemapRenderCtx } from '../../types'
 import * as sitemapConfig from '#nuxt-simple-sitemap/config'
-import { useRuntimeConfig } from '#internal/nitro'
+import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 
 export default defineEventHandler(async (e) => {
@@ -14,13 +13,22 @@ export default defineEventHandler(async (e) => {
     return
 
   const sitemapName = path.replace('-sitemap.xml', '').replace('/', '')
-  const entryConfig = sitemapConfig.sitemaps[sitemapName]
-  if (!entryConfig)
+  if (sitemapConfig.sitemaps !== true && !sitemapConfig.sitemaps[sitemapName])
     return
 
-  const urls = await generateRoutes({ ...sitemapConfig, ...entryConfig }, useRuntimeConfig().app.baseURL, getRouteRulesForPath)
-  const stream = new SitemapStream({ ...sitemapConfig, xslUrl: `${useHostname(e)}_sitemap/style.xml` })
-  const sitemapContext = { stream, urls }
-  // Return a promise that resolves with your XML string
-  return streamToPromise(Readable.from(sitemapContext.urls).pipe(sitemapContext.stream))
+  // need to clone the config object to make it writable
+  setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
+  setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+
+  const callHook = async (ctx: SitemapRenderCtx) => {
+    const nitro = useNitroApp()
+    await nitro.hooks.callHook('sitemap:ssr', ctx)
+  }
+  return await buildSitemap({
+    sitemapName,
+    sitemapConfig: { ...sitemapConfig, ...sitemapConfig.sitemaps[sitemapName], siteUrl: useHostname(e, sitemapConfig.siteUrl) },
+    baseURL: useRuntimeConfig().app.baseURL,
+    getRouteRulesForPath,
+    callHook,
+  })
 })

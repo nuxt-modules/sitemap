@@ -10,7 +10,7 @@
 
 
 <p align="center">
-A simple sitemap.xml module for Nuxt 3.
+The simplest way to add XML Sitemaps to your Nuxt 3 site.
 </p>
 
 <p align="center">
@@ -34,6 +34,8 @@ A simple sitemap.xml module for Nuxt 3.
 - Dynamic runtime URL support
 - Multi-sitemap support
 - Automatic lastmod
+- Automatic image discovery (prerendering)
+- Automatic splitting of large sitemaps
 - 🪝 Minimal config, powerful API
 - 🔄 Route config using route rules
 - 🏞️ Handle trailing slashes 
