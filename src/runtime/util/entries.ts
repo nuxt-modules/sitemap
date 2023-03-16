@@ -47,10 +47,12 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
         .filter(page => !page.path.includes(':'))
         .filter(page => urlFilter(page.path))
         .map((page) => {
-          return <SitemapFullEntry> {
+          const entry = <SitemapFullEntry> {
             loc: page.path,
-            lastmod: statSync(page.file as string).ctime,
           }
+          if (autoLastmod)
+            entry.lastmod = statSync(page.file as string).ctime
+          return entry
         })
     : []
 

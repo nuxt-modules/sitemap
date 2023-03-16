@@ -6,6 +6,7 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type SitemapEntry = SitemapFullEntry | string
 
+export interface SitemapIndexEntry { sitemap: string; lastmod?: Date | string }
 export interface SitemapItemDefaults extends Omit<Partial<SitemapFullEntry>, 'loc'> {
 }
 

@@ -1,5 +1,5 @@
 import { withBase } from 'ufo'
-import type { NuxtSimpleSitemapRuntime, SitemapRenderCtx } from '../../module'
+import type { NuxtSimpleSitemapRuntime, SitemapIndexEntry, SitemapRenderCtx } from '../../types'
 import { generateSitemapEntries } from './entries'
 import { normaliseDate } from './normalise'
 
@@ -16,7 +16,7 @@ export interface BuildSitemapOptions {
 }
 
 export async function buildSitemapIndex(options: BuildSitemapOptions) {
-  const entries = []
+  const entries: SitemapIndexEntry[] = []
   let sitemapsConfig = options.sitemapConfig.sitemaps
   if (sitemapsConfig === true) {
     // we need to generate multiple sitemaps with dynamically generated names
@@ -40,23 +40,34 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
         sitemapConfig: { ...options.sitemapConfig, ...sitemapsConfig[sitemap] },
       })
     }
-    entries.push({
-      lastmod: normaliseDate(sitemapsConfig[sitemap].urls
-        .filter(a => !!a?.lastmod)
-        .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
-        .sort((a: Date, b: Date) => b.getTime() - a.getTime())?.[0] || new Date(),
-      ),
+    const entry: SitemapIndexEntry = {
       sitemap: withBase(`${sitemap}-sitemap.xml`, withBase(options.baseURL, options.sitemapConfig.siteUrl)),
-    })
+    }
+    let lastmod = sitemapsConfig[sitemap].urls
+      .filter(a => !!a?.lastmod)
+      .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
+      .sort((a: Date, b: Date) => b.getTime() - a.getTime())?.[0]
+    if (!lastmod && options.sitemapConfig.autoLastmod)
+      lastmod = new Date()
+
+    if (lastmod)
+      entry.lastmod = normaliseDate(lastmod)
+
+    entries.push(entry)
   }
+
+  const sitemapXml = entries.map(e => [
+    '    <sitemap>',
+    `        <loc>${normaliseValue(e.sitemap)}</loc>`,
+    // lastmod is optional
+    e.lastmod ? `        <lastmod>${normaliseValue(e.lastmod)}</lastmod>` : false,
+    '    </sitemap>',
+  ].filter(Boolean).join('\n')).join('\n')
   return {
     sitemaps: entries,
     xml: wrapSitemapXml([
       '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      ...(entries?.map(e => `    <sitemap>
-        <loc>${normaliseValue(e.sitemap)}</loc>
-        <lastmod>${normaliseValue(e.lastmod)}</lastmod>
-    </sitemap>`) ?? []),
+      sitemapXml,
       '</sitemapindex>',
     ]),
   }
