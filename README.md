@@ -350,6 +350,23 @@ The host of your site. This is required to generate the sitemap.xml. Example: ht
 
 Whether to add a trailing slash to the URLs in the sitemap.xml.
 
+### `autoLastmod`
+
+- Type: `boolean`
+- Default: `true`
+
+Whether to automatically detect the `lastmod` date for each URL.
+If the `lastmod` date can't be inferred from a route page file it will use the current Date.
+
+### `sitemaps`
+
+- Type: `SitemapConfig[] | boolean`
+- Default: `false`
+
+Whether to generate multiple sitemaps. 
+
+See [Multiple Sitemap Support](https://github.com/harlan-zw/nuxt-simple-sitemap#multiple-sitemap-support) for details.
+
 ### `enabled`
 
 - Type: `boolean`
