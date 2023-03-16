@@ -31,15 +31,12 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 
 ## Features
 
-- Dynamic runtime URL support
-- Multi-sitemap support
-- Automatic lastmod
-- Automatic image discovery (prerendering)
-- Automatic splitting of large sitemaps
-- 🪝 Minimal config, powerful API
+- 📦 Multi-sitemap support (automatic and manual chunking)
+- 🤖 Dynamic runtime URL support
+- 🎨 Styled XML for easier debugging
+- 😌 Automatic lastmod and image discovery
 - 🔄 Route config using route rules
 - 🏞️ Handle trailing slashes 
-- 📦 Uses [sitemap.js](https://github.com/ekalinin/sitemap.js)
 
 ## Install
 
@@ -77,24 +74,38 @@ export default defineNuxtConfig({
   },
   // OR 
   sitemap: {
-    hostname: 'https://example.com',
+    siteUrl: 'https://example.com',
   },
 })
 ```
 
+## How it works
+
+This module has been built to provide as simple of configuration as possible. 
+
+To do this, it collects all possible sitemap URLs from the following sources:
+- All files in the pages directory match routes (can be disabled with `inferStaticPagesAsRoutes: false`)
+- Prerendered routes (see [Zero Config Prerendering](#zero-config-prerendering-optional))
+- User provided dynamic routes (see [Handling dynamic URLs](#handling-dynamic-urls))
+
+It then will filter these URLs based on the following rules:
+- Module Config / Sitemap Entry: `exclude` - Array of glob patterns to exclude from the sitemap
+- Module Config / Sitemap Entry: `include` - Array of glob patterns to include in the sitemap
+- Route Rules: `index` - Whether a specific page can be indexed, not indexable pages are excluded from the sitemap
+
 ## Usage
 
-### Handling dynamic routes
+### Zero Config Prerendering (optional)
 
-By default, all static routes are included within the sitemap.xml
+While not required, this module is simplest to use when full prerendering is enabled,
+as it will automatically discover all prerendered routes.
 
-To enable dynamic routes to be included, you can either manually provide them via the `urls` config or enable the Nitro crawler.
+For each discovered prerendered route it will auto-discover all pages `<image:image>` entries as well as the `lastmod` date
+(when `autoLastmod` isn't disabled).
 
-#### Automatic dynamic URLs - Recommended
+To ensure images are discovered for the sitemap, make sure you main site content is wrapped with a `<main>` tag.
 
-If your dynamic links are linked on your site, you can enable the Nitro crawler to automatically include them.
-
-This is recommended as having internal links for all your pages is a good practice for SEO.
+You can make sure this behaviour is enabled with the following config:
 
 ```ts
 export default defineNuxtConfig({
@@ -109,8 +120,95 @@ export default defineNuxtConfig({
 })
 ```  
 
+### Multiple Sitemap Support
 
-#### Manual dynamic URLs
+By default, the sitemap module will generate a single sitemap.xml file.
+
+If you want to generate multiple sitemaps, you can use the `sitemaps` option.
+
+- Automatic Chunking: `true`
+
+This will automatically chunk your sitemap into multiple-sitemaps for every 1000 URLs, using the `0-sitemap.xml`, `1-sitemap.xml` naming convention.
+
+You should avoid using this if you have less than 1000 URLs.
+
+```ts
+export default defineNuxtConfig({
+  sitemap: {
+    // automatically chunk into multiple sitemaps
+    sitemaps: true,
+  },
+})
+```
+
+- Manual chunking
+
+You can manually chunk your sitemap into multiple sitemaps by providing filter options.
+
+```ts
+export default defineNuxtConfig({
+  sitemap: {
+    // manually chunk into multiple sitemaps
+    sitemaps: {
+      posts: {
+        include: [
+          '/blog/**',
+        ],
+        // example: give blog posts slightly higher priority (this is optional)
+        defaults: { priority: 0.7 },
+      },
+      pages: {
+        exclude: [
+          '/blog/**',
+        ]
+      },
+    },
+  },
+})
+```
+
+For each sitemaps entry, you can provide the following options:
+
+- `include` - Array of glob patterns to include in the sitemap
+- `exclude` - Array of glob patterns to exclude from the sitemap
+- `defaults` - Sitemap default values such as `lastmod, `changefreq`, `priority`
+- `urls` - Array of static URLs to include in the sitemap. You should avoid using this option if you have a lot of URLs, instead see below [Handling dynamic URLs](#handling-dynamic-urls)
+
+### Handling dynamic URLs
+
+For Nuxt apps where all the pages aren't prerendered,
+you may want to provide the list of dynamic routes to be included in the sitemap.xml.
+
+The recommended approach is to create your own api endpoint that returns the list of all dynamic routes.
+
+To do so, create the file `server/api/_sitemap-urls.ts`.
+
+```ts
+export default cachedEventHandler(async e => {
+  const [
+    posts,
+    pages,
+    products
+  ] = await Promise.all([
+    $fetch('/api/posts'),
+    $fetch('/api/pages'),
+    $fetch('/api/products')
+  ])
+  return [...posts, ...pages, ...products].map(p => { loc: p.url, lastmod: p.updatedAt })
+}, {
+  name: 'sitemap-dynamic-urls',
+  maxAge: 60 * 10 // cache URLs for 10 minutes
+})
+```
+
+This API endpoint will automatically be called by the sitemap module to fetch the list of dynamic URLs whenever a sitemap is generated.
+
+While not required, it's recommended to use the `cacheEventHandler` and set an appropriate `maxAge`, 10 minutes is a good default.
+
+#### Start-time dynamic URLs
+
+If you prefer a simpler config, you can provide the dynamic URLs at start-time using the `urls` config.
+Note that this approach may not be suitable for large sites.
 
 ```ts
 export default defineNuxtConfig({
@@ -119,7 +217,7 @@ export default defineNuxtConfig({
     urls: async () => {
       const blogPages = await getBlogPages()
       return blogPages.map((page) => ({
-          url: `/blog/${page.slug}`,
+          loc: `/blog/${page.slug}`,
           lastmod: page.updatedAt,
           changefreq: 'daily',
           priority: 0.8,
@@ -129,8 +227,25 @@ export default defineNuxtConfig({
 })
 ```
 
+### Auto Lastmod
 
-### Configure sitemap.xml entries
+By default, the sitemap module will automatically detect the `lastmod` date for each URL.
+
+This is done by looking at the `ctime` of the page file associated with a route. 
+
+If a route can't be associated with a page file then the current date will be used.
+
+You can disable this behaviour by setting `autoLastmod: false`.
+
+```ts
+export default defineNuxtConfig({
+  sitemap: {
+    autoLastmod: false,
+  },
+})
+```
+
+### Route Rules Config
 
 To change the behavior of sitemap.xml entries, you can use [Nitro route rules](https://nuxt.com/docs/api/configuration/nuxt-config/#routerules). 
 
@@ -149,17 +264,78 @@ export default defineNuxtConfig({
 
 See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
 
-## Previewing sitemap
 
-In development, you can visit `/sitemap.preview.xml`.
+## Nuxt Hooks
 
-If you're using the Nitro crawler, this sitemap.xml will only be a preview, as the dynamic URLs won't be resolved.
+### `sitemap:prerender`
+
+**Type:** `async (ctx: { urls: SitemapConfig; sitemapName: string }) => void | Promise<void>`
+
+This hook allows you to modify the sitemap(s) urls when they're prerendered.
+
+Note: For dynamic runtime sitemaps this hook won't do anything.
+
+```ts
+export default defineNuxtConfig({
+  hooks: {
+    'sitemap:prerender': (ctx) => {
+      // single sitemap example - just add the url directly
+      ctx.urls.push({
+        loc: '/my-secret-url',
+        changefreq: 'daily',
+        priority: 0.8,
+      })
+      // multi sitemap example - filter for a sitemap name
+      if (ctx.sitemapName === 'posts') {
+        ctx.urls.push({
+          loc: '/posts/my-post',
+          changefreq: 'daily',
+          priority: 0.8,
+        })
+      }
+    },
+  },
+})
+```
+
+## Nitro Hooks
+
+### `sitemap:sitemap-xml`
+
+**Type:** `async (ctx: { urls: SitemapConfig; sitemapName: string }) => void | Promise<void>`
+
+This hook allows you to modify the sitemap.xml as runtime before it is sent to the client.
+
+Note: For prerendered sitemaps this hook won't do anything.
+
+```ts
+import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:sitemap-xml', async (ctx) => {
+    // single sitemap example - just add the url directly
+    ctx.urls.push({
+      loc: '/my-secret-url',
+      changefreq: 'daily',
+      priority: 0.8,
+    })
+    // multi sitemap example - filter for a sitemap name
+    if (ctx.sitemapName === 'posts') {
+      ctx.urls.push({
+        loc: '/posts/my-post',
+        changefreq: 'daily',
+        priority: 0.8,
+      })
+    }
+  })
+})
+```
 
 ## Module Config
 
 If you need further control over the sitemap.xml URLs, you can provide config on the `sitemap` key.
 
-### `hostname`
+### `siteUrl`
 
 - Type: `string`
 - Default: `undefined`
@@ -231,14 +407,6 @@ export default defineNuxtConfig({
 
 Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 
-### `devPreview`
-
-- Type: `boolean`
-- Default: `true`
-
-Whether to generate the sitemap.xml preview in development.
-It can be useful to disable if you have fetch requests to external APIs.
-
 ### `inferStaticPagesAsRoutes`
 
 - Type: `boolean`
@@ -246,24 +414,6 @@ It can be useful to disable if you have fetch requests to external APIs.
 
 Will generate routes from your static page files. Useful to disable if you're using the i18n module with custom routes. 
 
-## Examples
-
-### Add custom routes without pre-rendering
-
-```ts
-export default defineNuxtConfig({
-  hooks: {
-      'sitemap:generate': (ctx) => {
-          // add custom URLs
-          ctx.urls.push({
-              url: '/my-custom-url',
-              changefreq: 'daily',
-              priority: 0.3
-          })
-      }
-  }
-})
-```
 
 ## Sponsors
 

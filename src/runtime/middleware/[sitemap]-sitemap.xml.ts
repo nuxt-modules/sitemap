@@ -23,7 +23,7 @@ export default defineEventHandler(async (e) => {
 
   const callHook = async (ctx: SitemapRenderCtx) => {
     const nitro = useNitroApp()
-    await nitro.hooks.callHook('sitemap:ssr', ctx)
+    await nitro.hooks.callHook('sitemap:sitemap-xml', ctx)
   }
   return await buildSitemap({
     sitemapName,

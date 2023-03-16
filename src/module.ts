@@ -44,6 +44,10 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
 }
 
 export interface ModuleHooks {
+  /**
+   * @deprecated use `sitemap:prerender`
+   */
+  'sitemap:generate': (ctx: { urls: ResolvedSitemapEntry[] }) => Promise<void> | void
   'sitemap:prerender': (ctx: { urls: ResolvedSitemapEntry[] }) => Promise<void> | void
 }
 
@@ -231,6 +235,9 @@ export {}
         ))
 
         const callHook = async (ctx: SitemapRenderCtx) => {
+          // deprecated hook
+          // @ts-expect-error runtime type
+          await nuxt.hooks.callHook('sitemap:generate', ctx)
           // @ts-expect-error runtime type
           await nuxt.hooks.callHook('sitemap:prerender', ctx)
         }

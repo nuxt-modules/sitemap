@@ -1,7 +1,7 @@
 import { defineNitroPlugin } from 'nitropack/runtime/plugin'
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook('sitemap:ssr', async (ctx) => {
+  nitroApp.hooks.hook('sitemap:sitemap-xml', async (ctx) => {
     console.log('Sitemap SSR', ctx)
   })
 })
