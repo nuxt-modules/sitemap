@@ -54,6 +54,7 @@
     "eslint": "8.36.0",
     "execa": "^7.1.1",
     "nuxt": "^3.3.1",
-    "vitest": "^0.29.2"
+    "nuxt-simple-robots": "^2.0.1",
+    "vitest": "^0.29.3"
   }
 }

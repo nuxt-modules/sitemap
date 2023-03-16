@@ -4,6 +4,7 @@ import NuxtSimpleSitemap from '../src/module'
 export default defineNuxtConfig({
   modules: [
     NuxtSimpleSitemap,
+    'nuxt-simple-robots',
   ],
   nitro: {
     plugins: ['plugins/sitemap.ts'],
@@ -18,6 +19,9 @@ export default defineNuxtConfig({
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000/',
     }
+  },
+  robots: {
+    indexable: true,
   },
   sitemap: {
     sitemaps: {

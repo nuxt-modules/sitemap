@@ -18,7 +18,7 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> <a href="https://github.com/harlan-zw/nuxt-simple-sitemap/releases/tag/v1.0.0">v1 Stable</a></b> <br>
+<i>Status:</i> <a href="https://github.com/harlan-zw/nuxt-simple-sitemap/releases/tag/v2.0.0">v2 Released 🎉</a></b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
