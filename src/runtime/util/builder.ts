@@ -54,8 +54,8 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
     xml: wrapSitemapXml([
       '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
       ...(entries?.map(e => `    <sitemap>
-        <loc>${escapeValue(e.sitemap)}</loc>
-        <lastmod>${escapeValue(e.lastmod)}</lastmod>
+        <loc>${normaliseValue(e.sitemap)}</loc>
+        <lastmod>${normaliseValue(e.lastmod)}</lastmod>
     </sitemap>`) ?? []),
       '</sitemapindex>',
     ]),
@@ -82,19 +82,23 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
   const handleArray = (key: string, arr: Record<string, any>[]) => {
     key = resolveKey(key)
     return `<${key}:${key}>
-${arr.map(obj => Object.entries(obj).map(([sk, sv]) => `            <${key}:${sk}>${escapeValue(sv)}</${key}:${sk}>`)).join('\n')}
+${arr.map(obj => Object.entries(obj).map(([sk, sv]) => `            <${key}:${sk}>${normaliseValue(sv)}</${key}:${sk}>`)).join('\n')}
         </${key}:${key}>`
   }
   return wrapSitemapXml([
     '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...(ctx.urls?.map(e => `    <url>
-${Object.keys(e).map(k => `        ${Array.isArray(e[k]) ? handleArray(k, e[k]) : `<${k}>${escapeValue(e[k])}</${k}>`}`).join('\n')}
+${Object.keys(e).map(k => `        ${Array.isArray(e[k]) ? handleArray(k, e[k]) : `<${k}>${normaliseValue(e[k])}</${k}>`}`).join('\n')}
     </url>`) ?? []),
     '</urlset>',
   ])
 }
 
-function escapeValue(value: string) {
+function normaliseValue(value: any) {
+  if (value instanceof Date)
+    return normaliseDate(value)
+  if (typeof value === 'boolean')
+    return value ? 'yes' : 'no'
   return String(value).replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
