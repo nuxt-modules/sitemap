@@ -103,10 +103,6 @@ declare module 'nitropack' {
   interface NitroRouteConfig extends NuxtSimpleSitemapNitroRules {}
 }
 
-declare module '' {
-
-}
-
 export {}
 `
       },
