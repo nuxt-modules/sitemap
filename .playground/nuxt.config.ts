@@ -39,14 +39,14 @@ export default defineNuxtConfig({
     },
     '/users-test/*': {
       sitemap: {
-        lastmod: '2023-01-21T08:50:52.000Z',
+        lastmod: new Date(2023, 1, 21, 4, 50, 52),
         changefreq: 'weekly',
         priority: 0.3
       }
     },
     '/about': {
       sitemap: {
-        lastmod: '2023-01-21T08:50:52.000Z',
+        lastmod: new Date(2023, 1, 21, 8, 50, 52),
         changefreq: 'daily',
         priority: 0.3
       }
