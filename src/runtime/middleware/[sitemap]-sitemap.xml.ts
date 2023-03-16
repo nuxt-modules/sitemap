@@ -18,7 +18,8 @@ export default defineEventHandler(async (e) => {
 
   // need to clone the config object to make it writable
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+  if (!process.dev)
+    setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
 
   const callHook = async (ctx: SitemapRenderCtx) => {
     const nitro = useNitroApp()

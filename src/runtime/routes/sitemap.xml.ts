@@ -7,15 +7,17 @@ import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 
 export default defineEventHandler(async (e) => {
-  // need to clone the config object to make it writable
-  setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
-
   // we need to check if we're rendering multiple sitemaps from the index sitemap
   if (sitemapConfig.sitemaps) {
     // redirect to sitemap_index.xml
     return sendRedirect(e, '/sitemap_index.xml', 301)
   }
+
+  // need to clone the config object to make it writable
+  setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
+  if (!process.dev)
+    setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+
   const callHook = async (ctx: SitemapRenderCtx) => {
     const nitro = useNitroApp()
     await nitro.hooks.callHook('sitemap:ssr', ctx)

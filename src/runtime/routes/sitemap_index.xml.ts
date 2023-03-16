@@ -7,7 +7,8 @@ import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 
 export default defineEventHandler(async (e) => {
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+  if (!process.dev)
+    setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
 
   return (await buildSitemapIndex({
     sitemapConfig: { ...sitemapConfig, siteUrl: useHostname(e, sitemapConfig.siteUrl) },
