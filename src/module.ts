@@ -77,13 +77,15 @@ export default defineNuxtModule<ModuleOptions>({
     // support v1 config fallbacks
     config.siteUrl = config.siteUrl || config.hostname!
 
-    // nuxt-simple-robots integration (bit hacky, we should test if this module exists)
-    nuxt.options.robots = nuxt.options.robots || {}
-    nuxt.options.robots.sitemaps = config.sitemaps
-      ? [
-          withBase('/sitemap_index.xml', config.siteUrl),
-        ]
-      : ['/sitemap.xml']
+    // nuxt-simple-robots integration
+    nuxt.hooks.hook('robots:config', (robotsConfig) => {
+      robotsConfig.sitemap.push(config.sitemaps
+        ? [
+            withBase('/sitemap_index.xml', config.siteUrl),
+          ]
+        : ['/sitemap.xml'],
+      )
+    })
 
     // paths.d.ts
     addTemplate({
