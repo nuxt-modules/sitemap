@@ -1,15 +1,13 @@
-import { resolve } from 'pathe'
 import { defineNuxtConfig } from 'nuxt/config'
+import NuxtSimpleSitemap from '../src/module'
 
 export default defineNuxtConfig({
-  alias: {
-    // 'nuxt-simple-sitemap': resolve(__dirname, '../src/module'),
-  },
   modules: [
-    // 'nuxt-simple-sitemap',
-    resolve(__dirname, '../src/module')
+    NuxtSimpleSitemap,
+    'nuxt-simple-robots',
   ],
   nitro: {
+    plugins: ['plugins/sitemap.ts'],
     prerender: {
       crawlLinks: true,
       routes: [
@@ -22,13 +20,18 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000/',
     }
   },
+  robots: {
+    indexable: true,
+  },
   sitemap: {
-    urls: () => [
-      '/hidden-path-but-in-sitemap',
-      '/users-test',
-      '/users-test/1',
-      '/users-test/2',
-    ]
+    sitemaps: {
+      posts: {
+        include: ['/blog/**']
+      },
+      pages: {
+        exclude: ['/blog/**']
+      }
+    }
   },
   routeRules: {
     '/secret': {
@@ -36,14 +39,14 @@ export default defineNuxtConfig({
     },
     '/users-test/*': {
       sitemap: {
-        lastmod: '2023-01-21T08:50:52.000Z',
+        lastmod: new Date(2023, 1, 21, 4, 50, 52),
         changefreq: 'weekly',
         priority: 0.3
       }
     },
     '/about': {
       sitemap: {
-        lastmod: '2023-01-21T08:50:52.000Z',
+        lastmod: new Date(2023, 1, 21, 8, 50, 52),
         changefreq: 'daily',
         priority: 0.3
       }

@@ -1,7 +1,7 @@
-import { extname, normalize, relative, resolve } from 'pathe'
+import { extname, normalize, relative } from 'pathe'
 import { encodePath } from 'ufo'
 import type { NuxtPage } from '@nuxt/schema'
-import { resolveFiles, useNuxt } from '@nuxt/kit'
+import { resolveFiles } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 
@@ -39,16 +39,10 @@ export function uniqueBy<T, K extends keyof T>(arr: T[], key: K) {
   return res
 }
 
-export async function resolvePagesRoutes(): Promise<NuxtPage[]> {
-  const nuxt = useNuxt()
-
-  const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-  )
-
+export async function resolvePagesRoutes(pagesDirs: string[], extensions: string[]): Promise<NuxtPage[]> {
   const allRoutes = (await Promise.all(
     pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+      const files = await resolveFiles(dir, `**/*{${extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
       return generateRoutesFromFiles(files, dir)
