@@ -62,7 +62,7 @@ export default defineNuxtModule<ModuleOptions>({
       enabled: true,
       autoLastmod: true,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
-      trailingSlash: (typeof trailingSlash !== 'undefined' ? trailingSlash : false) as boolean,
+      trailingSlash: String(trailingSlash) === 'true',
       inferStaticPagesAsRoutes: true,
       // index sitemap options filtering
       include: ['/**'],
