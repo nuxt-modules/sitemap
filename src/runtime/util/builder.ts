@@ -1,5 +1,11 @@
 import { withBase } from 'ufo'
-import type { NuxtSimpleSitemapRuntime, SitemapIndexEntry, SitemapRenderCtx } from '../../types'
+import type {
+  NuxtSimpleSitemapRuntime,
+  ResolvedSitemapEntry,
+  SitemapIndexEntry,
+  SitemapRenderCtx,
+  SitemapRoot,
+} from '../../types'
 import { generateSitemapEntries } from './entries'
 import { normaliseDate } from './normalise'
 
@@ -17,33 +23,36 @@ export interface BuildSitemapOptions {
 
 export async function buildSitemapIndex(options: BuildSitemapOptions) {
   const entries: SitemapIndexEntry[] = []
-  let sitemapsConfig = options.sitemapConfig.sitemaps
+  const sitemapsConfig = options.sitemapConfig.sitemaps
+  const chunks: Record<string | number, SitemapRoot> = {}
   if (sitemapsConfig === true) {
     // we need to generate multiple sitemaps with dynamically generated names
     const urls = await generateSitemapEntries({
       ...options,
       sitemapConfig: { ...options.sitemapConfig },
     })
-    sitemapsConfig = {}
     // split into the max size which should be 1000
     urls.forEach((url, i) => {
       const chunkIndex = Math.floor(i / MaxSitemapSize)
-      sitemapsConfig[chunkIndex] = sitemapsConfig[chunkIndex] || []
-      sitemapsConfig[chunkIndex].push(url)
+      chunks[chunkIndex] = chunks[chunkIndex] || { urls: [] }
+      chunks[chunkIndex].urls.push(url)
     })
   }
-  for (const sitemap in sitemapsConfig) {
-    // user provided sitemap config
-    if (!sitemapsConfig[sitemap].urls) {
-      sitemapsConfig[sitemap].urls = await generateSitemapEntries({
+  else {
+    for (const sitemap in sitemapsConfig) {
+      // user provided sitemap config
+      chunks[sitemap] = chunks[sitemap] || { urls: [] }
+      chunks[sitemap].urls = await generateSitemapEntries({
         ...options,
         sitemapConfig: { ...options.sitemapConfig, ...sitemapsConfig[sitemap] },
       })
     }
+  }
+  for (const sitemap in chunks) {
     const entry: SitemapIndexEntry = {
       sitemap: withBase(`${sitemap}-sitemap.xml`, withBase(options.baseURL, options.sitemapConfig.siteUrl)),
     }
-    let lastmod = sitemapsConfig[sitemap].urls
+    let lastmod = (chunks[sitemap].urls as ResolvedSitemapEntry[])
       .filter(a => !!a?.lastmod)
       .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
       .sort((a: Date, b: Date) => b.getTime() - a.getTime())?.[0]
