@@ -204,6 +204,15 @@ describe('prod', () => {
               <lastmod>2023-02-20T21:50:52.000Z</lastmod>
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
+              <image:image>
+                  <image:loc>https://example.com/image.jpg</image:loc>
+              </image:image>
+              <image:image>
+                  <image:loc>https://example.com/image2.jpg</image:loc>
+              </image:image>
+          </url>
+          <url>
+              <loc>https://nuxt-simple-sitemap.com/new-page</loc>
           </url>
           <url>
               <loc>https://nuxt-simple-sitemap.com/users-lazy/1</loc>

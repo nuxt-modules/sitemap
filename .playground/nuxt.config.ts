@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000/',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NITRO_HOST,
     }
   },
   robots: {
@@ -48,7 +48,15 @@ export default defineNuxtConfig({
       sitemap: {
         lastmod: new Date(2023, 1, 21, 8, 50, 52),
         changefreq: 'daily',
-        priority: 0.3
+        priority: 0.3,
+        images: [
+          {
+            loc: 'https://example.com/image.jpg',
+          },
+          {
+            loc: 'https://example.com/image2.jpg',
+          }
+        ]
       }
     },
   }
