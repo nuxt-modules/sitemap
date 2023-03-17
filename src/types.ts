@@ -16,6 +16,7 @@ export type SitemapRoot = CreateFilterOptions & { defaults: SitemapItemDefaults;
 
 export interface NuxtSimpleSitemapRuntime extends ModuleOptions {
   hasApiRoutesUrl: boolean
+  isNuxtContentDocumentDriven: boolean
   urls: SitemapEntry[]
   pagesDirs: string[]
   extensions: string[]

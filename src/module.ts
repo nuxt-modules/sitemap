@@ -114,6 +114,7 @@ export {}
 
     // check if the user provided route /api/_sitemap-urls exists
     const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
+    const isNuxtContentDocumentDriven = nuxt.options.content?.documentDriven || false
 
     nuxt.hooks.hook('modules:done', async () => {
       const pagesDirs = nuxt.options._layers.map(
@@ -124,6 +125,7 @@ export {}
         // @ts-expect-error untyped
         nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
           ...config,
+          isNuxtContentDocumentDriven,
           hasApiRoutesUrl,
           urls,
           pagesDirs,
@@ -153,6 +155,12 @@ export {}
       route: '/sitemap.xml',
       handler: resolve('./runtime/routes/sitemap.xml'),
     })
+    if (isNuxtContentDocumentDriven) {
+      addServerHandler({
+        route: '/api/__sitemap__/document-driven-urls',
+        handler: resolve('./runtime/routes/document-driven-urls'),
+      })
+    }
 
     nuxt.hooks.hook('nitro:init', async (nitro) => {
       // tell the user if the sitemap isn't being generated
@@ -241,6 +249,7 @@ export {}
         const sitemapConfig = {
           ...config,
           hasApiRoutesUrl,
+          isNuxtContentDocumentDriven,
           urls: configUrls,
           pagesDirs,
           extensions: nuxt.options.extensions,

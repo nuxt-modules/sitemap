@@ -11,6 +11,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     urls: configUrls,
     defaults, exclude,
     extensions,
+    isNuxtContentDocumentDriven,
     include, pagesDirs, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
   } = options.sitemapConfig
   const urlFilter = createFilter({ include, exclude })
@@ -68,34 +69,21 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     }
   }
 
+  let nuxtContentUrls: string[] = []
+  if (isNuxtContentDocumentDriven) {
+    try {
+      nuxtContentUrls = await $fetch('/api/__sitemap__/document-driven-urls')
+    }
+    catch {
+    }
+  }
+
   const urls = [
     ...lazyApiUrls,
     ...configUrls,
     ...pageUrls,
+    ...nuxtContentUrls,
   ]
-
-  // create route from document driven mode
-  if (useRuntimeConfig().content?.documentDriven) {
-    const parsedKeys = (await useStorage().getKeys('cache:content:parsed'))
-      .filter(k => k.endsWith('.md') && !k.includes('/_'))
-    for (const k of parsedKeys) {
-      const meta = await useStorage().getMeta(k)
-      const item = await useStorage().getItem(k)
-      // add any top level images
-      // @ts-expect-error untyped
-      const images = item?.parsed.body?.children
-        ?.filter(c => c.tag.toLowerCase() === 'image')
-        .map(i => ({
-          loc: i.props.src,
-        })) || []
-      const loc = k.replace('cache:content:parsed', '')
-        .replaceAll(':', '/')
-        // need to strip out the leading number such as 0.index.md -> index.md
-        .replace(/\/\d+\./, '/')
-        .split('.')[0]
-      urls.push({ loc, lastmod: meta?.mtime, images })
-    }
-  }
 
   return uniqueBy(preNormalise(urls)
     .map((entry) => {
