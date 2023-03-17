@@ -15,8 +15,9 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   } = options.sitemapConfig
   const urlFilter = createFilter({ include, exclude })
 
+  const defaultEntryData = { ...defaults }
   if (autoLastmod)
-    defaults.lastmod = defaults.lastmod || new Date()
+    defaultEntryData.lastmod = defaultEntryData.lastmod || new Date()
 
   const fixLoc = (url: string) => withBase(encodeURI(trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)), options.baseURL)
 

@@ -3,7 +3,6 @@ import { parseURL } from 'ufo'
 import { buildSitemap } from '../util/builder'
 import { useHostname } from '../util/nuxt'
 import type { SitemapRenderCtx } from '../../types'
-import * as sitemapConfig from '#nuxt-simple-sitemap/config'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 
@@ -12,6 +11,7 @@ export default defineEventHandler(async (e) => {
   if (!path.endsWith('-sitemap.xml'))
     return
 
+  const sitemapConfig = useRuntimeConfig()['nuxt-simple-sitemap']
   const sitemapName = path.replace('-sitemap.xml', '').replace('/', '')
   if (sitemapConfig.sitemaps !== true && !sitemapConfig.sitemaps[sitemapName])
     return

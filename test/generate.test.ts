@@ -54,6 +54,12 @@ describe('generate', () => {
               <priority>0.3</priority>
           </url>
           <url>
+              <loc>http://localhost:3000/new-page</loc>
+              <image:image>
+                  <image:url>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:url>
+              </image:image>
+          </url>
+          <url>
               <loc>http://localhost:3000/users-lazy/1</loc>
           </url>
           <url>

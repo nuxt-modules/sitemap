@@ -1,20 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import {
-  addServerHandler,
-  addTemplate,
-  createResolver,
-  defineNuxtModule,
-  findPath,
-  useLogger,
-} from '@nuxt/kit'
+import { addServerHandler, addTemplate, createResolver, defineNuxtModule, findPath, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
 import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import type { CreateFilterOptions } from './urlFilter'
-import { exposeModuleConfig } from './nuxt-utils'
 import { buildSitemap, buildSitemapIndex, generateXslStylesheet } from './runtime/util/builder'
-import type { NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapRenderCtx, SitemapRoot } from './types'
+import type { ResolvedSitemapEntry, SitemapEntry, SitemapRenderCtx, SitemapRoot } from './types'
 
 export * from './types'
 
@@ -113,9 +105,6 @@ export {}
       references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-simple-sitemap.d.ts') })
     })
 
-    const pagesDirs = nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-    )
     let urls: SitemapEntry[] = []
     if (typeof config.urls === 'function')
       urls = [...await config.urls()]
@@ -125,15 +114,22 @@ export {}
 
     // check if the user provided route /api/_sitemap-urls exists
     const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
-    const exposeConfig: NuxtSimpleSitemapRuntime = {
-      ...config,
-      hasApiRoutesUrl,
-      urls,
-      pagesDirs,
-      extensions: nuxt.options.extensions,
-    }
 
-    exposeModuleConfig('nuxt-simple-sitemap', exposeConfig)
+    nuxt.hooks.hook('modules:done', async () => {
+      const pagesDirs = nuxt.options._layers.map(
+        layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+      )
+      // we don't need to expose any config when we generate
+      if (process.dev || (nuxt.options.build && !nuxt.options._generate)) {
+        nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
+          ...config,
+          hasApiRoutesUrl,
+          urls,
+          pagesDirs,
+          extensions: nuxt.options.extensions,
+        }
+      }
+    })
 
     // always add the styles
     addServerHandler({
@@ -238,12 +234,22 @@ export {}
           // @ts-expect-error runtime type
           await nuxt.hooks.callHook('sitemap:prerender', ctx)
         }
+        const pagesDirs = nuxt.options._layers.map(
+          layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+        )
+        const sitemapConfig = {
+          ...config,
+          hasApiRoutesUrl,
+          urls: configUrls,
+          pagesDirs,
+          extensions: nuxt.options.extensions,
+        }
         if (config.sitemaps) {
           start = Date.now()
 
           // rendering a sitemap_index
           const { xml, sitemaps } = await buildSitemapIndex({
-            sitemapConfig: { ...exposeConfig, urls: configUrls },
+            sitemapConfig,
             baseURL: nuxt.options.app.baseURL,
             getRouteRulesForPath: routeMatcher,
             callHook,
@@ -262,7 +268,7 @@ export {}
             const sitemapXml = await buildSitemap({
               sitemapName: sitemap,
               // @ts-expect-error untyped
-              sitemapConfig: { ...exposeConfig, ...(config.sitemaps[sitemap]), urls: configUrls },
+              sitemapConfig: { ...sitemapConfig, ...(config.sitemaps[sitemap]), urls: configUrls },
               baseURL: nuxt.options.app.baseURL,
               getRouteRulesForPath: routeMatcher,
               callHook,
@@ -278,7 +284,7 @@ export {}
         else {
           const sitemapXml = await buildSitemap({
             sitemapName: 'sitemap',
-            sitemapConfig: exposeConfig,
+            sitemapConfig,
             baseURL: nuxt.options.app.baseURL,
             getRouteRulesForPath: routeMatcher,
             callHook,
