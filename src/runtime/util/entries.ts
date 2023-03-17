@@ -1,5 +1,6 @@
 import { statSync } from 'node:fs'
 import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { defu } from 'defu'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry } from '../../types'
 import { createFilter } from './urlFilter'
 import { resolvePagesRoutes, uniqueBy } from './pageUtils'
@@ -91,7 +92,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
       const routeRules = options.getRouteRulesForPath(withoutTrailingSlash(entry.loc))
       if (routeRules.index === false)
         return false
-      return { ...entry, ...(routeRules.sitemap || {}) }
+      return defu(routeRules.sitemap, entry)
     })
     .filter(Boolean)
     // sets the route to the full path

@@ -29,7 +29,17 @@ export default defineNuxtConfig({
         include: ['/blog/**']
       },
       pages: {
-        exclude: ['/blog/**']
+        exclude: ['/blog/**'],
+        urls: [
+          {
+            loc: '/about',
+            images: [
+              {
+                loc: 'https://example.com/image-3.jpg',
+              },
+            ]
+          }
+        ]
       }
     }
   },

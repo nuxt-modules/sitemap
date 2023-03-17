@@ -201,15 +201,18 @@ describe('prod', () => {
           </url>
           <url>
               <loc>https://nuxt-simple-sitemap.com/about</loc>
-              <lastmod>2023-02-20T21:50:52.000Z</lastmod>
-              <changefreq>daily</changefreq>
-              <priority>0.3</priority>
               <image:image>
                   <image:loc>https://example.com/image.jpg</image:loc>
               </image:image>
               <image:image>
                   <image:loc>https://example.com/image2.jpg</image:loc>
               </image:image>
+              <image:image>
+                  <image:loc>https://example.com/image-3.jpg</image:loc>
+              </image:image>
+              <lastmod>2023-02-20T21:50:52.000Z</lastmod>
+              <changefreq>daily</changefreq>
+              <priority>0.3</priority>
           </url>
           <url>
               <loc>https://nuxt-simple-sitemap.com/new-page</loc>
