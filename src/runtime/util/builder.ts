@@ -91,15 +91,19 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
     }
   }
   const handleArray = (key: string, arr: Record<string, any>[]) => {
+    if (arr.length === 0)
+      return ''
     key = resolveKey(key)
-    return `<${key}:${key}>
-${arr.map(obj => Object.entries(obj).map(([sk, sv]) => `            <${key}:${sk}>${normaliseValue(sv)}</${key}:${sk}>`)).join('\n')}
-        </${key}:${key}>`
+    return arr.map(obj => [
+      `        <${key}:${key}>`,
+      ...Object.entries(obj).map(([sk, sv]) => `            <${key}:${sk}>${normaliseValue(sk, sv, options)}</${key}:${sk}>`),
+      `        </${key}:${key}>`,
+    ].join('\n')).join('\n')
   }
   return wrapSitemapXml([
     '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...(ctx.urls?.map(e => `    <url>
-${Object.keys(e).map(k => `        ${Array.isArray(e[k]) ? handleArray(k, e[k]) : `<${k}>${normaliseValue(e[k])}</${k}>`}`).join('\n')}
+${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        <${k}>${normaliseValue(k, e[k], options)}</${k}>`).join('\n')}
     </url>`) ?? []),
     '</urlset>',
   ])
