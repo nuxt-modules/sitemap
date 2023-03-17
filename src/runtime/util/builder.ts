@@ -1,4 +1,4 @@
-import { withBase } from 'ufo'
+import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type {
   NuxtSimpleSitemapRuntime,
   ResolvedSitemapEntry,
@@ -122,7 +122,11 @@ function normaliseValue(key: string, value: any, options: BuildSitemapOptions) {
   if (key === 'loc' && typeof value === 'string') {
     if (value.startsWith('http://') || value.startsWith('https://'))
       return value
-    return withBase(value, withBase(options.baseURL, options.sitemapConfig.siteUrl))
+    const url = withBase(value, withBase(options.baseURL, options.sitemapConfig.siteUrl))
+    // don't need to normalise file URLs
+    if (url.includes('.'))
+      return url
+    return options.sitemapConfig.trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)
   }
   if (value instanceof Date)
     return normaliseDate(value)
