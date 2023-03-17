@@ -4,7 +4,7 @@ import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
 import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
-import type { CreateFilterOptions } from './urlFilter'
+import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex, generateXslStylesheet } from './runtime/util/builder'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapRenderCtx, SitemapRoot } from './types'
 

@@ -1,4 +1,4 @@
-import type { CreateFilterOptions } from './urlFilter'
+import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import type { ModuleOptions } from './module'
 
 export type MaybeFunction<T> = T | (() => T)

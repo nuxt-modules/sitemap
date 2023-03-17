@@ -1,8 +1,8 @@
 import { statSync } from 'node:fs'
 import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-import { createFilter } from '../../urlFilter'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry } from '../../types'
-import { resolvePagesRoutes, uniqueBy } from './page-utils'
+import { createFilter } from './urlFilter'
+import { resolvePagesRoutes, uniqueBy } from './pageUtils'
 import { normaliseDate } from './normalise'
 import type { BuildSitemapOptions } from './builder'
 
