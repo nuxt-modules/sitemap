@@ -101,7 +101,7 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
   }
   const handleArray = (key: string, arr: Record<string, any>[]) => {
     if (arr.length === 0)
-      return ''
+      return false
     key = resolveKey(key)
     return arr.map(obj => [
       `        <${key}:${key}>`,
@@ -112,7 +112,7 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
   return wrapSitemapXml([
     '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...(ctx.urls?.map(e => `    <url>
-${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        <${k}>${normaliseValue(k, e[k], options)}</${k}>`).join('\n')}
+${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        <${k}>${normaliseValue(k, e[k], options)}</${k}>`).filter(l => l !== false).join('\n')}
     </url>`) ?? []),
     '</urlset>',
   ])

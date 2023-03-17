@@ -51,7 +51,8 @@ export default defineNuxtConfig({
       sitemap: {
         lastmod: new Date(2023, 1, 21, 4, 50, 52),
         changefreq: 'weekly',
-        priority: 0.3
+        priority: 0.3,
+        images: []
       }
     },
     '/about': {
