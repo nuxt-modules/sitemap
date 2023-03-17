@@ -4,7 +4,7 @@ import type { NuxtPage } from '@nuxt/schema'
 import { resolveFiles } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import {defu} from "defu";
+import { defu } from 'defu'
 
 // copied from nuxt/src/pages/utils.ts
 
@@ -37,7 +37,7 @@ export function uniqueBy<T, K extends keyof T>(arr: T[], key: K) {
       for (const k of res) {
         if (k[key] === item[key])
           // @ts-expect-error runtime type
-          res[k] = defu(arr, res[k])
+          res[k] = defu(item, res[k])
       }
       continue
     }
