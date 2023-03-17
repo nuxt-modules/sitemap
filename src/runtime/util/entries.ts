@@ -3,7 +3,7 @@ import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry } from '../../types'
 import { createFilter } from './urlFilter'
-import { resolvePagesRoutes, uniqueBy } from './pageUtils'
+import { mergeOnKey, resolvePagesRoutes } from './pageUtils'
 import { normaliseDate } from './normalise'
 import type { BuildSitemapOptions } from './builder'
 
@@ -24,7 +24,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   const fixLoc = (url: string) => withBase(encodeURI(trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)), options.baseURL)
 
   function preNormalise(entries: SitemapEntry[]) {
-    return (uniqueBy(
+    return (mergeOnKey(
       entries
         .map(e => typeof e === 'string' ? { loc: e } : e)
         .map(e => ({ ...defaults, ...e }))
@@ -88,15 +88,18 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     ...nuxtContentUrls,
   ]
 
-  return uniqueBy(preNormalise(urls)
-    .map((entry) => {
+  return mergeOnKey(
+    preNormalise(urls)
+      .map((entry) => {
       // route matcher assumes all routes have no trailing slash
-      const routeRules = options.getRouteRulesForPath(withoutTrailingSlash(entry.loc))
-      if (routeRules.index === false)
-        return false
-      return defu(routeRules.sitemap, entry)
-    })
-    .filter(Boolean)
+        const routeRules = options.getRouteRulesForPath(withoutTrailingSlash(entry.loc))
+        if (routeRules.index === false)
+          return false
+        return defu(routeRules.sitemap, entry)
+      })
+      .filter(Boolean)
     // sets the route to the full path
-    .map(postNormalise), 'loc') as ResolvedSitemapEntry[]
+      .map(postNormalise),
+    'loc',
+  ) as ResolvedSitemapEntry[]
 }

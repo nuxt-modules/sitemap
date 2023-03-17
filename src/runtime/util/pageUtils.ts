@@ -28,23 +28,14 @@ interface SegmentToken {
   value: string
 }
 
-export function uniqueBy<T, K extends keyof T>(arr: T[], key: K) {
-  const res: T[] = []
-  const seen = new Set<T[K]>()
-  for (const item of arr) {
-    if (seen.has(item[key])) {
-      // merge the data
-      for (const k of res) {
-        if (k[key] === item[key])
-          // @ts-expect-error runtime type
-          res[k] = defu(item, res[k])
-      }
-      continue
-    }
-    seen.add(item[key])
-    res.push(item)
-  }
-  return res
+export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K) {
+  const res: Record<string, T> = {}
+  arr.forEach((item) => {
+    const k = item[key] as string
+    // @ts-expect-error untyped
+    res[k] = defu(item, res[k] || {})
+  })
+  return Object.values(res)
 }
 
 export async function resolvePagesRoutes(pagesDirs: string[], extensions: string[]): Promise<NuxtPage[]> {
@@ -57,7 +48,7 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
     }),
   )).flat()
 
-  return uniqueBy(allRoutes, 'path')
+  return mergeOnKey(allRoutes, 'path')
 }
 
 export function generateRoutesFromFiles(files: string[], pagesDir: string): NuxtPage[] {
