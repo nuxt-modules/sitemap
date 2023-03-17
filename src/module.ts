@@ -121,6 +121,7 @@ export {}
       )
       // we don't need to expose any config when we generate
       if (process.dev || (nuxt.options.build && !nuxt.options._generate)) {
+        // @ts-expect-error untyped
         nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
           ...config,
           hasApiRoutesUrl,
