@@ -57,19 +57,19 @@ export interface GoogleNewsEntry {
 }
 
 export interface ImageEntry {
-  loc: URL
+  loc: string | URL
   caption?: string
   geoLocation?: string
   title?: string
-  license?: URL
+  license?: string | URL
 }
 
 export interface VideoEntry {
   title: string
-  thumbnailLoc: URL
+  thumbnailLoc: string | URL
   description: string
-  contentLoc?: URL
-  playerLoc?: URL
+  contentLoc?: string | URL
+  playerLoc?: string | URL
   duration?: number
   expirationDate?: Date | string
   rating?: number
@@ -81,7 +81,7 @@ export interface VideoEntry {
   requiresSubscription?: boolean
   uploader?: {
     name: string
-    info?: URL
+    info?: string | URL
   }
   live?: boolean
   tag?: string
