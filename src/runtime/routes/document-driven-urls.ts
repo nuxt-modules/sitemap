@@ -14,7 +14,7 @@ export default defineEventHandler(async () => {
     const item = await useStorage().getItem(k)
     // add any top level images
     const images = item?.parsed.body?.children
-      ?.filter(c => c.tag.toLowerCase() === 'image')
+      ?.filter(c => ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag?.toLowerCase()) && c.props?.src)
       .map(i => ({
         loc: i.props.src,
       })) || []
