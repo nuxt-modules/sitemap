@@ -36,7 +36,17 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 - 🎨 Styled XML for easier debugging
 - 😌 Automatic lastmod and image discovery
 - 🔄 Route config using route rules
-- 🏞️ Handle trailing slashes 
+- 🏞️ Handle trailing slashes
+
+### Zero Config Integrations
+
+- [`@nuxt/content` documentDriven mode](https://content.nuxtjs.org/guide/writing/document-driven)
+
+Will generate `lastmod` from last time a document was updated, images are included from any `<img>` tags
+
+- [`nuxt-simple-robots`](https://github.com/harlan-zw/nuxt-simple-robots)
+
+Sitemap entries will be included automatically.
 
 ## Install
 
