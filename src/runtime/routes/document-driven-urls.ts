@@ -9,7 +9,8 @@ export default defineEventHandler(async () => {
     .filter(k => k.endsWith('.md') && !k.includes('/_'))
   const urls: ResolvedSitemapEntry = []
   for (const k of parsedKeys) {
-    const meta = await useStorage().getMeta(k)
+    // get meta from the source
+    const meta = await useStorage().getMeta(k.replace(prefix, 'content:source:content'))
     const item = await useStorage().getItem(k)
     // add any top level images
     const images = item?.parsed.body?.children
