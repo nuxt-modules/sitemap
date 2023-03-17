@@ -24,7 +24,7 @@ export default defineEventHandler(async () => {
       .replace(/\/\d+\./, '/')
       .split('.')[0]
       .replace('/index', '')
-    urls.push({ loc, lastmod: meta?.mtime, images })
+    urls.push({ loc, lastmod: meta?.mtime || meta?.ctime, images })
   }
   return urls
 })

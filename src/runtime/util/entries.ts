@@ -53,8 +53,10 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
           const entry = <SitemapFullEntry> {
             loc: page.path,
           }
-          if (autoLastmod)
-            entry.lastmod = statSync(page.file as string).ctime
+          if (autoLastmod && page.file) {
+            const stats = statSync(page.file)
+            entry.lastmod = stats.mtime || stats.ctime
+          }
           return entry
         })
     : []
