@@ -43,7 +43,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     return e
   }
 
-  const pages = inferStaticPagesAsRoutes
+  const pageUrls = inferStaticPagesAsRoutes
     ? (await resolvePagesRoutes(pagesDirs, extensions))
         .filter(page => !page.path.includes(':'))
         .filter(page => urlFilter(page.path))
@@ -58,22 +58,46 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     : []
 
   // we'll do a $fetch of the sitemap
-  let lazyUrls: string[] = []
+  let lazyApiUrls: string[] = []
   // only if we have the actual route setup
   if (hasApiRoutesUrl) {
     try {
-      lazyUrls = await $fetch('/api/_sitemap-urls')
+      lazyApiUrls = await $fetch('/api/_sitemap-urls')
     }
     catch {
     }
   }
 
-  const finalUrls = [
-    ...lazyUrls,
+  const urls = [
+    ...lazyApiUrls,
     ...configUrls,
-    ...pages,
+    ...pageUrls,
   ]
-  return uniqueBy(preNormalise(finalUrls)
+
+  // create route from document driven mode
+  if (useRuntimeConfig().content?.documentDriven) {
+    const parsedKeys = (await useStorage().getKeys('cache:content:parsed'))
+      .filter(k => k.endsWith('.md') && !k.includes('/_'))
+    for (const k of parsedKeys) {
+      const meta = await useStorage().getMeta(k)
+      const item = await useStorage().getItem(k)
+      // add any top level images
+      // @ts-expect-error untyped
+      const images = item?.parsed.body?.children
+        ?.filter(c => c.tag.toLowerCase() === 'image')
+        .map(i => ({
+          loc: i.props.src,
+        })) || []
+      const loc = k.replace('cache:content:parsed', '')
+        .replaceAll(':', '/')
+        // need to strip out the leading number such as 0.index.md -> index.md
+        .replace(/\/\d+\./, '/')
+        .split('.')[0]
+      urls.push({ loc, lastmod: meta?.mtime, images })
+    }
+  }
+
+  return uniqueBy(preNormalise(urls)
     .map((entry) => {
       // route matcher assumes all routes have no trailing slash
       const routeRules = options.getRouteRulesForPath(withoutTrailingSlash(entry.loc))
