@@ -58,9 +58,9 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
 
   const sitemapXml = entries.map(e => [
     '    <sitemap>',
-    `        <loc>${normaliseValue(e.sitemap)}</loc>`,
+    `        <loc>${normaliseValue('loc', e.sitemap, options)}</loc>`,
     // lastmod is optional
-    e.lastmod ? `        <lastmod>${normaliseValue(e.lastmod)}</lastmod>` : false,
+    e.lastmod ? `        <lastmod>${normaliseValue('lastmod', e.lastmod, options)}</lastmod>` : false,
     '    </sitemap>',
   ].filter(Boolean).join('\n')).join('\n')
   return {
@@ -109,7 +109,12 @@ ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        
   ])
 }
 
-function normaliseValue(value: any) {
+function normaliseValue(key: string, value: any, options: BuildSitemapOptions) {
+  if (key === 'loc' && typeof value === 'string') {
+    if (value.startsWith('http://') || value.startsWith('https://'))
+      return value
+    return withBase(value, withBase(options.baseURL, options.sitemapConfig.siteUrl))
+  }
   if (value instanceof Date)
     return normaliseDate(value)
   if (typeof value === 'boolean')
