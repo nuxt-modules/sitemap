@@ -18,8 +18,8 @@ export interface NuxtSimpleSitemapRuntime extends ModuleOptions {
   hasApiRoutesUrl: boolean
   isNuxtContentDocumentDriven: boolean
   urls: SitemapEntry[]
-  pagesDirs: string[]
-  extensions: string[]
+  pagesDirs?: string[]
+  extensions?: string[]
 }
 
 export interface SitemapRenderCtx {

@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
+import { statSync } from 'node:fs'
 import { addServerHandler, addTemplate, createResolver, defineNuxtModule, findPath, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
@@ -6,7 +7,8 @@ import chalk from 'chalk'
 import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex, generateXslStylesheet } from './runtime/util/builder'
-import type { ResolvedSitemapEntry, SitemapEntry, SitemapRenderCtx, SitemapRoot } from './types'
+import type { NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
+import { resolvePagesRoutes } from './runtime/util/pageUtils'
 
 export * from './types'
 
@@ -122,6 +124,24 @@ export {}
       )
       // we don't need to expose any config when we generate
       if (process.dev || (nuxt.options.build && !nuxt.options._generate)) {
+        // need to resolve the page dirs up front when we're building
+        if (nuxt.options.build) {
+          const pagesDirs = nuxt.options._layers.map(
+            layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+          )
+          const pagesRoutes = (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
+            .map((page) => {
+              const entry = <SitemapFullEntry> {
+                loc: page.path,
+              }
+              if (config.autoLastmod && page.file) {
+                const stats = statSync(page.file)
+                entry.lastmod = stats.mtime || stats.ctime
+              }
+              return entry
+            })
+          urls = [...urls, ...pagesRoutes]
+        }
         // @ts-expect-error untyped
         nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
           ...config,
@@ -243,17 +263,21 @@ export {}
           // @ts-expect-error runtime type
           await nuxt.hooks.callHook('sitemap:prerender', ctx)
         }
-        const pagesDirs = nuxt.options._layers.map(
-          layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-        )
-        const sitemapConfig = {
+
+        const sitemapConfig: NuxtSimpleSitemapRuntime = {
           ...config,
           hasApiRoutesUrl,
           isNuxtContentDocumentDriven,
           urls: configUrls,
-          pagesDirs,
-          extensions: nuxt.options.extensions,
         }
+
+        if (process.dev || process.env.prerender) {
+          sitemapConfig.pagesDirs = nuxt.options._layers.map(
+            layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+          )
+          sitemapConfig.extensions = nuxt.options.extensions
+        }
+
         if (config.sitemaps) {
           start = Date.now()
 
