@@ -1,5 +1,6 @@
 import { defineEventHandler, setHeader } from 'h3'
 import { parseURL } from 'ufo'
+import { defu } from 'defu'
 import { buildSitemap } from '../util/builder'
 import { useHostname } from '../util/nuxt'
 import type { SitemapRenderCtx } from '../../types'
@@ -25,9 +26,16 @@ export default defineEventHandler(async (e) => {
     const nitro = useNitroApp()
     await nitro.hooks.callHook('sitemap:sitemap-xml', ctx)
   }
+  // merge urls
+  const { urls } = defu({ urls: sitemapConfig.sitemaps[sitemapName]?.urls || [] }, { urls: sitemapConfig.urls || [] })
   return await buildSitemap({
     sitemapName,
-    sitemapConfig: { ...sitemapConfig, ...sitemapConfig.sitemaps[sitemapName], siteUrl: useHostname(e, sitemapConfig.siteUrl) },
+    sitemapConfig: {
+      ...sitemapConfig,
+      ...sitemapConfig.sitemaps[sitemapName],
+      siteUrl: useHostname(e, sitemapConfig.siteUrl),
+      urls,
+    },
     baseURL: useRuntimeConfig().app.baseURL,
     getRouteRulesForPath,
     callHook,

@@ -46,7 +46,7 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
       files.sort()
       return generateRoutesFromFiles(files, dir)
     }),
-  )).flat()
+  )).flat().filter(page => !page.path.includes(':'))
 
   return mergeOnKey(allRoutes, 'path')
 }

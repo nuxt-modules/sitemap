@@ -11,9 +11,8 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   const {
     urls: configUrls,
     defaults, exclude,
-    extensions,
     isNuxtContentDocumentDriven,
-    include, pagesDirs, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
+    include, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
   } = options.sitemapConfig
   const urlFilter = createFilter({ include, exclude })
 
@@ -45,21 +44,24 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     return e
   }
 
-  const pageUrls = inferStaticPagesAsRoutes
-    ? (await resolvePagesRoutes(pagesDirs, extensions))
-        .filter(page => !page.path.includes(':'))
-        .filter(page => urlFilter(page.path))
-        .map((page) => {
-          const entry = <SitemapFullEntry> {
-            loc: page.path,
-          }
-          if (autoLastmod && page.file) {
-            const stats = statSync(page.file)
-            entry.lastmod = stats.mtime || stats.ctime
-          }
-          return entry
-        })
-    : []
+  let pageUrls: SitemapEntry[] = []
+  if (process.dev || process.env.prerender) {
+    // not accessible on build but needed for prerender
+    if (options.sitemapConfig.pagesDirs && options.sitemapConfig.extensions) {
+      const { pagesDirs, extensions } = options.sitemapConfig
+      pageUrls = inferStaticPagesAsRoutes
+        ? (await resolvePagesRoutes(pagesDirs, extensions))
+            .map((page) => {
+              const entry = <SitemapFullEntry>{ loc: page.path }
+              if (autoLastmod && page.file) {
+                const stats = statSync(page.file)
+                entry.lastmod = stats.mtime || stats.ctime
+              }
+              return entry
+            })
+        : []
+    }
+  }
 
   // we'll do a $fetch of the sitemap
   let lazyApiUrls: string[] = []
@@ -82,6 +84,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   }
 
   const urls = [
+    '/',
     ...lazyApiUrls,
     ...configUrls,
     ...pageUrls,
@@ -91,14 +94,14 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   return mergeOnKey(
     preNormalise(urls)
       .map((entry) => {
-      // route matcher assumes all routes have no trailing slash
+        // route matcher assumes all routes have no trailing slash
         const routeRules = options.getRouteRulesForPath(withoutTrailingSlash(entry.loc))
         if (routeRules.index === false)
           return false
         return defu(routeRules.sitemap, entry)
       })
       .filter(Boolean)
-    // sets the route to the full path
+      // sets the route to the full path
       .map(postNormalise),
     'loc',
   ) as ResolvedSitemapEntry[]
