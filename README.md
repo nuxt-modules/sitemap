@@ -441,6 +441,12 @@ Additional config extends [sitemap.js](https://github.com/ekalinin/sitemap.js).
 
 Will generate routes from your static page files. Useful to disable if you're using the i18n module with custom routes. 
 
+### `xsl`
+
+- Type: `string | false
+- Default: `/__sitemap__/style.xsl`
+
+The path to the XSL stylesheet for the sitemap.xml. Set to `false` to disable.
 
 ## Sponsors
 
