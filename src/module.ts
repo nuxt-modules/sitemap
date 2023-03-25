@@ -35,6 +35,14 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    * @deprecated use `siteUrl`
    */
   hostname?: string
+  /**
+   * Path to the xsl that styles sitemap.xml.
+   *
+   * Set to `false` to disable styling.
+   *
+   * @default /__sitemap__/style.xsl
+   */
+  xsl: string | false
 }
 
 export interface ModuleHooks {
@@ -67,6 +75,7 @@ export default defineNuxtModule<ModuleOptions>({
       exclude: [],
       urls: [],
       sitemaps: false,
+      xsl: '/__sitemap__/style.xsl',
       defaults: {},
     }
   },
@@ -80,8 +89,8 @@ export default defineNuxtModule<ModuleOptions>({
       robotsConfig.sitemap.push(
         withBase(config.sitemaps
           ? '/sitemap_index.xml'
-          : '/sitemap.xml', config.siteUrl
-        )
+          : '/sitemap.xml', config.siteUrl,
+        ),
       )
     })
 
@@ -158,10 +167,12 @@ export {}
     })
 
     // always add the styles
-    addServerHandler({
-      route: '/__sitemap__/style.xsl',
-      handler: resolve('./runtime/routes/sitemap.xsl'),
-    })
+    if (config.xsl === '/__sitemap__/style.xsl') {
+      addServerHandler({
+        route: '/__sitemap__/style.xsl',
+        handler: resolve('./runtime/routes/sitemap.xsl'),
+      })
+    }
 
     // multi sitemap support
     if (config.sitemaps) {
