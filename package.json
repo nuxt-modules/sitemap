@@ -36,7 +36,7 @@
     "test": "vitest generate"
   },
   "dependencies": {
-    "@nuxt/kit": "3.3.1",
+    "@nuxt/kit": "3.3.2",
     "chalk": "^5.2.0",
     "defu": "^6.1.2",
     "escape-string-regexp": "^5.0.0",
@@ -49,13 +49,13 @@
     "@antfu/eslint-config": "^0.37.0",
     "@nuxt/kit": "^3.3.1",
     "@nuxt/module-builder": "^0.2.1",
-    "@nuxt/test-utils": "3.3.1",
+    "@nuxt/test-utils": "3.3.2",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "bumpp": "^9.0.0",
     "eslint": "8.36.0",
     "execa": "^7.1.1",
-    "nuxt": "^3.3.1",
+    "nuxt": "^3.3.2",
     "nuxt-simple-robots": "^2.0.1",
-    "vitest": "^0.29.5"
+    "vitest": "^0.29.7"
   }
 }
