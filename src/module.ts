@@ -172,6 +172,7 @@ export {}
         route: '/__sitemap__/style.xsl',
         handler: resolve('./runtime/routes/sitemap.xsl'),
       })
+      config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
     }
 
     // multi sitemap support

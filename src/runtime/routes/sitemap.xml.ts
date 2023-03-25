@@ -1,4 +1,5 @@
 import { defineEventHandler, sendRedirect, setHeader } from 'h3'
+import { withBase } from 'ufo'
 import { buildSitemap } from '../util/builder'
 import { useHostname } from '../util/nuxt'
 import type { SitemapRenderCtx } from '../../types'
@@ -10,7 +11,7 @@ export default defineEventHandler(async (e) => {
   // we need to check if we're rendering multiple sitemaps from the index sitemap
   if (sitemapConfig.sitemaps) {
     // redirect to sitemap_index.xml (302 in dev to avoid caching issues)
-    return sendRedirect(e, '/sitemap_index.xml', process.dev ? 302 : 301)
+    return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), process.dev ? 302 : 301)
   }
 
   // need to clone the config object to make it writable
