@@ -77,9 +77,12 @@ export default defineNuxtModule<ModuleOptions>({
 
     // nuxt-simple-robots integration
     nuxt.hooks.hook('robots:config', (robotsConfig) => {
-      robotsConfig.sitemap.push(config.sitemaps
-        ? withBase('/sitemap_index.xml', config.siteUrl)
-        : '/sitemap.xml')
+      robotsConfig.sitemap.push(
+        withBase(config.sitemaps
+          ? '/sitemap_index.xml'
+          : '/sitemap.xml', config.siteUrl
+        )
+      )
     })
 
     // paths.d.ts
