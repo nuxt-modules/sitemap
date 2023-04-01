@@ -54,8 +54,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2(eslint@8.37.0)(rollup@3.3.0)(typescript@5.0.3)
       nuxt-simple-robots:
-        specifier: ^2.1.0
-        version: 2.1.0(rollup@3.3.0)
+        specifier: ^2.1.1
+        version: 2.1.1(rollup@3.3.0)
       vitest:
         specifier: ^0.29.8
         version: 0.29.8
@@ -5657,8 +5657,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /nuxt-simple-robots@2.1.0(rollup@3.3.0):
-    resolution: {integrity: sha512-jm3jCxMUJxkTaC0PNuDdIQFQvFYQlformh4ujsw7tiRceOEi6yoqLZaZ1STZgxAfNX3noK9jk5pPkk0q5NVS9Q==}
+  /nuxt-simple-robots@2.1.1(rollup@3.3.0):
+    resolution: {integrity: sha512-1SkttsWStHMu78fOns7wildw06XMyHvzfZyMTVBy5mX0NCXU8JRzAEtGjKJIEUUmaeRhwURHALHxXeYZAaUt2g==}
     dependencies:
       '@nuxt/kit': 3.3.2(rollup@3.3.0)
       pathe: 1.1.0
