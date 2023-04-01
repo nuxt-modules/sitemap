@@ -448,6 +448,13 @@ Will generate routes from your static page files. Useful to disable if you're us
 
 The path to the XSL stylesheet for the sitemap.xml. Set to `false` to disable.
 
+### `discoverImages`
+
+- Type: `boolean`
+- Default: `true`
+
+Whether to discover images from routes when prerendering.
+
 ## Sponsors
 
 <p align="center">

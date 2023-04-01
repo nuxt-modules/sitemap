@@ -43,6 +43,12 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    * @default /__sitemap__/style.xsl
    */
   xsl: string | false
+  /**
+   * When prerendering, should images be automatically be discovered and added to the sitemap.
+   *
+   * @default true
+   */
+  discoverImages: boolean
 }
 
 export interface ModuleHooks {
@@ -70,6 +76,7 @@ export default defineNuxtModule<ModuleOptions>({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
       trailingSlash: String(trailingSlash) === 'true',
       inferStaticPagesAsRoutes: true,
+      discoverImages: true,
       // index sitemap options filtering
       include: ['/**'],
       exclude: [],
@@ -215,16 +222,18 @@ export {}
           const mainMatch = mainRegex.exec(html)
           if (!mainMatch)
             return
-          // extract image src using regex on the html
-          const imgRegex = /<img[^>]+src="([^">]+)"/g
-          let match
-          // eslint-disable-next-line no-cond-assign
-          while ((match = imgRegex.exec(mainMatch[1])) !== null) {
-            const url = new URL(match[1], config.siteUrl)
-            sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
-            sitemapImages[ctx.route].push({
-              loc: url.href,
-            })
+          if (config.discoverImages) {
+            // extract image src using regex on the html
+            const imgRegex = /<img[^>]+src="([^">]+)"/g
+            let match
+            // eslint-disable-next-line no-cond-assign
+            while ((match = imgRegex.exec(mainMatch[1])) !== null) {
+              const url = new URL(match[1], config.siteUrl)
+              sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
+              sitemapImages[ctx.route].push({
+                loc: url.href,
+              })
+            }
           }
         }
       })

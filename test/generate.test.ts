@@ -54,7 +54,7 @@ describe('generate', () => {
                   <image:loc>https://example.com/image2.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:url>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:url>
+                  <image:loc>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:loc>
               </image:image>
               <lastmod>2023-02-21T08:50:52+00:00</lastmod>
               <changefreq>daily</changefreq>
@@ -63,7 +63,7 @@ describe('generate', () => {
           <url>
               <loc>https://nuxt-simple-sitemap.com/new-page</loc>
               <image:image>
-                  <image:url>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:url>
+                  <image:loc>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:loc>
               </image:image>
           </url>
           <url>

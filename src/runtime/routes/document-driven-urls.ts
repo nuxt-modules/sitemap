@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 import type { ResolvedSitemapEntry } from '../../types'
-import { useStorage } from '#imports'
+import { useStorage, useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async () => {
   const prefix = 'cache:content:parsed:content'
@@ -13,11 +13,11 @@ export default defineEventHandler(async () => {
     const meta = await useStorage().getMeta(k.replace(prefix, 'content:source:content'))
     const item = await useStorage().getItem(k)
     // add any top level images
-    const images = item?.parsed.body?.children
+    const images = useRuntimeConfig()['nuxt-simple-sitemap'].discoverImages ? (item?.parsed.body?.children
       ?.filter(c => ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag?.toLowerCase()) && c.props?.src)
       .map(i => ({
         loc: i.props.src,
-      })) || []
+      })) || []) || [];
     const loc = k.replace(prefix, '')
       .replaceAll(':', '/')
       // need to strip out the leading number such as 0.index.md -> index.md
