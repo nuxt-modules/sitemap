@@ -205,7 +205,7 @@ export {}
         return
       }
 
-      const sitemapImages: Record<string, { url: string }[]> = {}
+      const sitemapImages: Record<string, { loc: string }[]> = {}
       // setup a hook for the prerender so we can inspect the image sources
       nitro.hooks.hook('prerender:route', async (ctx) => {
         const html = ctx.contents
@@ -223,7 +223,7 @@ export {}
             const url = new URL(match[1], config.siteUrl)
             sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
             sitemapImages[ctx.route].push({
-              url: url.href,
+              loc: url.href,
             })
           }
         }
