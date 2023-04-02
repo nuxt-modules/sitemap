@@ -5,7 +5,12 @@ export default defineNuxtConfig({
   modules: [
     NuxtSimpleSitemap,
     'nuxt-simple-robots',
+    '@nuxtjs/i18n',
   ],
+  i18n: {
+    locales: ['en', 'fr'],
+    defaultLocale: 'en',
+  },
   nitro: {
     plugins: ['plugins/sitemap.ts'],
     prerender: {

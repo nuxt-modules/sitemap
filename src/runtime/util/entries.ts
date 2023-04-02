@@ -14,6 +14,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     isNuxtContentDocumentDriven,
     include, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
     hasPrerenderedRoutesPayload,
+    autoAlternativeLangPrefixes,
   } = options.sitemapConfig
   const urlFilter = createFilter({ include, exclude })
 
@@ -41,8 +42,21 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
         if (!e.lastmod)
           delete e.lastmod
 
+        if (Array.isArray(autoAlternativeLangPrefixes)) {
+          // check the route doesn't start with a prefix
+          if (autoAlternativeLangPrefixes.some((prefix) => {
+            return e.loc!.startsWith(withBase(`/${prefix}`, options.baseURL))
+          }))
+            return false
+          // otherwise add the entries
+          e.alternatives = autoAlternativeLangPrefixes.map(prefix => ({
+            hreflang: prefix,
+            href: fixLoc(`/${prefix}${e.loc}`),
+          }))
+        }
         return e
       })
+      .filter(Boolean)
   }
   function postNormalise(e: ResolvedSitemapEntry) {
     e.loc = withBase(e.loc, siteUrl || '')

@@ -48,6 +48,10 @@ Will generate `lastmod` from last time a document was updated, images are includ
 
 Sitemap entries will be included automatically.
 
+- [`@nuxtjs/i18n`](https://github.com/nuxt-modules/i18n)
+
+Will automatically add `hreflang` alternatives for each non-default locale.
+
 ## Install
 
 ```bash
@@ -467,6 +471,15 @@ The path to the XSL stylesheet for the sitemap.xml. Set to `false` to disable.
 - Default: `true`
 
 Whether to discover images from routes when prerendering.
+
+### `autoAlternativeLangPrefixes`
+
+- Type: `undefined | false | string[]`
+- Default: `undefined`
+
+Automatically add alternative language prefixes for each entry with the given prefixes. Set to `false` to disable.
+
+When using the @nuxtjs/i18n module, this will automatically be set to the configured `locales` when left `undefined`.
 
 ## Sponsors
 
