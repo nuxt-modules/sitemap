@@ -1,6 +1,7 @@
 import { defineEventHandler } from 'h3'
 import type { ResolvedSitemapEntry } from '../../types'
-import { useRuntimeConfig, useStorage } from '#imports'
+import { useStorage } from '#imports'
+import { useRuntimeConfig } from '#internal/nitro'
 
 export default defineEventHandler(async () => {
   const sitemapConfig = useRuntimeConfig()['nuxt-simple-sitemap']
@@ -16,7 +17,7 @@ export default defineEventHandler(async () => {
     const item = await useStorage().getItem(k)
     // add any top level images
     let images = []
-    if (sitemapConfig.discoverImages) {
+    if (sitemapConfig?.discoverImages) {
       images = (item?.parsed.body?.children
         ?.filter(c => ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag?.toLowerCase()) && c.props?.src)
         .map(i => ({
