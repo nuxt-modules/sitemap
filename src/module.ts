@@ -109,11 +109,11 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     // nuxt i18n integration
-    if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxt.options.i18n.locales) {
+    if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxt.options.i18n?.locales) {
       const { strategy } = nuxt.options.i18n
       if (strategy !== 'no_prefix') {
         if (strategy === 'prefix_except_default' || !strategy)
-          config.autoAlternativeLangPrefixes = nuxt.options.i18n.locales.filter(locale => nuxt.options.i18n.defaultLocale !== locale)
+          config.autoAlternativeLangPrefixes = (nuxt.options.i18n.locales as string[]).filter(locale => nuxt.options.i18n.defaultLocale !== locale)
         else
           config.autoAlternativeLangPrefixes = nuxt.options.i18n.locales
       }
