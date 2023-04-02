@@ -46,7 +46,18 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
       files.sort()
       return generateRoutesFromFiles(files, dir)
     }),
-  )).flat().filter(page => !page.path.includes(':'))
+  ))
+    .flat()
+    // unpack the children routes
+    .map((page) => {
+      const pages = [page]
+      if (page.children)
+        pages.push(...page.children.map(child => ({ ...child, path: `${page.path}/${child.path}` })))
+      return pages
+    })
+    .flat()
+    // no dynamic routes
+    .filter(page => !page.path.includes(':'))
 
   return mergeOnKey(allRoutes, 'path')
 }
