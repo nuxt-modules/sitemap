@@ -13,6 +13,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     defaults, exclude,
     isNuxtContentDocumentDriven,
     include, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
+    hasPrerenderedRoutesPayload,
   } = options.sitemapConfig
   const urlFilter = createFilter({ include, exclude })
 
@@ -74,6 +75,16 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     }
   }
 
+  // for SSR we inject a payload of the routes which we can later read from
+  let prerenderedRoutesPayload: string[] = []
+  if (hasPrerenderedRoutesPayload) {
+    try {
+      prerenderedRoutesPayload = await $fetch('/__sitemap__/routes.json')
+    }
+    catch {
+    }
+  }
+
   let nuxtContentUrls: string[] = []
   if (isNuxtContentDocumentDriven) {
     try {
@@ -85,6 +96,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
 
   const urls = [
     '/',
+    ...prerenderedRoutesPayload,
     ...lazyApiUrls,
     ...configUrls,
     ...pageUrls,

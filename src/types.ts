@@ -20,6 +20,7 @@ export interface NuxtSimpleSitemapRuntime extends ModuleOptions {
   urls: SitemapEntry[]
   pagesDirs?: string[]
   extensions?: string[]
+  hasPrerenderedRoutesPayload: boolean
 }
 
 export interface SitemapRenderCtx {
