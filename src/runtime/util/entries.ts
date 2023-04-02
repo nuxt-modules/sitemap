@@ -37,6 +37,10 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
         delete e.url
         if (e.lastmod)
           e.lastmod = normaliseDate(e.lastmod)
+        // make sure it's valid
+        if (!e.lastmod)
+          delete e.lastmod
+
         return e
       })
   }
