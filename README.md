@@ -275,6 +275,19 @@ export default defineNuxtConfig({
 See [sitemaps.org](https://www.sitemaps.org/protocol.html) for all available options.
 
 
+## Sitemap Entry Schema
+
+The sitemap entry schema mostly follows the [sitemap specification](https://www.sitemaps.org/protocol.html), the following options are supported:
+
+- `loc` - URL of the page.
+- `lastmod` - The date of last modification of the file
+- `changefreq` - How frequently the page is likely to change.
+- `priority` - The priority of this URL relative to other URLs on your site.
+- `images` - An array of images to include in the sitemap entry as `<image:image>`.
+- `video` - An array of videos to include in the sitemap entry as `<video:video>`.
+- `news` - An array of news to include in the sitemap entry as `<news:news>`.
+- `alternatives` - An array of alternatives to include in the sitemap entry as `<xhtml:link rel="alternate" ...>`.
+
 ## Nuxt Hooks
 
 ### `sitemap:prerender`

@@ -103,6 +103,11 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
     if (arr.length === 0)
       return false
     key = resolveKey(key)
+    if (key === 'alternatives') {
+      return arr.map(obj => [
+        `        <xhtml:link rel="alternate" ${Object.entries(obj).map(([sk, sv]) => `${sk}="${normaliseValue(sk, sv, options)}"`).join(' ')} />`,
+      ].join('\n')).join('\n')
+    }
     return arr.map(obj => [
       `        <${key}:${key}>`,
       ...Object.entries(obj).map(([sk, sv]) => `            <${key}:${sk}>${normaliseValue(sk, sv, options)}</${key}:${sk}>`),
@@ -110,7 +115,7 @@ export async function buildSitemap(options: BuildSitemapOptions & { sitemapName:
     ].join('\n')).join('\n')
   }
   return wrapSitemapXml([
-    '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...(ctx.urls?.map(e => `    <url>
 ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        <${k}>${normaliseValue(k, e[k], options)}</${k}>`).filter(l => l !== false).join('\n')}
     </url>`) ?? []),
@@ -119,7 +124,7 @@ ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        
 }
 
 function normaliseValue(key: string, value: any, options: BuildSitemapOptions) {
-  if (key === 'loc' && typeof value === 'string') {
+  if (['loc', 'href'].includes(key) && typeof value === 'string') {
     if (value.startsWith('http://') || value.startsWith('https://'))
       return value
     const url = withBase(value, withBase(options.baseURL, options.sitemapConfig.siteUrl))

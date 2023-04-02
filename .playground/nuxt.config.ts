@@ -33,6 +33,12 @@ export default defineNuxtConfig({
         urls: [
           {
             loc: '/about',
+            alternatives: [
+              {
+                href: '/fr/about',
+                hreflang: 'fr'
+              }
+            ],
             images: [
               {
                 loc: 'https://example.com/image-3.jpg',
