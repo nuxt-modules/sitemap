@@ -241,7 +241,7 @@ export {}
 
       let sitemapGenerate = false
       const outputSitemap = async () => {
-        if (!nuxt.options.build || nuxt.options.dev)
+        if (!nuxt.options.build || nuxt.options.dev || nuxt.options._prepare)
           return
 
         if (sitemapGenerate)
@@ -295,6 +295,7 @@ export {}
           hasApiRoutesUrl,
           isNuxtContentDocumentDriven,
           urls: configUrls,
+          hasPrerenderedRoutesPayload: nuxt.options.build && !nuxt.options._generate,
         }
 
         if (process.dev || process.env.prerender) {
@@ -305,7 +306,7 @@ export {}
         }
 
         // for ssr we just create a payload of the pre-rendered URLs
-        if (nuxt.options.build && !nuxt.options._generate) {
+        if (sitemapConfig.hasPrerenderedRoutesPayload) {
           await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderRoutes.map(r => r.url)))
           nitro.logger.log(chalk.gray(
             '  ├─ /__sitemap__/routes.json (0ms)',

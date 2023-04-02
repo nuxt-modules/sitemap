@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 import type { ResolvedSitemapEntry } from '../../types'
-import { useStorage, useRuntimeConfig } from '#imports'
+import { useRuntimeConfig, useStorage } from '#imports'
 
 export default defineEventHandler(async () => {
   const sitemapConfig = useRuntimeConfig()['nuxt-simple-sitemap']
