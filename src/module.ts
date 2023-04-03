@@ -123,8 +123,10 @@ export default defineNuxtModule<ModuleOptions>({
       const { strategy } = nuxt.options.i18n
       if (strategy !== 'no_prefix') {
         const prefixes: string[] = []
+        // @ts-expect-error i18n schema issue
         nuxt.options.i18n.locales.forEach((locale) => {
           const loc = typeof locale === 'string' ? locale : locale.code
+          // @ts-expect-error i18n schema issue
           if (loc === nuxt.options.i18n.defaultLocale)
             return
           prefixes.push(loc)
