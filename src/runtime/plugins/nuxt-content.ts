@@ -1,6 +1,6 @@
 import type { NitroAppPlugin } from 'nitropack'
 import { prefixStorage } from 'unstorage'
-import { useRuntimeConfig } from '#imports'
+import { useRuntimeConfig, useStorage } from '#imports'
 
 const contentStorage = prefixStorage(useStorage(), 'content:source')
 
