@@ -171,37 +171,34 @@ export {}
       const pagesDirs = nuxt.options._layers.map(
         layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
       )
-      // we don't need to expose any config when we generate
-      if (process.dev || (nuxt.options.build && !nuxt.options._generate)) {
-        // need to resolve the page dirs up front when we're building
-        if (nuxt.options.build) {
-          const pagesDirs = nuxt.options._layers.map(
-            layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-          )
-          const pagesRoutes = (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
-            .map((page) => {
-              const entry = <SitemapFullEntry> {
-                loc: page.path,
-              }
-              if (config.autoLastmod && page.file) {
-                const stats = statSync(page.file)
-                entry.lastmod = stats.mtime || stats.ctime
-              }
-              return entry
-            })
-          urls = [...urls, ...pagesRoutes]
-        }
-        // @ts-expect-error untyped
-        nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
-          ...config,
-          isNuxtContentDocumentDriven,
-          hasApiRoutesUrl,
-          urls,
-          pagesDirs,
-          hasPrerenderedRoutesPayload: nuxt.options.build && !nuxt.options._generate,
-          extensions: nuxt.options.extensions,
-        }
+      // need to resolve the page dirs up front when we're building
+      if (nuxt.options.build) {
+        const pagesDirs = nuxt.options._layers.map(
+          layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
+        )
+        const pagesRoutes = (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
+          .map((page) => {
+            const entry = <SitemapFullEntry> {
+              loc: page.path,
+            }
+            if (config.autoLastmod && page.file) {
+              const stats = statSync(page.file)
+              entry.lastmod = stats.mtime
+            }
+            return entry
+          })
+        urls = [...urls, ...pagesRoutes]
       }
+      // @ts-expect-error untyped
+      nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
+        ...config,
+        isNuxtContentDocumentDriven,
+        hasApiRoutesUrl,
+        urls,
+        pagesDirs,
+        hasPrerenderedRoutesPayload: nuxt.options.build && !nuxt.options._generate,
+        extensions: nuxt.options.extensions,
+      } as NuxtSimpleSitemapRuntime
     })
 
     // always add the styles
