@@ -1,6 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { statSync } from 'node:fs'
-import { addServerHandler, addTemplate, createResolver, defineNuxtModule, findPath, useLogger } from '@nuxt/kit'
+import {
+  addServerHandler,
+  addServerPlugin,
+  addTemplate,
+  createResolver,
+  defineNuxtModule,
+  findPath,
+  useLogger,
+} from '@nuxt/kit'
 import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
@@ -109,12 +117,16 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     // nuxt i18n integration
+    // @ts-expect-error i18n schema issue
     if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxt.options.i18n?.locales) {
+      // @ts-expect-error i18n schema issue
       const { strategy } = nuxt.options.i18n
       if (strategy !== 'no_prefix') {
         if (strategy === 'prefix_except_default' || !strategy)
+          // @ts-expect-error i18n schema issue
           config.autoAlternativeLangPrefixes = (nuxt.options.i18n.locales as string[]).filter(locale => nuxt.options.i18n.defaultLocale !== locale)
         else
+          // @ts-expect-error i18n schema issue
           config.autoAlternativeLangPrefixes = nuxt.options.i18n.locales
       }
     }
@@ -153,7 +165,7 @@ export {}
 
     // check if the user provided route /api/_sitemap-urls exists
     const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
-    const isNuxtContentDocumentDriven = nuxt.options.content?.documentDriven || false
+    const isNuxtContentDocumentDriven = !!nuxt.options.content?.documentDriven || false
 
     nuxt.hooks.hook('modules:done', async () => {
       const pagesDirs = nuxt.options._layers.map(
@@ -217,6 +229,8 @@ export {}
       handler: resolve('./runtime/routes/sitemap.xml'),
     })
     if (isNuxtContentDocumentDriven) {
+      addServerPlugin(resolve('./runtime/plugins/nuxt-content'))
+
       addServerHandler({
         route: '/api/__sitemap__/document-driven-urls',
         handler: resolve('./runtime/routes/document-driven-urls'),

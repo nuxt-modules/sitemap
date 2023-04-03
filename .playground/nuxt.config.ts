@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     NuxtSimpleSitemap,
     'nuxt-simple-robots',
     '@nuxtjs/i18n',
+    '@nuxt/content',
   ],
   i18n: {
     locales: ['en', 'fr'],
@@ -19,6 +20,11 @@ export default defineNuxtConfig({
         '/',
       ]
     }
+  },
+  content: {
+    documentDriven: {
+      path: '/content'
+    },
   },
   runtimeConfig: {
     public: {
