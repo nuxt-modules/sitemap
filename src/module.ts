@@ -122,12 +122,14 @@ export default defineNuxtModule<ModuleOptions>({
       // @ts-expect-error i18n schema issue
       const { strategy } = nuxt.options.i18n
       if (strategy !== 'no_prefix') {
-        if (strategy === 'prefix_except_default' || !strategy)
-          // @ts-expect-error i18n schema issue
-          config.autoAlternativeLangPrefixes = (nuxt.options.i18n.locales as string[]).filter(locale => nuxt.options.i18n.defaultLocale !== locale)
-        else
-          // @ts-expect-error i18n schema issue
-          config.autoAlternativeLangPrefixes = nuxt.options.i18n.locales
+        const prefixes: string[] = []
+        nuxt.options.i18n.locales.forEach((locale) => {
+          const loc = typeof locale === 'string' ? locale : locale.code
+          if (loc === nuxt.options.i18n.defaultLocale)
+            return
+          prefixes.push(loc)
+        })
+        config.autoAlternativeLangPrefixes = prefixes
       }
     }
 
