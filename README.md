@@ -245,7 +245,7 @@ export default defineNuxtConfig({
 
 By default, the sitemap module will automatically detect the `lastmod` date for each URL.
 
-This is done by looking at the `ctime` of the page file associated with a route. 
+This is done by looking at the `mtime` of the page file associated with a route. 
 
 If a route can't be associated with a page file then the current date will be used.
 
