@@ -199,17 +199,19 @@ export {}
         const pagesDirs = nuxt.options._layers.map(
           layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
         )
-        const pagesRoutes = (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
-          .map((page) => {
-            const entry = <SitemapFullEntry> {
-              loc: page.path,
-            }
-            if (config.autoLastmod && page.file) {
-              const stats = statSync(page.file)
-              entry.lastmod = stats.mtime
-            }
-            return entry
-          })
+        const pagesRoutes = config.inferStaticPagesAsRoutes
+          ? (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
+              .map((page) => {
+                const entry = <SitemapFullEntry> {
+                  loc: page.path,
+                }
+                if (config.autoLastmod && page.file) {
+                  const stats = statSync(page.file)
+                  entry.lastmod = stats.mtime
+                }
+                return entry
+              })
+          : []
         urls = [...urls, ...pagesRoutes]
       }
       // @ts-expect-error untyped
