@@ -118,16 +118,35 @@ export default defineNuxtModule<ModuleOptions>({
 
     // nuxt i18n integration
     // @ts-expect-error i18n schema issue
-    if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxt.options.i18n?.locales) {
-      // @ts-expect-error i18n schema issue
-      const { strategy } = nuxt.options.i18n
-      if (strategy !== 'no_prefix') {
+    const nuxtI18nConfig = nuxt.options.i18n as Record<string, any> | undefined
+    if (nuxtI18nConfig?.pages) {
+      config.inferStaticPagesAsRoutes = false
+      for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
+        for (const locale in pageLocales) {
+          if (locale === nuxtI18nConfig?.defaultLocale) {
+            // add to sitemap
+            const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
+              .map(l => ({
+                hreflang: l,
+                href: pageLocales[l],
+              }))
+            if (Array.isArray(config.urls)) {
+              config.urls.push({
+                loc: pageLocales[locale],
+                alternatives,
+              })
+            }
+          }
+        }
+      }
+    }
+    else if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxtI18nConfig?.locales) {
+      if (nuxtI18nConfig?.strategy !== 'no_prefix') {
         const prefixes: string[] = []
         // @ts-expect-error i18n schema issue
         nuxt.options.i18n.locales.forEach((locale) => {
           const loc = typeof locale === 'string' ? locale : locale.code
-          // @ts-expect-error i18n schema issue
-          if (loc === nuxt.options.i18n.defaultLocale)
+          if (loc === nuxtI18nConfig.defaultLocale)
             return
           prefixes.push(loc)
         })
