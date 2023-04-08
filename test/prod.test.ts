@@ -272,6 +272,7 @@ describe('prod', () => {
           </url>
           <url>
               <loc>https://nuxt-simple-sitemap.com/about</loc>
+              <lastmod>2023-02-21T01:50:52.000Z</lastmod>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/about\\" />
               <image:image>
                   <image:loc>https://example.com/image.jpg</image:loc>
@@ -282,7 +283,6 @@ describe('prod', () => {
               <image:image>
                   <image:loc>https://example.com/image-3.jpg</image:loc>
               </image:image>
-              <lastmod>2023-02-21T01:50:52.000Z</lastmod>
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
           </url>
