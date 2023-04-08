@@ -44,7 +44,7 @@ export default defineNuxtConfig({
         urls: [
           {
             loc: '/about',
-            lastmod: new Date(2023, 1, 21, 8, 50, 52),
+            lastmod: '2023-02-21T08:50:52.000Z',
             alternatives: [
               {
                 href: '/fr/about',
