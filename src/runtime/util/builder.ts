@@ -1,4 +1,4 @@
-import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type {
   NuxtSimpleSitemapRuntime,
   ResolvedSitemapEntry,
@@ -8,6 +8,7 @@ import type {
 } from '../../types'
 import { generateSitemapEntries } from './entries'
 import { normaliseDate } from './normalise'
+import { urlWithBase } from './pure'
 
 /**
  * How many sitemap entries we can have in a single sitemap.
@@ -50,7 +51,7 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
   }
   for (const sitemap in chunks) {
     const entry: SitemapIndexEntry = {
-      sitemap: withBase(`${sitemap}-sitemap.xml`, withBase(options.baseURL, options.sitemapConfig.siteUrl)),
+      sitemap: urlWithBase(`${sitemap}-sitemap.xml`, options.baseURL, options.sitemapConfig.siteUrl),
     }
     let lastmod = (chunks[sitemap].urls as ResolvedSitemapEntry[])
       .filter(a => !!a?.lastmod)
@@ -123,11 +124,11 @@ ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        
   ], options.sitemapConfig.xsl)
 }
 
-function normaliseValue(key: string, value: any, options: BuildSitemapOptions) {
+export function normaliseValue(key: string, value: any, options: BuildSitemapOptions) {
   if (['loc', 'href'].includes(key) && typeof value === 'string') {
     if (value.startsWith('http://') || value.startsWith('https://'))
       return value
-    const url = withBase(value, withBase(options.baseURL, options.sitemapConfig.siteUrl))
+    const url = urlWithBase(value, options.baseURL, options.sitemapConfig.siteUrl)
     // don't need to normalise file URLs
     if (url.includes('.'))
       return url

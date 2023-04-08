@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import {withBase, withTrailingSlash, withoutTrailingSlash, joinURL} from 'ufo'
 import { defu } from 'defu'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry } from '../../types'
 import { createFilter } from './urlFilter'
@@ -16,13 +16,20 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     hasPrerenderedRoutesPayload,
     autoAlternativeLangPrefixes,
   } = options.sitemapConfig
-  const urlFilter = createFilter({ include, exclude })
+  // make sure include and exclude start with baseURL
+  const baseURL = options.baseURL
+  const includeWithBase = include?.map(i => withBase(i, baseURL))
+  const excludeWithBase = exclude?.map(i => withBase(i, baseURL))
+  const urlFilter = createFilter({ include: includeWithBase, exclude: excludeWithBase })
 
   const defaultEntryData = { ...defaults }
   if (autoLastmod)
     defaultEntryData.lastmod = defaultEntryData.lastmod || new Date()
 
-  const fixLoc = (url: string) => withBase(encodeURI(trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url)), options.baseURL)
+  const fixLoc = (url: string) => {
+    url = encodeURI(trailingSlash ? withTrailingSlash(url) : withoutTrailingSlash(url))
+    return url.startsWith(baseURL) ? url : withBase(url, baseURL)
+  }
 
   function preNormalise(entries: SitemapEntry[]) {
     return (mergeOnKey(
@@ -48,10 +55,11 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
             return e.loc!.startsWith(withBase(`/${prefix}`, options.baseURL))
           }))
             return false
+          const loc = e.loc?.replace(options.baseURL, '') || ''
           // otherwise add the entries
           e.alternatives = autoAlternativeLangPrefixes.map(prefix => ({
             hreflang: prefix,
-            href: fixLoc(`/${prefix}${e.loc}`),
+            href: fixLoc(joinURL(prefix, loc)),
           }))
         }
         return e
@@ -59,7 +67,9 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
       .filter(Boolean)
   }
   function postNormalise(e: ResolvedSitemapEntry) {
-    e.loc = withBase(e.loc, siteUrl || '')
+    // need to make sure siteURL doesn't have the base on the ned
+    const siteUrlWithoutBase = siteUrl.replace(new RegExp(`${baseURL}$`), '')
+    e.loc = withBase(e.loc, siteUrlWithoutBase)
     return e
   }
 
@@ -87,7 +97,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   // only if we have the actual route setup
   if (hasApiRoutesUrl) {
     try {
-      lazyApiUrls = await $fetch('/api/_sitemap-urls')
+      lazyApiUrls = await $fetch(withBase('/api/_sitemap-urls', options.baseURL))
     }
     catch {
     }
@@ -97,7 +107,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let prerenderedRoutesPayload: string[] = []
   if (hasPrerenderedRoutesPayload) {
     try {
-      prerenderedRoutesPayload = await $fetch('/__sitemap__/routes.json')
+      prerenderedRoutesPayload = await $fetch(withBase('/__sitemap__/routes.json', options.baseURL))
     }
     catch {
     }
@@ -106,7 +116,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let nuxtContentUrls: string[] = []
   if (isNuxtContentDocumentDriven) {
     try {
-      nuxtContentUrls = await $fetch('/api/__sitemap__/document-driven-urls')
+      nuxtContentUrls = await $fetch(withBase('/api/__sitemap__/document-driven-urls', options.baseURL))
     }
     catch {
     }
