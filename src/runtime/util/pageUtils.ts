@@ -57,7 +57,7 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
     })
     .flat()
     // no dynamic routes
-    .filter(page => !page.path.includes(':'))
+    .filter(page => !page.path.includes(':') && !page.path.includes('['))
 
   return mergeOnKey(allRoutes, 'path')
 }

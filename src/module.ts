@@ -123,7 +123,8 @@ export default defineNuxtModule<ModuleOptions>({
       config.inferStaticPagesAsRoutes = false
       for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
         for (const locale in pageLocales) {
-          if (locale === nuxtI18nConfig?.defaultLocale) {
+          // add root entry for default locale and ignore dynamic routes
+          if (locale === nuxtI18nConfig?.defaultLocale && !pageLocales[locale].includes('[')) {
             // add to sitemap
             const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
               .map(l => ({
