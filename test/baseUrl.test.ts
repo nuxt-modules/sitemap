@@ -266,7 +266,7 @@ describe('base', () => {
           </url>
           <url>
               <loc>https://nuxt-simple-sitemap.com/base/about</loc>
-              <lastmod>2023-02-21T15:50:52+00:00</lastmod>
+              <lastmod>2023-02-21T08:50:52+00:00</lastmod>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/about\\" />
               <image:image>
                   <image:loc>https://example.com/image-3.jpg</image:loc>

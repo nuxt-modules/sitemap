@@ -4,17 +4,17 @@ export function normaliseDate(date: Date | string | unknown) {
     return false
   const z = n => (`0${n}`).slice(-2)
   return (
-    `${d.getFullYear()
+    `${d.getUTCFullYear()
     }-${
-    z(d.getMonth() + 1)
+    z(d.getUTCMonth() + 1)
     }-${
-    z(d.getDate())
+    z(d.getUTCDate())
     }T${
-    z(d.getHours())
+    z(d.getUTCHours())
     }:${
-    z(d.getMinutes())
+    z(d.getUTCMinutes())
     }:${
-    z(d.getSeconds())
+    z(d.getUTCSeconds())
     }+00:00`
   )
 }
