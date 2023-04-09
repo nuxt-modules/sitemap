@@ -185,7 +185,7 @@ For each sitemaps entry, you can provide the following options:
 
 - `include` - Array of glob patterns to include in the sitemap
 - `exclude` - Array of glob patterns to exclude from the sitemap
-- `defaults` - Sitemap default values such as `lastmod, `changefreq`, `priority`
+- `defaults` - Sitemap default values such as `lastmod`, `changefreq`, or `priority`
 - `urls` - Array of static URLs to include in the sitemap. You should avoid using this option if you have a lot of URLs, instead see below [Handling dynamic URLs](#handling-dynamic-urls)
 
 ### Handling dynamic URLs
