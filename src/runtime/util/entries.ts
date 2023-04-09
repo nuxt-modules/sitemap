@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import {withBase, withTrailingSlash, withoutTrailingSlash, joinURL} from 'ufo'
+import { joinURL, withBase, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry } from '../../types'
 import { createFilter } from './urlFilter'
@@ -107,7 +107,9 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let prerenderedRoutesPayload: string[] = []
   if (hasPrerenderedRoutesPayload) {
     try {
-      prerenderedRoutesPayload = await $fetch(withBase('/__sitemap__/routes.json', options.baseURL))
+      prerenderedRoutesPayload = await $fetch(withBase('/__sitemap__/routes.json', options.baseURL), {
+        baseURL: options.sitemapConfig.siteUrl
+      })
     }
     catch {
     }
