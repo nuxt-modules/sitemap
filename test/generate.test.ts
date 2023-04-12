@@ -79,10 +79,6 @@ describe('generate', () => {
               </image:image>
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/ignore-foo</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/ignore-foo\\" />
-          </url>
-          <url>
               <loc>https://nuxt-simple-sitemap.com/users-lazy/1</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/users-lazy/1\\" />
           </url>

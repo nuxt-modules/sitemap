@@ -413,7 +413,7 @@ export {}
             const sitemapXml = await buildSitemap({
               sitemapName: sitemap,
               // @ts-expect-error untyped
-              sitemapConfig: { ...sitemapConfig, ...(config.sitemaps[sitemap]), urls: configUrls },
+              sitemapConfig: { ...defu(sitemapConfig.sitemaps[sitemap], sitemapConfig), urls: configUrls },
               baseURL: nuxt.options.app.baseURL,
               getRouteRulesForPath: routeMatcher,
               callHook,
