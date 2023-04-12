@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxt/content',
   ],
+  ignorePrefix: 'ignore-',
   i18n: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
