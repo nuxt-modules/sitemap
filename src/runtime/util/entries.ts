@@ -107,9 +107,14 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let prerenderedRoutesPayload: string[] = []
   if (hasPrerenderedRoutesPayload) {
     try {
-      prerenderedRoutesPayload = await $fetch(withBase('/__sitemap__/routes.json', options.baseURL), {
-        baseURL: options.sitemapConfig.siteUrl
+      const response = await $fetch.raw(withBase('/__sitemap__/routes.json', options.baseURL), {
+        baseURL: options.sitemapConfig.siteUrl,
+        headers: {
+          Accept: 'application/json',
+        },
       })
+      // make sure it's valid json
+      prerenderedRoutesPayload = await response.json()
     }
     catch {
     }
