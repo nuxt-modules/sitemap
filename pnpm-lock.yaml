@@ -19,6 +19,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      globby:
+        specifier: ^13.1.4
+        version: 13.1.4
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
