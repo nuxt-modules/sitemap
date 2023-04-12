@@ -31,9 +31,8 @@ export default defineEventHandler(async (e) => {
   return await buildSitemap({
     sitemapName,
     sitemapConfig: {
-      ...sitemapConfig,
-      ...sitemapConfig.sitemaps[sitemapName],
-      siteUrl: useHostname(e, sitemapConfig.siteUrl),
+      ...defu(sitemapConfig.sitemaps[sitemapName], sitemapConfig),
+      siteUrl: useHostname(e),
       urls,
     },
     baseURL: useRuntimeConfig().app.baseURL,

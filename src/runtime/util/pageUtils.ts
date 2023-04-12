@@ -47,7 +47,12 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
       return generateRoutesFromFiles(files, dir)
     }),
   ))
-    .flat()
+
+  return normalisePagesForSitemap(allRoutes.flat())
+}
+
+export function normalisePagesForSitemap(allRoutes: NuxtPage[]) {
+  const pages = allRoutes
     // unpack the children routes
     .map((page) => {
       const pages = [page]
@@ -59,7 +64,7 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
     // no dynamic routes
     .filter(page => !page.path.includes(':') && !page.path.includes('['))
 
-  return mergeOnKey(allRoutes, 'path')
+  return mergeOnKey(pages, 'path')
 }
 
 export function generateRoutesFromFiles(files: string[], pagesDir: string): NuxtPage[] {

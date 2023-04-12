@@ -6,17 +6,21 @@ import {
   addTemplate,
   createResolver,
   defineNuxtModule,
-  findPath,
+  findPath, isIgnored,
   useLogger,
 } from '@nuxt/kit'
 import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
 import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
+import { globby } from 'globby'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex, generateXslStylesheet } from './runtime/util/builder'
 import type { NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
-import { resolvePagesRoutes } from './runtime/util/pageUtils'
+import {
+  generateRoutesFromFiles,
+  normalisePagesForSitemap,
+} from './runtime/util/pageUtils'
 
 export * from './types'
 
@@ -93,7 +97,7 @@ export default defineNuxtModule<ModuleOptions>({
       inferStaticPagesAsRoutes: true,
       discoverImages: true,
       // index sitemap options filtering
-      include: ['/**'],
+      include: [],
       exclude: [],
       urls: [],
       sitemaps: false,
@@ -197,22 +201,38 @@ export {}
       )
       // need to resolve the page dirs up front when we're building
       if (nuxt.options.build) {
-        const pagesDirs = nuxt.options._layers.map(
-          layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-        )
-        const pagesRoutes = config.inferStaticPagesAsRoutes
-          ? (await resolvePagesRoutes(pagesDirs, nuxt.options.extensions))
-              .map((page) => {
-                const entry = <SitemapFullEntry> {
-                  loc: page.path,
-                }
-                if (config.autoLastmod && page.file) {
-                  const stats = statSync(page.file)
-                  entry.lastmod = stats.mtime
-                }
-                return entry
-              })
-          : []
+        let pagesRoutes: SitemapFullEntry[] = []
+        if (config.inferStaticPagesAsRoutes) {
+          // we need to more manually find the pages so we can mark the ones that are ignored
+          const allRoutes = (await Promise.all(
+            pagesDirs.map(async (dir) => {
+              const files = (await globby(`**/*{${nuxt.options.extensions.join(',')}}`, { cwd: dir, followSymbolicLinks: true }))
+                .map(p => resolve(dir, p))
+                .filter((p) => {
+                  if (isIgnored(p)) {
+                    // add the page to the exclude config
+                    config.exclude = config.exclude || []
+                    config.exclude.push(generateRoutesFromFiles([p], dir)[0].path)
+                    return false
+                  }
+                  return true
+                }).sort()
+              return generateRoutesFromFiles(files, dir)
+            }),
+          )).flat()
+
+          pagesRoutes = normalisePagesForSitemap(allRoutes)
+            .map((page) => {
+              const entry = <SitemapFullEntry>{
+                loc: page.path,
+              }
+              if (config.autoLastmod && page.file) {
+                const stats = statSync(page.file)
+                entry.lastmod = stats.mtime
+              }
+              return entry
+            })
+        }
         urls = [...urls, ...pagesRoutes]
       }
       // @ts-expect-error untyped
