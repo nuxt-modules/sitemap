@@ -52,6 +52,10 @@ Sitemap entries will be included automatically.
 
 Will automatically add `hreflang` alternatives for each non-default locale.
 
+### Demos
+
+-  [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=package.json)
+
 ## Install
 
 ```bash
