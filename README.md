@@ -198,7 +198,7 @@ The recommended approach is to create your own api endpoint that returns the lis
 To do so, create the file `server/api/_sitemap-urls.ts`.
 
 ```ts
-export default cachedEventHandler(async e => {
+export default cachedEventHandler(async () => {
   const [
     posts,
     pages,
@@ -208,7 +208,9 @@ export default cachedEventHandler(async e => {
     $fetch('/api/pages'),
     $fetch('/api/products')
   ])
-  return [...posts, ...pages, ...products].map(p => { loc: p.url, lastmod: p.updatedAt })
+  return [...posts, ...pages, ...products].map(p => {
+    return { loc: p.url, lastmod: p.updatedAt }
+  })
 }, {
   name: 'sitemap-dynamic-urls',
   maxAge: 60 * 10 // cache URLs for 10 minutes
