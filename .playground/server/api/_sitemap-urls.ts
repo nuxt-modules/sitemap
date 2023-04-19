@@ -6,6 +6,8 @@ export default defineEventHandler(e => {
     '/users-lazy/1',
     '/users-lazy/2',
     '/users-lazy/3',
-    ...posts.map(post => `/blog/post-${post}`)
+    ...posts.map(post => ({
+      loc: `/blog/post-${post}`
+    }))
   ]
 })
