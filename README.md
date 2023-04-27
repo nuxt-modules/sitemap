@@ -78,9 +78,9 @@ export default defineNuxtConfig({
 ```
 
 
-### Set host
+### Set Site URL
 
-You'll need to provide the host of your site in order to generate the sitemap.xml.
+You'll need to provide the URL of your site in order to generate the sitemap.xml.
 
 ```ts
 export default defineNuxtConfig({
