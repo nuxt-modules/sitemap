@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
 import { execa } from 'execa'
+
 describe('build', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
