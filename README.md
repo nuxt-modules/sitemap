@@ -78,9 +78,9 @@ export default defineNuxtConfig({
 ```
 
 
-### Set Site URL
+### Set Site URL (required when prerendering)
 
-You'll need to provide the URL of your site in order to generate the sitemap.xml.
+For prerendered sitemaps, you'll need to provide the URL of your site in order to generate the sitemap.xml.
 
 ```ts
 export default defineNuxtConfig({
