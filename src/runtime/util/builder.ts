@@ -16,7 +16,6 @@ import { urlWithBase } from './pure'
 const MaxSitemapSize = 1000
 
 export interface BuildSitemapOptions {
-  $fetch?: any
   sitemapConfig: NuxtSimpleSitemapRuntime
   baseURL: string
   getRouteRulesForPath: (path: string) => Record<string, any>
