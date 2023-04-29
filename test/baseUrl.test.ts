@@ -293,6 +293,10 @@ describe('base', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/users-lazy/3\\" />
           </url>
           <url>
+              <loc>https://nuxt-simple-sitemap.com/base/users-prerender</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/users-prerender\\" />
+          </url>
+          <url>
               <loc>https://nuxt-simple-sitemap.com/base/hidden-path-but-in-sitemap</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/hidden-path-but-in-sitemap\\" />
           </url>
