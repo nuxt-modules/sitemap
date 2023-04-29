@@ -394,6 +394,7 @@ export {}
 
           // rendering a sitemap_index
           const { xml, sitemaps } = await buildSitemapIndex({
+            $fetch: globalThis.$fetch.raw,
             sitemapConfig,
             baseURL: nuxt.options.app.baseURL,
             getRouteRulesForPath: routeMatcher,
