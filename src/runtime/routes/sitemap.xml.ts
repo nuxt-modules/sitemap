@@ -19,9 +19,9 @@ export default defineEventHandler(async (e) => {
   if (!process.dev)
     setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
 
-  const nitroApp = useNitroApp()
   const callHook = async (ctx: SitemapRenderCtx) => {
-    await nitroApp.hooks.callHook('sitemap:sitemap-xml', ctx)
+    const nitro = useNitroApp()
+    await nitro.hooks.callHook('sitemap:sitemap-xml', ctx)
   }
   return await buildSitemap({
     sitemapName: 'sitemap',
