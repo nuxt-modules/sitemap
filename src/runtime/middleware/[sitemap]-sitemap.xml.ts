@@ -28,9 +28,7 @@ export default defineEventHandler(async (e) => {
   }
   // merge urls
   const { urls } = defu({ urls: sitemapConfig.sitemaps[sitemapName]?.urls || [] }, { urls: sitemapConfig.urls || [] })
-  const nitroApp = useNitroApp()
   return await buildSitemap({
-    $fetch: nitroApp.localFetch,
     sitemapName,
     sitemapConfig: {
       ...defu(sitemapConfig.sitemaps[sitemapName], sitemapConfig),

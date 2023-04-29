@@ -96,30 +96,24 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let lazyApiUrls: string[] = []
   // only if we have the actual route setup
   if (hasApiRoutesUrl) {
-    lazyApiUrls = await (await options.$fetch(withBase('/api/_sitemap-urls'), options.baseURL)).json()
+    lazyApiUrls = await globalThis.$fetch('/api/_sitemap-urls', {
+      responseType: 'json',
+    })
   }
 
   // for SSR we inject a payload of the routes which we can later read from
   let prerenderedRoutesPayload: string[] = []
   if (hasPrerenderedRoutesPayload) {
-    try {
-      const response = await options.$fetch(withBase('/__sitemap__/routes.json', options.baseURL))
-      if (response.status === 200) {
-        // make sure it's valid json
-        prerenderedRoutesPayload = await response.json()
-      }
-    }
-    catch {
-    }
+    prerenderedRoutesPayload = await globalThis.$fetch('/__sitemap__/routes.json', {
+      responseType: 'json',
+    })
   }
 
   let nuxtContentUrls: string[] = []
   if (isNuxtContentDocumentDriven) {
-    try {
-      nuxtContentUrls = await (await options.$fetch(withBase('/api/__sitemap__/document-driven-urls', options.baseURL))).json()
-    }
-    catch {
-    }
+    nuxtContentUrls = await globalThis.$fetch('/api/__sitemap__/document-driven-urls', {
+      responseType: 'json',
+    })
   }
 
   const urls = [

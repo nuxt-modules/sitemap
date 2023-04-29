@@ -24,7 +24,6 @@ export default defineEventHandler(async (e) => {
     await nitroApp.hooks.callHook('sitemap:sitemap-xml', ctx)
   }
   return await buildSitemap({
-    $fetch: nitroApp.localFetch,
     sitemapName: 'sitemap',
     sitemapConfig: { ...sitemapConfig, siteUrl: useHostname(e) },
     baseURL: useRuntimeConfig().app.baseURL,
