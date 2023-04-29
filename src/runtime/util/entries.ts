@@ -98,6 +98,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   if (hasApiRoutesUrl) {
     lazyApiUrls = await globalThis.$fetch('/api/_sitemap-urls', {
       responseType: 'json',
+      baseURL: options.baseURL,
     })
   }
 
@@ -106,6 +107,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   if (hasPrerenderedRoutesPayload) {
     prerenderedRoutesPayload = await globalThis.$fetch('/__sitemap__/routes.json', {
       responseType: 'json',
+      baseURL: options.baseURL,
     })
   }
 
@@ -113,6 +115,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   if (isNuxtContentDocumentDriven) {
     nuxtContentUrls = await globalThis.$fetch('/api/__sitemap__/document-driven-urls', {
       responseType: 'json',
+      baseURL: options.baseURL,
     })
   }
 
