@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { withBase } from 'ufo'
+import { getRequestHost, getRequestProtocol } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
 export function useHostname(e: H3Event) {
