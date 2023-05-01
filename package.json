@@ -1,7 +1,7 @@
 {
   "name": "nuxt-simple-sitemap",
   "type": "module",
-  "version": "2.4.16",
+  "version": "2.4.17",
   "packageManager": "pnpm@8.1.0",
   "description": "The simplest way to add XML Sitemaps to your Nuxt 3 site.",
   "license": "MIT",
