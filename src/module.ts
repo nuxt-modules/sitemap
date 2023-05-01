@@ -109,6 +109,9 @@ export default defineNuxtModule<ModuleOptions>({
     const { resolve } = createResolver(import.meta.url)
     // support v1 config fallbacks
     config.siteUrl = config.siteUrl || config.hostname!
+    // add protocol in case they forgot
+    if (!config.siteUrl.startsWith('http'))
+      config.siteUrl = `https://${config.siteUrl}`
 
     // nuxt-simple-robots integration
     nuxt.hooks.hook('robots:config', (robotsConfig) => {
