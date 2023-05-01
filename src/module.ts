@@ -242,7 +242,7 @@ export {}
         hasApiRoutesUrl,
         urls,
         pagesDirs,
-        hasPrerenderedRoutesPayload: nuxt.options.build && !nuxt.options._generate,
+        hasPrerenderedRoutesPayload: !nuxt.options.dev && nuxt.options.build && !nuxt.options._generate,
         extensions: nuxt.options.extensions,
       } as NuxtSimpleSitemapRuntime
     })
