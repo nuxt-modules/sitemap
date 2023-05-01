@@ -11,7 +11,7 @@ export default defineEventHandler(async (e) => {
     setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
 
   return (await buildSitemapIndex({
-    sitemapConfig: { ...sitemapConfig, siteUrl: useHostname(e, sitemapConfig.siteUrl) },
+    sitemapConfig: { ...sitemapConfig, siteUrl: useHostname(e) },
     baseURL: useRuntimeConfig().app.baseURL,
     getRouteRulesForPath,
   })).xml
