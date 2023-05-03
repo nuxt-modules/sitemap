@@ -333,6 +333,7 @@ export {}
 
         const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
           .map(r => ({ url: r.route })) || []
+        // @ts-expect-error untyped
         const configUrls = [...(new Set<string>([...prerenderRoutes, ...urls].map(r => typeof r === 'string' ? r : (r.url || r.loc))))]
 
         if (!generateStaticSitemap) {
