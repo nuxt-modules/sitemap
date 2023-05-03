@@ -328,7 +328,7 @@ export {}
 
       let sitemapGenerated = false
       const outputSitemap = async () => {
-        if (sitemapGenerated)
+        if (sitemapGenerated || nuxt.options.dev || nuxt.options._prepare)
           return
 
         const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
