@@ -240,7 +240,7 @@ export {}
         urls = [...urls, ...pagesRoutes]
       }
       const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-      const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml')
+      const generateStaticSitemap = !nuxt.options.dev && (nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml'))
       // @ts-expect-error untyped
       nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
         ...config,
@@ -254,7 +254,7 @@ export {}
     })
 
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml')
+    const generateStaticSitemap = !nuxt.options.dev && (nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml'))
 
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {
