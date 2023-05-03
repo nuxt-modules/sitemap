@@ -1,5 +1,5 @@
 import { extname, normalize, relative } from 'pathe'
-import { encodePath } from 'ufo'
+import { encodePath, withBase } from 'ufo'
 import type { NuxtPage } from '@nuxt/schema'
 import { resolveFiles } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
@@ -51,13 +51,21 @@ export async function resolvePagesRoutes(pagesDirs: string[], extensions: string
   return normalisePagesForSitemap(allRoutes.flat())
 }
 
+function unpackChildren(page: NuxtPage): NuxtPage[] {
+  if (!page.children)
+    return []
+  return page.children.map((child) => {
+    child.path = withBase(child.path, page.path)
+    return [child, ...unpackChildren(child)]
+  }).flat()
+}
+
 export function normalisePagesForSitemap(allRoutes: NuxtPage[]) {
   const pages = allRoutes
     // unpack the children routes
     .map((page) => {
       const pages = [page]
-      if (page.children)
-        pages.push(...page.children.map(child => ({ ...child, path: `${page.path}/${child.path}` })))
+      pages.push(...(unpackChildren(page)))
       return pages
     })
     .flat()
