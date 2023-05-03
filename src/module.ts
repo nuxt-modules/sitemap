@@ -333,12 +333,12 @@ export {}
 
         const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
           .map(r => ({ url: r.route })) || []
-        const configUrls = [...prerenderRoutes, ...urls]
+        const configUrls = [...(new Set<string>([...prerenderRoutes, ...urls].map(r => typeof r === 'string' ? r : (r.url || r.loc))))]
 
         if (!generateStaticSitemap) {
           // for SSR we always need to generate the routes.json payload
           await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
-          await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderRoutes.map(r => r.url)))
+          await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(configUrls))
           nitro.logger.log(chalk.gray(
             '  ├─ /__sitemap__/routes.json (0ms)',
           ))

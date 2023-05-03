@@ -242,6 +242,14 @@ describe('base', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-50\\" />
           </url>
           <url>
+              <loc>https://nuxt-simple-sitemap.com/base/blog/tags/new</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/tags/new\\" />
+          </url>
+          <url>
+              <loc>https://nuxt-simple-sitemap.com/base/blog/tags/edit</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/tags/edit\\" />
+          </url>
+          <url>
               <loc>https://nuxt-simple-sitemap.com/base/blog/categories</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/categories\\" />
           </url>

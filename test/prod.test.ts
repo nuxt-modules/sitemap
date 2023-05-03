@@ -248,6 +248,14 @@ describe('prod', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-50\\" />
           </url>
           <url>
+              <loc>https://nuxt-simple-sitemap.com/blog/tags/new</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/tags/new\\" />
+          </url>
+          <url>
+              <loc>https://nuxt-simple-sitemap.com/blog/tags/edit</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/tags/edit\\" />
+          </url>
+          <url>
               <loc>https://nuxt-simple-sitemap.com/blog/categories</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/categories\\" />
           </url>
