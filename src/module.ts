@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { statSync } from 'node:fs'
 import {
+  addPrerenderRoutes,
   addServerHandler,
   addServerPlugin,
   addTemplate,
@@ -238,6 +239,8 @@ export {}
         }
         urls = [...urls, ...pagesRoutes]
       }
+      const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
+      const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml')
       // @ts-expect-error untyped
       nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
         ...config,
@@ -245,10 +248,13 @@ export {}
         hasApiRoutesUrl,
         urls,
         pagesDirs,
-        hasPrerenderedRoutesPayload: !nuxt.options.dev && nuxt.options.build && !nuxt.options._generate,
+        hasPrerenderedRoutesPayload: !generateStaticSitemap,
         extensions: nuxt.options.extensions,
       } as NuxtSimpleSitemapRuntime
     })
+
+    const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
+    const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml')
 
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {
@@ -317,24 +323,32 @@ export {}
         }
       })
 
-      let sitemapGenerate = false
+      let sitemapGenerated = false
       const outputSitemap = async () => {
-        if (!nuxt.options.build || nuxt.options.dev || nuxt.options._prepare)
+        if (sitemapGenerated)
           return
 
-        if (sitemapGenerate)
+        const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
+          .map(r => ({ url: r.route })) || []
+        const configUrls = [...prerenderRoutes, ...urls]
+
+        if (!generateStaticSitemap) {
+          // for SSR we always need to generate the routes.json payload
+          await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
+          await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderRoutes.map(r => r.url)))
+          nitro.logger.log(chalk.gray(
+            '  ├─ /__sitemap__/routes.json (0ms)',
+          ))
           return
-        sitemapGenerate = true
+        }
+
+        sitemapGenerated = true
 
         // we need a siteUrl set for pre-rendering
         if (!config.siteUrl) {
           logger.error('Please set a `siteUrl` on the `sitemap` config to use `nuxt-simple-sitemap`.')
           return
         }
-        const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
-          .map(r => ({ url: r.route })) || []
-        const configUrls = [...prerenderRoutes, ...urls]
-
         let start = Date.now()
 
         const _routeRulesMatcher = toRouteMatcher(
@@ -354,12 +368,6 @@ export {}
           return defu({}, ...matchedRoutes) as Record<string, any>
         }
 
-        await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
-        await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/style.xsl'), generateXslStylesheet())
-        nitro.logger.log(chalk.gray(
-          '  ├─ /__sitemap__/style.xsl (0ms)',
-        ))
-
         const callHook = async (ctx: SitemapRenderCtx) => {
           // deprecated hook
           // @ts-expect-error runtime type
@@ -373,7 +381,7 @@ export {}
           hasApiRoutesUrl,
           isNuxtContentDocumentDriven,
           urls: configUrls,
-          hasPrerenderedRoutesPayload: !nuxt.options.dev && nuxt.options.build && !nuxt.options._generate,
+          hasPrerenderedRoutesPayload: !generateStaticSitemap,
         }
 
         if (process.dev || process.env.prerender) {
@@ -381,15 +389,6 @@ export {}
             layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
           )
           sitemapConfig.extensions = nuxt.options.extensions
-        }
-
-        // for ssr we just create a payload of the pre-rendered URLs
-        if (sitemapConfig.hasPrerenderedRoutesPayload) {
-          await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderRoutes.map(r => r.url)))
-          nitro.logger.log(chalk.gray(
-            '  ├─ /__sitemap__/routes.json (0ms)',
-          ))
-          return
         }
 
         if (config.sitemaps) {
