@@ -16,7 +16,7 @@ import chalk from 'chalk'
 import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import { globby } from 'globby'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
-import { buildSitemap, buildSitemapIndex, generateXslStylesheet } from './runtime/util/builder'
+import { buildSitemap, buildSitemapIndex } from './runtime/util/builder'
 import type { NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
 import {
   generateRoutesFromFiles,
@@ -259,10 +259,13 @@ export {}
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {
       addServerHandler({
-        route: '/__sitemap__/style.xsl',
+        route: config.xsl,
         handler: resolve('./runtime/routes/sitemap.xsl'),
       })
       config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
+
+      if (generateStaticSitemap)
+        addPrerenderRoutes(config.xsl)
     }
 
     // multi sitemap support
