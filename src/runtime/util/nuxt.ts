@@ -4,10 +4,7 @@ import { getRequestHost, getRequestProtocol } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
 export function useHostname(e: H3Event) {
-  const config = useRuntimeConfig()['nuxt-simple-sitemap']
   const base = useRuntimeConfig().app.baseURL
-  if (!process.dev && config.siteUrl)
-    return withBase(base, config.siteUrl)
   const host = getRequestHost(e) || process.env.NITRO_HOST || process.env.HOST || 'localhost'
   const protocol = getRequestProtocol(e)
   const useHttp = process.env.NODE_ENV === 'development' || host.includes('127.0.0.1') || host.includes('localhost') || protocol === 'http'
