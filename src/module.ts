@@ -69,6 +69,10 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    * @default `false` or @nuxtjs/i18n `locales`
    */
   autoAlternativeLangPrefixes?: false | string[]
+  /**
+   * The endpoint to fetch dynamic URLs from.
+   */
+  dynamicUrlsApiEndpoint: string
 }
 
 export interface ModuleHooks {
@@ -97,6 +101,7 @@ export default defineNuxtModule<ModuleOptions>({
       trailingSlash: String(trailingSlash) === 'true',
       inferStaticPagesAsRoutes: true,
       discoverImages: true,
+      dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
       // index sitemap options filtering
       include: [],
       exclude: [],
@@ -196,7 +201,7 @@ export {}
       urls = [...await config.urls]
 
     // check if the user provided route /api/_sitemap-urls exists
-    const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
+    const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls'
     const isNuxtContentDocumentDriven = !!nuxt.options.content?.documentDriven || false
 
     nuxt.hooks.hook('modules:done', async () => {

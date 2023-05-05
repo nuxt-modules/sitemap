@@ -15,6 +15,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
     include, trailingSlash, inferStaticPagesAsRoutes, hasApiRoutesUrl, autoLastmod, siteUrl,
     hasPrerenderedRoutesPayload,
     autoAlternativeLangPrefixes,
+    dynamicUrlsApiEndpoint,
   } = options.sitemapConfig
   // make sure include and exclude start with baseURL
   const baseURL = options.baseURL
@@ -96,7 +97,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   let lazyApiUrls: string[] = []
   // only if we have the actual route setup
   if (hasApiRoutesUrl) {
-    lazyApiUrls = await globalThis.$fetch('/api/_sitemap-urls', {
+    lazyApiUrls = await globalThis.$fetch(dynamicUrlsApiEndpoint, {
       responseType: 'json',
       baseURL: options.baseURL,
     })
