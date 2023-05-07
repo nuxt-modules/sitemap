@@ -114,7 +114,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
       // host is the actual web server being used
       baseURL: withBase(options.baseURL, options.sitemapConfig.host || siteUrl),
       onResponse({ response }) {
-        if (response._data.startsWith('<!DOCTYPE html>'))
+        if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
           isHtmlResponse = true
       },
     })
