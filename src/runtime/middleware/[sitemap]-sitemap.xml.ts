@@ -32,7 +32,7 @@ export default defineEventHandler(async (e) => {
     sitemapName,
     sitemapConfig: {
       ...defu(sitemapConfig.sitemaps[sitemapName], sitemapConfig),
-      siteUrl: useHostname(e),
+      host: useHostname(e),
       urls,
     },
     baseURL: useRuntimeConfig().app.baseURL,

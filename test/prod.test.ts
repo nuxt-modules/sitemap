@@ -26,10 +26,10 @@ describe('prod', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
       <sitemapindex xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <sitemap>
-              <loc>http://127.0.0.1:43377/posts-sitemap.xml</loc>
+              <loc>https://nuxt-simple-sitemap.com/posts-sitemap.xml</loc>
           </sitemap>
           <sitemap>
-              <loc>http://127.0.0.1:43377/pages-sitemap.xml</loc>
+              <loc>https://nuxt-simple-sitemap.com/pages-sitemap.xml</loc>
               <lastmod></lastmod>
           </sitemap>
       </sitemapindex>
@@ -40,44 +40,44 @@ describe('prod', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
       <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <url>
-              <loc>http://127.0.0.1:43377/blog</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/tags</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/tags\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/tags</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/tags\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/post-1</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/post-1\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/post-1</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-1\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/post-2</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/post-2\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/post-2</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-2\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/post-3</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/post-3\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/post-3</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-3\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/post-4</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/post-4\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/post-4</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-4\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/post-5</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/post-5\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/post-5</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/post-5\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/tags/new</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/tags/new\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/tags/new</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/tags/new\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/tags/edit</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/tags/edit\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/tags/edit</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/tags/edit\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:43377/blog/categories</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:43377/fr/blog/categories\\" />
+              <loc>https://nuxt-simple-sitemap.com/blog/categories</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/blog/categories\\" />
           </url>
       </urlset>
       <!-- XML Sitemap generated by Nuxt Simple Sitemap -->"

@@ -34,44 +34,44 @@ describe('base', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/base/__sitemap__/style.xsl\\"?>
       <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <url>
-              <loc>http://127.0.0.1:37275/base/blog</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/tags</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/tags\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/tags</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/tags\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/post-1</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/post-1\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/post-1</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-1\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/post-2</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/post-2\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/post-2</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-2\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/post-3</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/post-3\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/post-3</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-3\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/post-4</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/post-4\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/post-4</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-4\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/post-5</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/post-5\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/post-5</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/post-5\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/tags/new</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/tags/new\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/tags/new</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/tags/new\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/tags/edit</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/tags/edit\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/tags/edit</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/tags/edit\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/blog/categories</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/blog/categories\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/blog/categories</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/blog/categories\\" />
           </url>
       </urlset>
       <!-- XML Sitemap generated by Nuxt Simple Sitemap -->"
@@ -81,352 +81,352 @@ describe('base', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/base/__sitemap__/style.xsl\\"?>
       <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <url>
-              <loc>http://127.0.0.1:37275/base</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr\\" />
+              <loc>https://nuxt-simple-sitemap.com/base</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/!</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/!\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/!</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/!\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/D</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/D\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/D</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/D\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/O</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/O\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/O</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/O\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/C</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/C\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/C</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/C\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/T</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/T\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/T</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/T\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/Y</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/Y\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/Y</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/Y\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/P</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/P\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/P</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/P\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/E</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/E\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/E</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/E\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/h</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/h\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/h</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/h\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/t</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/t\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/t</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/t\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/m</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/m\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/m</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/m\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/l</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/l\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/l</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/l\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/e</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/e\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/e</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/e\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/a</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/a\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/a</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/a\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/d</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/d\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/d</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/d\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/c</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/c\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/c</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/c\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/r</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/r\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/r</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/r\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/s</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/s\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/s</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/s\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/=</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/=\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/=</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/=\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/u</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/u\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/u</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/u\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/f</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/f\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/f</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/f\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/-</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/-\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/-</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/-\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/8</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/8\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/8</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/8\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/n</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/n\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/n</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/n\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/v</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/v\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/v</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/v\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/i</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/i\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/i</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/i\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/w</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/w\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/w</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/w\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/p</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/p\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/p</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/p\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/o</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/o\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/o</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/o\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/,</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/,\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/,</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/,\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/1</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/1\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/1</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/1\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/k</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/k\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/k</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/k\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/g</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/g\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/g</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/g\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/b</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/b\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/b</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/b\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/_</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/_\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/_</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/_\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/x</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/x\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/x</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/x\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/y</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/y\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/y</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/y\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/.</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/.\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/.</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/.\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/2</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/2\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/3</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/3\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/9</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/9\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/9</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/9\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/j</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/j\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/j</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/j\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/7</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/7\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/5</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/5\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/0</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/0\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/4</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/4\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/4</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/4\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/0</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/0\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/5</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/5\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/6</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/6\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/3</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/3\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/2</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/2\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/6</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/6\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/7</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/7\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/&</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/&\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/&</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/&\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/q</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/q\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/q</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/q\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/;</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/;\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/;</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/;\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/N</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/N\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/N</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/N\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/U</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/U\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/U</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/U\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/X</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/X\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/X</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/X\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/(</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/(\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/(</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/(\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/)</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/)\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/)</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/)\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/:</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/:\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/:</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/:\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/$</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/$\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/$</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/$\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/B</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/B\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/B</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/B\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/F</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/F\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/F</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/F\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/R</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/R\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/R</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/R\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/L</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/L\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/L</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/L\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/Q</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/Q\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/Q</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/Q\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/I</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/I\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/I</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/I\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/S</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/S\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/S</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/S\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/V</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/V\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/V</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/V\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/A</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/A\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/A</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/A\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%3C</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%253C\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%3C</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%253C\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%20</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%2520\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%20</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%2520\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%3E</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%253E\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%3E</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%253E\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%0A</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%250A\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%0A</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%250A\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%22</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%2522\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%22</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%2522\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%5B</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%255B\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%5B</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%255B\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%5D</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%255D\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%5D</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%255D\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%7B</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%257B\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%7B</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%257B\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%7D</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%257D\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%7D</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%257D\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/%5C</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/%255C\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/%5C</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/%255C\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/bar</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/bar\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/bar</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/bar\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/foo</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/foo\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/foo</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/foo\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/about</loc>
+              <loc>https://nuxt-simple-sitemap.com/base/about</loc>
               <lastmod>2023-02-21T08:50:52+00:00</lastmod>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/about\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/about\\" />
               <image:image>
                   <image:loc>https://example.com/image-3.jpg</image:loc>
               </image:image>
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/secret</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/secret\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/secret</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/secret\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/new-page</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/new-page\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/new-page</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/new-page\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/users-lazy/1</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/users-lazy/1\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/users-lazy/1</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/users-lazy/1\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/users-lazy/2</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/users-lazy/2\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/users-lazy/2</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/users-lazy/2\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/users-lazy/3</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/users-lazy/3\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/users-lazy/3</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/users-lazy/3\\" />
           </url>
           <url>
-              <loc>http://127.0.0.1:37275/base/hidden-path-but-in-sitemap</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"http://127.0.0.1:37275/base/fr/hidden-path-but-in-sitemap\\" />
+              <loc>https://nuxt-simple-sitemap.com/base/hidden-path-but-in-sitemap</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/base/fr/hidden-path-but-in-sitemap\\" />
           </url>
       </urlset>
       <!-- XML Sitemap generated by Nuxt Simple Sitemap -->"

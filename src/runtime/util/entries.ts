@@ -107,7 +107,8 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   if (hasPrerenderedRoutesPayload) {
     prerenderedRoutesPayload = await globalThis.$fetch('/__sitemap__/routes.json', {
       responseType: 'json',
-      baseURL: withBase(options.baseURL, siteUrl),
+      // host is the actual web server being used
+      baseURL: withBase(options.baseURL, options.sitemapConfig.host || siteUrl),
     })
   }
 
