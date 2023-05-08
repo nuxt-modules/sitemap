@@ -286,8 +286,9 @@ export function generateXslStylesheet() {
             <table id="sitemap" cellpadding="3">
               <thead>
                 <tr>
-                  <th width="75%">URL</th>
+                  <th width="70%">URL</th>
                   <th width="5%">Images</th>
+                  <th width="5%">Priority</th>
                   <th title="Last Modification Time" width="20%">Last Mod.</th>
                 </tr>
               </thead>
@@ -306,6 +307,9 @@ export function generateXslStylesheet() {
                     </td>
                     <td>
                       <xsl:value-of select="count(image:image)"/>
+                    </td>
+                    <td>
+                      <xsl:value-of select="sitemap:priority"/>
                     </td>
                     <td>
                       <xsl:value-of
