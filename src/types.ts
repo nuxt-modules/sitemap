@@ -21,6 +21,10 @@ export interface NuxtSimpleSitemapRuntime extends ModuleOptions {
   pagesDirs?: string[]
   extensions?: string[]
   hasPrerenderedRoutesPayload: boolean
+  /**
+   * @internal Used for internal fetch
+   */
+  host?: string
 }
 
 export interface SitemapRenderCtx {

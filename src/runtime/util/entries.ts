@@ -106,10 +106,21 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
   // for SSR we inject a payload of the routes which we can later read from
   let prerenderedRoutesPayload: string[] = []
   if (hasPrerenderedRoutesPayload) {
-    prerenderedRoutesPayload = await globalThis.$fetch('/__sitemap__/routes.json', {
+    let isHtmlResponse = false
+    const routes = await globalThis.$fetch('/__sitemap__/routes.json', {
       responseType: 'json',
-      baseURL: withBase(options.baseURL, siteUrl),
+      headers: {
+        Accept: 'application/json',
+      },
+      // host is the actual web server being used
+      baseURL: withBase(options.baseURL, options.sitemapConfig.host || siteUrl),
+      onResponse({ response }) {
+        if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
+          isHtmlResponse = true
+      },
     })
+    if (!isHtmlResponse)
+      prerenderedRoutesPayload = routes as string[]
   }
 
   let nuxtContentUrls: string[] = []
