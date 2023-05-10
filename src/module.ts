@@ -308,14 +308,17 @@ export {}
           // only scan within the <main> tag
           const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
           const mainMatch = mainRegex.exec(html)
-          if (!mainMatch)
+          if (!mainMatch || !mainMatch[1])
             return
-          if (config.discoverImages) {
+          if (config.discoverImages && mainMatch[1].includes('<img')) {
             // extract image src using regex on the html
             const imgRegex = /<img[^>]+src="([^">]+)"/g
             let match
             // eslint-disable-next-line no-cond-assign
             while ((match = imgRegex.exec(mainMatch[1])) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (match.index === imgRegex.lastIndex)
+                imgRegex.lastIndex++
               const url = new URL(match[1], config.siteUrl)
               sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
               sitemapImages[ctx.route].push({
