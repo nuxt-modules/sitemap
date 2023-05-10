@@ -36,6 +36,7 @@ export default defineNuxtConfig({
     indexable: true,
   },
   sitemap: {
+    // dynamicUrlsApiEndpoint: '/__sitemap',
     sitemaps: {
       posts: {
         include: ['/blog/**']

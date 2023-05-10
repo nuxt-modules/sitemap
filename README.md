@@ -42,7 +42,7 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 
 - [`@nuxt/content` documentDriven mode](https://content.nuxtjs.org/guide/writing/document-driven)
 
-Will generate `lastmod` from last time a document was updated, images are included from any `<img>` tags
+Adds all entries automatically with generated `lastmod`. Images are included from any `<img>` tags
 
 - [`nuxt-simple-robots`](https://github.com/harlan-zw/nuxt-simple-robots)
 
@@ -199,7 +199,9 @@ you may want to provide the list of dynamic routes to be included in the sitemap
 
 The recommended approach is to create your own api endpoint that returns the list of all dynamic routes.
 
-To do so, create the file `server/api/_sitemap-urls.ts`.
+By default, the module will check for a `server/api/_sitemap-urls.ts` endpoint. 
+
+An example of URLs might look like this:
 
 ```ts
 export default cachedEventHandler(async () => {
@@ -221,9 +223,22 @@ export default cachedEventHandler(async () => {
 })
 ```
 
-This API endpoint will automatically be called by the sitemap module to fetch the list of dynamic URLs whenever a sitemap is generated.
+Hint: While not required, it's recommended to use the `cacheEventHandler` and set an appropriate `maxAge`, 10 minutes is a good default.
 
-While not required, it's recommended to use the `cacheEventHandler` and set an appropriate `maxAge`, 10 minutes is a good default.
+This API endpoint will be called by the sitemap module to fetch the list of dynamic URLs whenever a sitemap is generated.
+
+If you'd prefer to use a different endpoint, you can configure the `dynamicUrlsApiEndpoint` option.
+
+```ts
+export default defineNuxtConfig({
+  sitemap: {
+    dynamicUrlsApiEndpoint: '/__sitemap',
+  },
+})
+```
+
+With the above config you would create a `server/routes/__sitemap.ts` file.
+
 
 #### Start-time dynamic URLs
 
@@ -486,6 +501,16 @@ Whether to discover images from routes when prerendering.
 Automatically add alternative language prefixes for each entry with the given prefixes. Set to `false` to disable.
 
 When using the @nuxtjs/i18n module, this will automatically be set to the configured `locales` when left `undefined`.
+
+### `dynamicUrlsApiEndpoint`
+
+- Type: `string`
+- Default: `/api/_sitemap-urls`
+
+The API endpoint should be checked for dynamic sitemap entries. When left as the default it will check if the API endpoint exists
+before fetching it. 
+
+By providing a non-default value, it will always fetch the API endpoint.
 
 ## Sponsors
 
