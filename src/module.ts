@@ -88,7 +88,7 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-simple-sitemap',
     compatibility: {
-      nuxt: '^3.3.1',
+      nuxt: '^3.5.0',
       bridge: false,
     },
     configKey: 'sitemap',
