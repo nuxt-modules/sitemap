@@ -63,6 +63,7 @@
   },
   "pnpm": {
     "overrides": {
+      "unstorage": "1.6.0",
       "consola": "3.0.1"
     }
   }
