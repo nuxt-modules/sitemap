@@ -17,12 +17,11 @@ import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import { globby } from 'globby'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex } from './runtime/util/builder'
-import type { NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
+import type { MaybeArray, NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
 import {
   generateRoutesFromFiles,
   normalisePagesForSitemap,
 } from './runtime/util/pageUtils'
-import {MaybeArray} from "./types";
 
 export * from './types'
 

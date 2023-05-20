@@ -46,7 +46,7 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
         chunks[sitemap] = chunks[sitemap] || { urls: [] }
         chunks[sitemap].urls = await generateSitemapEntries({
           ...options,
-          sitemapConfig: {...options.sitemapConfig, ...sitemapsConfig[sitemap]},
+          sitemapConfig: { ...options.sitemapConfig, ...sitemapsConfig[sitemap] },
         })
       }
     }
@@ -69,9 +69,8 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
   }
 
   // allow extending the index sitemap
-  if (sitemapsConfig.index) {
+  if (sitemapsConfig.index)
     entries.push(...sitemapsConfig.index)
-  }
 
   const sitemapXml = entries.map(e => [
     '    <sitemap>',
