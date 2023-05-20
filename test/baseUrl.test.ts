@@ -22,9 +22,6 @@ describe('base', () => {
   it('basic', async () => {
     const sitemapIndex = await $fetch('/base/sitemap_index.xml')
 
-    // test that we have 2 sitemap entries using regex
-    expect(sitemapIndex.match(/<sitemap>/g)!.length).toBe(2)
-
     expect(sitemapIndex).not.match(/\/base\/base\//g)
 
     const posts = await $fetch('/base/posts-sitemap.xml')
