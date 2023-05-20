@@ -32,6 +32,8 @@ export interface SitemapRenderCtx {
   urls: ResolvedSitemapEntry[]
 }
 
+export type MaybeArray<T> = T | T[]
+
 export type Changefreq =
   | 'always'
   | 'hourly'

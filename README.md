@@ -138,13 +138,13 @@ export default defineNuxtConfig({
 })
 ```  
 
-### Multiple Sitemap Support
+### Multiple Sitemaps Support
 
-By default, the sitemap module will generate a single sitemap.xml file.
+By default, the module will generate a single sitemap.xml file.
 
 If you want to generate multiple sitemaps, you can use the `sitemaps` option.
 
-- Automatic Chunking: `true`
+#### Automatic Chunking: `true`
 
 This will automatically chunk your sitemap into multiple-sitemaps for every 1000 URLs, using the `0-sitemap.xml`, `1-sitemap.xml` naming convention.
 
@@ -159,7 +159,7 @@ export default defineNuxtConfig({
 })
 ```
 
-- Manual chunking
+#### Manual chunking
 
 You can manually chunk your sitemap into multiple sitemaps by providing filter options.
 
@@ -191,6 +191,25 @@ For each sitemaps entry, you can provide the following options:
 - `exclude` - Array of glob patterns to exclude from the sitemap
 - `defaults` - Sitemap default values such as `lastmod`, `changefreq`, or `priority`
 - `urls` - Array of static URLs to include in the sitemap. You should avoid using this option if you have a lot of URLs, instead see below [Handling dynamic URLs](#handling-dynamic-urls)
+
+This mode also provides a special key called `index` which allows you to easily extend the index sitemap. This can be useful
+for adding an external sitemap.
+
+```ts
+ sitemaps: {
+  // generated sitemaps  
+  posts: {
+    // ...
+  },
+  pages: {
+    // ...
+  },
+  // extending the index sitemap with an external sitemap
+  index: [
+    { sitemap: 'https://www.google.com/sitemap-pages.xml' }
+  ]
+}
+```
 
 ### Handling dynamic URLs
 

@@ -24,7 +24,7 @@ export interface BuildSitemapOptions {
 
 export async function buildSitemapIndex(options: BuildSitemapOptions) {
   const entries: SitemapIndexEntry[] = []
-  const sitemapsConfig = options.sitemapConfig.sitemaps
+  const sitemapsConfig = options.sitemapConfig.sitemaps!
   const chunks: Record<string | number, SitemapRoot> = {}
   if (sitemapsConfig === true) {
     // we need to generate multiple sitemaps with dynamically generated names
@@ -41,12 +41,14 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
   }
   else {
     for (const sitemap in sitemapsConfig) {
-      // user provided sitemap config
-      chunks[sitemap] = chunks[sitemap] || { urls: [] }
-      chunks[sitemap].urls = await generateSitemapEntries({
-        ...options,
-        sitemapConfig: { ...options.sitemapConfig, ...sitemapsConfig[sitemap] },
-      })
+      if (sitemap !== 'index') {
+        // user provided sitemap config
+        chunks[sitemap] = chunks[sitemap] || { urls: [] }
+        chunks[sitemap].urls = await generateSitemapEntries({
+          ...options,
+          sitemapConfig: {...options.sitemapConfig, ...sitemapsConfig[sitemap]},
+        })
+      }
     }
   }
   for (const sitemap in chunks) {
@@ -64,6 +66,11 @@ export async function buildSitemapIndex(options: BuildSitemapOptions) {
       entry.lastmod = normaliseDate(lastmod)
 
     entries.push(entry)
+  }
+
+  // allow extending the index sitemap
+  if (sitemapsConfig.index) {
+    entries.push(...sitemapsConfig.index)
   }
 
   const sitemapXml = entries.map(e => [

@@ -22,6 +22,7 @@ import {
   generateRoutesFromFiles,
   normalisePagesForSitemap,
 } from './runtime/util/pageUtils'
+import {MaybeArray} from "./types";
 
 export * from './types'
 
@@ -43,7 +44,7 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
 
   autoLastmod: boolean
   inferStaticPagesAsRoutes: boolean
-  sitemaps?: boolean | Record<string, Partial<SitemapRoot>>
+  sitemaps?: boolean | Record<string | 'index', MaybeArray<Partial<SitemapRoot>>>
   /**
    * @deprecated use `siteUrl`
    */

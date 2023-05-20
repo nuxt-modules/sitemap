@@ -60,7 +60,10 @@ export default defineNuxtConfig({
             ]
           }
         ]
-      }
+      },
+      index: [
+        { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' }
+      ]
     }
   },
   routeRules: {
