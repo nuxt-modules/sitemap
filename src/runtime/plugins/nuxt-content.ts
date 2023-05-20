@@ -2,10 +2,9 @@ import type { NitroAppPlugin } from 'nitropack'
 import { prefixStorage } from 'unstorage'
 import { useRuntimeConfig, useStorage } from '#imports'
 
-const contentStorage = prefixStorage(useStorage(), 'content:source')
-
 export const NuxtContentSimpleSitemapPlugin: NitroAppPlugin = (nitroApp) => {
   const sitemapConfig = useRuntimeConfig()['nuxt-simple-sitemap']
+  const contentStorage = prefixStorage(useStorage(), 'content:source')
   nitroApp.hooks.hook('content:file:afterParse', async (content) => {
     if (content._extension !== 'md')
       return
