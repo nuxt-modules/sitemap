@@ -13,7 +13,7 @@ import {
 import { defu } from 'defu'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import chalk from 'chalk'
-import { withBase, withoutBase, withoutTrailingSlash } from 'ufo'
+import { joinURL, withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import { globby } from 'globby'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex } from './runtime/util/builder'
@@ -142,11 +142,11 @@ export default defineNuxtModule<ModuleOptions>({
             const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
               .map(l => ({
                 hreflang: l,
-                href: pageLocales[l],
+                href: nuxtI18nConfig?.strategy !== 'no_prefix' ? joinURL(l, pageLocales[l]) : pageLocales[l],
               }))
             if (Array.isArray(config.urls)) {
               config.urls.push({
-                loc: pageLocales[locale],
+                loc: nuxtI18nConfig?.strategy === 'prefix' ? joinURL(locale, pageLocales[locale]) : pageLocales[locale],
                 alternatives,
               })
             }
