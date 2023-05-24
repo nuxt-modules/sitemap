@@ -84,13 +84,13 @@ For prerendered sitemaps, you'll need to provide the URL of your site in order t
 
 ```ts
 export default defineNuxtConfig({
-  // Recommended 
+  // Recommended
   runtimeConfig: {
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://example.com',
     }
   },
-  // OR 
+  // OR
   sitemap: {
     siteUrl: 'https://example.com',
   },
@@ -196,18 +196,20 @@ This mode also provides a special key called `index` which allows you to easily 
 for adding an external sitemap.
 
 ```ts
- sitemaps: {
-  // generated sitemaps  
-  posts: {
-    // ...
-  },
-  pages: {
-    // ...
-  },
-  // extending the index sitemap with an external sitemap
-  index: [
-    { sitemap: 'https://www.google.com/sitemap-pages.xml' }
-  ]
+export default {
+  sitemaps: {
+    // generated sitemaps
+    posts: {
+      // ...
+    },
+    pages: {
+      // ...
+    },
+    // extending the index sitemap with an external sitemap
+    index: [
+      { sitemap: 'https://www.google.com/sitemap-pages.xml' }
+    ]
+  }
 }
 ```
 
@@ -233,7 +235,7 @@ export default cachedEventHandler(async () => {
     $fetch('/api/pages'),
     $fetch('/api/products')
   ])
-  return [...posts, ...pages, ...products].map(p => {
+  return [...posts, ...pages, ...products].map((p) => {
     return { loc: p.url, lastmod: p.updatedAt }
   })
 }, {
@@ -267,14 +269,14 @@ Note that this approach may not be suitable for large sites.
 ```ts
 export default defineNuxtConfig({
   sitemap: {
-    // provide dynamic URLs to be included 
+    // provide dynamic URLs to be included
     urls: async () => {
       const blogPages = await getBlogPages()
-      return blogPages.map((page) => ({
-          loc: `/blog/${page.slug}`,
-          lastmod: page.updatedAt,
-          changefreq: 'daily',
-          priority: 0.8,
+      return blogPages.map(page => ({
+        loc: `/blog/${page.slug}`,
+        lastmod: page.updatedAt,
+        changefreq: 'daily',
+        priority: 0.8,
       }))
     },
   },
@@ -308,7 +310,7 @@ _nuxt.config.ts_
 ```ts
 export default defineNuxtConfig({
   routeRules: {
-    // Don't add any /secret/** URLs to the sitemap.xml  
+    // Don't add any /secret/** URLs to the sitemap.xml
     '/secret/**': { index: false },
     // modify the sitemap.xml entry for specific URLs
     '/about': { sitemap: { changefreq: 'daily', priority: 0.3 } }
@@ -483,7 +485,7 @@ Filter routes that match the given rules.
 export default defineNuxtConfig({
   sitemap: {
     exclude: [
-        '/my-secret-section/**'
+      '/my-secret-section/**'
     ]
   }
 })

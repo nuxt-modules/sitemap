@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "lint": "eslint \"**/*.{ts,vue,json,yml}\" --fix",
+    "lint": "eslint . --fix",
     "build": "nuxi prepare .playground && nuxt-module-build",
     "dev": "nuxi dev .playground",
     "dev:build": "nuxi build .playground",
