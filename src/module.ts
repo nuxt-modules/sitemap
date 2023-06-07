@@ -232,9 +232,9 @@ export {}
 
           pagesRoutes = normalisePagesForSitemap(allRoutes)
             .map((page) => {
-              const entry = <SitemapFullEntry>{
+              const entry = {
                 loc: page.path,
-              }
+              } as SitemapFullEntry
               if (config.autoLastmod && page.file) {
                 const stats = statSync(page.file)
                 entry.lastmod = stats.mtime

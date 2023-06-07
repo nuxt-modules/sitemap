@@ -82,7 +82,7 @@ export async function generateSitemapEntries(options: BuildSitemapOptions) {
       pageUrls = inferStaticPagesAsRoutes
         ? (await resolvePagesRoutes(pagesDirs, extensions))
             .map((page) => {
-              const entry = <SitemapFullEntry>{ loc: page.path }
+              const entry = { loc: page.path } as SitemapFullEntry
               if (autoLastmod && page.file) {
                 const stats = statSync(page.file)
                 entry.lastmod = stats.mtime
