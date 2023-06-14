@@ -59,7 +59,7 @@
     "execa": "^7.1.1",
     "nuxt": "^3.5.3",
     "nuxt-simple-robots": "^2.3.0",
-    "vitest": "^0.32.0"
+    "vitest": "0.31.0"
   },
   "pnpm": {
     "overrides": {
