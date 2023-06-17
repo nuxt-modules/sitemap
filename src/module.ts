@@ -17,7 +17,7 @@ import { joinURL, withBase, withoutBase, withoutTrailingSlash } from 'ufo'
 import { globby } from 'globby'
 import type { CreateFilterOptions } from './runtime/util/urlFilter'
 import { buildSitemap, buildSitemapIndex } from './runtime/util/builder'
-import type { MaybeArray, NuxtSimpleSitemapRuntime, ResolvedSitemapEntry, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
+import type { MaybeArray, NuxtSimpleSitemapRuntime, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
 import {
   generateRoutesFromFiles,
   normalisePagesForSitemap,
@@ -86,8 +86,8 @@ export interface ModuleHooks {
   /**
    * @deprecated use `sitemap:prerender`
    */
-  'sitemap:generate': (ctx: { urls: ResolvedSitemapEntry[] }) => Promise<void> | void
-  'sitemap:prerender': (ctx: { urls: ResolvedSitemapEntry[] }) => Promise<void> | void
+  'sitemap:generate': (ctx: SitemapRenderCtx) => Promise<void> | void
+  'sitemap:prerender': (ctx: SitemapRenderCtx) => Promise<void> | void
 }
 
 export default defineNuxtModule<ModuleOptions>({

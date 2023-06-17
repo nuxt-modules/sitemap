@@ -408,9 +408,9 @@ If you need further control over the sitemap.xml URLs, you can provide config on
 
 - Type: `string`
 - Default: `undefined`
-- Required: `true`
+- Required: `false`
 
-The host of your site. This is required to generate the sitemap.xml. Example: https://example.com
+The URL of your site. This is required when prerendering to generate the sitemap. Example: https://example.com
 
 ### `trailingSlash`
 
