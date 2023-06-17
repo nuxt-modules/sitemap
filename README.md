@@ -441,7 +441,7 @@ See [Multiple Sitemap Support](https://github.com/harlan-zw/nuxt-simple-sitemap#
 - Type: `boolean`
 - Default: `true`
 
-Whether to generate the sitemap.xml.
+Whether to generate the sitemap.
 
 ### `defaults`
 
@@ -532,6 +532,15 @@ The API endpoint should be checked for dynamic sitemap entries. When left as the
 before fetching it. 
 
 By providing a non-default value, it will always fetch the API endpoint.
+
+### `sitemapName`
+
+- Type: `string
+- Default: `sitemap.xml`
+
+Modify the name of the root sitemap.
+
+Note: This only works when you're not using the multiple `sitemaps` option.
 
 ## Sponsors
 

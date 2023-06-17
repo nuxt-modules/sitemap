@@ -73,6 +73,13 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    * The endpoint to fetch dynamic URLs from.
    */
   dynamicUrlsApiEndpoint: string
+  /**
+   * The root sitemap name.
+   * Only works when multiple sitemaps option `sitemaps` isn't used.
+   *
+   * @default `sitemap.xml`
+   */
+  sitemapName: string
 }
 
 export interface ModuleHooks {
@@ -108,6 +115,7 @@ export default defineNuxtModule<ModuleOptions>({
       urls: [],
       sitemaps: false,
       xsl: '/__sitemap__/style.xsl',
+      sitemapName: 'sitemap.xml',
       defaults: {},
     }
   },
@@ -124,7 +132,7 @@ export default defineNuxtModule<ModuleOptions>({
       robotsConfig.sitemap.push(
         withBase(config.sitemaps
           ? '/sitemap_index.xml'
-          : '/sitemap.xml', config.siteUrl,
+          : `/${config.sitemapName}`, config.siteUrl,
         ),
       )
     })
@@ -245,7 +253,7 @@ export {}
         urls = [...urls, ...pagesRoutes]
       }
       const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-      const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml')
+      const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
       // @ts-expect-error untyped
       nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
         ...config,
@@ -259,7 +267,7 @@ export {}
     })
 
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const generateStaticSitemap = !nuxt.options.dev && (nuxt.options._generate || prerenderedRoutes.includes('/sitemap.xml') || prerenderedRoutes.includes('/sitemap_index.xml'))
+    const generateStaticSitemap = !nuxt.options.dev && (nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml'))
 
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {
@@ -285,7 +293,7 @@ export {}
     }
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
-      route: '/sitemap.xml',
+      route: `/${config.sitemapName}`,
       handler: resolve('./runtime/routes/sitemap.xml'),
     })
     if (isNuxtContentDocumentDriven) {
@@ -448,10 +456,10 @@ export {}
             getRouteRulesForPath: routeMatcher,
             callHook,
           })
-          await writeFile(resolve(nitro.options.output.publicDir, 'sitemap.xml'), sitemapXml)
+          await writeFile(resolve(nitro.options.output.publicDir, config.sitemapName), sitemapXml)
           const generateTimeMS = Date.now() - start
           nitro.logger.log(chalk.gray(
-            `  └─ /sitemap.xml (${generateTimeMS}ms)`,
+            `  └─ /${config.sitemapName} (${generateTimeMS}ms)`,
           ))
         }
       }
