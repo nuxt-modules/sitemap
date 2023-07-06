@@ -243,7 +243,6 @@ export default defineNuxtModule<ModuleOptions>({
       // @ts-expect-error runtime types
       const nuxtI18nConfig = nuxt.options.i18n as Record<string, any> | undefined
       if (nuxtI18nConfig?.pages) {
-        config.inferStaticPagesAsRoutes = false
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes
