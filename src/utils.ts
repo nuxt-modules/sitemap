@@ -29,9 +29,10 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
 
   const localeGropes = {}
   pagesWithMeta.reduce((acc, entry) => {
-    if (config.routeNameSeperator) {
+    if (entry.page.name.includes(config.routeNameSeperator)) {
       let [name, locale] = entry.page.name.split(config.routeNameSeperator)
-      locale = locale.slice(1)
+      if (locale)
+        locale = locale.slice(1)
       if (!acc[name])
         acc[name] = []
       acc[name].push({ ...entry, locale })
@@ -48,7 +49,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
   const final: SitemapEntry[] = Object.entries(localeGropes).map(([_, entries]) => {
     // need to take defaultLocale into account, only add alternatives for non-default
     const alternatives = entries.map((entry) => {
-      if (entry.locale === config.defaultLocale)
+      if (!entry.locale || entry.locale === config.defaultLocale)
         return null
       return {
         hreflang: entry.locale,
