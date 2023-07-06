@@ -1,31 +1,30 @@
-import { mkdir, writeFile } from 'node:fs/promises'
-import { statSync } from 'node:fs'
 import {
   addPrerenderRoutes,
   addServerHandler,
   addServerPlugin,
-  addTemplate,
   createResolver,
-  defineNuxtModule,
-  findPath, isIgnored,
-  useLogger,
+  defineNuxtModule, extendPages,
+  findPath, hasNuxtModule, useLogger,
 } from '@nuxt/kit'
-import { defu } from 'defu'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import chalk from 'chalk'
-import { joinURL, withBase, withoutBase, withoutTrailingSlash } from 'ufo'
-import { globby } from 'globby'
-import type { CreateFilterOptions } from './runtime/util/urlFilter'
-import { buildSitemap, buildSitemapIndex } from './runtime/util/builder'
-import type { MaybeArray, NuxtSimpleSitemapRuntime, SitemapEntry, SitemapFullEntry, SitemapRenderCtx, SitemapRoot } from './types'
-import {
-  generateRoutesFromFiles,
-  normalisePagesForSitemap,
-} from './runtime/util/pageUtils'
+import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
+import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
+import { addCustomTab } from '@nuxt/devtools-kit'
+import type { NuxtPage } from 'nuxt/schema'
+import { version } from '../package.json'
+import { extendTypes, getNuxtModuleVersion, hasNuxtModuleCompatibility } from './kit'
+import type {
+  ModuleComputedOptions, ModuleRuntimeConfig,
+  MultiSitemapsInput, SitemapEntry,
+  SitemapFullEntry,
+  SitemapRenderCtx,
+  SitemapRoot,
+} from './runtime/types'
+import { setupPrerenderHandler } from './prerender'
+import { convertNuxtPagesToSitemapEntries } from './utils'
 
-export * from './types'
+export * from './runtime/types'
 
-export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
+export interface ModuleOptions extends SitemapRoot {
   /**
    * Whether the sitemap.xml should be generated.
    *
@@ -33,21 +32,29 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    */
   enabled: boolean
   /**
-   * Should the URLs be inserted with a trailing slash.
+   * Enables debug logs and a debug endpoint.
    *
    * @default false
    */
-  trailingSlash: boolean
-
-  siteUrl: string
-
-  autoLastmod: boolean
-  inferStaticPagesAsRoutes: boolean
-  sitemaps?: boolean | Record<string | 'index', MaybeArray<Partial<SitemapRoot>>>
+  debug: boolean
   /**
-   * @deprecated use `siteUrl`
+   * Should lastmod be automatically added to the sitemap.
+   *
+   * @default true
    */
-  hostname?: string
+  autoLastmod: boolean
+  /**
+   * Should pages be automatically added to the sitemap.
+   *
+   * @default true
+   */
+  inferStaticPagesAsRoutes: boolean
+  /**
+   * Multiple sitemap support for large sites.
+   *
+   * @default false
+   */
+  sitemaps?: boolean | MultiSitemapsInput
   /**
    * Path to the xsl that styles sitemap.xml.
    *
@@ -57,11 +64,37 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    */
   xsl: string | false
   /**
+   * Toggle the tips displayed in the xsl.
+   *
+   * @default true
+   */
+  xslTips: boolean
+  /**
+   * Customised the columns displayed in the xsl.
+   *
+   * @default [{ label: 'URL', width: '50%', select: 'string' }, { label: 'Last Modified', width: '25%', select: 'lastmod' }, { label: 'Change Frequency', width: '25%', select: 'changefreq' }]
+   */
+  xslColumns?: { label: string; width: `${string}%`; select?: string }[]
+  /**
    * When prerendering, should images be automatically be discovered and added to the sitemap.
    *
    * @default true
    */
   discoverImages: boolean
+  /**
+   * Modify the cache behavior.
+   *
+   * Passing a boolean will enable or disable the runtime cache with the default options.
+   *
+   * Providing a record will allow you to configure the runtime cache fully.
+   *
+   * @default true
+   * @see https://nitro.unjs.io/guide/storage#mountpoints
+   * @example { driver: 'redis', host: 'localhost', port: 6379, password: 'password' }
+   */
+  runtimeCacheStorage: boolean | (Record<string, any> & {
+    driver: string
+  })
   /**
    * Automatically add alternative links to the sitemap based on a prefix list.
    * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
@@ -70,16 +103,44 @@ export interface ModuleOptions extends CreateFilterOptions, SitemapRoot {
    */
   autoAlternativeLangPrefixes?: false | string[]
   /**
-   * The endpoint to fetch dynamic URLs from.
-   */
-  dynamicUrlsApiEndpoint: string
-  /**
-   * The root sitemap name.
-   * Only works when multiple sitemaps option `sitemaps` isn't used.
+   * Enable when your nuxt/content files match your pages. This will automatically add sitemap content to the sitemap.
    *
-   * @default `sitemap.xml`
+   * This is similar behavior to using `nuxt/content` with `documentDriven: true`.
    */
-  sitemapName: string
+  strictNuxtContentPaths: boolean
+  /**
+   * Should the sitemap.xml display credits for the module.
+   *
+   * @default true
+   */
+  credits: boolean
+  /**
+   * How long, in milliseconds, should the sitemap be cached for.
+   *
+   * @default 1 hour
+   */
+  cacheTtl: number | false
+  // deprecated
+  /**
+   * Should the URLs be inserted with a trailing slash.
+   *
+   * @deprecated Provide `trailingSlash` through site config instead: `{ site: { trailingSlash: <boolean> }}`.
+   * This is powered by the `nuxt-site-config` module.
+   * @see https://github.com/harlan-zw/nuxt-site-config
+   */
+  trailingSlash?: boolean
+
+  /**
+   * The url of your site.
+   * Used to generate absolute URLs for the sitemap paths.
+   *
+   * Note: This is only required when prerendering your site or when using a canonical host.
+   *
+   * @deprecated Provide `url` through site config instead: `{ site: { url: <value> }}`.
+   * This is powered by the `nuxt-site-config` module.
+   * @see https://github.com/harlan-zw/nuxt-site-config
+   */
+  siteUrl?: string
 }
 
 export interface ModuleHooks {
@@ -94,94 +155,161 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-simple-sitemap',
     compatibility: {
-      nuxt: '^3.5.0',
+      nuxt: '^3.6.0',
       bridge: false,
     },
     configKey: 'sitemap',
   },
-  defaults(nuxt) {
-    const trailingSlash = process.env.NUXT_PUBLIC_TRAILING_SLASH || nuxt.options.runtimeConfig.public.trailingSlash
-    return {
-      enabled: true,
-      autoLastmod: true,
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || nuxt.options.runtimeConfig.public?.siteUrl,
-      trailingSlash: String(trailingSlash) === 'true',
-      inferStaticPagesAsRoutes: true,
-      discoverImages: true,
-      dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
-      // index sitemap options filtering
-      include: [],
-      exclude: [],
-      urls: [],
-      sitemaps: false,
-      xsl: '/__sitemap__/style.xsl',
-      sitemapName: 'sitemap.xml',
-      defaults: {},
-    }
+  defaults: {
+    enabled: true,
+    credits: true,
+    cacheTtl: 1000 * 60, // cache for 60 minutes
+    debug: false,
+    autoLastmod: true,
+    inferStaticPagesAsRoutes: true,
+    discoverImages: true,
+    dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
+    urls: [],
+    sitemaps: false,
+    xsl: '/__sitemap__/style.xsl',
+    xslTips: true,
+    strictNuxtContentPaths: false,
+    runtimeCacheStorage: true,
+    sitemapName: 'sitemap.xml',
+    // cacheControlHeader: 'max-age=600, must-revalidate',
+    defaults: {},
+    // index sitemap options filtering
+    include: [],
+    exclude: [],
   },
   async setup(config, nuxt) {
+    const logger = useLogger('nuxt-simple-robots')
+    logger.level = (config.debug || nuxt.options.debug) ? 4 : 3
+    if (config.enabled === false) {
+      logger.debug('The module is disabled, skipping setup.')
+      return
+    }
+    config.xslColumns = config.xslColumns || [
+      { label: 'URL', width: '50%' },
+      { label: 'Images', width: '25%', select: 'count(image:image)' },
+      { label: 'Last Updated', width: '25%', select: 'concat(substring(sitemap:lastmod,0,11),concat(\' \', substring(sitemap:lastmod,12,5)),concat(\' \', substring(sitemap:lastmod,20,6)))' },
+    ]
+
     const { resolve } = createResolver(import.meta.url)
-    // support v1 config fallbacks
-    config.siteUrl = config.siteUrl || config.hostname!
-    // add protocol in case they forgot
-    if (config.siteUrl && !config.siteUrl.startsWith('http'))
-      config.siteUrl = `https://${config.siteUrl}`
-
-    // nuxt-simple-robots integration
-    nuxt.hooks.hook('robots:config', (robotsConfig) => {
-      robotsConfig.sitemap.push(
-        withBase(config.sitemaps
-          ? '/sitemap_index.xml'
-          : `/${config.sitemapName}`, config.siteUrl,
-        ),
-      )
+    // for trailing slashes / absolute urls
+    await installNuxtSiteConfig()
+    // support deprecated keys
+    await updateSiteConfig({
+      _context: 'nuxt-simple-sitemap:config',
+      trailingSlash: config.trailingSlash,
+      url: config.siteUrl,
     })
+    requireSiteConfig('nuxt-simple-sitemap', {
+      url: 'Required to generate absolute URLs for the sitemap.',
+    }, { prerender: true })
 
-    // nuxt i18n integration
-    // @ts-expect-error i18n schema issue
-    const nuxtI18nConfig = nuxt.options.i18n as Record<string, any> | undefined
-    if (nuxtI18nConfig?.pages) {
-      config.inferStaticPagesAsRoutes = false
-      for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
-        for (const locale in pageLocales) {
-          // add root entry for default locale and ignore dynamic routes
-          if (locale === nuxtI18nConfig?.defaultLocale && !pageLocales[locale].includes('[')) {
-            // add to sitemap
-            const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
-              .map(l => ({
-                hreflang: l,
-                href: nuxtI18nConfig?.strategy !== 'no_prefix' ? joinURL(l, pageLocales[l]) : pageLocales[l],
-              }))
-            if (Array.isArray(config.urls)) {
-              config.urls.push({
-                loc: nuxtI18nConfig?.strategy === 'prefix' ? joinURL(locale, pageLocales[locale]) : pageLocales[locale],
-                alternatives,
-              })
+    nuxt.options.nitro.storage = nuxt.options.nitro.storage || {}
+    // provide cache storage for prerendering
+    if (nuxt.options._generate) {
+      nuxt.options.nitro.storage['nuxt-simple-sitemap'] = {
+        driver: 'memory',
+      }
+    }
+    else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
+      nuxt.options.nitro.storage['nuxt-simple-sitemap'] = config.runtimeCacheStorage
+    }
+
+    if (!config.sitemapName.endsWith('xml')) {
+      const newName = `${config.sitemapName.split('.')[0]}.xml`
+      logger.warn(`You have provided a \`sitemapName\` that does not end with \`.xml\`. This is not supported by search engines, renaming to \`${newName}\`.`)
+      config.sitemapName = newName
+    }
+    config.sitemapName = withoutLeadingSlash(config.sitemapName)
+
+    if (hasNuxtModule('nuxt-simple-robots')) {
+      const robotsVersion = await getNuxtModuleVersion('nuxt-simple-robots')
+      // we want to keep versions in sync
+      if (!await hasNuxtModuleCompatibility('nuxt-simple-robots', '>=3'))
+        logger.warn(`You are using nuxt-simple-robots v${robotsVersion} the best compatibility, please upgrade to nuxt-simple-robots v3.0.0 or higher.`)
+      nuxt.hooks.hook('robots:config', (robotsConfig) => {
+        robotsConfig.sitemap.push(config.sitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
+      })
+    }
+
+    if (hasNuxtModule('@nuxtjs/i18n')) {
+      const i18nVersion = await getNuxtModuleVersion('nuxt-simple-robots')
+      if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
+        logger.warn(`You are using @nuxtjs/i18n v${i18nVersion} for the the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
+      // @ts-expect-error runtime types
+      const nuxtI18nConfig = nuxt.options.i18n as Record<string, any> | undefined
+      if (nuxtI18nConfig?.pages) {
+        config.inferStaticPagesAsRoutes = false
+        for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
+          for (const locale in pageLocales) {
+            // add root entry for default locale and ignore dynamic routes
+            if (locale === nuxtI18nConfig?.defaultLocale && !pageLocales[locale].includes('[')) {
+              // add to sitemap
+              const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
+                .map(l => ({
+                  hreflang: l,
+                  href: nuxtI18nConfig?.strategy !== 'no_prefix' ? joinURL(l, pageLocales[l]) : pageLocales[l],
+                }))
+              if (Array.isArray(config.urls)) {
+                config.urls.push({
+                  loc: nuxtI18nConfig?.strategy === 'prefix' ? joinURL(locale, pageLocales[locale]) : pageLocales[locale],
+                  alternatives,
+                })
+              }
             }
           }
         }
       }
-    }
-    else if (typeof config.autoAlternativeLangPrefixes === 'undefined' && nuxtI18nConfig?.locales) {
-      if (nuxtI18nConfig?.strategy !== 'no_prefix') {
-        const prefixes: string[] = []
-        // @ts-expect-error i18n schema issue
-        nuxt.options.i18n.locales.forEach((locale) => {
-          const loc = typeof locale === 'string' ? locale : locale.code
-          if (loc === nuxtI18nConfig.defaultLocale)
-            return
-          prefixes.push(loc)
-        })
-        config.autoAlternativeLangPrefixes = prefixes
+      if (!nuxtI18nConfig?.pages && config.autoAlternativeLangPrefixes && nuxtI18nConfig?.locales) {
+        if (nuxtI18nConfig?.strategy !== 'no_prefix') {
+          const prefixes: string[] = []
+          // @ts-expect-error i18n schema issue
+          nuxt.options.i18n.locales.forEach((locale) => {
+            const loc = typeof locale === 'string' ? locale : locale.code
+            if (loc === nuxtI18nConfig.defaultLocale)
+              return
+            prefixes.push(loc)
+          })
+          config.autoAlternativeLangPrefixes = prefixes
+        }
       }
     }
 
-    // paths.d.ts
-    addTemplate({
-      filename: 'nuxt-simple-sitemap.d.ts',
-      getContents: () => {
-        return `// Generated by nuxt-simple-sitemap
-import type { SitemapItemDefaults } from 'nuxt-simple-sitemap'
+    const pagesPromise = new Promise<SitemapEntry[]>((resolve) => {
+      // hook in after the other modules are done
+      nuxt.hooks.hook('modules:done', async () => {
+        const pagePromise = new Promise<NuxtPage[]>((_resolve) => {
+          extendPages((pages) => {
+            _resolve(pages)
+          })
+        })
+
+        nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+          // @ts-expect-error runtime types
+          nitroConfig.virtual['#nuxt-simple-sitemap/pages.mjs'] = async () => {
+            const pages = await pagePromise
+
+            const payload = config.inferStaticPagesAsRoutes
+              ? convertNuxtPagesToSitemapEntries(pages, {
+                autoLastmod: config.autoLastmod,
+                // @ts-expect-error runtime types
+                defaultLocale: nuxt.options.i18n?.defaultLocale || 'en',
+              })
+              : []
+            resolve(payload)
+            return `export default ${JSON.stringify(payload, null, 2)}`
+          }
+        })
+      })
+    })
+
+    extendTypes('nuxt-simple-sitemap', () => {
+      return `
+import type { SitemapItemDefaults } from 'nuxt-simple-sitemap/dist/runtime/types'
 
 interface NuxtSimpleSitemapNitroRules {
   index?: boolean
@@ -190,84 +318,59 @@ interface NuxtSimpleSitemapNitroRules {
 declare module 'nitropack' {
   interface NitroRouteRules extends NuxtSimpleSitemapNitroRules {}
   interface NitroRouteConfig extends NuxtSimpleSitemapNitroRules {}
-}
-
-export {}
-`
-      },
+}`
     })
 
-    nuxt.hooks.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'nuxt-simple-sitemap.d.ts') })
-    })
-
-    let urls: SitemapEntry[] = []
     if (typeof config.urls === 'function')
-      urls = [...await config.urls()]
+      config.urls = [...await config.urls()]
 
     else if (Array.isArray(config.urls))
-      urls = [...await config.urls]
+      config.urls = [...await config.urls]
 
     // check if the user provided route /api/_sitemap-urls exists
-    const hasApiRoutesUrl = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls'
-    const isNuxtContentDocumentDriven = !!nuxt.options.content?.documentDriven || false
-
-    nuxt.hooks.hook('modules:done', async () => {
-      const pagesDirs = nuxt.options._layers.map(
-        layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-      )
-      // need to resolve the page dirs up front when we're building
-      if (nuxt.options.build) {
-        let pagesRoutes: SitemapFullEntry[] = []
-        if (config.inferStaticPagesAsRoutes) {
-          // we need to more manually find the pages so we can mark the ones that are ignored
-          const allRoutes = (await Promise.all(
-            pagesDirs.map(async (dir) => {
-              const files = (await globby(`**/*{${nuxt.options.extensions.join(',')}}`, { cwd: dir, followSymbolicLinks: true }))
-                .map(p => resolve(dir, p))
-                .filter((p) => {
-                  if (isIgnored(p)) {
-                    // add the page to the exclude config
-                    config.exclude = config.exclude || []
-                    config.exclude.push(generateRoutesFromFiles([p], dir)[0].path)
-                    return false
-                  }
-                  return true
-                }).sort()
-              return generateRoutesFromFiles(files, dir)
-            }),
-          )).flat()
-
-          pagesRoutes = normalisePagesForSitemap(allRoutes)
-            .map((page) => {
-              const entry = {
-                loc: page.path,
-              } as SitemapFullEntry
-              if (config.autoLastmod && page.file) {
-                const stats = statSync(page.file)
-                entry.lastmod = stats.mtime
-              }
-              return entry
-            })
-        }
-        urls = [...urls, ...pagesRoutes]
-      }
-      const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-      const generateStaticSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
-      // @ts-expect-error untyped
-      nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
-        ...config,
-        isNuxtContentDocumentDriven,
-        hasApiRoutesUrl,
-        urls,
-        pagesDirs,
-        hasPrerenderedRoutesPayload: !nuxt.options.dev && !generateStaticSitemap,
-        extensions: nuxt.options.extensions,
-      } as NuxtSimpleSitemapRuntime
-    })
-
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const generateStaticSitemap = !nuxt.options.dev && (nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml'))
+    const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
+    const buildTimeMeta: ModuleComputedOptions = {
+      // @ts-expect-error runtime types
+      isNuxtContentDocumentDriven: hasNuxtModule('@nuxt/content') && (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths),
+      hasApiRoutesUrl: !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls',
+      hasPrerenderedRoutesPayload: !nuxt.options.dev && !prerenderSitemap,
+      prerenderSitemap,
+    }
+
+    const moduleConfig: ModuleRuntimeConfig['moduleConfig'] = {
+      autoLastmod: config.autoLastmod,
+      xsl: config.xsl,
+      xslTips: config.xslTips,
+      cacheTtl: config.cacheTtl,
+      // @ts-expect-error runtime types
+      runtimeCacheStorage: typeof config.runtimeCacheStorage === 'boolean' ? 'default' : config.runtimeCacheStorage.driver,
+      autoAlternativeLangPrefixes: config.autoAlternativeLangPrefixes,
+      credits: config.credits,
+      defaults: config.defaults,
+      xslColumns: config.xslColumns,
+      include: config.include,
+      exclude: config.exclude,
+      sitemaps: config.sitemaps,
+      dynamicUrlsApiEndpoint: config.dynamicUrlsApiEndpoint,
+      urls: config.urls as SitemapFullEntry[],
+      debug: config.debug,
+      // needed for nuxt/content integration
+      discoverImages: config.discoverImages,
+    }
+    nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
+      version,
+      // @ts-expect-error untyped
+      moduleConfig,
+      buildTimeMeta,
+    }
+
+    if (config.debug || process.dev) {
+      addServerHandler({
+        route: '/api/__sitemap__/debug',
+        handler: resolve('./runtime/routes/debug'),
+      })
+    }
 
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {
@@ -277,9 +380,24 @@ export {}
       })
       config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
 
-      if (generateStaticSitemap)
+      if (prerenderSitemap)
         addPrerenderRoutes(config.xsl)
     }
+
+    // pretty hacky but works for now
+    addCustomTab({
+      // unique identifier
+      name: 'nuxt-simple-sitemap',
+      // title to display in the tab
+      title: 'Sitemap',
+      // any icon from Iconify, or a URL to an image
+      icon: 'carbon:tree-view',
+      // iframe view
+      view: {
+        type: 'iframe',
+        src: '/api/__sitemap__/debug',
+      },
+    })
 
     // multi sitemap support
     if (config.sitemaps) {
@@ -291,12 +409,14 @@ export {}
         handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
       })
     }
+
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
       route: `/${config.sitemapName}`,
       handler: resolve('./runtime/routes/sitemap.xml'),
     })
-    if (isNuxtContentDocumentDriven) {
+
+    if (buildTimeMeta.isNuxtContentDocumentDriven) {
       addServerPlugin(resolve('./runtime/plugins/nuxt-content'))
 
       addServerHandler({
@@ -305,174 +425,6 @@ export {}
       })
     }
 
-    nuxt.hooks.hook('nitro:init', async (nitro) => {
-      // tell the user if the sitemap isn't being generated
-      const logger = useLogger('nuxt-simple-sitemap')
-      if (!config.enabled) {
-        logger.debug('Sitemap generation is disabled.')
-        return
-      }
-
-      const sitemapImages: Record<string, { loc: string }[]> = {}
-      // setup a hook for the prerender so we can inspect the image sources
-      nitro.hooks.hook('prerender:route', async (ctx) => {
-        const html = ctx.contents
-        if (ctx.fileName?.endsWith('.html') && html) {
-          // only scan within the <main> tag
-          const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
-          const mainMatch = mainRegex.exec(html)
-          if (!mainMatch || !mainMatch[1])
-            return
-          if (config.discoverImages && mainMatch[1].includes('<img')) {
-            // extract image src using regex on the html
-            const imgRegex = /<img[^>]+src="([^">]+)"/g
-            let match
-            // eslint-disable-next-line no-cond-assign
-            while ((match = imgRegex.exec(mainMatch[1])) !== null) {
-              // This is necessary to avoid infinite loops with zero-width matches
-              if (match.index === imgRegex.lastIndex)
-                imgRegex.lastIndex++
-              const url = new URL(match[1], config.siteUrl)
-              sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
-              sitemapImages[ctx.route].push({
-                loc: url.href,
-              })
-            }
-          }
-        }
-      })
-
-      let sitemapGenerated = false
-      const outputSitemap = async () => {
-        if (sitemapGenerated || nuxt.options.dev || nuxt.options._prepare)
-          return
-
-        const prerenderRoutes = nitro._prerenderedRoutes?.filter(r => !r.route.includes('.'))
-          .map(r => ({ url: r.route })) || []
-        // @ts-expect-error untyped
-        const configUrls = [...(new Set<string>([...prerenderRoutes, ...urls].map(r => typeof r === 'string' ? r : (r.url || r.loc))))]
-
-        if (!generateStaticSitemap) {
-          // for SSR we always need to generate the routes.json payload
-          await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
-          await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(configUrls))
-          nitro.logger.log(chalk.gray(
-            '  ├─ /__sitemap__/routes.json (0ms)',
-          ))
-          return
-        }
-
-        sitemapGenerated = true
-
-        // we need a siteUrl set for pre-rendering
-        if (!config.siteUrl) {
-          logger.error('Please set a `siteUrl` on the `sitemap` config to use `nuxt-simple-sitemap`.')
-          return
-        }
-        let start = Date.now()
-
-        const _routeRulesMatcher = toRouteMatcher(
-          createRadixRouter({ routes: nitro.options.routeRules }),
-        )
-
-        const routeMatcher = (path: string) => {
-          const matchedRoutes = _routeRulesMatcher.matchAll(withoutBase(withoutTrailingSlash(path), nuxt.options.app.baseURL)).reverse()
-          // inject our discovered images
-          if (sitemapImages[path]) {
-            matchedRoutes.push({
-              sitemap: {
-                images: sitemapImages[path],
-              },
-            })
-          }
-          return defu({}, ...matchedRoutes) as Record<string, any>
-        }
-
-        const callHook = async (ctx: SitemapRenderCtx) => {
-          // deprecated hook
-          // @ts-expect-error runtime type
-          await nuxt.hooks.callHook('sitemap:generate', ctx)
-          // @ts-expect-error runtime type
-          await nuxt.hooks.callHook('sitemap:prerender', ctx)
-        }
-
-        const sitemapConfig: NuxtSimpleSitemapRuntime = {
-          ...config,
-          hasApiRoutesUrl,
-          isNuxtContentDocumentDriven,
-          urls: configUrls,
-          hasPrerenderedRoutesPayload: !generateStaticSitemap,
-        }
-
-        if (process.dev || process.env.prerender) {
-          sitemapConfig.pagesDirs = nuxt.options._layers.map(
-            layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages'),
-          )
-          sitemapConfig.extensions = nuxt.options.extensions
-        }
-
-        if (config.sitemaps) {
-          start = Date.now()
-
-          // rendering a sitemap_index
-          const { xml, sitemaps } = await buildSitemapIndex({
-            sitemapConfig,
-            baseURL: nuxt.options.app.baseURL,
-            getRouteRulesForPath: routeMatcher,
-            callHook,
-          })
-          await writeFile(resolve(nitro.options.output.publicDir, 'sitemap_index.xml'), xml)
-          const generateTimeMS = Date.now() - start
-          nitro.logger.log(chalk.gray(
-            `  ├─ /sitemap_index.xml (${generateTimeMS}ms)`,
-          ))
-          let sitemapNames = Object.keys(config.sitemaps)
-          if (config.sitemaps === true)
-            sitemapNames = sitemaps.map(s => s.sitemap.split('/').pop()?.replace('-sitemap.xml', '')).filter(Boolean) as string[]
-
-          // now generate all sub sitemaps
-          for (const sitemap of sitemapNames) {
-            const sitemapXml = await buildSitemap({
-              sitemapName: sitemap,
-              // @ts-expect-error untyped
-              sitemapConfig: { ...defu(sitemapConfig.sitemaps[sitemap], sitemapConfig), urls: configUrls },
-              baseURL: nuxt.options.app.baseURL,
-              getRouteRulesForPath: routeMatcher,
-              callHook,
-            })
-            await writeFile(resolve(nitro.options.output.publicDir, `${sitemap}-sitemap.xml`), sitemapXml)
-            const generateTimeMS = Date.now() - start
-            const isLastEntry = Object.keys(config.sitemaps).indexOf(sitemap) === Object.keys(config.sitemaps).length - 1
-            nitro.logger.log(chalk.gray(
-              `  ${isLastEntry ? '└─' : '├─'} /${sitemap}-sitemap.xml (${generateTimeMS}ms)`,
-            ))
-          }
-        }
-        else {
-          const sitemapXml = await buildSitemap({
-            sitemapName: 'sitemap',
-            sitemapConfig,
-            baseURL: nuxt.options.app.baseURL,
-            getRouteRulesForPath: routeMatcher,
-            callHook,
-          })
-          await writeFile(resolve(nitro.options.output.publicDir, config.sitemapName), sitemapXml)
-          const generateTimeMS = Date.now() - start
-          nitro.logger.log(chalk.gray(
-            `  └─ /${config.sitemapName} (${generateTimeMS}ms)`,
-          ))
-        }
-      }
-
-      // SSR mode
-      nitro.hooks.hook('rollup:before', async () => {
-        await outputSitemap()
-      })
-
-      // SSG mode
-      nitro.hooks.hook('close', async () => {
-        await outputSitemap()
-      })
-    })
+    setupPrerenderHandler(config, buildTimeMeta, pagesPromise)
   },
 })

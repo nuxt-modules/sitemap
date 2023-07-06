@@ -1,19 +1,11 @@
 {
   "private": true,
-  "name": "nuxt-simple-sitemap-playground",
-  "packageManager": "pnpm@7.0.0",
-  "dependencies": {
-    "nuxt-simple-sitemap": "link:../"
-  },
-  "type": "module",
-  "main": "./nuxt.config.ts",
-  "files": [
-    "pages",
-    "server",
-    "app.vue",
-    "nuxt.config.ts"
-  ],
   "scripts": {
     "prepare": "nuxi prepare"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^0.6.7",
+    "@nuxthq/ui": "^2.5.0",
+    "nuxt-icon": "^0.4.2"
   }
 }

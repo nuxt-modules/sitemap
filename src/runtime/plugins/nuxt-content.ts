@@ -1,16 +1,17 @@
 import type { NitroAppPlugin } from 'nitropack'
 import { prefixStorage } from 'unstorage'
+import type { ModuleRuntimeConfig } from '../types'
 import { useRuntimeConfig, useStorage } from '#imports'
 
 export const NuxtContentSimpleSitemapPlugin: NitroAppPlugin = (nitroApp) => {
-  const sitemapConfig = useRuntimeConfig()['nuxt-simple-sitemap']
+  const { moduleConfig } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
   const contentStorage = prefixStorage(useStorage(), 'content:source')
   nitroApp.hooks.hook('content:file:afterParse', async (content) => {
     if (content._extension !== 'md')
       return
     // add any top level images
     let images = []
-    if (sitemapConfig?.discoverImages) {
+    if (moduleConfig?.discoverImages) {
       images = (content.body?.children
         ?.filter(c => ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag?.toLowerCase()) && c.props?.src)
         .map(i => ({
@@ -19,7 +20,7 @@ export const NuxtContentSimpleSitemapPlugin: NitroAppPlugin = (nitroApp) => {
     }
 
     let lastmod
-    if (sitemapConfig?.autoLastmod) {
+    if (moduleConfig?.autoLastmod) {
       const meta = await contentStorage.getMeta(content._id)
       lastmod = content.modifiedAt || meta?.mtime
     }

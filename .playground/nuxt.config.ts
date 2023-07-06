@@ -6,65 +6,96 @@ export default defineNuxtConfig({
     NuxtSimpleSitemap,
     'nuxt-simple-robots',
     '@nuxtjs/i18n',
-    '@nuxt/content',
+    // '@nuxt/content',
+    '@nuxthq/ui',
+    'nuxt-icon'
   ],
   ignorePrefix: 'ignore-',
   i18n: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
+    pages: {
+      'about': {
+        en: '/about',
+        fr: '/a-propos',
+      },
+      'services/index': {
+        en: '/services',
+        fr: '/offres',
+      },
+      'services/development/index': {
+        en: '/services/development',
+        fr: '/offres/developement',
+      },
+      'services/development/app/index': {
+        en: '/services/development/app',
+        fr: '/offres/developement/app',
+      },
+      'services/development/website/index': {
+        en: '/services/development/website',
+        fr: '/offres/developement/site-web',
+      },
+      'services/coaching/index': {
+        en: '/services/coaching',
+        fr: '/offres/formation',
+      },
+    },
   },
   nitro: {
     plugins: ['plugins/sitemap.ts'],
-    prerender: {
-      crawlLinks: true,
-      routes: [
-        '/',
-      ]
-    }
   },
   content: {
     documentDriven: {
       path: '/content'
     },
   },
-  runtimeConfig: {
-    public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NITRO_HOST || 'https://example.com',
-    }
+  site: {
+    url: 'https://nuxtseo.com'
   },
+
+  // app: {
+  //   baseURL: '/base'
+  // },
+
+  devtools: true,
+
   robots: {
     indexable: true,
   },
   sitemap: {
+    debug: true,
+    sitemapName: 'test.xml',
+
     // dynamicUrlsApiEndpoint: '/__sitemap',
-    sitemaps: {
-      posts: {
-        include: ['/blog/**']
-      },
-      pages: {
-        exclude: ['/blog/**'],
-        urls: [
-          {
-            loc: '/about',
-            lastmod: '2023-02-21T08:50:52.000Z',
-            alternatives: [
-              {
-                href: '/fr/about',
-                hreflang: 'fr'
-              }
-            ],
-            images: [
-              {
-                loc: 'https://example.com/image-3.jpg',
-              },
-            ]
-          }
-        ]
-      },
-      index: [
-        { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' }
-      ]
-    }
+    // sitemaps: {
+    //   posts: {
+    //     include: ['/blog/**']
+    //   },
+    //   pages: {
+    //     dynamicUrlsApiEndpoint: '/api/sitemap-foo',
+    //     exclude: ['/blog/**'],
+    //     urls: [
+    //       {
+    //         loc: '/about',
+    //         lastmod: '2023-02-21T08:50:52.000Z',
+    //         alternatives: [
+    //           {
+    //             href: '/fr/about',
+    //             hreflang: 'fr'
+    //           }
+    //         ],
+    //         images: [
+    //           {
+    //             loc: 'https://example.com/image-3.jpg',
+    //           },
+    //         ]
+    //       }
+    //     ]
+    //   },
+    //   index: [
+    //     { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' }
+    //   ]
+    // }
   },
   routeRules: {
     '/secret': {

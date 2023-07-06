@@ -12,7 +12,7 @@ await setup({
     sitemap: {
       trailingSlash: true,
       autoLastmod: false,
-      siteUrl: 'https://nuxt-simple-sitemap.com',
+      siteUrl: 'https://nuxtseo.com',
     },
   },
 })

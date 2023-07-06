@@ -6,7 +6,7 @@ describe('generate', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
     process.env.prerender = true
-    process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxt-simple-sitemap.com'
+    process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'
     const { resolve } = createResolver(import.meta.url)
     const rootDir = resolve('../.playground')
     const nuxt = await loadNuxt({
@@ -29,10 +29,10 @@ describe('generate', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
       <sitemapindex xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <sitemap>
-              <loc>https://nuxt-simple-sitemap.com/posts-sitemap.xml</loc>
+              <loc>https://nuxtseo.com/posts-sitemap.xml</loc>
           </sitemap>
           <sitemap>
-              <loc>https://nuxt-simple-sitemap.com/pages-sitemap.xml</loc>
+              <loc>https://nuxtseo.com/pages-sitemap.xml</loc>
               <lastmod></lastmod>
           </sitemap>
           <sitemap>
@@ -47,59 +47,103 @@ describe('generate', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
       <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:video=\\"http://www.google.com/schemas/sitemap-video/1.1\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <url>
-              <loc>https://nuxt-simple-sitemap.com</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr\\" />
-          </url>
-          <url>
-              <loc>https://nuxt-simple-sitemap.com/bar</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/bar\\" />
-          </url>
-          <url>
-              <loc>https://nuxt-simple-sitemap.com/foo</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/foo\\" />
-          </url>
-          <url>
-              <loc>https://nuxt-simple-sitemap.com/about</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/about\\" />
-              <image:image>
-                  <image:loc>https://example.com/image.jpg</image:loc>
-              </image:image>
-              <image:image>
-                  <image:loc>https://example.com/image2.jpg</image:loc>
-              </image:image>
-              <image:image>
-                  <image:loc>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:loc>
-              </image:image>
+              <loc>https://nuxtseo.com/about</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/a-propos\\" />
               <lastmod></lastmod>
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
-          </url>
-          <url>
-              <loc>https://nuxt-simple-sitemap.com/new-page</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/new-page\\" />
               <image:image>
-                  <image:loc>https://res.cloudinary.com/dl6o1xpyq/image/upload/f_jpg,q_auto:best,dpr_auto,w_240,h_240/images/harlan-wilton</image:loc>
+                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
+              </image:image>
+              <image:image>
+                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
               </image:image>
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/users-lazy/1</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/users-lazy/1\\" />
+              <loc>https://nuxtseo.com/services</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres\\" />
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/users-lazy/2</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/users-lazy/2\\" />
+              <loc>https://nuxtseo.com/blog/post-1</loc>
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/users-lazy/3</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/users-lazy/3\\" />
+              <loc>https://nuxtseo.com/blog/post-2</loc>
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/users-prerender</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/users-prerender\\" />
+              <loc>https://nuxtseo.com/blog/post-3</loc>
           </url>
           <url>
-              <loc>https://nuxt-simple-sitemap.com/hidden-path-but-in-sitemap</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxt-simple-sitemap.com/fr/hidden-path-but-in-sitemap\\" />
+              <loc>https://nuxtseo.com/blog/post-4</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/blog/post-5</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/users-lazy/1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/users-lazy/2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/users-lazy/3</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/about</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/a-propos\\" />
+              <lastmod></lastmod>
+              <changefreq>daily</changefreq>
+              <priority>0.3</priority>
+              <image:image>
+                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
+              </image:image>
+              <image:image>
+                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
+              </image:image>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/coaching</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/formation\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/services</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/development</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/3</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/development/app</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement/app\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/services/coaching</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/formation\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/development/website</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement/site-web\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/services/development</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/services/development/app</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement/app\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/uxtseo.com/services/development/website</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement/site-web\\" />
           </url>
       </urlset>
       <!-- XML Sitemap generated by Nuxt Simple Sitemap -->"
