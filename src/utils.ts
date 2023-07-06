@@ -21,8 +21,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
 
   const pagesWithMeta = flattenedPages.map((p) => {
     if (config.autoLastmod && p.page.file) {
-      const stats = statSync(p.page.file)
-      p.lastmod = stats.mtime
+      const stats = statSync(p.page.file).catch(() => null)
+      if (stats)
+        p.lastmod = stats.mtime
     }
     return p
   })
