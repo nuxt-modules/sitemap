@@ -10,7 +10,7 @@
 
 
 <p align="center">
-The simplest way to add XML Sitemaps to your Nuxt 3 site.
+Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> <a href="https://github.com/harlan-zw/nuxt-simple-sitemap/releases/tag/v2.0.0">v2 Released 🎉</a></b> <br>
+<i>Status:</i> <a href="https://github.com/harlan-zw/nuxt-simple-sitemap/releases/tag/v3.0.0">v3 Released 🎉</a></b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
@@ -27,55 +27,51 @@ The simplest way to add XML Sitemaps to your Nuxt 3 site.
 </table>
 </p>
 
-ℹ️ Looking for a complete SEO solution? Check out [Nuxt SEO Kit](https://github.com/harlan-zw/nuxt-seo-kit).
-
 ## Features
 
-- 📦 Multi-sitemap support (automatic and manual chunking)
-- 🤖 Dynamic runtime URL support
+- 📦 Single or MultiSitemaps
+- 🤝 Integrates seamlessly with Nuxt I18n and Nuxt Content
+- 🤖 Dynamic runtime URL support with caching by default
 - 🎨 Styled XML for easier debugging
-- 😌 Automatic lastmod and image discovery
+- 😌 Automatic `lastmod` and image discovery
 - 🔄 Route config using route rules
-- 🏞️ Handle trailing slashes
+- 🏞️ Best practice URLs: canonical with trailing slashes
 
-### Zero Config Integrations
 
-- [`@nuxt/content` documentDriven mode](https://content.nuxtjs.org/guide/writing/document-driven)
+## Installation
 
-Adds all entries automatically with generated `lastmod`. Images are included from any `<img>` tags
+1. Install `nuxt-simple-sitemap` dependency to your project:
 
-- [`nuxt-simple-robots`](https://github.com/harlan-zw/nuxt-simple-robots)
+```bash
+#
+yarn add -D nuxt-simple-sitemap
+#
+npm install -D nuxt-simple-sitemap
+#
+pnpm i -D nuxt-simple-sitemap
+```
 
-Sitemap entries will be included automatically.
 
-- [`@nuxtjs/i18n`](https://github.com/nuxt-modules/i18n)
+2. Add it to your `modules` section in your `nuxt.config`:
 
-Will automatically add `hreflang` alternatives for each non-default locale.
+```ts
+export default defineNuxtConfig({
+  modules: ['nuxt-simple-sitemap']
+})
+```
+
+
+### Integrations
+
+- [`@nuxt/content` documentDriven mode](https://content.nuxtjs.org/guide/writing/document-driven) - Adds all entries automatically with generated `lastmod`. Images are included from any `<img>` tags
+
+- [`nuxt-simple-robots`](https://github.com/harlan-zw/nuxt-simple-robots)- Sitemap entries will be included automatically.
+
+- [`@nuxtjs/i18n`](https://github.com/nuxt-modules/i18n)- Adds appropriate `hreflang` alternatives for each non-default locale.
 
 ### Demos
 
 -  [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=package.json)
-
-## Install
-
-```bash
-npm install --save-dev nuxt-simple-sitemap
-
-# Using yarn
-yarn add --dev nuxt-simple-sitemap
-```
-
-## Setup
-
-_nuxt.config.ts_
-
-```ts
-export default defineNuxtConfig({
-  modules: [
-    'nuxt-simple-sitemap',
-  ],
-})
-```
 
 
 ### Set Site URL (required when prerendering)
