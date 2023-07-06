@@ -38,8 +38,7 @@ export default defineNuxtConfig({
   },
   sitemap: {
     debug: true,
-    sitemapName: 'test.xml',
-
+    // sitemapName: 'test.xml',
     // dynamicUrlsApiEndpoint: '/__sitemap',
     sitemaps: {
       posts: {

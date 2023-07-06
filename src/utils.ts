@@ -46,7 +46,14 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
   }, localeGropes)
 
   // now need to convert to alternativs
-  const final: SitemapEntry[] = Object.entries(localeGropes).map(([_, entries]) => {
+  const final: SitemapEntry[] = Object.entries(localeGropes).map(([locale, entries]) => {
+    if (locale === 'default') {
+      return entries.map((e) => {
+        delete e.page
+        delete e.locale
+        return e
+      })
+    }
     // need to take defaultLocale into account, only add alternatives for non-default
     const alternatives = entries.map((entry) => {
       if (!entry.locale || entry.locale === config.defaultLocale)

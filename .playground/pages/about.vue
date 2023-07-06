@@ -1,13 +1,4 @@
 <script lang="ts" setup>
-import {defineI18nRoute} from "#imports";
-
-defineI18nRoute({
-  paths: {
-    en: '/about',
-    fr: '/a-propos',
-    ja: '/about-ja'
-  }
-})
 </script>
 <template>
   <div>
