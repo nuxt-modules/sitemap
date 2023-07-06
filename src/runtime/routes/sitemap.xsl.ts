@@ -27,7 +27,14 @@ export default defineEventHandler(async (e) => {
   ].map(t => `<li><p>${t}</p></li>`).join('\n')
 
   const showTips = process.dev && moduleConfig.xslTips !== false
-  const columns = [...moduleConfig.xslColumns!]
+  let columns = [...moduleConfig.xslColumns!]
+  if (!columns) {
+    columns = [
+      { label: 'URL', width: '50%' },
+      { label: 'Images', width: '25%', select: 'count(image:image)' },
+      { label: 'Last Updated', width: '25%', select: 'concat(substring(sitemap:lastmod,0,11),concat(\' \', substring(sitemap:lastmod,12,5)),concat(\' \', substring(sitemap:lastmod,20,6)))' },
+    ]
+  }
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0"
