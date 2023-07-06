@@ -29,11 +29,18 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
 
   const localeGropes = {}
   pagesWithMeta.reduce((acc, entry) => {
-    let [name, locale] = entry.page.name.split(config.routeNameSeperator)
-    locale = locale.slice(1)
-    if (!acc[name])
-      acc[name] = []
-    acc[name].push({ ...entry, locale })
+    if (config.routeNameSeperator) {
+      let [name, locale] = entry.page.name.split(config.routeNameSeperator)
+      locale = locale.slice(1)
+      if (!acc[name])
+        acc[name] = []
+      acc[name].push({ ...entry, locale })
+    }
+    else {
+      acc.default = acc.default || []
+      acc.default.push(entry)
+    }
+
     return acc
   }, localeGropes)
 
