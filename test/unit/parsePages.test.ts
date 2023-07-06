@@ -5,7 +5,7 @@ const payload = [{ name: 'slug___en', path: '/:slug(.*)*', file: '/home/harlan/p
 
 describe('page parser', () => {
   it('is parsed', () => {
-    expect(convertNuxtPagesToSitemapEntries(payload, { autoLastmod: true, defaultLocale: 'en' })).toMatchInlineSnapshot(`
+    expect(convertNuxtPagesToSitemapEntries(payload, { autoLastmod: false, defaultLocale: 'en' })).toMatchInlineSnapshot(`
       [
         {
           "alternatives": [
@@ -14,7 +14,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-07-06T09:38:34.086Z,
           "loc": "/about",
         },
         {
@@ -24,7 +23,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-04-28T18:08:42.444Z,
           "loc": "/blog/categories",
         },
         {
@@ -34,7 +32,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-04-28T18:08:42.444Z,
           "loc": "/blog",
         },
         {
@@ -44,7 +41,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-04-28T18:08:42.444Z,
           "loc": "/blog/tags",
         },
         {
@@ -54,7 +50,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2022-12-22T00:02:26.860Z,
           "loc": "/hidden-path-but-in-sitemap",
         },
         {
@@ -64,7 +59,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-06-22T01:25:58.827Z,
           "loc": "/",
         },
         {
@@ -74,7 +68,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-06-22T01:26:57.324Z,
           "loc": "/new-page",
         },
         {
@@ -84,7 +77,6 @@ describe('page parser', () => {
               "hreflang": "fr",
             },
           ],
-          "lastmod": 2023-07-06T12:36:21.206Z,
           "loc": "/secret",
         },
       ]
