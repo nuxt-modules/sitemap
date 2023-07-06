@@ -29,13 +29,13 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 
 ## Features
 
-- 📦 Single or MultiSitemaps
+- 📦 Single and Multi Sitemap support
 - 🤝 Integrates seamlessly with Nuxt I18n and Nuxt Content
 - 🤖 Dynamic runtime URL support with caching by default
 - 🎨 Styled XML for easier debugging
 - 😌 Automatic `lastmod` and image discovery
 - 🔄 Route config using route rules
-- 🏞️ Best practice URLs: canonical with trailing slashes
+- 🏞️ Best practice URLs: canonical with consistent trailing slashes
 
 
 ## Installation
