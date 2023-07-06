@@ -28,7 +28,7 @@ export default defineEventHandler(async (e) => {
 
   const showTips = process.dev && moduleConfig.xslTips !== false
   let columns = [...moduleConfig.xslColumns!]
-  if (!columns) {
+  if (!columns.length) {
     columns = [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
