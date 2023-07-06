@@ -75,7 +75,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
       alternatives,
       ...defaultEntry,
     }
-  })
+  }).flat()
 
   return final
 }
