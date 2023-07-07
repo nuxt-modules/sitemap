@@ -85,7 +85,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
   }
 
   if (input.buildTimeMeta.hasApiRoutesUrl)
-    doFetch(input.moduleConfig.dynamicUrlsApiEndpoint)
+    waitables.push(doFetch(input.moduleConfig.dynamicUrlsApiEndpoint))
 
   // if sitemap is empty, we use all sources (sitemaps.dynamicUrlsApiEndpoint and moduleConfig.dynamicUrlsApiEndpoint)
   // sitemap_index & debug

@@ -84,6 +84,21 @@ describe('generate', () => {
               <loc>https://nuxtseo.com/blog/categories</loc>
           </url>
           <url>
+              <loc>https://nuxtseo.com/blog/post-1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/blog/post-2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/blog/post-3</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/blog/post-4</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/blog/post-5</loc>
+          </url>
+          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
               <loc>https://nuxtseo.com/blog/tags</loc>
           </url>
