@@ -133,7 +133,22 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
 
   function normaliseEntries(entries: SitemapFullEntry[]) {
     return mergeOnKey(entries.map(normaliseEntry), 'loc')
-      .sort((a, b) => a.loc!.length - b.loc!.length)
+      // sort based on logical string sorting of the loc
+      .sort((a, b) => {
+        if (a.loc > b.loc)
+          return 1
+        if (a.loc < b.loc)
+          return -1
+      })
+      .sort((a, b) => {
+        // we need to sort based on the path segments as well
+        const aSegments = a.loc.split('/').length
+        const bSegments = b.loc.split('/').length
+        if (aSegments > bSegments)
+          return 1
+        if (aSegments < bSegments)
+          return -1
+      })
   }
 
   // do first round normalising of each entry
