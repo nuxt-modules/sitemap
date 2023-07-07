@@ -24,11 +24,14 @@ export default defineEventHandler(async (e) => {
       await nitro.hooks.callHook('sitemap:resolved', ctx)
     }
 
+    const canonicalQuery = getQuery(e).canonical
+    const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
+
     sitemap = await buildSitemap({
       moduleConfig,
       buildTimeMeta,
       nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
-      canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
+      canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
       getRouteRulesForPath,
       callHook,

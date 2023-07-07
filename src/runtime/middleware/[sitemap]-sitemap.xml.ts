@@ -1,4 +1,4 @@
-import { defineEventHandler, setHeader } from 'h3'
+import { defineEventHandler, getQuery, setHeader } from 'h3'
 import { parseURL } from 'ufo'
 import type { ModuleRuntimeConfig, SitemapRenderCtx } from '../types'
 import { buildSitemap } from '../sitemap/builder'
@@ -30,6 +30,9 @@ export default defineEventHandler(async (e) => {
     const callHook = async (ctx: SitemapRenderCtx) => {
       await nitro.hooks.callHook('sitemap:resolved', ctx)
     }
+    const canonicalQuery = getQuery(e).canonical
+    const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
+
     // merge urls
     sitemap = await buildSitemap({
       sitemap: {
@@ -37,7 +40,7 @@ export default defineEventHandler(async (e) => {
         ...moduleConfig.sitemaps[sitemapName],
       },
       nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
-      canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
+      canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
       moduleConfig,
       buildTimeMeta,

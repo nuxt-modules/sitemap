@@ -1,4 +1,5 @@
 import { defineEventHandler, getHeader, setHeader } from 'h3'
+import { getQuery, parseURL, withQuery } from 'ufo'
 import type { ModuleRuntimeConfig } from '../types'
 import { createSitePathResolver, useRuntimeConfig, useSiteConfig } from '#imports'
 
@@ -11,20 +12,33 @@ export default defineEventHandler(async (e) => {
 
   const { version, moduleConfig } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
 
-  const creditName = `<a href="https://github.com/harlan-zw/nuxt-simple-sitemap" style="color: black; font-weight: semibold;" target="_blank" rel="noopener">Nuxt
+  const creditName = `<a href="https://github.com/harlan-zw/nuxt-simple-sitemap" style="color: black; font-weight: 500;" target="_blank" rel="noopener">Nuxt
             Simple Sitemap</a> v${version}`
 
-  const siteName = useSiteConfig(e).name
+  const { name: siteName, url: siteUrl } = useSiteConfig(e)
 
-  const referrer = getHeader(e, 'Referer')! || ''
-  const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && referrer.endsWith('-sitemap.xml')
+  const referrer = getHeader(e, 'Referer')! || '/'
+  const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && parseURL(referrer).pathname.endsWith('-sitemap.xml')
+  // we need to tell the user their site url and allow them to render the sitemap with the canonical url
+  // check if referrer has the query
+  const canonicalQuery = getQuery(referrer).canonical
+  const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
 
-  const tips = [
-    'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #00DC82;" target="_blank">XML stylesheet</a>.',
-    'Missing some URLs? Your sitemap may be missing data discovered from prerendering. Otherwise check out the <a href="/api/__sitemap__/debug" style="color: #00DC82;" target="_blank">debug endpoint</a>',
-    'You can disable or change this stylesheet. Otherwise, view the sitemap as robots see it by viewing the page source.',
-    'These tips are only displayed in development.',
-  ].map(t => `<li><p>${t}</p></li>`).join('\n')
+  const conditionalTips = [
+    'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #398465" target="_blank">XML stylesheet</a>. Read the  <a href="nuxtseo.com/sitemap/guides/customising-ui" style="color: #398465" target="_blank">docs</a> to learn how to customize it.',
+    'URLs not coming through? Check the <a href="/api/__sitemap__/debug" style="color: #398465" target="_blank">debug endpoint</a>',
+  ]
+  if (!isShowingCanonical) {
+    const canonicalPreviewUrl = withQuery(referrer, { canonical: '' })
+    conditionalTips.push(`Your canonical site URL is <strong>${siteUrl}</strong>.`)
+    conditionalTips.push(`You can preview your canonical sitemap by visiting <a href="${canonicalPreviewUrl}" style="color: #398465; white-space: nowrap;">${fixPath(canonicalPreviewUrl)}?canonical</a>`)
+  }
+  else {
+    // avoid text wrap
+    conditionalTips.push(`You are viewing the canonical sitemap. You can switch to using the request origin: <a href="${fixPath(referrer)}" style="color: #398465; white-space: nowrap ">${fixPath(referrer)}</a>`)
+  }
+
+  const tips = conditionalTips.map(t => `<li><p>${t}</p></li>`).join('\n')
 
   const showTips = process.dev && moduleConfig.xslTips !== false
   let columns = [...moduleConfig.xslColumns!]
@@ -89,12 +103,12 @@ export default defineEventHandler(async (e) => {
           }
 
           .expl a {
-            color: #00DC82;
+            color: #398465
             font-weight: 600;
           }
 
           .expl a:visited {
-            color: #00DC82;
+            color: #398465
           }
 
           a {
@@ -209,7 +223,7 @@ export default defineEventHandler(async (e) => {
           </xsl:if>
         </div>
         </div>
-                    ${showTips ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;"><p><strong>Sitemap Tips</strong></p><ul style="margin: 1rem; padding: 0;">${tips}</ul><p>You can disable these tips with <code>{ xsl: { tips: false } }</code></p><p style="margin-top: 1rem;">${creditName}</p></div>` : ''}
+                    ${showTips ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;"><p><strong>Sitemap Tips</strong></p><ul style="margin: 1rem; padding: 0;">${tips}</ul><p style="margin-top: 1rem;">${creditName}</p></div>` : ''}
         </div>
       </body>
     </html>
