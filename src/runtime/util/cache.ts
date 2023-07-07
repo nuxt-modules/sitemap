@@ -7,7 +7,7 @@ import { useRuntimeConfig, useStorage } from '#imports'
 export async function setupCache(e: H3Event, key: string) {
   const { moduleConfig, buildTimeMeta } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
 
-  const useCache = !process.dev && moduleConfig.runtimeCacheStorage && moduleConfig.cacheTtl && moduleConfig.cacheTtl > 0
+  const useCache = !process.dev && !process.env.prerender && moduleConfig.runtimeCacheStorage && moduleConfig.cacheTtl && moduleConfig.cacheTtl > 0
   const baseCacheKey = moduleConfig.runtimeCacheStorage === 'default' ? `/cache/nuxt-simple-sitemap${buildTimeMeta.version}` : `/nuxt-simple-sitemap/${buildTimeMeta.version}`
   const cache = prefixStorage(useStorage(), `${baseCacheKey}/sitemaps`)
   let xSitemapCacheHeader = 'MISS'
