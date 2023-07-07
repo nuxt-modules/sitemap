@@ -92,20 +92,20 @@ describe('i18n', () => {
               <loc>https://nuxtseo.com/</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/a-propos\\" />
               <xhtml:link rel=\\"alternate\\" href=\\"https://nuxtseo.com/fr/about\\" hreflang=\\"fr\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/a-propos\\" />
               <loc>https://nuxtseo.com/about</loc>
               
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
+                  <image:loc>https://example.com/image.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
+                  <image:loc>https://example.com/image2.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image-3.jpg</image:loc>
+                  <image:loc>https://example.com/image-3.jpg</image:loc>
               </image:image>
           </url>
           <url>
@@ -119,6 +119,15 @@ describe('i18n', () => {
           <url>
               <loc>https://nuxtseo.com/services</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/3</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/services/coaching</loc>

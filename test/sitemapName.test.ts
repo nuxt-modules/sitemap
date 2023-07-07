@@ -38,10 +38,10 @@ describe('sitemapName', () => {
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
+                  <image:loc>https://example.com/image.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
+                  <image:loc>https://example.com/image2.jpg</image:loc>
               </image:image>
           </url>
           <url>

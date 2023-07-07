@@ -1,19 +1,19 @@
 import type { BuildSitemapInput, SitemapRenderCtx } from '../../types'
-import { normaliseSitemapData, resolveAsyncSitemapData } from '../entries'
+import { normaliseSitemapData, resolveAsyncDataSources } from '../entries'
 import { MaxSitemapSize } from '../const'
 import { escapeValueForXml, wrapSitemapXml } from './util'
 
 export async function buildSitemap(options: BuildSitemapInput) {
   const sitemapsConfig = options.moduleConfig.sitemaps
   // always fetch all sitemap data
-  const rawEntries = await resolveAsyncSitemapData(options)
+  const sources = await resolveAsyncDataSources(options)
   // dedupes data
-  let entries = await normaliseSitemapData(rawEntries.map(e => e.urls).flat(), options)
+  let entries = await normaliseSitemapData(sources.map(e => e.urls).flat(), options)
   // if we're rendering a partial sitemap, slice the entries
   if (sitemapsConfig === true)
-    entries = entries.slice(Number(options.sitemapName) * MaxSitemapSize, (Number(options.sitemapName) + 1) * MaxSitemapSize)
+    entries = entries.slice(Number(options.sitemap?.sitemapName) * MaxSitemapSize, (Number(options.sitemap?.sitemapName) + 1) * MaxSitemapSize)
 
-  const ctx: SitemapRenderCtx = { urls: entries, sitemapName: options?.sitemap?.name || 'sitemap' }
+  const ctx: SitemapRenderCtx = { urls: entries, sitemapName: options?.sitemap?.sitemapName || 'sitemap' }
   await options.callHook?.(ctx)
   const resolveKey = (k: string) => {
     switch (k) {

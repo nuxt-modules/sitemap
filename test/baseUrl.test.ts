@@ -79,13 +79,13 @@ describe('base', () => {
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
               <image:image>
-                  <image:loc>https://nuxtseo.com/base/image.jpg</image:loc>
+                  <image:loc>https://example.com/image.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/base/image2.jpg</image:loc>
+                  <image:loc>https://example.com/image2.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/base/image-3.jpg</image:loc>
+                  <image:loc>https://example.com/image-3.jpg</image:loc>
               </image:image>
           </url>
           <url>
@@ -95,6 +95,15 @@ describe('base', () => {
           <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/new-page\\" />
               <loc>https://nuxtseo.com/base/new-page</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/base/foo/1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/base/foo/2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/base/foo/3</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/base/users-lazy/1</loc>

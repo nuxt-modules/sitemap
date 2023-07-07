@@ -13,7 +13,7 @@ import type {
   SitemapRenderCtx,
 } from './runtime/types'
 import type { ModuleOptions } from './module'
-import { resolveAsyncSitemapData } from './runtime/sitemap/entries'
+import { resolveAsyncDataSources } from './runtime/sitemap/entries'
 
 export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta: ModuleComputedOptions, pagesPromise: Promise<SitemapEntry[]>, nuxt: Nuxt = useNuxt()) {
   const { resolve } = createResolver(import.meta.url)
@@ -102,7 +102,7 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
       const options: BuildSitemapIndexInput = {
         moduleConfig: moduleConfig as RuntimeModuleOptions,
         nitroUrlResolver: createSitePathResolver({ canonical: false, absolute: true, withBase: true }),
-        canonicalUrlResolver: createSitePathResolver({ canonical: !process.dev, absolute: true, withBase: true }),
+        canonicalUrlResolver: createSitePathResolver({ canonical: true, absolute: true, withBase: true }),
         relativeBaseUrlResolver: createSitePathResolver({ absolute: false, withBase: true }),
         buildTimeMeta,
         getRouteRulesForPath: routeMatcher,
@@ -146,12 +146,20 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
       }
 
       if (moduleConfig.debug) {
+        const sources = await resolveAsyncDataSources(options)
         start = Date.now()
         await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
         await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__', 'debug.json'), JSON.stringify({
           moduleConfig,
           buildTimeMeta,
-          data: await resolveAsyncSitemapData(options),
+          data: sources,
+          _sources: sources
+            .map((s) => {
+              return {
+                ...s,
+                urls: s.urls.length || 0,
+              }
+            }),
         }))
         const generateTimeMS = Date.now() - start
         logs.push(`/__sitemap__/debug.json (${generateTimeMS}ms)`)

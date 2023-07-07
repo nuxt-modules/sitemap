@@ -16,7 +16,13 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type SitemapEntry = SitemapFullEntry | string
 
-export interface SitemapDataSource { context: string; urls: SitemapEntry[] }
+export interface DataSourceResult {
+  context: 'pages' | 'nuxt-config' | 'api' | 'prerender'
+  urls: SitemapEntry[]
+  path?: string
+  error?: Error | string
+  timeTakenMs?: number
+}
 
 export type RuntimeModuleOptions = { urls: SitemapEntry[] } & Pick<ModuleOptions, 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
 

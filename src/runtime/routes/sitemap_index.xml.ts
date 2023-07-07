@@ -1,4 +1,4 @@
-import { defineEventHandler, setHeader } from 'h3'
+import { defineEventHandler, getQuery, setHeader } from 'h3'
 import { buildSitemapIndex } from '../sitemap/builder'
 import type { ModuleRuntimeConfig, SitemapRenderCtx } from '../types'
 import { setupCache } from '../util/cache'
@@ -19,13 +19,15 @@ export default defineEventHandler(async (e) => {
   }
 
   if (!sitemap) {
+    const canonicalQuery = getQuery(e).canonical
+    const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
     sitemap = (await buildSitemapIndex({
       moduleConfig,
       buildTimeMeta,
       getRouteRulesForPath,
       callHook,
       nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
-      canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
+      canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
       pages,
     })).xml

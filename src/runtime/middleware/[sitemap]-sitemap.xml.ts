@@ -36,7 +36,7 @@ export default defineEventHandler(async (e) => {
     // merge urls
     sitemap = await buildSitemap({
       sitemap: {
-        name: sitemapName,
+        sitemapName,
         ...moduleConfig.sitemaps[sitemapName],
       },
       nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),

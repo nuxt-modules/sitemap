@@ -5,7 +5,7 @@ import type {
   SitemapIndexEntry,
   SitemapRoot,
 } from '../../types'
-import { normaliseDate, normaliseSitemapData, resolveAsyncSitemapData } from '../entries'
+import { normaliseDate, normaliseSitemapData, resolveAsyncDataSources } from '../entries'
 import { MaxSitemapSize } from '../const'
 import { escapeValueForXml, wrapSitemapXml } from './util'
 
@@ -15,7 +15,7 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
     throw new Error('Attempting to build a sitemap index without required `sitemaps` configuration.')
 
   const chunks: Record<string | number, { urls: SitemapFullEntry[] }> = {}
-  const rawEntries = await resolveAsyncSitemapData(options)
+  const rawEntries = await resolveAsyncDataSources(options)
   if (multiSitemapConfig === true) {
     // we need to generate multiple sitemaps with dynamically generated names
     const urls = await normaliseSitemapData(rawEntries.map(e => e.urls).flat(), options)

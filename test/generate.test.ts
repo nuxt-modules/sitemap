@@ -14,6 +14,7 @@ describe('generate', () => {
       overrides: {
         _generate: true,
         sitemap: {
+          debug: true,
           credits: false,
           autoLastmod: false,
         },
@@ -51,16 +52,19 @@ describe('generate', () => {
               <loc>https://nuxtseo.com/</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/about\\" />
+              <xhtml:link rel=\\"alternate\\" href=\\"https://nuxtseo.com/fr/about\\" hreflang=\\"fr\\" />
               <loc>https://nuxtseo.com/about</loc>
               <lastmod></lastmod>
               <changefreq>daily</changefreq>
               <priority>0.3</priority>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
+                  <image:loc>https://example.com/image.jpg</image:loc>
               </image:image>
               <image:image>
-                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
+                  <image:loc>https://example.com/image2.jpg</image:loc>
+              </image:image>
+              <image:image>
+                  <image:loc>https://example.com/image-3.jpg</image:loc>
               </image:image>
           </url>
           <url>
@@ -76,31 +80,21 @@ describe('generate', () => {
               <loc>https://nuxtseo.com/new-page</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr\\" />
-              <loc>https://nuxtseo.com/uxtseo.com</loc>
-          </url>
-          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/categories\\" />
               <loc>https://nuxtseo.com/blog/categories</loc>
           </url>
           <url>
-              <loc>https://nuxtseo.com/blog/post-1</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/blog/post-2</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/blog/post-3</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/blog/post-4</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/blog/post-5</loc>
-          </url>
-          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
               <loc>https://nuxtseo.com/blog/tags</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/1</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/2</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo/3</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/users-lazy/1</loc>
@@ -110,36 +104,6 @@ describe('generate', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/users-lazy/3</loc>
-          </url>
-          <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/about\\" />
-              <loc>https://nuxtseo.com/uxtseo.com/about</loc>
-              <lastmod></lastmod>
-              <changefreq>daily</changefreq>
-              <priority>0.3</priority>
-              <image:image>
-                  <image:loc>https://nuxtseo.com/image.jpg</image:loc>
-              </image:image>
-              <image:image>
-                  <image:loc>https://nuxtseo.com/image2.jpg</image:loc>
-              </image:image>
-          </url>
-          <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/hidden-path-but-in-sitemap\\" />
-              <loc>https://nuxtseo.com/uxtseo.com/hidden-path-but-in-sitemap</loc>
-          </url>
-          <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/new-page\\" />
-              <loc>https://nuxtseo.com/uxtseo.com/new-page</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/1</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/2</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/uxtseo.com/users-lazy/3</loc>
           </url>
       </urlset>"
     `)
