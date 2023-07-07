@@ -59,8 +59,8 @@ describe('i18n', () => {
               <loc>https://nuxtseo.com/blog</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
-              <loc>https://nuxtseo.com/blog/tags</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/categories\\" />
+              <loc>https://nuxtseo.com/blog/categories</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/blog/post-1</loc>
@@ -78,8 +78,8 @@ describe('i18n', () => {
               <loc>https://nuxtseo.com/blog/post-5</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/categories\\" />
-              <loc>https://nuxtseo.com/blog/categories</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
+              <loc>https://nuxtseo.com/blog/tags</loc>
           </url>
       </urlset>"
     `)
@@ -109,12 +109,24 @@ describe('i18n', () => {
               </image:image>
           </url>
           <url>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/hidden-path-but-in-sitemap\\" />
+              <loc>https://nuxtseo.com/hidden-path-but-in-sitemap</loc>
+          </url>
+          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/new-page\\" />
               <loc>https://nuxtseo.com/new-page</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/services</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/coaching</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/formation\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/services/development</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/users-lazy/1</loc>
@@ -126,20 +138,8 @@ describe('i18n', () => {
               <loc>https://nuxtseo.com/users-lazy/3</loc>
           </url>
           <url>
-              <loc>https://nuxtseo.com/services/coaching</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/formation\\" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/services/development</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement\\" />
-          </url>
-          <url>
               <loc>https://nuxtseo.com/services/development/app</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/offres/developement/app\\" />
-          </url>
-          <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/hidden-path-but-in-sitemap\\" />
-              <loc>https://nuxtseo.com/hidden-path-but-in-sitemap</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/services/development/website</loc>

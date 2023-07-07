@@ -42,12 +42,12 @@ describe('base', () => {
               <loc>https://nuxtseo.com/base/blog/3</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/tags\\" />
-              <loc>https://nuxtseo.com/base/blog/tags</loc>
-          </url>
-          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/categories\\" />
               <loc>https://nuxtseo.com/base/blog/categories</loc>
+          </url>
+          <url>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/tags\\" />
+              <loc>https://nuxtseo.com/base/blog/tags</loc>
           </url>
       </urlset>"
     `)
