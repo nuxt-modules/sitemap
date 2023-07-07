@@ -31,6 +31,10 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
       return
     // convert url to string
     s = typeof s === 'string' ? s : s.toString()
+    // avoid transforming remote urls and urls already resolved
+    if (hasProtocol(s, { acceptRelative: true, strict: false }))
+      return s
+
     return options.canonicalUrlResolver(s)
   }
 
