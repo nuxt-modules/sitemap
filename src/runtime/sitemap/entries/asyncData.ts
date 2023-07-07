@@ -40,14 +40,15 @@ export async function resolveAsyncSitemapData(input: BuildSitemapInput | BuildSi
     )
   }
 
-  if (input.sitemap?.dynamicUrlsApiEndpoint) {
+  const customEndpoint = input.sitemap?.dynamicUrlsApiEndpoint || input.moduleConfig.dynamicUrlsApiEndpoint
+  if (customEndpoint) {
     waitables.push(
       //  should just work
-      globalThis.$fetch(input.moduleConfig.dynamicUrlsApiEndpoint, {
+      globalThis.$fetch(customEndpoint, {
         responseType: 'json',
       }).then((urls) => {
         entries.push({
-          context: `sitemap:${input.sitemap!.sitemapName}:${input.moduleConfig.dynamicUrlsApiEndpoint.replaceAll('/', '.')}`,
+          context: `sitemap:${input.sitemap!.sitemapName}:source:${customEndpoint.replaceAll('/', '.')}`,
           urls: urls as SitemapEntry[],
         })
       }),
