@@ -53,15 +53,16 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
       e.loc = withoutTrailingSlash(e.loc)
       e.loc = e.loc.replace('://', '').substring(e.loc.indexOf('/'))
       e.loc = e.loc === '' ? '/' : e.loc
+      e = defu(e, defaultEntryData)
       return e
     })
-    // apply defaults and route rules
+    // apply route rules
     .map((e) => {
       const routeRules = options.getRouteRulesForPath(e.loc)
       // nuxt-simple-robots integration
       if (routeRules.index === false)
         return false
-      return defu(routeRules.sitemap || {}, e, defaults)
+      return defu(routeRules.sitemap || {}, e)
     })
     .filter(e => e && urlFilter(e.loc))
 
