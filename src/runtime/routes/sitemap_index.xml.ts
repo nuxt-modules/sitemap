@@ -1,7 +1,7 @@
 import { defineEventHandler, setHeader } from 'h3'
 import { prefixStorage } from 'unstorage'
 import { buildSitemapIndex } from '../sitemap/builder'
-import type { ModuleRuntimeConfig } from '../types'
+import type { ModuleRuntimeConfig, SitemapRenderCtx } from '../types'
 import { createSitePathResolver, useRuntimeConfig, useStorage } from '#imports'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 import pages from '#nuxt-simple-sitemap/pages.mjs'
@@ -24,11 +24,17 @@ export default defineEventHandler(async (e) => {
       await cache.removeItem(key)
   }
 
+  const nitro = useNitroApp()
+  const callHook = async (ctx: SitemapRenderCtx) => {
+    await nitro.hooks.callHook('sitemap:resolved', ctx)
+  }
+
   if (!sitemap) {
     sitemap = (await buildSitemapIndex({
       moduleConfig,
       buildTimeMeta,
       getRouteRulesForPath,
+      callHook,
       nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
       canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
@@ -38,7 +44,7 @@ export default defineEventHandler(async (e) => {
     const nitro = useNitroApp()
 
     const ctx = { sitemap, sitemapName: 'sitemap' }
-    await nitro.hooks.callHook('sitemap:sitemap:output', ctx)
+    await nitro.hooks.callHook('sitemap:output', ctx)
     sitemap = ctx.sitemap
 
     if (useCache)

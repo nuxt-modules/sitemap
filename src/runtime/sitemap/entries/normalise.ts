@@ -136,7 +136,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
   }
 
   // do first round normalising of each entry
-  const ctx: SitemapRenderCtx = { urls: normaliseEntries(entries), sitemapName: options.sitemap?.naame || 'sitemap' }
+  const ctx: SitemapRenderCtx = { urls: normaliseEntries(entries), sitemapName: options.sitemap?.sitemapName || 'sitemap' }
   // call hook
   if (options.callHook)
     await options.callHook(ctx)

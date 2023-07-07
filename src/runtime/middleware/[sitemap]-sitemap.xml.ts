@@ -39,7 +39,7 @@ export default defineEventHandler(async (e) => {
   if (!sitemap) {
     const nitro = useNitroApp()
     const callHook = async (ctx: SitemapRenderCtx) => {
-      await nitro.hooks.callHook('sitemap:sitemap-xml', ctx)
+      await nitro.hooks.callHook('sitemap:resolved', ctx)
     }
     // merge urls
     sitemap = await buildSitemap({
@@ -58,7 +58,7 @@ export default defineEventHandler(async (e) => {
     })
 
     const ctx = { sitemap, sitemapName }
-    await nitro.hooks.callHook('sitemap:sitemap:output', ctx)
+    await nitro.hooks.callHook('sitemap:output', ctx)
     sitemap = ctx.sitemap
 
     if (useCache)

@@ -63,6 +63,11 @@ export interface SitemapRenderCtx {
   urls: ResolvedSitemapEntry[]
 }
 
+export interface SitemapOutputHookCtx {
+  sitemapName: string
+  sitemap: string
+}
+
 export type Changefreq =
   | 'always'
   | 'hourly'

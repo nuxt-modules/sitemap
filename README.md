@@ -71,7 +71,7 @@ export default defineNuxtConfig({
 
 ### Demos
 
--  [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=package.json)
+-  [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
 
 
 ### Set Site URL (required when prerendering)

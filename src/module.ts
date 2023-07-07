@@ -4,18 +4,20 @@ import {
   addServerPlugin,
   createResolver,
   defineNuxtModule, extendPages,
-  findPath, hasNuxtModule, useLogger,
+  findPath, hasNuxtModule, resolvePath, useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
+import { dirname, join } from 'pathe'
 import { version } from '../package.json'
 import { extendTypes, getNuxtModuleVersion, hasNuxtModuleCompatibility } from './kit'
 import type {
   ModuleComputedOptions, ModuleRuntimeConfig,
   MultiSitemapsInput, SitemapEntry,
   SitemapFullEntry,
+  SitemapOutputHookCtx,
   SitemapRenderCtx,
   SitemapRoot,
 } from './runtime/types'
@@ -145,10 +147,11 @@ export interface ModuleOptions extends SitemapRoot {
 
 export interface ModuleHooks {
   /**
-   * @deprecated use `sitemap:prerender`
+   * @deprecated use `sitemap:resolved` or `sitemap:output`
    */
-  'sitemap:generate': (ctx: SitemapRenderCtx) => Promise<void> | void
   'sitemap:prerender': (ctx: SitemapRenderCtx) => Promise<void> | void
+  'sitemap:resolved': (ctx: SitemapRenderCtx) => Promise<void> | void
+  'sitemap:output': (ctx: SitemapOutputHookCtx) => Promise<void> | void
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -306,9 +309,9 @@ export default defineNuxtModule<ModuleOptions>({
       })
     })
 
-    extendTypes('nuxt-simple-sitemap', () => {
+    extendTypes('nuxt-simple-sitemap', async () => {
       return `
-import type { SitemapItemDefaults } from 'nuxt-simple-sitemap/dist/runtime/types'
+import type { SitemapOutputHookCtx, SitemapRenderCtx, SitemapItemDefaults } from '${join(dirname(await resolvePath('nuxt-simple-sitemap')), 'runtime/types')}'
 
 interface NuxtSimpleSitemapNitroRules {
   index?: boolean
@@ -317,7 +320,15 @@ interface NuxtSimpleSitemapNitroRules {
 declare module 'nitropack' {
   interface NitroRouteRules extends NuxtSimpleSitemapNitroRules {}
   interface NitroRouteConfig extends NuxtSimpleSitemapNitroRules {}
-}`
+}
+// extend nitro hooks
+declare module 'nitropack/dist/runtime/types' {
+  interface NitroRuntimeHooks {
+    'sitemap:resolved': (ctx: SitemapRenderCtx) => void | Promise<void>
+    'sitemap:output': (ctx: SitemapOutputHookCtx) => void | Promise<void>
+  }
+}
+`
     })
 
     if (typeof config.urls === 'function')

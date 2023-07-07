@@ -93,11 +93,10 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
       }
 
       const callHook = async (ctx: SitemapRenderCtx) => {
-        // deprecated hook
-        // @ts-expect-error runtime type
-        await nuxt.hooks.callHook('sitemap:generate', ctx)
         // @ts-expect-error runtime type
         await nuxt.hooks.callHook('sitemap:prerender', ctx)
+        // @ts-expect-error runtime type
+        await nuxt.hooks.callHook('sitemap:resolved', ctx)
       }
 
       const options: BuildSitemapIndexInput = {
@@ -117,22 +116,30 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
 
         // rendering a sitemap_index
         const { xml, sitemaps } = await buildSitemapIndex(options)
-        await writeFile(resolve(nitro.options.output.publicDir, 'sitemap_index.xml'), xml)
+        const indexHookCtx = { sitemap: xml, sitemapName: 'index' }
+        await nuxt.hooks.callHook('sitemap:output', indexHookCtx)
+        await writeFile(resolve(nitro.options.output.publicDir, 'sitemap_index.xml'), indexHookCtx.sitemap)
         const generateTimeMS = Date.now() - start
         logs.push(`/sitemap_index.xml (${generateTimeMS}ms)`)
         // now generate all sub sitemaps
         for (const sitemap of sitemaps) {
-          const sitemapXml = await buildSitemap({
+          let sitemapXml = await buildSitemap({
             ...options,
             sitemap,
           })
+          const ctx = { sitemap: sitemapXml, sitemapName: sitemap.sitemapName }
+          await nuxt.hooks.callHook('sitemap:output', ctx)
+          sitemapXml = ctx.sitemap
           await writeFile(resolve(nitro.options.output.publicDir, `${sitemap.sitemapName}-sitemap.xml`), sitemapXml)
           const generateTimeMS = Date.now() - start
           logs.push(`/${sitemap.sitemapName}-sitemap.xml (${generateTimeMS}ms)`)
         }
       }
       else {
-        const sitemapXml = await buildSitemap(options)
+        let sitemapXml = await buildSitemap(options)
+        const ctx = { sitemap: sitemapXml, sitemapName: moduleConfig.sitemapName }
+        await nuxt.hooks.callHook('sitemap:output', ctx)
+        sitemapXml = ctx.sitemap
         await writeFile(resolve(nitro.options.output.publicDir, moduleConfig.sitemapName), sitemapXml)
         const generateTimeMS = Date.now() - start
         logs.push(`/${moduleConfig.sitemapName} (${generateTimeMS}ms)`)
