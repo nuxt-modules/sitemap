@@ -3,5 +3,5 @@ import { serverQueryContent } from '#content/server'
 
 export default defineEventHandler(async (e) => {
   const contentList = await serverQueryContent(e).find()
-  return contentList.map(c => c._sitemap).filter(Boolean)
+  return contentList.map(c => c.sitemap).filter(Boolean)
 })
