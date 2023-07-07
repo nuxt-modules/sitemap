@@ -1,9 +1,9 @@
 import { defineEventHandler, setHeader } from 'h3'
 import { parseURL } from 'ufo'
-import { prefixStorage } from 'unstorage'
 import type { ModuleRuntimeConfig, SitemapRenderCtx } from '../types'
 import { buildSitemap } from '../sitemap/builder'
-import { createSitePathResolver, useNitroApp, useRuntimeConfig, useStorage } from '#imports'
+import { setupCache } from '../util/cache'
+import { createSitePathResolver, useNitroApp, useRuntimeConfig } from '#imports'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 import pages from '#nuxt-simple-sitemap/pages.mjs'
 
@@ -12,7 +12,7 @@ export default defineEventHandler(async (e) => {
   if (!path.endsWith('-sitemap.xml'))
     return
 
-  const { moduleConfig, buildTimeMeta, version } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { moduleConfig, buildTimeMeta } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
   if (!moduleConfig.sitemaps) {
     /// maybe the user is handling their own sitemap?
     return
@@ -22,19 +22,8 @@ export default defineEventHandler(async (e) => {
   if (moduleConfig.sitemaps !== true && !moduleConfig.sitemaps[sitemapName])
     return
 
-  const useCache = moduleConfig.runtimeCacheStorage && !process.dev && moduleConfig.cacheTtl && moduleConfig.cacheTtl > 0
-  const baseCacheKey = moduleConfig.runtimeCacheStorage === 'default' ? `/cache/nuxt-simple-sitemap${version}` : `/nuxt-simple-sitemap/${version}`
-  const cache = prefixStorage(useStorage(), `${baseCacheKey}/sitemaps`)
-  // cache will invalidate if the options change
-  const key = sitemapName
-  let sitemap: string
-  if (useCache && await cache.hasItem(key)) {
-    const { value, expiresAt } = await cache.getItem(key) as any
-    if (expiresAt > Date.now())
-      sitemap = value as string
-    else
-      await cache.removeItem(key)
-  }
+  const { cachedSitemap, cache } = await setupCache(e, sitemapName)
+  let sitemap = cachedSitemap
 
   if (!sitemap) {
     const nitro = useNitroApp()
@@ -61,8 +50,7 @@ export default defineEventHandler(async (e) => {
     await nitro.hooks.callHook('sitemap:output', ctx)
     sitemap = ctx.sitemap
 
-    if (useCache)
-      await cache.setItem(key, { value: sitemap, expiresAt: Date.now() + (moduleConfig.cacheTtl || 0) })
+    await cache(sitemap)
   }
 
   // need to clone the config object to make it writable

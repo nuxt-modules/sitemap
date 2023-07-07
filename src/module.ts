@@ -166,7 +166,7 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     enabled: true,
     credits: true,
-    cacheTtl: 1000 * 60, // cache for 60 minutes
+    cacheTtl: 1000 * 60 * 60, // cache for 60 minutes
     debug: false,
     autoLastmod: true,
     inferStaticPagesAsRoutes: true,
