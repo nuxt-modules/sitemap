@@ -44,8 +44,8 @@ describe('prod', () => {
               <loc>https://nuxtseo.com/blog</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
-              <loc>https://nuxtseo.com/blog/tags</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/categories\\" />
+              <loc>https://nuxtseo.com/blog/categories</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/blog/post-1</loc>
@@ -63,8 +63,8 @@ describe('prod', () => {
               <loc>https://nuxtseo.com/blog/post-5</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/categories\\" />
-              <loc>https://nuxtseo.com/blog/categories</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/blog/tags\\" />
+              <loc>https://nuxtseo.com/blog/tags</loc>
           </url>
       </urlset>"
     `)

@@ -37,8 +37,8 @@ describe('base', () => {
               <loc>https://nuxtseo.com/base/blog</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/tags\\" />
-              <loc>https://nuxtseo.com/base/blog/tags</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/categories\\" />
+              <loc>https://nuxtseo.com/base/blog/categories</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/base/blog/post-1</loc>
@@ -56,8 +56,8 @@ describe('base', () => {
               <loc>https://nuxtseo.com/base/blog/post-5</loc>
           </url>
           <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/categories\\" />
-              <loc>https://nuxtseo.com/base/blog/categories</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/blog/tags\\" />
+              <loc>https://nuxtseo.com/base/blog/tags</loc>
           </url>
       </urlset>"
     `)
@@ -89,6 +89,10 @@ describe('base', () => {
               </image:image>
           </url>
           <url>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/hidden-path-but-in-sitemap\\" />
+              <loc>https://nuxtseo.com/base/hidden-path-but-in-sitemap</loc>
+          </url>
+          <url>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/new-page\\" />
               <loc>https://nuxtseo.com/base/new-page</loc>
           </url>
@@ -100,10 +104,6 @@ describe('base', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/base/users-lazy/3</loc>
-          </url>
-          <url>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/base/fr/hidden-path-but-in-sitemap\\" />
-              <loc>https://nuxtseo.com/base/hidden-path-but-in-sitemap</loc>
           </url>
       </urlset>"
     `)
