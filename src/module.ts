@@ -363,6 +363,7 @@ declare module 'nitropack/dist/runtime/types' {
       include: config.include,
       exclude: config.exclude,
       sitemaps: config.sitemaps,
+      sitemapName: config.sitemapName,
       dynamicUrlsApiEndpoint: config.dynamicUrlsApiEndpoint,
       urls: config.urls as SitemapFullEntry[],
       debug: config.debug,

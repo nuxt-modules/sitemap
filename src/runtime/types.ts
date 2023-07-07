@@ -18,7 +18,7 @@ export type SitemapEntry = SitemapFullEntry | string
 
 export interface SitemapDataSource { context: string; urls: SitemapEntry[] }
 
-export type RuntimeModuleOptions = { urls: SitemapEntry[] } & Pick<ModuleOptions, 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
+export type RuntimeModuleOptions = { urls: SitemapEntry[] } & Pick<ModuleOptions, 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
 
 export interface ModuleRuntimeConfig { moduleConfig: RuntimeModuleOptions; buildTimeMeta: ModuleComputedOptions }
 
