@@ -47,5 +47,9 @@ export async function buildSitemap(options: BuildSitemapInput) {
 ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        <${k}>${escapeValueForXml(e[k])}</${k}>`).filter(l => l !== false).join('\n')}
     </url>`) ?? []),
     '</urlset>',
-  ], { xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl), credits: options.moduleConfig.credits })
+  ], {
+    xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl),
+    credits: options.moduleConfig.credits,
+    version: options.buildTimeMeta.version,
+  })
 }

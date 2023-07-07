@@ -346,6 +346,7 @@ declare module 'nitropack/dist/runtime/types' {
       hasApiRoutesUrl: !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls',
       hasPrerenderedRoutesPayload: !nuxt.options.dev && !prerenderSitemap,
       prerenderSitemap,
+      version,
     }
 
     const moduleConfig: ModuleRuntimeConfig['moduleConfig'] = {

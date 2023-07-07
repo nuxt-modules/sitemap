@@ -10,6 +10,7 @@ await setup({
   server: true,
   nuxtConfig: {
     sitemap: {
+      credits: false,
       trailingSlash: true,
       autoLastmod: false,
       siteUrl: 'https://nuxtseo.com',

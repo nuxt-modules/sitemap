@@ -56,6 +56,7 @@ export interface ModuleComputedOptions {
   isNuxtContentDocumentDriven: boolean
   hasPrerenderedRoutesPayload: boolean
   prerenderSitemap: boolean
+  version: string
 }
 
 export interface SitemapRenderCtx {

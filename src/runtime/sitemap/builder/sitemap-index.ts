@@ -69,11 +69,15 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
 
   return {
     sitemaps,
-    xml: generateSitemapIndexXml(entries, { xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl), credits: options.moduleConfig.credits }),
+    xml: generateSitemapIndexXml(entries, {
+      xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl),
+      credits: options.moduleConfig.credits,
+      version: options.buildTimeMeta.version,
+    }),
   }
 }
 
-export function generateSitemapIndexXml(entries: SitemapIndexEntry[], options: { xsl: string | false; credits: boolean }) {
+export function generateSitemapIndexXml(entries: SitemapIndexEntry[], options: { xsl: string | false; credits: boolean; version: string }) {
   const sitemapXml = entries.map(e => [
     '    <sitemap>',
     `        <loc>${escapeValueForXml(e.sitemap)}</loc>`,
