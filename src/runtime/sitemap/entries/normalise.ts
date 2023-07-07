@@ -1,4 +1,4 @@
-import { joinURL, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL, parseURL } from 'ufo'
 import { defu } from 'defu'
 import type {
   BuildSitemapIndexInput,
@@ -54,9 +54,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
         delete e.url
       }
       // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
-      e.loc = withoutTrailingSlash(e.loc)
-      e.loc = e.loc.replace('://', '').substring(e.loc.indexOf('/'))
-      e.loc = e.loc === '' ? '/' : e.loc
+      e.loc = parseURL(e.loc).pathname
       e = defu(e, defaultEntryData)
       return e
     })
