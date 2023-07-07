@@ -139,6 +139,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
           return 1
         if (a.loc < b.loc)
           return -1
+        return 0
       })
       .sort((a, b) => {
         // we need to sort based on the path segments as well
@@ -148,6 +149,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
           return 1
         if (aSegments < bSegments)
           return -1
+        return 0
       })
   }
 
