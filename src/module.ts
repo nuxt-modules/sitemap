@@ -101,9 +101,9 @@ export interface ModuleOptions extends SitemapRoot {
    * Automatically add alternative links to the sitemap based on a prefix list.
    * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
    *
-   * @default `false` or @nuxtjs/i18n `locales`
+   * @default `booolean` or array of locales
    */
-  autoAlternativeLangPrefixes?: false | string[]
+  autoAlternativeLangPrefixes?: boolean | string[]
   /**
    * Enable when your nuxt/content files match your pages. This will automatically add sitemap content to the sitemap.
    *
