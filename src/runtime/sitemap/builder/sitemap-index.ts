@@ -1,7 +1,7 @@
 import { defu } from 'defu'
 import type {
   BuildSitemapIndexInput,
-  SitemapFullEntry,
+  SitemapEntry,
   SitemapIndexEntry,
   SitemapRoot,
 } from '../../types'
@@ -14,7 +14,7 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
   if (!multiSitemapConfig)
     throw new Error('Attempting to build a sitemap index without required `sitemaps` configuration.')
 
-  const chunks: Record<string | number, { urls: SitemapFullEntry[] }> = {}
+  const chunks: Record<string | number, { urls: SitemapEntry[] }> = {}
   const rawEntries = await resolveAsyncDataSources(options)
   if (multiSitemapConfig === true) {
     // we need to generate multiple sitemaps with dynamically generated names

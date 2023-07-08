@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs'
 import type { NuxtPage } from 'nuxt/schema'
 import { joinURL } from 'ufo'
-import type { SitemapEntry } from './runtime/types'
+import type { SitemapEntryInput } from './runtime/types'
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { routeNameSeperator?: string; autoLastmod: boolean; defaultLocale: string }) {
   config.routeNameSeperator = config.routeNameSeperator || '__'
@@ -50,7 +50,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
   }, localeGropes)
 
   // now need to convert to alternativs
-  const final: SitemapEntry[] = Object.entries(localeGropes).map(([locale, entries]) => {
+  const final: SitemapEntryInput[] = Object.entries(localeGropes).map(([locale, entries]) => {
     if (locale === 'default') {
       return entries.map((e) => {
         delete e.page

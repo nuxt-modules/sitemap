@@ -14,17 +14,17 @@ export type MultiSitemapsInput = IndexSitemapLocals & IndexSitemapRemotes
 export type MaybeFunction<T> = T | (() => T)
 export type MaybePromise<T> = T | Promise<T>
 
-export type SitemapEntry = SitemapFullEntry | string
+export type SitemapEntryInput = SitemapEntry | string
 
 export interface DataSourceResult {
   context: 'pages' | 'nuxt-config' | 'api' | 'prerender'
-  urls: SitemapEntry[]
+  urls: SitemapEntryInput[]
   path?: string
   error?: Error | string
   timeTakenMs?: number
 }
 
-export type RuntimeModuleOptions = { urls: SitemapEntry[] } & Pick<ModuleOptions, 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
+export type RuntimeModuleOptions = { urls: SitemapEntryInput[] } & Pick<ModuleOptions, 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
 
 export interface ModuleRuntimeConfig { moduleConfig: RuntimeModuleOptions; buildTimeMeta: ModuleComputedOptions }
 
@@ -36,10 +36,9 @@ export interface SitemapIndexEntry {
    */
   referenceOnly?: boolean
 }
-export interface SitemapItemDefaults extends Omit<Partial<SitemapFullEntry>, 'loc'> {
-}
+export type SitemapItemDefaults = Omit<Partial<SitemapEntry>, 'loc'>
 
-export type ResolvedSitemapEntry = Omit<SitemapFullEntry, 'url'> & Required<Pick<SitemapFullEntry, 'loc'>>
+export type ResolvedSitemapEntry = Omit<SitemapEntry, 'url'> & Required<Pick<SitemapEntry, 'loc'>>
 
 export interface SitemapRoot extends CreateFilterOptions {
   /**
@@ -49,8 +48,8 @@ export interface SitemapRoot extends CreateFilterOptions {
    * @default `sitemap.xml`
    */
   sitemapName: string
-  urls: MaybeFunction<MaybePromise<SitemapEntry[]>>
-  defaults?: Omit<SitemapFullEntry, 'loc'>
+  urls: MaybeFunction<MaybePromise<SitemapEntryInput[]>>
+  defaults?: Omit<SitemapEntry, 'loc'>
   /**
    * The endpoint to fetch dynamic URLs from.
    */
@@ -84,7 +83,7 @@ export type Changefreq =
   | 'yearly'
   | 'never'
 
-export interface SitemapFullEntry {
+export interface SitemapEntry {
   /**
    * @deprecated use `loc`
    */
@@ -160,8 +159,8 @@ export interface BuildSitemapInput {
   nitroUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
   callHook?: (ctx: SitemapRenderCtx) => Promise<void>
-  prerenderUrls?: SitemapEntry[]
-  pages: SitemapEntry[]
+  prerenderUrls?: SitemapEntryInput[]
+  pages: SitemapEntryInput[]
 }
 
 export type BuildSitemapIndexInput = BuildSitemapInput

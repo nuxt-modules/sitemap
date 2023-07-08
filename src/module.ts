@@ -15,16 +15,14 @@ import { version } from '../package.json'
 import { extendTypes, getNuxtModuleVersion, hasNuxtModuleCompatibility } from './kit'
 import type {
   ModuleComputedOptions, ModuleRuntimeConfig,
-  MultiSitemapsInput, SitemapEntry,
-  SitemapFullEntry,
+  MultiSitemapsInput, SitemapEntryInput,
+  SitemapEntry,
   SitemapOutputHookCtx,
   SitemapRenderCtx,
   SitemapRoot,
 } from './runtime/types'
 import { setupPrerenderHandler } from './prerender'
 import { convertNuxtPagesToSitemapEntries } from './utils'
-
-export * from './runtime/types'
 
 export interface ModuleOptions extends SitemapRoot {
   /**
@@ -281,7 +279,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
 
-    const pagesPromise = new Promise<SitemapEntry[]>((resolve) => {
+    const pagesPromise = new Promise<SitemapEntryInput[]>((resolve) => {
       // hook in after the other modules are done
       nuxt.hooks.hook('modules:done', async () => {
         const pagePromise = new Promise<NuxtPage[]>((_resolve) => {
@@ -311,15 +309,17 @@ export default defineNuxtModule<ModuleOptions>({
 
     extendTypes('nuxt-simple-sitemap', async () => {
       return `
-import type { SitemapOutputHookCtx, SitemapRenderCtx, SitemapItemDefaults } from '${join(dirname(await resolvePath('nuxt-simple-sitemap')), 'runtime/types')}'
+import type { SitemapOutputHookCtx, SitemapRenderCtx, SitemapItemDefaults } from '${resolve('runtime/types')}'
 
-interface NuxtSimpleSitemapNitroRules {
-  index?: boolean
-  sitemap?: SitemapItemDefaults
-}
 declare module 'nitropack' {
-  interface NitroRouteRules extends NuxtSimpleSitemapNitroRules {}
-  interface NitroRouteConfig extends NuxtSimpleSitemapNitroRules {}
+  interface NitroRouteRules {
+    index?: boolean
+    sitemap?: SitemapItemDefaults
+  }
+  interface NitroRouteConfig {
+    index?: boolean
+    sitemap?: SitemapItemDefaults
+  }
 }
 // extend nitro hooks
 declare module 'nitropack/dist/runtime/types' {
@@ -365,7 +365,7 @@ declare module 'nitropack/dist/runtime/types' {
       sitemaps: config.sitemaps,
       sitemapName: config.sitemapName,
       dynamicUrlsApiEndpoint: config.dynamicUrlsApiEndpoint,
-      urls: config.urls as SitemapFullEntry[],
+      urls: config.urls as SitemapEntry[],
       debug: config.debug,
       // needed for nuxt/content integration
       discoverImages: config.discoverImages,

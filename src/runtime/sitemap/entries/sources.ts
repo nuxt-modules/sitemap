@@ -1,4 +1,4 @@
-import type { BuildSitemapIndexInput, BuildSitemapInput, DataSourceResult, SitemapEntry, SitemapRoot } from '../../types'
+import type { BuildSitemapIndexInput, BuildSitemapInput, DataSourceResult, SitemapEntryInput, SitemapRoot } from '../../types'
 
 async function resolveUrls(urls: SitemapRoot['urls']) {
   if (typeof urls === 'function')
@@ -57,7 +57,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
           context,
           timeTakenMs,
           path: url,
-          urls: urls as SitemapEntry[],
+          urls: urls as SitemapEntryInput[],
         })
       }
     }).catch((err) => {

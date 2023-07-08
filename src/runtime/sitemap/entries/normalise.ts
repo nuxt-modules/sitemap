@@ -4,14 +4,14 @@ import type {
   BuildSitemapIndexInput,
   BuildSitemapInput,
   ResolvedSitemapEntry,
+  SitemapEntryInput,
   SitemapEntry,
-  SitemapFullEntry,
   SitemapRenderCtx,
 } from '../../types'
 import { createFilter } from '../../util/urlFilter'
 import { mergeOnKey } from '../../util/pageUtils'
 
-export async function normaliseSitemapData(data: SitemapEntry[], options: BuildSitemapInput | BuildSitemapIndexInput) {
+export async function normaliseSitemapData(data: SitemapEntryInput[], options: BuildSitemapInput | BuildSitemapIndexInput) {
   const {
     defaults, exclude,
     include, autoLastmod,
@@ -85,7 +85,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
     })
   }
 
-  function normaliseEntry(e: SitemapFullEntry): ResolvedSitemapEntry {
+  function normaliseEntry(e: SitemapEntry): ResolvedSitemapEntry {
     if (e.lastmod) {
       const date = normaliseDate(e.lastmod)
       if (date)
@@ -133,7 +133,7 @@ export async function normaliseSitemapData(data: SitemapEntry[], options: BuildS
     return e as ResolvedSitemapEntry
   }
 
-  function normaliseEntries(entries: SitemapFullEntry[]) {
+  function normaliseEntries(entries: SitemapEntry[]) {
     return mergeOnKey(entries.map(normaliseEntry), 'loc')
       // sort based on logical string sorting of the loc
       .sort((a, b) => {

@@ -9,13 +9,13 @@ import type { Nuxt } from '@nuxt/schema'
 import { buildSitemap, buildSitemapIndex } from './runtime/sitemap/builder'
 import type {
   BuildSitemapIndexInput,
-  ModuleComputedOptions, RuntimeModuleOptions, SitemapEntry,
+  ModuleComputedOptions, RuntimeModuleOptions, SitemapEntryInput,
   SitemapRenderCtx,
 } from './runtime/types'
 import type { ModuleOptions } from './module'
 import { resolveAsyncDataSources } from './runtime/sitemap/entries'
 
-export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta: ModuleComputedOptions, pagesPromise: Promise<SitemapEntry[]>, nuxt: Nuxt = useNuxt()) {
+export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta: ModuleComputedOptions, pagesPromise: Promise<SitemapEntryInput[]>, nuxt: Nuxt = useNuxt()) {
   const { resolve } = createResolver(import.meta.url)
 
   nuxt.hooks.hook('nitro:init', async (nitro) => {
