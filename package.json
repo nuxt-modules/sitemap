@@ -2,7 +2,7 @@
   "name": "nuxt-simple-sitemap",
   "type": "module",
   "version": "3.0.8",
-  "packageManager": "pnpm@8.6.6",
+  "packageManager": "pnpm@8.6.7",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/harlan-zw",
@@ -43,8 +43,8 @@
     "escape-string-regexp": "^5.0.0",
     "fast-glob": "^3.3.0",
     "knitwork": "^1.0.0",
-    "nuxt-site-config": "^1.0.3",
-    "nuxt-site-config-kit": "^1.0.3",
+    "nuxt-site-config": "^1.0.5",
+    "nuxt-site-config-kit": "^1.0.5",
     "pathe": "^1.1.1",
     "radix3": "^1.0.1",
     "semver": "^7.5.4",
@@ -62,7 +62,7 @@
     "eslint": "8.44.0",
     "execa": "^7.1.1",
     "nuxt": "^3.6.2",
-    "nuxt-simple-robots": "3.0.0",
+    "nuxt-simple-robots": "3.0.2",
     "vitest": "0.33.0"
   },
   "build": {
