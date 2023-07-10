@@ -48,7 +48,7 @@ ${Object.keys(e).map(k => Array.isArray(e[k]) ? handleArray(k, e[k]) : `        
     </url>`) ?? []),
     '</urlset>',
   ], {
-    xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl),
+    xsl: options.moduleConfig.xsl ? options.relativeBaseUrlResolver(options.moduleConfig.xsl) : false,
     credits: options.moduleConfig.credits,
     version: options.buildTimeMeta.version,
   })

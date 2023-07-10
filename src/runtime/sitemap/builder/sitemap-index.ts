@@ -70,7 +70,7 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
   return {
     sitemaps,
     xml: generateSitemapIndexXml(entries, {
-      xsl: options.relativeBaseUrlResolver(options.moduleConfig.xsl),
+      xsl: options.moduleConfig.xsl ? options.relativeBaseUrlResolver(options.moduleConfig.xsl) : false,
       credits: options.moduleConfig.credits,
       version: options.buildTimeMeta.version,
     }),
