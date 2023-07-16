@@ -34,11 +34,12 @@ export default defineEventHandler(async (e) => {
     return d
   })
   return {
-    _sources: sources
+    _sources: [...sources]
       .filter((s) => {
         return s.urls.length > 0 || s.error
       })
       .map((s) => {
+        s = { ...s }
         s.urls = s.urls.length || 0
         return s
       }),
