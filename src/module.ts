@@ -4,19 +4,18 @@ import {
   addServerPlugin,
   createResolver,
   defineNuxtModule, extendPages,
-  findPath, hasNuxtModule, resolvePath, useLogger,
+  findPath, hasNuxtModule, useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
-import { dirname, join } from 'pathe'
 import { version } from '../package.json'
 import { extendTypes, getNuxtModuleVersion, hasNuxtModuleCompatibility } from './kit'
 import type {
   ModuleComputedOptions, ModuleRuntimeConfig,
-  MultiSitemapsInput, SitemapEntryInput,
-  SitemapEntry,
+  MultiSitemapsInput, SitemapEntry,
+  SitemapEntryInput,
   SitemapOutputHookCtx,
   SitemapRenderCtx,
   SitemapRoot,
