@@ -1,11 +1,12 @@
-import { hasProtocol, joinURL, parseURL } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { defu } from 'defu'
+import { fixSlashes } from 'site-config-stack'
 import type {
   BuildSitemapIndexInput,
   BuildSitemapInput,
   ResolvedSitemapEntry,
-  SitemapEntryInput,
   SitemapEntry,
+  SitemapEntryInput,
   SitemapRenderCtx,
 } from '../../types'
 import { createFilter } from '../../util/urlFilter'
@@ -54,7 +55,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
         delete e.url
       }
       // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
-      e.loc = parseURL(e.loc).pathname
+      e.loc = fixSlashes(false, e.loc)
       e = defu(e, defaultEntryData)
       return e
     })
