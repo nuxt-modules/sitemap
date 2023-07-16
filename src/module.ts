@@ -298,6 +298,8 @@ export default defineNuxtModule<ModuleOptions>({
                 autoLastmod: config.autoLastmod,
                 // @ts-expect-error runtime types
                 defaultLocale: nuxt.options.i18n?.defaultLocale || 'en',
+                // @ts-expect-error runtime types
+                strategy: nuxt.options.i18n?.strategy || 'no_prefix',
               })
               : []
             resolve(payload)

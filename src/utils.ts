@@ -3,7 +3,14 @@ import type { NuxtPage } from 'nuxt/schema'
 import { joinURL } from 'ufo'
 import type { SitemapEntryInput } from './runtime/types'
 
-export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { routeNameSeperator?: string; autoLastmod: boolean; defaultLocale: string }) {
+export interface NuxtPagesToSitemapEntriesOptions {
+  routeNameSeperator?: string
+  autoLastmod: boolean
+  defaultLocale: string
+  strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
+}
+
+export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
   config.routeNameSeperator = config.routeNameSeperator || '__'
   const flattenedPages = pages
     .map((page) => {
@@ -52,6 +59,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: { ro
   // now need to convert to alternativs
   const final: SitemapEntryInput[] = Object.entries(localeGropes).map(([locale, entries]) => {
     if (locale === 'default') {
+      // routes must have a locale if we're prefixing them
+      if (config.strategy === 'prefix')
+        return []
       return entries.map((e) => {
         delete e.page
         delete e.locale
