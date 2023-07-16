@@ -1,7 +1,5 @@
-import { addTemplate, createResolver, loadNuxtModuleInstance, normalizeSemanticVersion, useNuxt } from '@nuxt/kit'
+import { addTemplate, createResolver, useNuxt } from '@nuxt/kit'
 import { relative } from 'pathe'
-import { satisfies } from 'semver'
-import type { NuxtModule } from 'nuxt/schema'
 import type { MaybePromise } from './runtime/types'
 
 export function extendTypes(module: string, template: (options: { typesPath: string }) => MaybePromise<string>) {
@@ -27,35 +25,5 @@ export {}
 
   nuxt.hooks.hook('prepare:types', ({ references }) => {
     references.push({ path: resolve(nuxt.options.buildDir, `module/${module}.d.ts`) })
-  })
-}
-
-// @todo remove after 3.6.2
-export async function getNuxtModuleVersion(module: string | NuxtModule, nuxt = useNuxt()) {
-  const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
-  if (moduleMeta.version)
-    return moduleMeta.version
-
-  if (!moduleMeta.name)
-    return false
-
-  const version = nuxt.options._installedModules.filter(m => m.meta.name === moduleMeta.name).map(m => m.meta.version)?.[0]
-  if (version)
-    return version
-
-  if (nuxt.options.modules.includes(moduleMeta.name)) {
-    const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name, nuxt)
-    return buildTimeModuleMeta.version || false
-  }
-  return false
-}
-
-export async function hasNuxtModuleCompatibility(module: string | NuxtModule, semverVersion: string, nuxt = useNuxt()) {
-  const version = await getNuxtModuleVersion(module, nuxt)
-  if (!version)
-    return false
-
-  return satisfies(normalizeSemanticVersion(version), semverVersion, {
-    includePrerelease: true,
   })
 }

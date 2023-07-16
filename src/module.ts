@@ -4,14 +4,15 @@ import {
   addServerPlugin,
   createResolver,
   defineNuxtModule, extendPages,
-  findPath, hasNuxtModule, useLogger,
+  findPath, getNuxtModuleVersion, hasNuxtModule,
+  hasNuxtModuleCompatibility, useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
 import { version } from '../package.json'
-import { extendTypes, getNuxtModuleVersion, hasNuxtModuleCompatibility } from './kit'
+import { extendTypes } from './kit'
 import type {
   ModuleComputedOptions, ModuleRuntimeConfig,
   MultiSitemapsInput, SitemapEntry,
@@ -155,7 +156,7 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-simple-sitemap',
     compatibility: {
-      nuxt: '^3.6.0',
+      nuxt: '^3.6.3',
       bridge: false,
     },
     configKey: 'sitemap',

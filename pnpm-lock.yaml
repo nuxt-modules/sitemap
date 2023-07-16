@@ -45,9 +45,6 @@ importers:
       radix3:
         specifier: ^1.0.1
         version: 1.0.1
-      semver:
-        specifier: ^7.5.4
-        version: 7.5.4
       site-config-stack:
         specifier: ^1.0.6
         version: 1.0.6(rollup@3.26.2)
