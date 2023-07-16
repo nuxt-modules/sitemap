@@ -306,25 +306,23 @@ export default defineNuxtModule<ModuleOptions>({
       })
     })
 
-    extendTypes('nuxt-simple-sitemap', async () => {
+    extendTypes('nuxt-simple-sitemap', async ({ typesPath }) => {
       return `
-import type { SitemapOutputHookCtx, SitemapRenderCtx, SitemapItemDefaults } from '${resolve('runtime/types')}'
-
 declare module 'nitropack' {
   interface NitroRouteRules {
     index?: boolean
-    sitemap?: SitemapItemDefaults
+    sitemap?: import('${typesPath}').SitemapItemDefaults
   }
   interface NitroRouteConfig {
     index?: boolean
-    sitemap?: SitemapItemDefaults
+    sitemap?: import('${typesPath}').SitemapItemDefaults
   }
 }
 // extend nitro hooks
 declare module 'nitropack/dist/runtime/types' {
   interface NitroRuntimeHooks {
-    'sitemap:resolved': (ctx: SitemapRenderCtx) => void | Promise<void>
-    'sitemap:output': (ctx: SitemapOutputHookCtx) => void | Promise<void>
+    'sitemap:resolved': (ctx: import('${typesPath}').SitemapRenderCtx) => void | Promise<void>
+    'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
   }
 }
 `
