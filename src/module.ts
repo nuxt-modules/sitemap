@@ -377,7 +377,7 @@ declare module 'nitropack/dist/runtime/types' {
       buildTimeMeta,
     }
 
-    if (config.debug || process.dev) {
+    if (config.debug || nuxt.options.dev) {
       addServerHandler({
         route: '/api/__sitemap__/debug',
         handler: resolve('./runtime/routes/debug'),
