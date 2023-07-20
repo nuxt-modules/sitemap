@@ -36,7 +36,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@nuxt/devtools-kit": "^0.6.7",
+    "@nuxt/devtools-kit": "^0.7.0",
     "@nuxt/kit": "^3.6.5",
     "chalk": "^5.3.0",
     "defu": "^6.1.2",
