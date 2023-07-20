@@ -2,6 +2,8 @@ import { defineEventHandler, getQuery } from 'h3'
 import { resolveAsyncDataSources } from '../sitemap/entries'
 import type { ModuleRuntimeConfig, SitemapRoot } from '../types'
 import { createSitePathResolver, useRuntimeConfig } from '#imports'
+
+// @ts-expect-error untyped
 import pages from '#nuxt-simple-sitemap/pages.mjs'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 

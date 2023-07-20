@@ -79,13 +79,16 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     }).filter(Boolean)
 
     const defaultEntry = entries.find(entry => entry.locale === config.defaultLocale)
+    // there may not be a default entry?
+    if (!defaultEntry)
+      return null
     delete defaultEntry.page
     delete defaultEntry.locale
     return {
       alternatives,
       ...defaultEntry,
     }
-  }).flat()
+  }).filter(Boolean).flat()
 
   return final
 }

@@ -6,6 +6,8 @@ import { setupCache } from '../util/cache'
 import { createSitePathResolver, useRuntimeConfig } from '#imports'
 import { useNitroApp } from '#internal/nitro'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
+
+// @ts-expect-error untyped
 import pages from '#nuxt-simple-sitemap/pages.mjs'
 
 export default defineEventHandler(async (e) => {
