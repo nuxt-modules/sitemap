@@ -45,6 +45,9 @@ importers:
       radix3:
         specifier: ^1.0.1
         version: 1.0.1
+      semver:
+        specifier: ^7.5.4
+        version: 7.5.4
       site-config-stack:
         specifier: ^1.0.7
         version: 1.0.7(rollup@3.26.2)
@@ -1510,7 +1513,7 @@ packages:
       picocolors: 1.0.0
       pkg-types: 1.0.3
       rc9: 2.1.1
-      semver: 7.5.3
+      semver: 7.5.4
       sirv: 2.0.3
       unimport: 3.0.14(rollup@3.26.2)
       vite: 4.4.1(@types/node@20.4.0)
@@ -9366,14 +9369,6 @@ packages:
   /semver@6.3.0:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
     hasBin: true
-
-  /semver@7.5.3:
-    resolution: {integrity: sha512-QBlUtyVk/5EeHbi7X0fw6liDZc7BBmEaSYn01fMU1OUYbf6GPsbTtd8WmnqbI20SeycoHSeiybkE/q1Q+qlThQ==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dependencies:
-      lru-cache: 6.0.0
-    dev: true
 
   /semver@7.5.4:
     resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
