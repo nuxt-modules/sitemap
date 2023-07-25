@@ -168,7 +168,6 @@ export async function getNuxtModuleVersion(module: string | NuxtModule, nuxt: Nu
 
   // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
   if (hasNuxtModule(moduleMeta.name)) {
-    console.log('has module', moduleMeta.name)
     const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name, nuxt)
     return buildTimeModuleMeta.version || false
   }
