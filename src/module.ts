@@ -4,13 +4,13 @@ import {
   addServerPlugin,
   createResolver,
   defineNuxtModule, extendPages,
-  findPath, getNuxtModuleVersion, hasNuxtModule,
-  hasNuxtModuleCompatibility, useLogger,
+  findPath, useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { version } from '../package.json'
 import { extendTypes } from './kit'
 import type {
@@ -22,7 +22,14 @@ import type {
   SitemapRoot,
 } from './runtime/types'
 import { setupPrerenderHandler } from './prerender'
-import { convertNuxtPagesToSitemapEntries } from './utils'
+import {
+  convertNuxtPagesToSitemapEntries,
+  // @todo use nuxt kit utils after 3.6.5
+  getNuxtModuleOptions,
+  getNuxtModuleVersion,
+  hasNuxtModule,
+  hasNuxtModuleCompatibility,
+} from './utils'
 
 export interface ModuleOptions extends SitemapRoot {
   /**
@@ -238,11 +245,10 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     if (hasNuxtModule('@nuxtjs/i18n')) {
-      const i18nVersion = await getNuxtModuleVersion('nuxt-simple-robots')
+      const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion} for the the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
-      // @ts-expect-error runtime types
-      const nuxtI18nConfig = nuxt.options.i18n as Record<string, any> | undefined
+      const nuxtI18nConfig = await getNuxtModuleOptions('@nuxtjs/i18n') as NuxtI18nOptions
       if (nuxtI18nConfig?.pages) {
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {

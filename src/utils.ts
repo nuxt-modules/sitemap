@@ -1,6 +1,9 @@
 import { statSync } from 'node:fs'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtModule, NuxtPage } from 'nuxt/schema'
 import { joinURL } from 'ufo'
+import type { Nuxt } from '@nuxt/schema'
+import { loadNuxtModuleInstance, normalizeSemanticVersion, useNuxt } from '@nuxt/kit'
+import { satisfies } from 'semver'
 import type { SitemapEntryInput } from './runtime/types'
 
 export interface NuxtPagesToSitemapEntriesOptions {
@@ -91,4 +94,96 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
   }).filter(Boolean).flat()
 
   return final
+}
+
+/**
+ * Get the user provided options for a Nuxt module.
+ *
+ * These options may not be the resolved options that the module actually uses.
+ */
+export async function getNuxtModuleOptions(module: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
+  const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
+  const { nuxtModule } = (await loadNuxtModuleInstance(module, nuxt))
+  const inlineOptions = (
+    await Promise.all(
+      nuxt.options.modules
+        .filter(async (m) => {
+          if (!Array.isArray(m))
+            return false
+          const _module = m[0]
+          return typeof module === 'object'
+            ? (await (_module as any as NuxtModule).getMeta?.() === moduleMeta.name)
+            : _module === moduleMeta.name
+        })
+        .map(m => m?.[1 as keyof typeof m]),
+    )
+  )[0] || {}
+  if (nuxtModule.getOptions)
+    return nuxtModule.getOptions(inlineOptions, nuxt)
+  return inlineOptions
+}
+
+/**
+ * Check if a Nuxt module is installed by name.
+ *
+ * This will check both the installed modules and the modules to be installed. Note
+ * that it cannot detect if a module is _going to be_ installed programmatically by another module.
+ */
+export function hasNuxtModule(moduleName: string, nuxt: Nuxt = useNuxt()): boolean {
+  // check installed modules
+  return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName)
+    // check modules to be installed
+    || Boolean(
+      nuxt.options.modules
+        .find((m) => {
+          // input may either a string, an array or a module instance
+          function resolveModuleEntry(input: typeof m): boolean {
+            if (typeof input === 'object' && !Array.isArray(input))
+              return (input as any as NuxtModule).name === moduleName
+            return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
+          }
+          return resolveModuleEntry(m)
+        }),
+    )
+}
+
+/**
+ * Get the version of a Nuxt module.
+ *
+ * Scans installed modules for the version, if it's not found it will attempt to load the module instance and get the version from there.
+ */
+export async function getNuxtModuleVersion(module: string | NuxtModule, nuxt: Nuxt | any = useNuxt()): Promise<string | false> {
+  const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
+  if (moduleMeta.version)
+    return moduleMeta.version
+  // need a name from here
+  if (!moduleMeta.name)
+    return false
+  // maybe the version got attached within the installed module instance?
+  const version = nuxt.options._installedModules
+    // @ts-expect-error _installedModules is not typed
+    .filter(m => m.meta.name === moduleMeta.name).map(m => m.meta.version)?.[0]
+  if (version)
+    return version
+
+  // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
+  if (hasNuxtModule(moduleMeta.name)) {
+    console.log('has module', moduleMeta.name)
+    const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name, nuxt)
+    return buildTimeModuleMeta.version || false
+  }
+  return false
+}
+
+/**
+ * Checks if a Nuxt Module is compatible with a given semver version.
+ */
+export async function hasNuxtModuleCompatibility(module: string | NuxtModule, semverVersion: string, nuxt: Nuxt = useNuxt()): Promise<boolean> {
+  const version = await getNuxtModuleVersion(module, nuxt)
+  if (!version)
+    return false
+
+  return satisfies(normalizeSemanticVersion(version), semverVersion, {
+    includePrerelease: true,
+  })
 }
