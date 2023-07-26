@@ -238,7 +238,7 @@ export default defineNuxtModule<ModuleOptions>({
       const robotsVersion = await getNuxtModuleVersion('nuxt-simple-robots')
       // we want to keep versions in sync
       if (!await hasNuxtModuleCompatibility('nuxt-simple-robots', '>=3'))
-        logger.warn(`You are using nuxt-simple-robots v${robotsVersion} the best compatibility, please upgrade to nuxt-simple-robots v3.0.0 or higher.`)
+        logger.warn(`You are using nuxt-simple-robots v${robotsVersion}. For the best compatibility, please upgrade to nuxt-simple-robots v3.0.0 or higher.`)
       nuxt.hooks.hook('robots:config', (robotsConfig) => {
         robotsConfig.sitemap.push(config.sitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
       })
@@ -250,6 +250,7 @@ export default defineNuxtModule<ModuleOptions>({
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion} for the the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       const nuxtI18nConfig = await getNuxtModuleOptions('@nuxtjs/i18n') as NuxtI18nOptions
       if (nuxtI18nConfig?.pages) {
+        logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes
