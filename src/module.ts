@@ -244,11 +244,12 @@ export default defineNuxtModule<ModuleOptions>({
       })
     }
 
+    let nuxtI18nConfig: NuxtI18nOptions = {}
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
-      const nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
+      nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
       const usingi18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingi18nPages) {
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
@@ -274,8 +275,7 @@ export default defineNuxtModule<ModuleOptions>({
       if (!usingi18nPages && config.autoAlternativeLangPrefixes && nuxtI18nConfig?.locales) {
         if (nuxtI18nConfig?.strategy !== 'no_prefix') {
           const prefixes: string[] = []
-          // @ts-expect-error i18n schema issue
-          nuxt.options.i18n.locales.forEach((locale) => {
+          nuxtI18nConfig.locales.forEach((locale) => {
             const loc = typeof locale === 'string' ? locale : locale.code
             if (loc === nuxtI18nConfig.defaultLocale)
               return
@@ -303,10 +303,8 @@ export default defineNuxtModule<ModuleOptions>({
             const payload = config.inferStaticPagesAsRoutes
               ? convertNuxtPagesToSitemapEntries(pages, {
                 autoLastmod: config.autoLastmod,
-                // @ts-expect-error runtime types
-                defaultLocale: nuxt.options.i18n?.defaultLocale || 'en',
-                // @ts-expect-error runtime types
-                strategy: nuxt.options.i18n?.strategy || 'no_prefix',
+                defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
+                strategy: nuxtI18nConfig.strategy || 'no_prefix',
               })
               : []
             resolve(payload)
