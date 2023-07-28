@@ -60,7 +60,7 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
         .filter(r => !r.route.includes('.'))
         .map(r => ({ loc: r.route })) || []
 
-      if (!buildTimeMeta.prerenderSitemap) {
+      if (buildTimeMeta.hasPrerenderedRoutesPayload) {
         // for SSR we always need to generate the routes.json payload
         await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
         await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderUrls))

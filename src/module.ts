@@ -345,11 +345,12 @@ declare module 'nitropack/dist/runtime/types' {
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
+    const isPrerenderingRoutes = prerenderedRoutes.length > 0 || !!nuxt.options.nitro.prerender?.crawlLinks
     const buildTimeMeta: ModuleComputedOptions = {
       // @ts-expect-error runtime types
       isNuxtContentDocumentDriven: hasNuxtModule('@nuxt/content') && (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths),
       hasApiRoutesUrl: !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls',
-      hasPrerenderedRoutesPayload: !nuxt.options.dev && !prerenderSitemap,
+      hasPrerenderedRoutesPayload: !nuxt.options.dev && !prerenderSitemap && isPrerenderingRoutes,
       prerenderSitemap,
       version,
     }
