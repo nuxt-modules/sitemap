@@ -388,6 +388,20 @@ declare module 'nitropack/dist/runtime/types' {
         route: '/api/__sitemap__/debug',
         handler: resolve('./runtime/routes/debug'),
       })
+      // pretty hacky but works for now
+      addCustomTab({
+        // unique identifier
+        name: 'nuxt-simple-sitemap',
+        // title to display in the tab
+        title: 'Sitemap',
+        // any icon from Iconify, or a URL to an image
+        icon: 'carbon:tree-view',
+        // iframe view
+        view: {
+          type: 'iframe',
+          src: '/api/__sitemap__/debug',
+        },
+      })
     }
 
     // always add the styles
@@ -401,21 +415,6 @@ declare module 'nitropack/dist/runtime/types' {
       if (prerenderSitemap)
         addPrerenderRoutes(config.xsl)
     }
-
-    // pretty hacky but works for now
-    addCustomTab({
-      // unique identifier
-      name: 'nuxt-simple-sitemap',
-      // title to display in the tab
-      title: 'Sitemap',
-      // any icon from Iconify, or a URL to an image
-      icon: 'carbon:tree-view',
-      // iframe view
-      view: {
-        type: 'iframe',
-        src: '/api/__sitemap__/debug',
-      },
-    })
 
     // multi sitemap support
     if (config.sitemaps) {
