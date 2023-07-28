@@ -156,7 +156,6 @@ export interface BuildSitemapInput {
   sitemap?: SitemapRoot
   getRouteRulesForPath: (path: string) => Record<string, any>
   canonicalUrlResolver: (path: string) => string
-  nitroUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
   callHook?: (ctx: SitemapRenderCtx) => Promise<void>
   prerenderUrls?: SitemapEntryInput[]

@@ -26,7 +26,6 @@ export default defineEventHandler(async (e) => {
     sitemap,
     buildTimeMeta,
     getRouteRulesForPath,
-    nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
     canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
     relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
     pages,

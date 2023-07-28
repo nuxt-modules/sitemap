@@ -105,7 +105,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
 
   // for SSR we inject a payload of the routes which we can later read from
   if (hasPrerenderedRoutesPayload)
-    waitables.push(doFetch(input.nitroUrlResolver('/__sitemap__/routes.json')))
+    waitables.push(doFetch(input.canonicalUrlResolver('/__sitemap__/routes.json'), 1500))
 
   if (isNuxtContentDocumentDriven)
     waitables.push(doFetch('/api/__sitemap__/document-driven-urls'))

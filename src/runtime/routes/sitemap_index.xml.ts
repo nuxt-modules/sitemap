@@ -28,7 +28,6 @@ export default defineEventHandler(async (e) => {
       buildTimeMeta,
       getRouteRulesForPath,
       callHook,
-      nitroUrlResolver: createSitePathResolver(e, { canonical: false, absolute: true, withBase: true }),
       canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
       pages,

@@ -101,7 +101,6 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
 
       const options: BuildSitemapIndexInput = {
         moduleConfig: moduleConfig as RuntimeModuleOptions,
-        nitroUrlResolver: createSitePathResolver({ canonical: false, absolute: true, withBase: true }),
         canonicalUrlResolver: createSitePathResolver({ canonical: true, absolute: true, withBase: true }),
         relativeBaseUrlResolver: createSitePathResolver({ absolute: false, withBase: true }),
         buildTimeMeta,
