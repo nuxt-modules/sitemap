@@ -28,12 +28,17 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
     urls: await resolveUrls(input.moduleConfig.urls),
   })
 
-  function doFetch(url: string) {
+  function doFetch(url: string, timeout = 8000) {
     const context = 'api'
     const start = Date.now()
+
+    const timeoutController = new AbortController()
+    const abortRequestTimeout = setTimeout(() => timeoutController.abort(), timeout)
+
     let isHtmlResponse = false
     return globalThis.$fetch(url, {
       responseType: 'json',
+      signal: timeoutController.signal,
       headers: {
         Accept: 'application/json',
       },
@@ -41,33 +46,38 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
           isHtmlResponse = true
       },
-    }).then((urls) => {
-      const timeTakenMs = Date.now() - start
-      if (isHtmlResponse) {
+    })
+      .then((urls) => {
+        const timeTakenMs = Date.now() - start
+        if (isHtmlResponse) {
+          entries.push({
+            context,
+            timeTakenMs,
+            urls: [],
+            path: url,
+            error: 'Received HTML response instead of JSON',
+          })
+        }
+        else {
+          entries.push({
+            context,
+            timeTakenMs,
+            path: url,
+            urls: urls as SitemapEntryInput[],
+          })
+        }
+      })
+      .catch((err) => {
         entries.push({
           context,
-          timeTakenMs,
           urls: [],
           path: url,
-          error: 'Received HTML response instead of JSON',
+          error: err,
         })
-      }
-      else {
-        entries.push({
-          context,
-          timeTakenMs,
-          path: url,
-          urls: urls as SitemapEntryInput[],
-        })
-      }
-    }).catch((err) => {
-      entries.push({
-        context,
-        urls: [],
-        path: url,
-        error: err,
       })
-    })
+      .finally(() => {
+        abortRequestTimeout && clearTimeout(abortRequestTimeout)
+      })
   }
 
   const waitables: Promise<void>[] = []
@@ -108,7 +118,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
     waitables.push(doFetch(input.canonicalUrlResolver('/__sitemap__/routes.json'), 1500))
 
   if (isNuxtContentDocumentDriven)
-    waitables.push(doFetch('/api/__sitemap__/document-driven-urls'))
+    waitables.push(doFetch('/api/__sitemap__/document-driven-urls', 4000))
 
   // allow requests to be made in parallel
   await Promise.all(waitables)
