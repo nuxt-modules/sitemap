@@ -6,7 +6,6 @@ import type {
   SitemapRoot,
 } from '../../types'
 import { normaliseDate, normaliseSitemapData, resolveAsyncDataSources } from '../entries'
-import { MaxSitemapSize } from '../const'
 import { escapeValueForXml, wrapSitemapXml } from './util'
 
 export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
@@ -21,7 +20,7 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
     const urls = await normaliseSitemapData(rawEntries.map(e => e.urls).flat(), options)
     // split into the max size which should be 1000
     urls.forEach((url, i) => {
-      const chunkIndex = Math.floor(i / MaxSitemapSize)
+      const chunkIndex = Math.floor(i / (options.moduleConfig.defaultSitemapsChunkSize as number))
       chunks[chunkIndex] = chunks[chunkIndex] || { urls: [] }
       chunks[chunkIndex].urls.push(url)
     })

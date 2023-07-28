@@ -89,6 +89,14 @@ export interface ModuleOptions extends SitemapRoot {
    */
   discoverImages: boolean
   /**
+   * When chunking the sitemaps into multiple files, how many entries should each file contain.
+   *
+   * Set to `false` to disabling chunking completely.
+   *
+   * @default 1000
+   */
+  defaultSitemapsChunkSize: number | false
+  /**
    * Modify the cache behavior.
    *
    * Passing a boolean will enable or disable the runtime cache with the default options.
@@ -173,6 +181,7 @@ export default defineNuxtModule<ModuleOptions>({
     credits: true,
     cacheTtl: 1000 * 60 * 60, // cache for 60 minutes
     debug: false,
+    defaultSitemapsChunkSize: 1000,
     autoLastmod: true,
     inferStaticPagesAsRoutes: true,
     discoverImages: true,
@@ -360,6 +369,7 @@ declare module 'nitropack/dist/runtime/types' {
       xsl: config.xsl,
       xslTips: config.xslTips,
       cacheTtl: config.cacheTtl,
+      defaultSitemapsChunkSize: config.defaultSitemapsChunkSize,
       // @ts-expect-error runtime types
       runtimeCacheStorage: typeof config.runtimeCacheStorage === 'boolean' ? 'default' : config.runtimeCacheStorage.driver,
       autoAlternativeLangPrefixes: config.autoAlternativeLangPrefixes,

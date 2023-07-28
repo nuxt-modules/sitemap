@@ -24,7 +24,7 @@ export interface DataSourceResult {
   timeTakenMs?: number
 }
 
-export type RuntimeModuleOptions = { urls: SitemapEntryInput[] } & Pick<ModuleOptions, 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
+export type RuntimeModuleOptions = { urls: SitemapEntryInput[] } & Pick<ModuleOptions, 'defaultSitemapsChunkSize' | 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'autoAlternativeLangPrefixes' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
 
 export interface ModuleRuntimeConfig { moduleConfig: RuntimeModuleOptions; buildTimeMeta: ModuleComputedOptions }
 

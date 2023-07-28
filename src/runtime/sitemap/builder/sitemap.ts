@@ -1,6 +1,5 @@
 import type { BuildSitemapInput, SitemapRenderCtx } from '../../types'
 import { normaliseSitemapData, resolveAsyncDataSources } from '../entries'
-import { MaxSitemapSize } from '../const'
 import { escapeValueForXml, wrapSitemapXml } from './util'
 
 export async function buildSitemap(options: BuildSitemapInput) {
@@ -10,8 +9,8 @@ export async function buildSitemap(options: BuildSitemapInput) {
   // dedupes data
   let entries = await normaliseSitemapData(sources.map(e => e.urls).flat(), options)
   // if we're rendering a partial sitemap, slice the entries
-  if (sitemapsConfig === true)
-    entries = entries.slice(Number(options.sitemap?.sitemapName) * MaxSitemapSize, (Number(options.sitemap?.sitemapName) + 1) * MaxSitemapSize)
+  if (sitemapsConfig === true && options.moduleConfig.defaultSitemapsChunkSize)
+    entries = entries.slice(Number(options.sitemap?.sitemapName) * options.moduleConfig.defaultSitemapsChunkSize, (Number(options.sitemap?.sitemapName) + 1) * options.moduleConfig.defaultSitemapsChunkSize)
 
   const ctx: SitemapRenderCtx = { urls: entries, sitemapName: options?.sitemap?.sitemapName || 'sitemap' }
   await options.callHook?.(ctx)
