@@ -10,6 +10,9 @@ import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 // @ts-expect-error untyped
 import pages from '#nuxt-simple-sitemap/pages.mjs'
 
+// @ts-expect-error untyped
+import extraRoutes from '#nuxt-simple-sitemap/extra-routes.mjs'
+
 export default defineEventHandler(async (e) => {
   const { moduleConfig, buildTimeMeta } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
   // we need to check if we're rendering multiple sitemaps from the index sitemap
@@ -31,6 +34,7 @@ export default defineEventHandler(async (e) => {
 
     sitemap = await buildSitemap({
       moduleConfig,
+      extraRoutes,
       buildTimeMeta,
       canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),

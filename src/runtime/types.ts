@@ -17,7 +17,7 @@ export type MaybePromise<T> = T | Promise<T>
 export type SitemapEntryInput = SitemapEntry | string
 
 export interface DataSourceResult {
-  context: 'pages' | 'nuxt-config' | 'api' | 'prerender'
+  context: 'pages' | 'nuxt-config.module' | 'nuxt-config.nitro-prerender' | 'nuxt-config.route-rules' | 'api' | 'prerender'
   urls: SitemapEntryInput[]
   path?: string
   error?: Error | string
@@ -84,10 +84,6 @@ export type Changefreq =
   | 'never'
 
 export interface SitemapEntry {
-  /**
-   * @deprecated use `loc`
-   */
-  url?: string
   loc: string
   lastmod?: string | Date
   changefreq?: Changefreq
@@ -96,6 +92,10 @@ export interface SitemapEntry {
   news?: GoogleNewsEntry
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
+  /**
+   * @deprecated use `loc`
+   */
+  url?: string
 }
 
 export interface AlternativeEntry {
@@ -158,6 +158,7 @@ export interface BuildSitemapInput {
   canonicalUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
   callHook?: (ctx: SitemapRenderCtx) => Promise<void>
+  extraRoutes: { routeRules: string[]; prerenderUrls: string[] }
   prerenderUrls?: SitemapEntryInput[]
   pages: SitemapEntryInput[]
 }

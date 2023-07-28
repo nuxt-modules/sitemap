@@ -14,6 +14,7 @@ import type {
 } from './runtime/types'
 import type { ModuleOptions } from './module'
 import { resolveAsyncDataSources } from './runtime/sitemap/entries'
+import { generateExtraRoutesFromNuxtConfig } from './utils'
 
 export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta: ModuleComputedOptions, pagesPromise: Promise<SitemapEntryInput[]>, nuxt: Nuxt = useNuxt()) {
   const { resolve } = createResolver(import.meta.url)
@@ -104,6 +105,7 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
         canonicalUrlResolver: createSitePathResolver({ canonical: true, absolute: true, withBase: true }),
         relativeBaseUrlResolver: createSitePathResolver({ absolute: false, withBase: true }),
         buildTimeMeta,
+        extraRoutes: generateExtraRoutesFromNuxtConfig(),
         getRouteRulesForPath: routeMatcher,
         callHook,
         prerenderUrls,

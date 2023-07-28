@@ -9,6 +9,9 @@ import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 // @ts-expect-error untyped
 import pages from '#nuxt-simple-sitemap/pages.mjs'
 
+// @ts-expect-error untyped
+import extraRoutes from '#nuxt-simple-sitemap/extra-routes.mjs'
+
 export default defineEventHandler(async (e) => {
   const path = parseURL(e.path).pathname
   if (!path.endsWith('-sitemap.xml'))
@@ -41,6 +44,7 @@ export default defineEventHandler(async (e) => {
         sitemapName,
         ...moduleConfig.sitemaps[sitemapName],
       },
+      extraRoutes,
       canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !process.dev, absolute: true, withBase: true }),
       relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
       moduleConfig,

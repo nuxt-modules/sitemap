@@ -22,8 +22,22 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
     })
   }
 
+  if (input.extraRoutes.prerenderUrls.length) {
+    entries.push({
+      context: 'nuxt-config.nitro-prerender',
+      urls: input.extraRoutes.prerenderUrls,
+    })
+  }
+
+  if (input.extraRoutes.routeRules.length) {
+    entries.push({
+      context: 'nuxt-config.route-rules',
+      urls: input.extraRoutes.routeRules,
+    })
+  }
+
   entries.push({
-    context: 'nuxt-config',
+    context: 'nuxt-config.module',
     path: 'urls',
     urls: await resolveUrls(input.moduleConfig.urls),
   })
@@ -85,7 +99,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
   async function loadSitemapSources(sitemap: SitemapRoot) {
     if (sitemap.urls) {
       entries.push({
-        context: 'nuxt-config',
+        context: 'nuxt-config.module',
         path: `sitemaps.${sitemap.sitemapName}.urls`,
         urls: await resolveUrls(sitemap.urls),
       })

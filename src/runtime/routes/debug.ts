@@ -5,6 +5,9 @@ import { createSitePathResolver, useRuntimeConfig } from '#imports'
 
 // @ts-expect-error untyped
 import pages from '#nuxt-simple-sitemap/pages.mjs'
+
+// @ts-expect-error untyped
+import extraRoutes from '#nuxt-simple-sitemap/extra-routes.mjs'
 import { getRouteRulesForPath } from '#internal/nitro/route-rules'
 
 export default defineEventHandler(async (e) => {
@@ -26,6 +29,7 @@ export default defineEventHandler(async (e) => {
     sitemap,
     buildTimeMeta,
     getRouteRulesForPath,
+    extraRoutes,
     canonicalUrlResolver: createSitePathResolver(e, { canonical: !process.dev, absolute: true, withBase: true }),
     relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
     pages,

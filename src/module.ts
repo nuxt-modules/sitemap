@@ -23,7 +23,7 @@ import type {
 } from './runtime/types'
 import { setupPrerenderHandler } from './prerender'
 import {
-  convertNuxtPagesToSitemapEntries,
+  convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig,
   // @todo use nuxt kit utils after 3.6.5
   getNuxtModuleOptions,
   getNuxtModuleVersion,
@@ -403,6 +403,19 @@ declare module 'nitropack/dist/runtime/types' {
         },
       })
     }
+
+    nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+      // @ts-expect-error runtime types
+      nitroConfig.virtual['#nuxt-simple-sitemap/extra-routes.mjs'] = async () => {
+        const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
+        return [
+          // no wild cards supported
+          `const routeRules = ${JSON.stringify(routeRules)}`,
+          `const prerenderUrls = ${JSON.stringify(prerenderUrls)}`,
+          'export default { routeRules, prerenderUrls }',
+        ].join('\n')
+      }
+    })
 
     // always add the styles
     if (config.xsl === '/__sitemap__/style.xsl') {

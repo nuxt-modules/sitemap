@@ -186,3 +186,21 @@ export async function hasNuxtModuleCompatibility(module: string | NuxtModule, se
     includePrerelease: true,
   })
 }
+
+export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
+  const routeRules = Object.entries(nuxt.options.routeRules || {})
+    .filter(([k, v]) => {
+      // make sure key doesn't use a wildcard and its not for a file
+      if (k.includes('*') || k.includes('.'))
+        return false
+      if (typeof v.index === 'boolean' && !v.index)
+        return false
+      // make sure that we're not redirecting
+      return !v.redirect
+    })
+    .map(([k]) => k)
+  // don't support files
+  const prerenderUrls = (nuxt.options.nitro.prerender?.routes || [])
+    .filter(p => p && !p.includes('.')) as string[]
+  return { routeRules, prerenderUrls }
+}
