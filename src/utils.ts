@@ -201,6 +201,6 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
     .map(([k]) => k)
   // don't support files
   const prerenderUrls = (nuxt.options.nitro.prerender?.routes || [])
-    .filter(p => p && !p.includes('.')) as string[]
+    .filter(p => p && !p.includes('.') && !p.startsWith('/api/')) as string[]
   return { routeRules, prerenderUrls }
 }
