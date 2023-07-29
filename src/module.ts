@@ -248,6 +248,7 @@ export default defineNuxtModule<ModuleOptions>({
       // we want to keep versions in sync
       if (!await hasNuxtModuleCompatibility('nuxt-simple-robots', '>=3'))
         logger.warn(`You are using nuxt-simple-robots v${robotsVersion}. For the best compatibility, please upgrade to nuxt-simple-robots v3.0.0 or higher.`)
+      // @ts-expect-error untyped
       nuxt.hooks.hook('robots:config', (robotsConfig) => {
         robotsConfig.sitemap.push(config.sitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
       })
