@@ -2,7 +2,7 @@ import type { ModuleOptions } from '../module'
 import type { CreateFilterOptions } from './util/urlFilter'
 
 export interface IndexSitemapRemotes {
-  index: (string | SitemapIndexEntry)[]
+  index?: (string | SitemapIndexEntry)[]
 }
 
 export interface IndexSitemapLocals {
