@@ -17,6 +17,11 @@ export default defineNuxtConfig({
   },
   nitro: {
     plugins: ['plugins/sitemap.ts'],
+    prerender: {
+        routes: [
+          '/should-be-in-sitemap',
+        ]
+    }
   },
   content: {
     documentDriven: {
@@ -38,9 +43,16 @@ export default defineNuxtConfig({
   },
   sitemap: {
     debug: true,
+    autoAlternativeLangPrefixes: true,
     // sitemapName: 'test.xml',
     // dynamicUrlsApiEndpoint: '/__sitemap',
+    xslColumns: [
+      { label: 'URL', width: '50%' },
+      { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },
+      { label: 'Hreflangs', select: 'count(xhtml)', width: '25%' },
+    ],
     sitemaps: {
+      defaultSitemapsChunkSize: 10,
       posts: {
         include: ['/blog/**']
       },
@@ -81,6 +93,10 @@ export default defineNuxtConfig({
         priority: 0.3,
         images: []
       }
+    },
+    '/should-not-be-in-sitemap/*': {},
+    '/about-redirect': {
+      redirect: '/about'
     },
     '/about': {
       sitemap: {

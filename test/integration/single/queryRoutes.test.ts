@@ -5,9 +5,7 @@ import { $fetch, setup } from '@nuxt/test-utils'
 const { resolve } = createResolver(import.meta.url)
 
 await setup({
-  rootDir: resolve('../.playground'),
-  build: true,
-  server: true,
+  rootDir: resolve('../../fixtures/basic'),
   nuxtConfig: {
     sitemap: {
       urls: [
@@ -16,8 +14,6 @@ await setup({
         '/query-slash/?foo=bar',
         '/query-slash-hash/?foo=bar#hash',
       ],
-      autoLastmod: false,
-      sitemaps: false,
     },
   },
 })

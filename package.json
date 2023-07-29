@@ -49,7 +49,7 @@
     "radix3": "^1.0.1",
     "semver": "^7.5.4",
     "site-config-stack": "^1.0.8",
-    "ufo": "^1.1.2"
+    "ufo": "^1.2.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.39.8",
