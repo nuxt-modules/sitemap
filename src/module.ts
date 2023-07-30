@@ -6,7 +6,7 @@ import {
   defineNuxtModule, extendPages,
   findPath, useLogger,
 } from '@nuxt/kit'
-import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
+import { withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
@@ -293,18 +293,6 @@ export default defineNuxtModule<ModuleOptions>({
         config.autoAlternativeLangPrefixes = normalisedLocales
           .filter(locale => locale.code !== nuxtI18nConfig.defaultLocale || nuxtI18nConfig.strategy !== 'prefix_except_default')
           .map(locale => locale.iso || locale.code)
-      }
-      if (!usingi18nPages && config.autoAlternativeLangPrefixes && nuxtI18nConfig?.locales) {
-        if (nuxtI18nConfig?.strategy !== 'no_prefix') {
-          const prefixes: string[] = []
-          nuxtI18nConfig.locales.forEach((locale) => {
-            const loc = typeof locale === 'string' ? locale : locale.code
-            if (loc === nuxtI18nConfig.defaultLocale)
-              return
-            prefixes.push(loc)
-          })
-          config.autoAlternativeLangPrefixes = prefixes
-        }
       }
     }
 
