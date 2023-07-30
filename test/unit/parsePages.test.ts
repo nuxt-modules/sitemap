@@ -10,8 +10,16 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/about",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/a-propos",
               "hreflang": "fr",
+            },
+            {
+              "href": "/about",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/about",
@@ -19,8 +27,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/about",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/a-propos",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/about",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/a-propos",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog/categories",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/blog/categories",
               "hreflang": "fr",
+            },
+            {
+              "href": "/blog/categories",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/blog/categories",
@@ -28,8 +61,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/blog/categories",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/categories",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/categories",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/blog/categories",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/blog",
               "hreflang": "fr",
+            },
+            {
+              "href": "/blog",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/blog",
@@ -37,8 +95,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/blog",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/blog",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog/tags",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/blog/tags",
               "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/blog/tags",
@@ -46,8 +129,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/blog/tags",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/tags",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/blog/tags",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/hidden-path-but-in-sitemap",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/hidden-path-but-in-sitemap",
               "hreflang": "fr",
+            },
+            {
+              "href": "/hidden-path-but-in-sitemap",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/hidden-path-but-in-sitemap",
@@ -55,8 +163,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/hidden-path-but-in-sitemap",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/hidden-path-but-in-sitemap",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/hidden-path-but-in-sitemap",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/hidden-path-but-in-sitemap",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr",
               "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/",
@@ -64,8 +197,33 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/new-page",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/new-page",
               "hreflang": "fr",
+            },
+            {
+              "href": "/new-page",
+              "hreflang": "x-default",
             },
           ],
           "loc": "/new-page",
@@ -73,11 +231,53 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/new-page",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/new-page",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/new-page",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/new-page",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/secret",
+              "hreflang": "en",
+            },
+            {
               "href": "/fr/secret",
               "hreflang": "fr",
             },
+            {
+              "href": "/secret",
+              "hreflang": "x-default",
+            },
           ],
           "loc": "/secret",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/secret",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/secret",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/secret",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/secret",
         },
       ]
     `)
