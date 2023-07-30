@@ -103,11 +103,16 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
     // correct alternative hrefs
     if (e.alternatives) {
-      e.alternatives = mergeOnKey(e.alternatives.map((a) => {
-        a = { ...a }
+      e.alternatives = mergeOnKey(e.alternatives.map((e) => {
+        const a: AlternativeEntry & { key?: string } = { ...e }
         a.href = resolve(typeof a.href === 'string' ? a.href : a.href.href)
+        a.key = `${a.hreflang}:${a.href}`
         return a
-      }), 'href')
+      }), 'key')
+        .map((e) => {
+          delete e.key
+          return e
+        })
     }
 
     if (e.images) {
