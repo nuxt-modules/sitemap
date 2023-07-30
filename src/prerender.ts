@@ -71,6 +71,9 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
         return
       }
 
+      if (!buildTimeMeta.prerenderSitemap)
+        return
+
       sitemapGenerated = true
 
       // we need a siteUrl set for pre-rendering
