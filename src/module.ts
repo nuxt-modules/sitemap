@@ -200,7 +200,7 @@ export default defineNuxtModule<ModuleOptions>({
     exclude: [],
   },
   async setup(config, nuxt) {
-    const logger = useLogger('nuxt-simple-robots')
+    const logger = useLogger('nuxt-simple-sitemap')
     logger.level = (config.debug || nuxt.options.debug) ? 4 : 3
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
