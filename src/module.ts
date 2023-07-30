@@ -265,22 +265,34 @@ export default defineNuxtModule<ModuleOptions>({
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes
-            if (locale === nuxtI18nConfig?.defaultLocale && !pageLocales[locale].includes('[')) {
-              // add to sitemap
-              const alternatives = Object.keys(pageLocales).filter(l => l !== locale)
-                .map(l => ({
-                  hreflang: l,
-                  href: nuxtI18nConfig?.strategy !== 'no_prefix' ? joinURL(l, pageLocales[l]) : pageLocales[l],
-                }))
-              if (Array.isArray(config.urls)) {
-                config.urls.push({
-                  loc: nuxtI18nConfig?.strategy === 'prefix' ? joinURL(locale, pageLocales[locale]) : pageLocales[locale],
-                  alternatives,
-                })
-              }
+            if (pageLocales[locale].includes('['))
+              continue
+
+            // add to sitemap
+            const alternatives = Object.keys(pageLocales)
+              .map(l => ({
+                hreflang: l,
+                href: pageLocales[l],
+              }))
+            if (nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
+              alternatives.push({ hreflang: 'x-default', href: pageLocales[nuxtI18nConfig.defaultLocale] })
+            if (Array.isArray(config.urls)) {
+              config.urls.push({
+                loc: pageLocales[locale],
+                alternatives,
+              })
             }
           }
         }
+      }
+      const hasDisabledAlternativePrefixes = typeof config.autoAlternativeLangPrefixes === 'boolean' && !config.autoAlternativeLangPrefixes
+      const hasSetAlternativePrefixes = Array.isArray(config.autoAlternativeLangPrefixes) && config.autoAlternativeLangPrefixes.length
+      const hasI18nConfigForAlternatives = nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales
+      const normalisedLocales = (nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale)
+      if (!hasDisabledAlternativePrefixes && !hasSetAlternativePrefixes && hasI18nConfigForAlternatives) {
+        config.autoAlternativeLangPrefixes = normalisedLocales
+          .filter(locale => locale.code !== nuxtI18nConfig.defaultLocale || nuxtI18nConfig.strategy !== 'prefix_except_default')
+          .map(locale => locale.iso || locale.code)
       }
       if (!usingi18nPages && config.autoAlternativeLangPrefixes && nuxtI18nConfig?.locales) {
         if (nuxtI18nConfig?.strategy !== 'no_prefix') {

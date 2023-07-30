@@ -2,6 +2,7 @@ import { hasProtocol, joinURL } from 'ufo'
 import { defu } from 'defu'
 import { fixSlashes } from 'site-config-stack'
 import type {
+  AlternativeEntry,
   BuildSitemapIndexInput,
   BuildSitemapInput,
   ResolvedSitemapEntry,
@@ -73,15 +74,13 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   if (Array.isArray(autoAlternativeLangPrefixes)) {
     // otherwise add the entries
     entries.map((e) => {
-      // // check the route doesn't start with a prefix
-      // if (autoAlternativeLangPrefixes.some((prefix) => {
-      //   return e.loc.startsWith(withBase(`/${prefix}`, options.baseURL))
-      // }))
-      //   return false
-      e.alternatives = e.alternatives || autoAlternativeLangPrefixes.map(prefix => ({
-        hreflang: prefix,
-        href: joinURL(prefix, e.loc),
-      }))
+      e.alternatives = e.alternatives || [
+        { hreflang: 'x-default', href: e.loc },
+        ...autoAlternativeLangPrefixes.map(prefix => ({
+          hreflang: prefix,
+          href: joinURL(prefix, e.loc),
+        })),
+      ]
       return e
     })
   }
@@ -137,7 +136,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
   function normaliseEntries(entries: SitemapEntry[]) {
     return mergeOnKey(entries.map(normaliseEntry), 'loc')
-      // sort based on logical string sorting of the loc
+    // sort based on logical string sorting of the loc
       .sort((a, b) => {
         if (a.loc > b.loc)
           return 1

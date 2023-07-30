@@ -71,27 +71,32 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         return e
       })
     }
-    // need to take defaultLocale into account, only add alternatives for non-default
-    const alternatives = entries.map((entry) => {
-      if (!entry.locale || entry.locale === config.defaultLocale)
-        return null
-      return {
-        hreflang: entry.locale,
-        href: entry.loc,
-      }
-    }).filter(Boolean)
 
-    const defaultEntry = entries.find(entry => entry.locale === config.defaultLocale)
-    // there may not be a default entry?
-    if (!defaultEntry)
-      return null
-    delete defaultEntry.page
-    delete defaultEntry.locale
-    return {
-      alternatives,
-      ...defaultEntry,
-    }
-  }).filter(Boolean).flat()
+    return entries.map((entry) => {
+      const alternatives = entries.map((entry) => {
+        return {
+          hreflang: entry.locale,
+          href: entry.loc,
+        }
+      })
+      const xDefault = entries.find(a => a.locale === config.defaultLocale)
+      if (xDefault) {
+        alternatives.push({
+          hreflang: 'x-default',
+          href: xDefault.loc,
+        })
+      }
+      const e = { ...entry }
+      delete e.page
+      delete e.locale
+      return {
+        ...e,
+        alternatives,
+      }
+    })
+  })
+    .filter(Boolean)
+    .flat()
 
   return final
 }
