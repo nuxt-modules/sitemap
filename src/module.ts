@@ -114,7 +114,7 @@ export interface ModuleOptions extends SitemapRoot {
    * Automatically add alternative links to the sitemap based on a prefix list.
    * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
    *
-   * @default `booolean` or array of locales
+   * @default `[]`
    */
   autoAlternativeLangPrefixes?: boolean | string[]
   /**
@@ -216,7 +216,7 @@ export default defineNuxtModule<ModuleOptions>({
     // for trailing slashes / absolute urls
     await installNuxtSiteConfig()
     // support deprecated keys
-    await updateSiteConfig({
+    updateSiteConfig({
       _context: 'nuxt-simple-sitemap:config',
       trailingSlash: config.trailingSlash,
       url: config.siteUrl,
@@ -260,8 +260,8 @@ export default defineNuxtModule<ModuleOptions>({
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
-      const usingi18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
-      if (usingi18nPages) {
+      const usingI18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
+      if (usingI18nPages) {
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes

@@ -59,7 +59,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     return acc
   }, localeGropes)
 
-  // now need to convert to alternativs
+  // now need to convert to alternatives
   const final: SitemapEntryInput[] = Object.entries(localeGropes).map(([locale, entries]) => {
     if (locale === 'default') {
       // routes must have a locale if we're prefixing them
