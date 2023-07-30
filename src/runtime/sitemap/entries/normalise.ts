@@ -40,7 +40,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     return options.canonicalUrlResolver(s)
   }
 
-  const defaultEntryData = { ...defaults || {} }
+  const defaultEntryData = defu(options.sitemap?.defaults, defaults)
   if (autoLastmod)
     defaultEntryData.lastmod = defaultEntryData.lastmod || new Date()
 
