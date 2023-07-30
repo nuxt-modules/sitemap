@@ -100,10 +100,6 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
     // need to make sure siteURL doesn't have the base on the end
     e.loc = resolve(e.loc)
-    //
-    // // always convert to trailing slash for the index
-    // if (e.loc === siteUrlWithoutBase && !siteUrlWithoutBase.endsWith('/'))
-    //   e.loc = `${e.loc}/`
 
     // correct alternative hrefs
     if (e.alternatives) {
