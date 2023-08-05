@@ -21,7 +21,6 @@ import type {
   SitemapRenderCtx,
   SitemapRoot,
 } from './runtime/types'
-import { setupPrerenderHandler } from './prerender'
 import {
   convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig,
   // @todo use nuxt kit utils after 3.6.5
@@ -30,6 +29,7 @@ import {
   hasNuxtModule,
   hasNuxtModuleCompatibility,
 } from './utils'
+import { setupPrerenderHandler } from './prerender'
 
 export interface ModuleOptions extends SitemapRoot {
   /**
@@ -295,32 +295,29 @@ export default defineNuxtModule<ModuleOptions>({
           .map(locale => locale.iso || locale.code)
       }
     }
+    // we may not have pages
+    let pages: NuxtPage[] = []
+    nuxt.hooks.hook('modules:done', () => {
+      extendPages((_pages) => {
+        pages = _pages
+      })
+    })
 
     const pagesPromise = new Promise<SitemapEntryInput[]>((resolve) => {
       // hook in after the other modules are done
-      nuxt.hooks.hook('modules:done', async () => {
-        const pagePromise = new Promise<NuxtPage[]>((_resolve) => {
-          extendPages((pages) => {
-            _resolve(pages)
-          })
-        })
-
-        nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-          // @ts-expect-error runtime types
-          nitroConfig.virtual['#nuxt-simple-sitemap/pages.mjs'] = async () => {
-            const pages = await pagePromise
-
-            const payload = config.inferStaticPagesAsRoutes
-              ? convertNuxtPagesToSitemapEntries(pages, {
-                autoLastmod: config.autoLastmod,
-                defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
-                strategy: nuxtI18nConfig.strategy || 'no_prefix',
-              })
-              : []
-            resolve(payload)
-            return `export default ${JSON.stringify(payload, null, 2)}`
-          }
-        })
+      nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+        // @ts-expect-error runtime types
+        nitroConfig.virtual['#nuxt-simple-sitemap/pages.mjs'] = async () => {
+          const payload = config.inferStaticPagesAsRoutes
+            ? convertNuxtPagesToSitemapEntries(pages, {
+              autoLastmod: config.autoLastmod,
+              defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
+              strategy: nuxtI18nConfig.strategy || 'no_prefix',
+            })
+            : []
+          resolve(payload)
+          return `export default ${JSON.stringify(payload, null, 2)}`
+        }
       })
     })
 
@@ -417,7 +414,7 @@ declare module 'nitropack/dist/runtime/types' {
 
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
       // @ts-expect-error runtime types
-      nitroConfig.virtual['#nuxt-simple-sitemap/extra-routes.mjs'] = async () => {
+      nitroConfig.virtual['#nuxt-simple-sitemap/extra-routes.mjs'] = () => {
         const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
         return [
           // no wild cards supported
