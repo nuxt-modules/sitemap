@@ -8,7 +8,7 @@ export const NuxtContentSimpleSitemapPlugin: NitroAppPlugin = (nitroApp) => {
   const { moduleConfig } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
   const contentStorage = prefixStorage(useStorage(), 'content:source')
   nitroApp.hooks.hook('content:file:afterParse', async (content) => {
-    if (content._extension !== 'md' || content.sitemap === false || content.indexable === false)
+    if (content._extension !== 'md' || content._partial || content.sitemap === false || content.indexable === false)
       return
     // add any top level images
     let images = []
