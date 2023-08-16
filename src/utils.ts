@@ -4,6 +4,7 @@ import { joinURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 import { loadNuxtModuleInstance, normalizeSemanticVersion, useNuxt } from '@nuxt/kit'
 import { satisfies } from 'semver'
+import { extname } from 'pathe'
 import type { SitemapEntryInput } from './runtime/types'
 
 export interface NuxtPagesToSitemapEntriesOptions {
@@ -206,6 +207,6 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
     .map(([k]) => k)
   // don't support files
   const prerenderUrls = (nuxt.options.nitro.prerender?.routes || [])
-    .filter(p => p && !p.includes('.') && !p.startsWith('/api/')) as string[]
+    .filter(p => p && !extname(p) && !p.startsWith('/api/')) as string[]
   return { routeRules, prerenderUrls }
 }
