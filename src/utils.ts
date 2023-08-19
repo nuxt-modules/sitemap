@@ -15,7 +15,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
 }
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
-  const routeNameSeperator = config.routeNameSeperator || '__'
+  const routeNameSeperator = config.routeNameSeperator || '___'
   const flattenedPages = pages
     .map((page) => {
       return page.children?.length
@@ -46,8 +46,6 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
   pagesWithMeta.reduce((acc: Record<string, any>, entry) => {
     if (entry.page.name?.includes(routeNameSeperator)) {
       let [name, locale] = entry.page.name.split(routeNameSeperator)
-      if (locale)
-        locale = locale.slice(1)
       if (!acc[name])
         acc[name] = []
       acc[name].push({ ...entry, locale })
