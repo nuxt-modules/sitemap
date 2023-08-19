@@ -313,6 +313,7 @@ export default defineNuxtModule<ModuleOptions>({
               autoLastmod: config.autoLastmod,
               defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
               strategy: nuxtI18nConfig.strategy || 'no_prefix',
+              routeNameSeperator: nuxtI18nConfig.routesNameSeparator,
             })
             : []
           resolve(payload)
