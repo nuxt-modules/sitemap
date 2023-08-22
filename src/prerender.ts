@@ -58,7 +58,7 @@ export function setupPrerenderHandler(moduleConfig: ModuleOptions, buildTimeMeta
         return
 
       const prerenderUrls = (nitro._prerenderedRoutes || [])
-        .filter(r => r.fileName === '.html' && !r.route.startsWith('/api/'))
+        .filter(r => (!r.fileName || r.fileName.endsWith('.html')) && !r.route.endsWith('.html') && !r.route.startsWith('/api/'))
         .map(r => ({ loc: r.route })) || []
 
       if (buildTimeMeta.hasPrerenderedRoutesPayload) {
