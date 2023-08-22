@@ -8,6 +8,7 @@ import { extname } from 'pathe'
 import type { SitemapEntryInput } from './runtime/types'
 
 export interface NuxtPagesToSitemapEntriesOptions {
+  normalisedLocales: { code: string; iso?: string }[]
   routeNameSeperator?: string
   autoLastmod: boolean
   defaultLocale: string
@@ -73,8 +74,10 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
 
     return entries.map((entry) => {
       const alternatives = entries.map((entry) => {
+        // check if the locale has a iso code
+        const hreflang = config.normalisedLocales.find(l => l.code === entry.locale)?.iso || entry.locale
         return {
-          hreflang: entry.locale,
+          hreflang,
           href: entry.loc,
         }
       })

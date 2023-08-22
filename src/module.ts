@@ -16,6 +16,7 @@ import { extendTypes } from './kit'
 import type {
   AutoI18nConfig, ModuleComputedOptions,
   ModuleRuntimeConfig, MultiSitemapsInput,
+  NormalisedLocales,
   SitemapEntry,
   SitemapEntryInput,
   SitemapOutputHookCtx,
@@ -31,6 +32,7 @@ import {
   hasNuxtModuleCompatibility,
 } from './utils'
 import { setupPrerenderHandler } from './prerender'
+import { mergeOnKey } from './runtime/util/pageUtils'
 
 export interface ModuleOptions extends SitemapRoot {
   /**
@@ -267,11 +269,13 @@ export default defineNuxtModule<ModuleOptions>({
 
     let nuxtI18nConfig: NuxtI18nOptions = {}
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
+    let normalisedLocales: NormalisedLocales = []
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
+      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale), 'code')
       const usingI18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages) {
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
@@ -280,10 +284,11 @@ export default defineNuxtModule<ModuleOptions>({
             if (pageLocales[locale].includes('['))
               continue
 
+            const hreflang = normalisedLocales.find(l => l.code === locale)?.iso || locale
             // add to sitemap
             const alternatives = Object.keys(pageLocales)
               .map(l => ({
-                hreflang: l,
+                hreflang,
                 href: pageLocales[l],
               }))
             if (nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
@@ -302,12 +307,11 @@ export default defineNuxtModule<ModuleOptions>({
       const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales
-      const normalisedLocales = (nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale)
       if (!hasSetAutoI18n && !hasDisabledAutoI18n && !hasDisabledAlternativePrefixes && hasI18nConfigForAlternatives) {
         if (!hasSetAlternativePrefixes) {
           resolvedAutoI18n = {
             defaultLocale: nuxtI18nConfig.defaultLocale!,
-            locales: normalisedLocales.map(locale => locale.iso || locale.code),
+            locales: normalisedLocales,
             strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
           }
         }
@@ -316,25 +320,25 @@ export default defineNuxtModule<ModuleOptions>({
           // convert to object
           resolvedAutoI18n = {
             defaultLocale: nuxtI18nConfig.defaultLocale!,
-            locales: config.autoAlternativeLangPrefixes,
+            locales: config.autoAlternativeLangPrefixes.map(l => ({ code: l })),
             strategy: (nuxtI18nConfig.strategy || 'prefix') as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
           }
         }
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
-      if (typeof config.sitemaps === 'undefined' && resolvedAutoI18n) {
+      if (typeof config.sitemaps === 'undefined' && !!resolvedAutoI18n) {
+        config.sitemaps = {}
         for (const locale of resolvedAutoI18n.locales) {
-          config.sitemaps = {}
           // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
-          if (resolvedAutoI18n && locale === resolvedAutoI18n.defaultLocale && resolvedAutoI18n.strategy === 'prefix_except_default') {
-            config.sitemaps[locale] = {
-              exclude: resolvedAutoI18n.locales.filter(l => l !== locale).map(l => `/${l}/**`),
+          if (resolvedAutoI18n && locale.code === resolvedAutoI18n.defaultLocale && resolvedAutoI18n.strategy === 'prefix_except_default') {
+            config.sitemaps[locale.code] = {
+              exclude: resolvedAutoI18n.locales.filter(l => l.code !== locale.code).map(l => `/${l.code}/**`),
             }
           }
           else {
             // otherwise a simple include works
-            config.sitemaps[locale] = {
-              include: [`/${locale}/**`],
+            config.sitemaps[locale.code] = {
+              include: [`/${locale.code}/**`],
             }
           }
         }
@@ -359,6 +363,7 @@ export default defineNuxtModule<ModuleOptions>({
               defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
               strategy: nuxtI18nConfig.strategy || 'no_prefix',
               routeNameSeperator: nuxtI18nConfig.routesNameSeparator,
+              normalisedLocales,
             })
             : []
           resolve(payload)

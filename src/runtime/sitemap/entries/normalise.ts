@@ -27,7 +27,6 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
   function resolve(s: string): string
   function resolve(s: string | URL): string
-  function resolve(s?: string | URL): string | undefined
   function resolve(s?: string | URL) {
     if (!s)
       return
@@ -74,7 +73,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     // we need to combine entries based on their loc minus the prefix
     const entriesByLoc: Record<string, string[]> = entries.reduce((acc, e) => {
       // need to match a autoAlternativeLangPrefixes and the url without the prefix
-      const match = e.loc.match(new RegExp(`^/(${autoI18n.locales.join('|')})(.*)`))
+      const match = e.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
       let loc = e.loc
       let prefix = autoI18n.defaultLocale
       if (match) {
@@ -91,9 +90,8 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
       if (prefixes.length === autoI18n.locales.length)
         return
       // otherwise add the missing ones
-      autoI18n.locales.forEach((prefix) => {
+      autoI18n.locales.map(l => l.code).forEach((prefix) => {
         if (!prefixes.includes(prefix)) {
-          // TODO use strategy
           if (autoI18n.strategy === 'prefix')
             entries.push({ loc: joinURL(`/${prefix}`, loc) })
           else if (autoI18n.strategy === 'prefix_except_default')
@@ -103,23 +101,23 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     })
     // finally map the alternatives
     entries.map((e) => {
-      let withoutPrefix = e.loc.replace(new RegExp(`^/(${autoI18n.locales.join('|')})(.*)`), '$2')
+      let withoutPrefix = e.loc.replace(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`), '$2')
       withoutPrefix = withoutPrefix || '/'
       let xDefault = e.loc
       if (autoI18n.strategy === 'prefix') {
         // xDefault is the e.loc replacing the prefix with the default lang
-        xDefault = joinURL(autoI18n.defaultLocale, withoutPrefix)
+        xDefault = joinURL('/', autoI18n.defaultLocale, withoutPrefix)
       }
       else if (autoI18n.strategy === 'prefix_except_default') {
         // xDefault is the e.loc without the prefix
         xDefault = withoutPrefix
       }
       e.alternatives = e.alternatives || [
-        ...autoI18n.locales.map((prefix) => {
-          const isDefault = prefix === autoI18n.defaultLocale
+        ...autoI18n.locales.map((locale) => {
+          const isDefault = locale.code === autoI18n.defaultLocale
           let href = ''
           if (autoI18n.strategy === 'prefix') {
-            href = joinURL(prefix, withoutPrefix)
+            href = joinURL(locale.code, withoutPrefix)
           }
           else if (autoI18n.strategy === 'prefix_except_default') {
             if (isDefault) {
@@ -127,11 +125,12 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
               href = withoutPrefix
             }
             else {
-              href = joinURL(prefix, withoutPrefix)
+              href = joinURL('/', locale.code, withoutPrefix)
             }
           }
+          const hreflang = locale.iso || locale.code
           return {
-            hreflang: prefix,
+            hreflang,
             href,
           }
         }),

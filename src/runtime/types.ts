@@ -24,7 +24,8 @@ export interface DataSourceResult {
   timeTakenMs?: number
 }
 
-export interface AutoI18nConfig { locales: string[]; defaultLocale: string; strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' }
+export type NormalisedLocales = { code: string; iso?: string }[]
+export interface AutoI18nConfig { locales: NormalisedLocales; defaultLocale: string; strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' }
 
 export type RuntimeModuleOptions = { urls: SitemapEntryInput[]; autoI18n?: AutoI18nConfig } & Pick<ModuleOptions, 'defaultSitemapsChunkSize' | 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
 
