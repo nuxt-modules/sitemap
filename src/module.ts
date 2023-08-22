@@ -14,8 +14,9 @@ import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { version } from '../package.json'
 import { extendTypes } from './kit'
 import type {
-  ModuleComputedOptions, ModuleRuntimeConfig,
-  MultiSitemapsInput, SitemapEntry,
+  AutoI18nConfig, ModuleComputedOptions,
+  ModuleRuntimeConfig, MultiSitemapsInput,
+  SitemapEntry,
   SitemapEntryInput,
   SitemapOutputHookCtx,
   SitemapRenderCtx,
@@ -115,8 +116,15 @@ export interface ModuleOptions extends SitemapRoot {
    * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
    *
    * @default `[]`
+   *
+   * @deprecated Use `autoI18n`
    */
   autoAlternativeLangPrefixes?: boolean | string[]
+  /**
+   * Automatically add alternative links to the sitemap based on a prefix list.
+   * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
+   */
+  autoI18n?: boolean | AutoI18nConfig
   /**
    * Enable when your nuxt/content files match your pages. This will automatically add sitemap content to the sitemap.
    *
@@ -209,7 +217,11 @@ export default defineNuxtModule<ModuleOptions>({
     config.xslColumns = config.xslColumns || [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
-      { label: 'Last Updated', width: '25%', select: 'concat(substring(sitemap:lastmod,0,11),concat(\' \', substring(sitemap:lastmod,12,5)),concat(\' \', substring(sitemap:lastmod,20,6)))' },
+      {
+        label: 'Last Updated',
+        width: '25%',
+        select: 'concat(substring(sitemap:lastmod,0,11),concat(\' \', substring(sitemap:lastmod,12,5)),concat(\' \', substring(sitemap:lastmod,20,6)))',
+      },
     ]
 
     const { resolve } = createResolver(import.meta.url)
@@ -255,6 +267,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     let nuxtI18nConfig: NuxtI18nOptions = {}
+    let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
@@ -286,13 +299,49 @@ export default defineNuxtModule<ModuleOptions>({
         }
       }
       const hasDisabledAlternativePrefixes = typeof config.autoAlternativeLangPrefixes === 'boolean' && !config.autoAlternativeLangPrefixes
-      const hasSetAlternativePrefixes = Array.isArray(config.autoAlternativeLangPrefixes) && config.autoAlternativeLangPrefixes.length
+      const hasSetAlternativePrefixes = (Array.isArray(config.autoAlternativeLangPrefixes) && config.autoAlternativeLangPrefixes.length) || Object.keys(config.autoAlternativeLangPrefixes || {}).length
+      const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
+      const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales
       const normalisedLocales = (nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale)
-      if (!hasDisabledAlternativePrefixes && !hasSetAlternativePrefixes && hasI18nConfigForAlternatives) {
-        config.autoAlternativeLangPrefixes = normalisedLocales
-          .filter(locale => locale.code !== nuxtI18nConfig.defaultLocale || nuxtI18nConfig.strategy !== 'prefix_except_default')
-          .map(locale => locale.iso || locale.code)
+      if (!hasSetAutoI18n && !hasDisabledAutoI18n && !hasDisabledAlternativePrefixes && hasI18nConfigForAlternatives) {
+        if (!hasSetAlternativePrefixes) {
+          resolvedAutoI18n = {
+            defaultLocale: nuxtI18nConfig.defaultLocale!,
+            locales: normalisedLocales.map(locale => locale.iso || locale.code),
+            strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
+          }
+        }
+        // Array support for backwards compatibility, it's not recommended to use this
+        else if (Array.isArray(config.autoAlternativeLangPrefixes)) {
+          // convert to object
+          resolvedAutoI18n = {
+            defaultLocale: nuxtI18nConfig.defaultLocale!,
+            locales: config.autoAlternativeLangPrefixes,
+            strategy: (nuxtI18nConfig.strategy || 'prefix') as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
+          }
+        }
+      }
+      // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
+      const hasDisabledSitemaps = typeof config.sitemaps === 'boolean' && !config.sitemaps
+      console.log({ hasDisabledSitemaps, resolvedAutoI18n })
+      if (!hasDisabledSitemaps && resolvedAutoI18n) {
+        console.log('MODIFYING SItEMAPS')
+        for (const locale of resolvedAutoI18n.locales) {
+          config.sitemaps = typeof config.sitemaps === 'boolean' ? {} : config.sitemaps || {}
+          // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
+          if (resolvedAutoI18n && locale === resolvedAutoI18n.defaultLocale && resolvedAutoI18n.strategy === 'prefix_except_default') {
+            config.sitemaps[locale] = {
+              exclude: resolvedAutoI18n.locales.filter(l => l !== locale).map(l => `/${l}/**`),
+            }
+          }
+          else {
+            // otherwise a simple include works
+            config.sitemaps[locale] = {
+              include: [`/${locale}/**`],
+            }
+          }
+        }
       }
     }
     // we may not have pages
@@ -385,6 +434,8 @@ declare module 'nitropack/dist/runtime/types' {
       // needed for nuxt/content integration
       discoverImages: config.discoverImages,
     }
+    if (resolvedAutoI18n)
+      moduleConfig.autoI18n = resolvedAutoI18n
     nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
       version,
       // @ts-expect-error untyped

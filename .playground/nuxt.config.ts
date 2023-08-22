@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     NuxtSimpleSitemap,
     'nuxt-simple-robots',
     '@nuxtjs/i18n',
-    // '@nuxt/content',
+    '@nuxt/content',
     '@nuxthq/ui',
     'nuxt-icon'
   ],
@@ -18,10 +18,13 @@ export default defineNuxtConfig({
   nitro: {
     plugins: ['plugins/sitemap.ts'],
     prerender: {
-        routes: [
-          '/should-be-in-sitemap',
-        ]
-    }
+      routes: [
+        '/should-be-in-sitemap',
+        '/foo.bar/',
+        '/test.doc'
+      ],
+      failOnError: false,
+    },
   },
   content: {
     documentDriven: {
@@ -51,8 +54,8 @@ export default defineNuxtConfig({
       { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },
       { label: 'Hreflangs', select: 'count(xhtml)', width: '25%' },
     ],
+    defaultSitemapsChunkSize: 10,
     sitemaps: {
-      defaultSitemapsChunkSize: 10,
       posts: {
         include: ['/blog/**']
       },

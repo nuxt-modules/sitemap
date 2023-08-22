@@ -27,6 +27,12 @@ describe('sitemapName', () => {
           <url>
               <loc>https://nuxtseo.com/about</loc>
           </url>
+          <url>
+              <loc>https://nuxtseo.com/crawled</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/sub/page</loc>
+          </url>
       </urlset>"
     `)
   }, 60000)

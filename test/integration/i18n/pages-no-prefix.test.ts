@@ -82,6 +82,9 @@ describe('i18n', () => {
               <loc>https://nuxtseo.com/test</loc>
           </url>
           <url>
+              <loc>https://nuxtseo.com/__sitemap/url</loc>
+          </url>
+          <url>
               <loc>https://nuxtseo.com/offres/developement</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en\\" href=\\"https://nuxtseo.com/services/development\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/offres/developement\\" />

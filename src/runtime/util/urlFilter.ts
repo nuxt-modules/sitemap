@@ -29,7 +29,7 @@ export function createFilter(options: CreateFilterOptions = {}): (path: string) 
           // @ts-expect-error untyped
           routes[r] = true
         }
-        const routeRulesMatcher = toRouteMatcher(createRouter({ routes, ...options }))
+        const routeRulesMatcher = toRouteMatcher(createRouter({ routes, strictTrailingSlash: false }))
         if (routeRulesMatcher.matchAll(path).length > 0)
           return Boolean(v.result)
       }

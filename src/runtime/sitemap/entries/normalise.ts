@@ -17,7 +17,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   const {
     defaults, exclude,
     include, autoLastmod,
-    autoAlternativeLangPrefixes,
+    autoI18n,
   } = options.moduleConfig
   // make sure include and exclude start with baseURL
   const combinedInclude = [...(options.sitemap?.include || []), ...(include || [])]
@@ -68,22 +68,81 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
         return false
       return defu(routeRules.sitemap || {}, e)
     })
-    .filter(e => e && urlFilter(e.loc))
 
   // apply auto alternative lang prefixes, needs to happen before normalization
-  if (Array.isArray(autoAlternativeLangPrefixes)) {
-    // otherwise add the entries
+  if (autoI18n?.locales) {
+    // we need to combine entries based on their loc minus the prefix
+    const entriesByLoc: Record<string, string[]> = entries.reduce((acc, e) => {
+      // need to match a autoAlternativeLangPrefixes and the url without the prefix
+      const match = e.loc.match(new RegExp(`^/(${autoI18n.locales.join('|')})(.*)`))
+      let loc = e.loc
+      let prefix = autoI18n.defaultLocale
+      if (match) {
+        loc = match[2] || '/'
+        prefix = match[1]
+      }
+      acc[loc] = acc[loc] || []
+      acc[loc].push(prefix)
+      return acc
+    }, {})
+    // now iterate them and see if any lang prefixes are missing
+    Object.entries(entriesByLoc).forEach(([loc, prefixes]) => {
+      // if we have all the prefixes, skip
+      if (prefixes.length === autoI18n.locales.length)
+        return
+      // otherwise add the missing ones
+      autoI18n.locales.forEach((prefix) => {
+        if (!prefixes.includes(prefix)) {
+          // TODO use strategy
+          if (autoI18n.strategy === 'prefix')
+            entries.push({ loc: joinURL(`/${prefix}`, loc) })
+          else if (autoI18n.strategy === 'prefix_except_default')
+            entries.push({ loc: prefix === autoI18n.defaultLocale ? loc : joinURL(`/${prefix}`, loc) })
+        }
+      })
+    })
+    // finally map the alternatives
     entries.map((e) => {
+      let withoutPrefix = e.loc.replace(new RegExp(`^/(${autoI18n.locales.join('|')})(.*)`), '$2')
+      withoutPrefix = withoutPrefix || '/'
+      let xDefault = e.loc
+      if (autoI18n.strategy === 'prefix') {
+        // xDefault is the e.loc replacing the prefix with the default lang
+        xDefault = joinURL(autoI18n.defaultLocale, withoutPrefix)
+      }
+      else if (autoI18n.strategy === 'prefix_except_default') {
+        // xDefault is the e.loc without the prefix
+        xDefault = withoutPrefix
+      }
       e.alternatives = e.alternatives || [
-        { hreflang: 'x-default', href: e.loc },
-        ...autoAlternativeLangPrefixes.map(prefix => ({
-          hreflang: prefix,
-          href: joinURL(prefix, e.loc),
-        })),
+        ...autoI18n.locales.map((prefix) => {
+          const isDefault = prefix === autoI18n.defaultLocale
+          let href = ''
+          if (autoI18n.strategy === 'prefix') {
+            href = joinURL(prefix, withoutPrefix)
+          }
+          else if (autoI18n.strategy === 'prefix_except_default') {
+            if (isDefault) {
+              // no prefix
+              href = withoutPrefix
+            }
+            else {
+              href = joinURL(prefix, withoutPrefix)
+            }
+          }
+          return {
+            hreflang: prefix,
+            href,
+          }
+        }),
+        { hreflang: 'x-default', href: xDefault },
       ]
       return e
     })
   }
+
+  // remove filtered urls
+  const filteredEntries = entries.filter(e => e && urlFilter(e.loc))
 
   function normaliseEntry(e: SitemapEntry): ResolvedSitemapEntry {
     if (e.lastmod) {
@@ -157,7 +216,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   }
 
   // do first round normalising of each entry
-  const ctx: SitemapRenderCtx = { urls: normaliseEntries(entries), sitemapName: options.sitemap?.sitemapName || 'sitemap' }
+  const ctx: SitemapRenderCtx = { urls: normaliseEntries(filteredEntries), sitemapName: options.sitemap?.sitemapName || 'sitemap' }
   // call hook
   if (options.callHook)
     await options.callHook(ctx)
