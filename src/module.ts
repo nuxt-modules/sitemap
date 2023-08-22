@@ -378,9 +378,6 @@ declare module 'nitropack' {
     index?: boolean
     sitemap?: import('${typesPath}').SitemapItemDefaults
   }
-}
-// extend nitro hooks
-declare module 'nitropack/dist/runtime/types' {
   interface NitroRuntimeHooks {
     'sitemap:resolved': (ctx: import('${typesPath}').SitemapRenderCtx) => void | Promise<void>
     'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
