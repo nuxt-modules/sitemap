@@ -324,9 +324,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
       const hasDisabledSitemaps = typeof config.sitemaps === 'boolean' && !config.sitemaps
-      console.log({ hasDisabledSitemaps, resolvedAutoI18n })
       if (!hasDisabledSitemaps && resolvedAutoI18n) {
-        console.log('MODIFYING SItEMAPS')
         for (const locale of resolvedAutoI18n.locales) {
           config.sitemaps = typeof config.sitemaps === 'boolean' ? {} : config.sitemaps || {}
           // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
