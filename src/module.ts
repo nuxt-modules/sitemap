@@ -395,6 +395,29 @@ declare module 'nitropack' {
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
+    if (prerenderSitemap) {
+      // add route rules for sitemap xmls so they're rendered properly
+      const routeRules = {
+        headers: {
+          'Content-Type': 'text/xml; charset=UTF-8',
+          'Cache-Control': 'max-age=600, must-revalidate',
+        },
+      }
+      nuxt.options.routeRules = nuxt.options.routeRules || {}
+      if (config.sitemaps) {
+        nuxt.options.routeRules['/sitemap_index.xml'] = routeRules
+        if (typeof config.sitemaps === 'object') {
+          for (const k in config.sitemaps)
+            nuxt.options.routeRules[`/${k}-sitemap.xml`] = routeRules
+        }
+        else {
+          nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
+        }
+      }
+      else {
+        nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
+      }
+    }
     const isPrerenderingRoutes = prerenderedRoutes.length > 0 || !!nuxt.options.nitro.prerender?.crawlLinks
     const buildTimeMeta: ModuleComputedOptions = {
       // @ts-expect-error runtime types
