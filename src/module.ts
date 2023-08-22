@@ -267,6 +267,11 @@ export default defineNuxtModule<ModuleOptions>({
       })
     }
 
+    if (typeof config.urls === 'function')
+      config.urls = [...await config.urls()]
+    else if (Array.isArray(config.urls))
+      config.urls = [...await config.urls]
+
     let nuxtI18nConfig: NuxtI18nOptions = {}
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     let normalisedLocales: NormalisedLocales = []
@@ -390,13 +395,6 @@ declare module 'nitropack' {
 }
 `
     })
-
-    if (typeof config.urls === 'function')
-      config.urls = [...await config.urls()]
-
-    else if (Array.isArray(config.urls))
-      config.urls = [...await config.urls]
-
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
