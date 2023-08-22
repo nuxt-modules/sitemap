@@ -5,7 +5,12 @@ const payload = [{ name: 'slug___en', path: '/:slug(.*)*', file: '/home/harlan/p
 
 describe('page parser', () => {
   it('is parsed', () => {
-    expect(convertNuxtPagesToSitemapEntries(payload, { autoLastmod: false, defaultLocale: 'en' })).toMatchInlineSnapshot(`
+    expect(convertNuxtPagesToSitemapEntries(payload, {
+      autoLastmod: false,
+      defaultLocale: 'en',
+      normalisedLocales: [{ code: 'en' }, { code: 'fr' }],
+      strategy: 'no_prefix',
+    })).toMatchInlineSnapshot(`
       [
         {
           "alternatives": [
