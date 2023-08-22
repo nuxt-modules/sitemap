@@ -195,7 +195,6 @@ export default defineNuxtModule<ModuleOptions>({
     discoverImages: true,
     dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
     urls: [],
-    sitemaps: false,
     xsl: '/__sitemap__/style.xsl',
     xslTips: true,
     strictNuxtContentPaths: false,
@@ -323,10 +322,9 @@ export default defineNuxtModule<ModuleOptions>({
         }
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
-      const hasDisabledSitemaps = typeof config.sitemaps === 'boolean' && !config.sitemaps
-      if (!hasDisabledSitemaps && resolvedAutoI18n) {
+      if (typeof config.sitemaps === 'undefined' && resolvedAutoI18n) {
         for (const locale of resolvedAutoI18n.locales) {
-          config.sitemaps = typeof config.sitemaps === 'boolean' ? {} : config.sitemaps || {}
+          config.sitemaps = {}
           // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
           if (resolvedAutoI18n && locale === resolvedAutoI18n.defaultLocale && resolvedAutoI18n.strategy === 'prefix_except_default') {
             config.sitemaps[locale] = {
