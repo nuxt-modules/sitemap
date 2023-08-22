@@ -45,7 +45,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
   const localeGropes = {}
   pagesWithMeta.reduce((acc: Record<string, any>, entry) => {
     if (entry.page.name?.includes(routeNameSeperator)) {
-      let [name, locale] = entry.page.name.split(routeNameSeperator)
+      const [name, locale] = entry.page.name.split(routeNameSeperator)
       if (!acc[name])
         acc[name] = []
       acc[name].push({ ...entry, locale })

@@ -47,7 +47,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   // make sure we're working with objects
   const entries = data
     .map(e => typeof e === 'string' ? { loc: e } : e)
-  // uniform loc
+    // uniform loc
     .map((e) => {
       // make fields writable so we can modify them
       e = { ...e }
@@ -60,7 +60,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
       e = defu(e, defaultEntryData)
       return e
     })
-  // apply route rules
+    // apply route rules
     .map((e) => {
       const routeRules = options.getRouteRulesForPath(e.loc)
       // nuxt-simple-robots integration
@@ -136,7 +136,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
   function normaliseEntries(entries: SitemapEntry[]) {
     return mergeOnKey(entries.map(normaliseEntry), 'loc')
-    // sort based on logical string sorting of the loc
+      // sort based on logical string sorting of the loc
       .sort((a, b) => {
         if (a.loc > b.loc)
           return 1
@@ -172,17 +172,17 @@ export function normaliseDate(date: Date | string | unknown) {
     return false
   const z = n => (`0${n}`).slice(-2)
   return (
-      `${d.getUTCFullYear()
-      }-${
-          z(d.getUTCMonth() + 1)
-      }-${
-          z(d.getUTCDate())
-      }T${
-          z(d.getUTCHours())
-      }:${
-          z(d.getUTCMinutes())
-      }:${
-          z(d.getUTCSeconds())
-      }+00:00`
+    `${d.getUTCFullYear()
+    }-${
+      z(d.getUTCMonth() + 1)
+    }-${
+      z(d.getUTCDate())
+    }T${
+      z(d.getUTCHours())
+    }:${
+      z(d.getUTCMinutes())
+    }:${
+      z(d.getUTCSeconds())
+    }+00:00`
   )
 }
