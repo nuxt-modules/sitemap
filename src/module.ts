@@ -326,7 +326,7 @@ export default defineNuxtModule<ModuleOptions>({
         }
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
-      if (typeof config.sitemaps === 'undefined' && !!resolvedAutoI18n) {
+      if (typeof config.sitemaps === 'undefined' && !!resolvedAutoI18n && nuxtI18nConfig.strategy !== 'no_prefix') {
         config.sitemaps = {}
         for (const locale of resolvedAutoI18n.locales) {
           // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
