@@ -44,7 +44,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     defaultEntryData.lastmod = defaultEntryData.lastmod || new Date()
 
   // make sure we're working with objects
-  const entries = data
+  let entries = data
     .map(e => typeof e === 'string' ? { loc: e } : e)
     // uniform loc
     .map((e) => {
@@ -138,6 +138,10 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
       ]
       return e
     })
+    if (autoI18n.strategy === 'prefix') {
+      // need to strip any urls that don't have a prefix
+      entries = entries.filter(e => e.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`)))
+    }
   }
 
   // remove filtered urls
