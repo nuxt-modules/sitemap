@@ -9,7 +9,7 @@ export interface IndexSitemapLocals {
   [key: string]: Partial<SitemapRoot>
 }
 
-export type MultiSitemapsInput = IndexSitemapLocals & IndexSitemapRemotes
+export type MultiSitemapsInput = Partial<IndexSitemapLocals & IndexSitemapRemotes>
 
 export type MaybeFunction<T> = T | (() => T)
 export type MaybePromise<T> = T | Promise<T>
