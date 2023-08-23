@@ -67,6 +67,7 @@ export default defineNuxtConfig({
 
 - [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
 - [i18n - StackBlitz](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
+- [Manual Chunking - StackBlitz](https://stackblitz.com/edit/nuxt-starter-umyso3?file=nuxt.config.ts)
 
 ## Sponsors
 
