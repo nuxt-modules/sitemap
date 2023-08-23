@@ -4,7 +4,7 @@ export default defineEventHandler((event) => {
   return [
     {
       loc: '/__sitemap/url',
-      changefreq: 'weekly'
+      changefreq: 'weekly',
     },
   ]
 })

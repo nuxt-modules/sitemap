@@ -52,7 +52,7 @@
     "ufo": "^1.2.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.40.2",
+    "@antfu/eslint-config": "^0.40.3",
     "@nuxt/content": "^2.7.2",
     "@nuxt/kit": "^3.6.5",
     "@nuxt/module-builder": "^0.4.0",
