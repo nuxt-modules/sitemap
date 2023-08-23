@@ -71,31 +71,28 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   // apply auto alternative lang prefixes, needs to happen before normalization
   if (autoI18n?.locales) {
     // we need to combine entries based on their loc minus the prefix
-    const entriesByLoc: Record<string, string[]> = entries.reduce((acc, e) => {
+    const entriesByLoc: Record<string, { entry: any; prefix: string }[]> = entries.reduce((acc, e) => {
       // need to match a autoAlternativeLangPrefixes and the url without the prefix
       const match = e.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
       let loc = e.loc
-      let prefix = autoI18n.defaultLocale
+      let prefix = null
       if (match) {
         loc = match[2] || '/'
         prefix = match[1]
       }
       acc[loc] = acc[loc] || []
-      acc[loc].push(prefix)
+      acc[loc].push({ entry: e, prefix })
       return acc
     }, {})
     // now iterate them and see if any lang prefixes are missing
-    Object.entries(entriesByLoc).forEach(([loc, prefixes]) => {
-      // if we have all the prefixes, skip
-      if (prefixes.length === autoI18n.locales.length)
-        return
+    Object.entries(entriesByLoc).forEach(([loc, childEntry]) => {
       // otherwise add the missing ones
       autoI18n.locales.map(l => l.code).forEach((prefix) => {
-        if (!prefixes.includes(prefix)) {
+        if (!childEntry.map(e => e.prefix).filter(Boolean).includes(prefix)) {
           if (autoI18n.strategy === 'prefix')
-            entries.push({ loc: joinURL(`/${prefix}`, loc) })
+            entries.push({ ...childEntry[0].entry, loc: joinURL(`/${prefix}`, loc) })
           else if (autoI18n.strategy === 'prefix_except_default')
-            entries.push({ loc: prefix === autoI18n.defaultLocale ? loc : joinURL(`/${prefix}`, loc) })
+            entries.push({ ...childEntry[0].entry, loc: prefix === autoI18n.defaultLocale ? loc : joinURL(`/${prefix}`, loc) })
         }
       })
     })

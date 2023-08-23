@@ -41,6 +41,7 @@ describe('i18n prefix', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
           </url>
       </urlset>"
     `)

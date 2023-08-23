@@ -79,6 +79,7 @@ describe('i18n', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
           </url>
           <url>
               <loc>https://nuxtseo.com/offres/developement</loc>

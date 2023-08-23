@@ -1,7 +1,10 @@
 import { defineEventHandler } from 'h3'
 
-export default defineEventHandler(() => {
+export default defineEventHandler((event) => {
   return [
-    '/__sitemap/url',
+    {
+      loc: '/__sitemap/url',
+      changefreq: 'weekly'
+    },
   ]
 })

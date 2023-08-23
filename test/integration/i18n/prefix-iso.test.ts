@@ -49,6 +49,12 @@ describe('i18n prefix', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en\\" />
           </url>
           <url>
+              <loc>https://nuxtseo.com/en/extra</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/extra\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/extra\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/extra\\" />
+          </url>
+          <url>
               <loc>https://nuxtseo.com/en/test</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/test\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/test\\" />
@@ -67,7 +73,15 @@ describe('i18n prefix', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/test\\" />
           </url>
           <url>
+              <loc>https://nuxtseo.com/en/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+          </url>
+          <url>
               <loc>https://nuxtseo.com/fr/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
