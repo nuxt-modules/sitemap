@@ -30,11 +30,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       nuxt-site-config:
-        specifier: ^1.0.10
-        version: 1.0.10(rollup@3.28.1)
+        specifier: ^1.0.11
+        version: 1.0.11(rollup@3.28.1)
       nuxt-site-config-kit:
-        specifier: ^1.0.10
-        version: 1.0.10(rollup@3.28.1)
+        specifier: ^1.0.11
+        version: 1.0.11(rollup@3.28.1)
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -45,8 +45,8 @@ importers:
         specifier: ^7.5.4
         version: 7.5.4
       site-config-stack:
-        specifier: ^1.0.10
-        version: 1.0.10(rollup@3.28.1)
+        specifier: ^1.0.11
+        version: 1.0.11
       ufo:
         specifier: ^1.3.0
         version: 1.3.0
@@ -1594,7 +1594,7 @@ packages:
       unist-util-position: 5.0.0
       unist-util-stringify-position: 4.0.0
       unist-util-visit: 5.0.0
-      unstorage: 1.8.0
+      unstorage: 1.9.0
       ws: 8.13.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -1603,10 +1603,12 @@ packages:
       - '@azure/identity'
       - '@azure/keyvault-secrets'
       - '@azure/storage-blob'
+      - '@capacitor/preferences'
       - '@planetscale/database'
       - '@upstash/redis'
       - '@vercel/kv'
       - bufferutil
+      - idb-keyval
       - rollup
       - supports-color
       - utf-8-validate
@@ -2032,7 +2034,7 @@ packages:
       pkg-types: 1.0.3
       ufo: 1.3.0
       unplugin: 1.4.0
-      unstorage: 1.8.0
+      unstorage: 1.9.0
       vue-i18n: 9.3.0-beta.26(vue@3.3.4)
       vue-i18n-routing: 0.13.4(vue-i18n@9.3.0-beta.26)(vue@3.3.4)
     transitivePeerDependencies:
@@ -2042,10 +2044,12 @@ packages:
       - '@azure/identity'
       - '@azure/keyvault-secrets'
       - '@azure/storage-blob'
+      - '@capacitor/preferences'
       - '@planetscale/database'
       - '@upstash/redis'
       - '@vercel/kv'
       - '@vue/composition-api'
+      - idb-keyval
       - petite-vue-i18n
       - rollup
       - supports-color
@@ -8389,8 +8393,8 @@ packages:
     dependencies:
       '@nuxt/kit': 3.7.0(rollup@3.28.1)
       defu: 6.1.2
-      nuxt-site-config: 1.0.10(rollup@3.28.1)
-      nuxt-site-config-kit: 1.0.10(rollup@3.28.1)
+      nuxt-site-config: 1.0.11(rollup@3.28.1)
+      nuxt-site-config-kit: 1.0.11(rollup@3.28.1)
       pathe: 1.1.1
       ufo: 1.3.0
     transitivePeerDependencies:
@@ -8398,27 +8402,26 @@ packages:
       - supports-color
     dev: true
 
-  /nuxt-site-config-kit@1.0.10(rollup@3.28.1):
-    resolution: {integrity: sha512-LvuXp2mWLONdB3biY4GmUPHu47XBZvoPIy2yDceWiGWa4tfwdCp/jVBJwgyFYVqwiXNZ7uJxG0omjNRPafXkqw==}
+  /nuxt-site-config-kit@1.0.11(rollup@3.28.1):
+    resolution: {integrity: sha512-kGt/5+FLMxHudTImWNSOXt0zYcfA1be/3HgVX/CMxDU2sir2wq4DCpk4WNRcRhewEkmRC5uRsCPVyvbqqVCIgw==}
     dependencies:
       '@nuxt/kit': 3.7.0(rollup@3.28.1)
       '@nuxt/schema': 3.7.0(rollup@3.28.1)
-      defu: 6.1.2
       pkg-types: 1.0.3
-      site-config-stack: 1.0.10(rollup@3.28.1)
+      site-config-stack: 1.0.11
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
       - supports-color
 
-  /nuxt-site-config@1.0.10(rollup@3.28.1):
-    resolution: {integrity: sha512-rXiyDMeJTn32EBSZ5sSLAPrGOee2aacCCbCSFOlLfcQD3uXxNk25FZWFJbNO9RGVaSajY3qcNKcqa5vRKEy35A==}
+  /nuxt-site-config@1.0.11(rollup@3.28.1):
+    resolution: {integrity: sha512-L+R8785j3An3QIWo6LdrtX2L123iNkp91gLbw1FRnj686WbYMD0FTCqO5hEcVsLdIeBAVPszRMLcxISN4B7NIQ==}
     dependencies:
       '@nuxt/kit': 3.7.0(rollup@3.28.1)
       '@nuxt/schema': 3.7.0(rollup@3.28.1)
-      nuxt-site-config-kit: 1.0.10(rollup@3.28.1)
+      nuxt-site-config-kit: 1.0.11(rollup@3.28.1)
       pathe: 1.1.1
-      site-config-stack: 1.0.10(rollup@3.28.1)
+      site-config-stack: 1.0.11
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
@@ -10005,16 +10008,10 @@ packages:
   /sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  /site-config-stack@1.0.10(rollup@3.28.1):
-    resolution: {integrity: sha512-sEKECSkg9XYrzs6ykKWbelxj/P/K8kUgKtWZdETTfLlnKl7e/0JsTS0UZf2Gu4aNEXWUwHrOxtZcvIa3ASYhHA==}
+  /site-config-stack@1.0.11:
+    resolution: {integrity: sha512-JPHqf0s5/3DEd0TkT9noGlMNNOEVz0bVHbfHDTcebup97poNwZ5CXjj1FYYcwRVbqa7cJjgi6jTmo2b0XslQ6g==}
     dependencies:
-      '@nuxt/kit': 3.7.0(rollup@3.28.1)
-      defu: 6.1.2
-      pkg-types: 1.0.3
       ufo: 1.3.0
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
 
   /slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -10956,53 +10953,6 @@ packages:
       chokidar: 3.5.3
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.5.0
-
-  /unstorage@1.8.0:
-    resolution: {integrity: sha512-Wl6a0fYIIPx8yWIHAVNzsNRcIpagVnBV05UXeIFCNqPZ5tu0w0MPE+eTjpRe/yxCD60K7qX55K5Px/PeKvNntw==}
-    peerDependencies:
-      '@azure/app-configuration': ^1.4.1
-      '@azure/cosmos': ^3.17.3
-      '@azure/data-tables': ^13.2.2
-      '@azure/identity': ^3.2.3
-      '@azure/keyvault-secrets': ^4.7.0
-      '@azure/storage-blob': ^12.14.0
-      '@planetscale/database': ^1.7.0
-      '@upstash/redis': ^1.21.0
-      '@vercel/kv': ^0.2.2
-    peerDependenciesMeta:
-      '@azure/app-configuration':
-        optional: true
-      '@azure/cosmos':
-        optional: true
-      '@azure/data-tables':
-        optional: true
-      '@azure/identity':
-        optional: true
-      '@azure/keyvault-secrets':
-        optional: true
-      '@azure/storage-blob':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@upstash/redis':
-        optional: true
-      '@vercel/kv':
-        optional: true
-    dependencies:
-      anymatch: 3.1.3
-      chokidar: 3.5.3
-      destr: 2.0.1
-      h3: 1.8.1
-      ioredis: 5.3.2
-      listhen: 1.4.1
-      lru-cache: 10.0.1
-      mri: 1.2.0
-      node-fetch-native: 1.4.0
-      ofetch: 1.3.3
-      ufo: 1.3.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
 
   /unstorage@1.9.0:
     resolution: {integrity: sha512-VpD8ZEYc/le8DZCrny3bnqKE4ZjioQxBRnWE+j5sGNvziPjeDlaS1NaFFHzl/kkXaO3r7UaF8MGQrs14+1B4pQ==}
