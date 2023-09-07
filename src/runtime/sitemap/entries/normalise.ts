@@ -32,6 +32,10 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
       return
     // convert url to string
     s = typeof s === 'string' ? s : s.toString()
+    // check if the host starts with the siteURL
+    if (s.startsWith(options.canonicalUrlResolver('/')))
+      // strip the siteURL
+      s = s.replace(options.canonicalUrlResolver('/'), '/')
     // avoid transforming remote urls and urls already resolved
     if (hasProtocol(s, { acceptRelative: true, strict: false }))
       return s
