@@ -42,8 +42,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     }
     return p
   })
-
-  const localeGropes = {}
+  const localeGroups = {}
   pagesWithMeta.reduce((acc: Record<string, any>, entry) => {
     if (entry.page.name?.includes(routeNameSeperator)) {
       const [name, locale] = entry.page.name.split(routeNameSeperator)
@@ -57,10 +56,10 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     }
 
     return acc
-  }, localeGropes)
+  }, localeGroups)
 
   // now need to convert to alternatives
-  const final: SitemapEntryInput[] = Object.entries(localeGropes).map(([locale, entries]) => {
+  const final: SitemapEntryInput[] = Object.entries(localeGroups).map(([locale, entries]) => {
     if (locale === 'default') {
       // routes must have a locale if we're prefixing them
       if (config.strategy === 'prefix')

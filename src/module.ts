@@ -272,6 +272,8 @@ export default defineNuxtModule<ModuleOptions>({
     else if (Array.isArray(config.urls))
       config.urls = [...await config.urls]
 
+    let isI18nMap = false
+
     let nuxtI18nConfig: NuxtI18nOptions = {}
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     let normalisedLocales: NormalisedLocales = []
@@ -332,20 +334,11 @@ export default defineNuxtModule<ModuleOptions>({
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
       if (typeof config.sitemaps === 'undefined' && !!resolvedAutoI18n && nuxtI18nConfig.strategy !== 'no_prefix') {
+        isI18nMap = true
         config.sitemaps = {}
         for (const locale of resolvedAutoI18n.locales) {
           // if the locale is the default locale and the strategy is prefix_except_default, then we exclude all other locales
-          if (resolvedAutoI18n && locale.code === resolvedAutoI18n.defaultLocale && resolvedAutoI18n.strategy === 'prefix_except_default') {
-            config.sitemaps[locale.code] = {
-              exclude: resolvedAutoI18n.locales.filter(l => l.code !== locale.code).map(l => `/${l.code}/**`),
-            }
-          }
-          else {
-            // otherwise a simple include works
-            config.sitemaps[locale.code] = {
-              include: [`/${locale.code}/**`],
-            }
-          }
+          config.sitemaps[locale.iso || locale.code] = {}
         }
       }
     }
@@ -432,6 +425,7 @@ declare module 'nitropack' {
     }
 
     const moduleConfig: ModuleRuntimeConfig['moduleConfig'] = {
+      isI18nMap,
       autoLastmod: config.autoLastmod,
       xsl: config.xsl,
       xslTips: config.xslTips,

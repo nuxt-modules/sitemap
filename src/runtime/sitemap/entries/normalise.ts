@@ -17,7 +17,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
   const {
     defaults, exclude,
     include, autoLastmod,
-    autoI18n,
+    autoI18n, isI18nMap,
   } = options.moduleConfig
   // make sure include and exclude start with baseURL
   const combinedInclude = [...(options.sitemap?.include || []), ...(include || [])]
@@ -50,7 +50,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     defaultEntryData.lastmod = defaultEntryData.lastmod || new Date()
 
   // make sure we're working with objects
-  let entries = data
+  let entries: SitemapEntry[] = data
     .map(e => typeof e === 'string' ? { loc: e } : e)
     // uniform loc
     .map((e) => {
@@ -120,7 +120,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
           const isDefault = locale.code === autoI18n.defaultLocale
           let href = ''
           if (autoI18n.strategy === 'prefix') {
-            href = joinURL(locale.code, withoutPrefix)
+            href = joinURL('/', locale.code, withoutPrefix)
           }
           else if (autoI18n.strategy === 'prefix_except_default') {
             if (isDefault) {
@@ -147,8 +147,19 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     }
   }
 
-  // remove filtered urls
-  const filteredEntries = entries.filter(e => e && urlFilter(e.loc))
+  // if we have isI18nMap we split the sitemap based on the name (locale)
+  let filteredEntries = entries.filter(e => e && urlFilter(e.loc))
+  if (isI18nMap && options.sitemap?.sitemapName) {
+    // filter for locales
+    const locale = options.sitemap?.sitemapName
+    // check the entry loc matches the alternatives hreflang for the locale
+    filteredEntries = filteredEntries.filter((e) => {
+      const alternativeEntry = e.alternatives?.find(a => a.hreflang === locale)
+      if (!alternativeEntry)
+        return false
+      return alternativeEntry.href === e.loc
+    })
+  }
 
   function normaliseEntry(e: SitemapEntry): ResolvedSitemapEntry {
     if (e.lastmod) {
