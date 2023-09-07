@@ -19,6 +19,12 @@ describe('base', () => {
     expect(posts).toMatchInlineSnapshot(`
       [
         "/__sitemap/url",
+        {
+          "loc": "/__sitemap/loc",
+        },
+        {
+          "loc": "https://nuxtseo.com/__sitemap/abs",
+        },
       ]
     `)
   }, 60000)
