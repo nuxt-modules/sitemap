@@ -4,7 +4,10 @@ import {
   addServerPlugin,
   createResolver,
   defineNuxtModule, extendPages,
-  findPath, useLogger,
+  findPath, getNuxtModuleVersion,
+  hasNuxtModule,
+  hasNuxtModuleCompatibility,
+  useLogger,
 } from '@nuxt/kit'
 import { withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
@@ -25,11 +28,7 @@ import type {
 } from './runtime/types'
 import {
   convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig,
-  // @todo use nuxt kit utils after 3.6.5
   getNuxtModuleOptions,
-  getNuxtModuleVersion,
-  hasNuxtModule,
-  hasNuxtModuleCompatibility,
 } from './utils'
 import { setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/util/pageUtils'
@@ -181,7 +180,7 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-simple-sitemap',
     compatibility: {
-      nuxt: '^3.6.3',
+      nuxt: '^3.7.0',
       bridge: false,
     },
     configKey: 'sitemap',
