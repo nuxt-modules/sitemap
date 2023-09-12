@@ -10,7 +10,7 @@ import {
   useLogger,
 } from '@nuxt/kit'
 import { withBase, withoutLeadingSlash } from 'ufo'
-import { installNuxtSiteConfig, requireSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
+import { assertSiteConfig, installNuxtSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
 import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
@@ -233,9 +233,6 @@ export default defineNuxtModule<ModuleOptions>({
       trailingSlash: config.trailingSlash,
       url: config.siteUrl,
     })
-    requireSiteConfig('nuxt-simple-sitemap', {
-      url: 'Required to generate absolute URLs for the sitemap.',
-    }, { prerender: true })
 
     nuxt.options.nitro.storage = nuxt.options.nitro.storage || {}
     // provide cache storage for prerendering
@@ -391,6 +388,9 @@ declare module 'nitropack' {
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
     if (prerenderSitemap) {
+      assertSiteConfig('nuxt-simple-sitemap', {
+        url: 'Required to generate absolute canonical URLs for your sitemap.',
+      }, { throwError: true })
       // add route rules for sitemap xmls so they're rendered properly
       const routeRules = {
         headers: {
