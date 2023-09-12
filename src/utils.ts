@@ -105,6 +105,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
  * Get the user provided options for a Nuxt module.
  *
  * These options may not be the resolved options that the module actually uses.
+ * @param module
+ * @param nuxt
  */
 export async function getNuxtModuleOptions(module: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
