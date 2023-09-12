@@ -527,6 +527,6 @@ declare module 'nitropack' {
       })
     }
 
-    setupPrerenderHandler(config, buildTimeMeta, pagesPromise)
+    setupPrerenderHandler(moduleConfig, buildTimeMeta, pagesPromise)
   },
 })
