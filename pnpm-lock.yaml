@@ -30,11 +30,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       nuxt-site-config:
-        specifier: ^1.1.3
-        version: 1.1.3(rollup@3.28.1)
+        specifier: ^1.2.0
+        version: 1.2.0(rollup@3.28.1)
       nuxt-site-config-kit:
-        specifier: ^1.1.3
-        version: 1.1.3(rollup@3.28.1)
+        specifier: ^1.2.0
+        version: 1.2.0(rollup@3.28.1)
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -45,8 +45,8 @@ importers:
         specifier: ^7.5.4
         version: 7.5.4
       site-config-stack:
-        specifier: ^1.1.3
-        version: 1.1.3
+        specifier: ^1.2.0
+        version: 1.2.0
       ufo:
         specifier: ^1.3.0
         version: 1.3.0
@@ -427,6 +427,7 @@ packages:
   /@babel/highlight@7.22.13:
     resolution: {integrity: sha512-C/BaXcnnvBCmHTpz/VGZ8jgtE2aYlW4hxDhseJAWZb7gqGM/qtCK6iZUb0TyKFf7BOUsBH7Q7fkRsDRhg1XklQ==}
     engines: {node: '>=6.9.0'}
+    requiresBuild: true
     dependencies:
       '@babel/helper-validator-identifier': 7.22.15
       chalk: 2.4.2
@@ -2042,7 +2043,7 @@ packages:
       '@typescript-eslint/parser': 6.6.0(eslint@8.49.0)(typescript@5.2.2)
       eslint: 8.49.0
       eslint-import-resolver-typescript: 3.6.0(@typescript-eslint/parser@6.6.0)(eslint-plugin-import@2.28.1)(eslint@8.49.0)
-      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.6.0)(eslint-import-resolver-typescript@3.6.0)(eslint@8.49.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.4.1)(eslint@8.49.0)
       eslint-plugin-vue: 9.17.0(eslint@8.49.0)
     transitivePeerDependencies:
       - eslint-import-resolver-node
@@ -5255,7 +5256,7 @@ packages:
       enhanced-resolve: 5.15.0
       eslint: 8.49.0
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.6.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.0)(eslint@8.49.0)
-      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.6.0)(eslint-import-resolver-typescript@3.6.0)(eslint@8.49.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.4.1)(eslint@8.49.0)
       fast-glob: 3.3.1
       get-tsconfig: 4.7.0
       is-core-module: 2.13.0
@@ -5404,6 +5405,41 @@ packages:
       semver: 7.5.4
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: true
+
+  /eslint-plugin-import@2.28.1(@typescript-eslint/parser@6.4.1)(eslint@8.49.0):
+    resolution: {integrity: sha512-9I9hFlITvOV55alzoKBI+K9q74kv0iKMeY6av5+umsNwayt59fz692daGyjR+oStBQgx6nwR9rXldDev3Clw+A==}
+    engines: {node: '>=4'}
+    peerDependencies:
+      '@typescript-eslint/parser': '*'
+      eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8
+    peerDependenciesMeta:
+      '@typescript-eslint/parser':
+        optional: true
+    dependencies:
+      '@typescript-eslint/parser': 6.4.1(eslint@8.49.0)(typescript@5.2.2)
+      array-includes: 3.1.6
+      array.prototype.findlastindex: 1.2.2
+      array.prototype.flat: 1.3.1
+      array.prototype.flatmap: 1.3.1
+      debug: 3.2.7
+      doctrine: 2.1.0
+      eslint: 8.49.0
+      eslint-import-resolver-node: 0.3.9
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.4.1)(eslint-import-resolver-node@0.3.9)(eslint@8.49.0)
+      has: 1.0.3
+      is-core-module: 2.13.0
+      is-glob: 4.0.3
+      minimatch: 3.1.2
+      object.fromentries: 2.0.6
+      object.groupby: 1.0.0
+      object.values: 1.1.6
+      semver: 6.3.1
+      tsconfig-paths: 3.14.2
+    transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
       - supports-color
@@ -8713,8 +8749,8 @@ packages:
     dependencies:
       '@nuxt/kit': 3.7.1(rollup@3.28.1)
       defu: 6.1.2
-      nuxt-site-config: 1.1.3(rollup@3.28.1)
-      nuxt-site-config-kit: 1.1.3(rollup@3.28.1)
+      nuxt-site-config: 1.2.0(rollup@3.28.1)
+      nuxt-site-config-kit: 1.2.0(rollup@3.28.1)
       pathe: 1.1.1
       ufo: 1.3.0
     transitivePeerDependencies:
@@ -8722,26 +8758,27 @@ packages:
       - supports-color
     dev: true
 
-  /nuxt-site-config-kit@1.1.3(rollup@3.28.1):
-    resolution: {integrity: sha512-gE/R6xmEoH2kFarVzTF7e2EDiFR17UY9lqGfcQ3p6ELNz4Ie/I8FecWDSxyLr+vO3bLZccWK5nvH39Rw6Ui0vQ==}
+  /nuxt-site-config-kit@1.2.0(rollup@3.28.1):
+    resolution: {integrity: sha512-gvgunGniBSQM5UMGMWqjuYBeVeRQi8Wq/9Q2LApmn7faYw0YKCmrm4Wjdq209OrMh5uSYVh8q7z5jIcsNMw3dg==}
     dependencies:
       '@nuxt/kit': 3.7.1(rollup@3.28.1)
       '@nuxt/schema': 3.7.1(rollup@3.28.1)
       pkg-types: 1.0.3
-      site-config-stack: 1.1.3
+      site-config-stack: 1.2.0
+      std-env: 3.4.3
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
       - supports-color
 
-  /nuxt-site-config@1.1.3(rollup@3.28.1):
-    resolution: {integrity: sha512-H1Z+7doK3SqBcFUb/5I2frwi8iptNb0oEmxvhqmceGiGbxaSLcYrRiSSPxJaP3oiPE+SONz/8l3TjpMOaLsf/A==}
+  /nuxt-site-config@1.2.0(rollup@3.28.1):
+    resolution: {integrity: sha512-mmUIvY9Phd6pJHt/motDtPs/crz6BnVXz3Vn4Z+qtN4OzIriGigxWP6vjWWRhCd7BPCoLfmV9FE8KeJ3xAnulQ==}
     dependencies:
       '@nuxt/kit': 3.7.1(rollup@3.28.1)
       '@nuxt/schema': 3.7.1(rollup@3.28.1)
-      nuxt-site-config-kit: 1.1.3(rollup@3.28.1)
+      nuxt-site-config-kit: 1.2.0(rollup@3.28.1)
       pathe: 1.1.1
-      site-config-stack: 1.1.3
+      site-config-stack: 1.2.0
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
@@ -10378,8 +10415,8 @@ packages:
   /sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  /site-config-stack@1.1.3:
-    resolution: {integrity: sha512-1IX/rSMkefCWdYGk2mMCYEWbol5fSgVJxHiisAlNVaF0+lqqkuj3sM2ScSPZ5Pe5qnU2ZHO8WbOcbBLZ8DtS3Q==}
+  /site-config-stack@1.2.0:
+    resolution: {integrity: sha512-bTT06nKWHZnK2pXRTk5i7DEEywM5mjBJohUAt4y/VXTmsW/ByvaNM+u08/h35J80pMXxhWsZPbkWe8i0kl/bfQ==}
     dependencies:
       ufo: 1.3.0
 
