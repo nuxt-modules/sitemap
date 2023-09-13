@@ -73,6 +73,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
         return false
       return defu(routeRules.sitemap || {}, e)
     })
+    .filter(Boolean)
 
   // apply auto alternative lang prefixes, needs to happen before normalization
   if (autoI18n?.locales) {
