@@ -107,10 +107,30 @@ export interface AlternativeEntry {
 }
 
 export interface GoogleNewsEntry {
+  /**
+   * The title of the news article.
+   * @example "Companies A, B in Merger Talks"
+   */
   title: string
-  date: Date | string
-  publicationName: string
-  publicationLanguage: string
+  /**
+   * The article publication date in W3C format. Specify the original date and time when the article was first
+   * published on your site. Don't specify the time when you added the article to your sitemap.
+   * @example "2008-12-23"
+   */
+  publication_date: Date | string
+  publication: {
+    /**
+     * The <news:name> tag is the name of the news publication.
+     * It must exactly match the name as it appears on your articles on news.google.com, omitting anything in parentheses.
+     * @example "The Example Times"
+     */
+    name: string
+    /**
+     * The <news:language> tag is the language of your publication. Use an ISO 639 language code (two or three letters).
+     * @example en
+     */
+    language: string
+  }
 }
 
 export interface ImageEntry {
