@@ -284,7 +284,7 @@ export default defineNuxtModule<ModuleOptions>({
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes
-            if (pageLocales[locale].includes('['))
+            if (!pageLocales[locale] || pageLocales[locale].includes('['))
               continue
 
             const hreflang = normalisedLocales.find(l => l.code === locale)?.iso || locale
