@@ -134,7 +134,7 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
   const routeRules = Object.entries(nuxt.options.routeRules || {})
     .filter(([k, v]) => {
       // make sure key doesn't use a wildcard and its not for a file
-      if (k.includes('*') || k.includes('.'))
+      if (k.includes('*') || k.includes('.') || k.includes(':'))
         return false
       if (typeof v.index === 'boolean' && !v.index)
         return false
