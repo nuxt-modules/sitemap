@@ -52,7 +52,7 @@ export default defineNuxtConfig({
     xslColumns: [
       { label: 'URL', width: '50%' },
       { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },
-      { label: 'Hreflangs', select: 'count(xhtml)', width: '25%' },
+      { label: 'Hreflangs', select: 'count(xhtml:link)', width: '25%' },
     ],
     defaultSitemapsChunkSize: 10,
     sitemaps: {
