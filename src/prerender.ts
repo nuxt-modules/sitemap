@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { withoutBase, withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
-import { createSitePathResolver, withSiteUrl } from 'nuxt-site-config-kit'
+import { assertSiteConfig, createSitePathResolver, withSiteUrl } from 'nuxt-site-config-kit'
 import { createResolver, useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { buildSitemap, buildSitemapIndex } from './runtime/sitemap/builder'
@@ -21,6 +21,11 @@ export function setupPrerenderHandler(moduleConfig: ModuleRuntimeConfig['moduleC
 
   nuxt.hooks.hook('nitro:init', async (nitro) => {
     const sitemapImages: Record<string, { loc: string }[]> = {}
+    nitro.hooks.hook('prerender:init', () => {
+      assertSiteConfig('nuxt-simple-sitemap', {
+        url: 'Required to generate absolute canonical URLs for your sitemap.',
+      }, { throwError: false })
+    })
     // setup a hook for the prerender so we can inspect the image sources
     nitro.hooks.hook('prerender:route', async (ctx) => {
       const html = ctx.contents
