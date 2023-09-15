@@ -30,11 +30,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       nuxt-site-config:
-        specifier: ^1.2.1
-        version: 1.2.1(rollup@3.29.1)
+        specifier: ^1.2.2
+        version: 1.2.2(rollup@3.29.1)
       nuxt-site-config-kit:
-        specifier: ^1.2.1
-        version: 1.2.1(rollup@3.29.1)
+        specifier: ^1.2.2
+        version: 1.2.2(rollup@3.29.1)
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -1130,6 +1130,11 @@ packages:
     engines: {node: '>= 16'}
     dev: true
 
+  /@intlify/shared@9.4.1:
+    resolution: {integrity: sha512-A51elBmZWf1FS80inf/32diO9DeXoqg9GR9aUDHFcfHoNDuT46Q+fpPOdj8jiJnSHSBh8E1E+6qWRhAZXdK3Ng==}
+    engines: {node: '>= 16'}
+    dev: true
+
   /@intlify/unplugin-vue-i18n@0.13.0(rollup@3.29.1)(vue-i18n@9.3.0-beta.27):
     resolution: {integrity: sha512-Mm9NhcvbsSZ5FXXnCpL/XFCk1hPp809hxErNmnwqGp21JjYOKGp3wpQSrpvGk33ZrHZbhPqAu70IEVEAxVZ5+A==}
     engines: {node: '>= 14.16'}
@@ -2039,6 +2044,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -7835,6 +7841,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -8165,8 +8174,8 @@ packages:
     dependencies:
       '@nuxt/kit': 3.7.3(rollup@3.29.1)
       defu: 6.1.2
-      nuxt-site-config: 1.2.1(rollup@3.29.1)
-      nuxt-site-config-kit: 1.2.1(rollup@3.29.1)
+      nuxt-site-config: 1.2.2(rollup@3.29.1)
+      nuxt-site-config-kit: 1.2.2(rollup@3.29.1)
       pathe: 1.1.1
       ufo: 1.3.0
     transitivePeerDependencies:
@@ -8174,27 +8183,27 @@ packages:
       - supports-color
     dev: true
 
-  /nuxt-site-config-kit@1.2.1(rollup@3.29.1):
-    resolution: {integrity: sha512-7VH8RfH6AyRg+2MoxgZXXWfpz4Bp4/wUbZqZ4nFssSXwyvpxktgYQ1whvUrxkbkkuxO3Nc1742VWvJ+iky4LJg==}
+  /nuxt-site-config-kit@1.2.2(rollup@3.29.1):
+    resolution: {integrity: sha512-J2VqsaqmRMIbK0l3cAaR8WSmSpdJGBKHM0Baem26TQajxu7pDtCvLFyxse3pzXl+Q0FE96Ipyh4okP9Av49Rnw==}
     dependencies:
       '@nuxt/kit': 3.7.3(rollup@3.29.1)
       '@nuxt/schema': 3.7.3(rollup@3.29.1)
       pkg-types: 1.0.3
-      site-config-stack: 1.2.1
+      site-config-stack: 1.2.2
       std-env: 3.4.3
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
       - supports-color
 
-  /nuxt-site-config@1.2.1(rollup@3.29.1):
-    resolution: {integrity: sha512-s5hpeEPwAh1vJZnmwGEeJh00NH7b5oDJMWK05GpN1r8qcCC8lDOf17kYa6CIPBnBz9wzK5JU7CFE/4DqPtQTUQ==}
+  /nuxt-site-config@1.2.2(rollup@3.29.1):
+    resolution: {integrity: sha512-YD69BMU+SW7jOa1oX7H9iFc+9br7bo3xmk6NHMw4vhq8LnQYgfrfRs+sPQscsxx2Hf3W4uu9ZRAMIFMJdpJ3nA==}
     dependencies:
       '@nuxt/kit': 3.7.3(rollup@3.29.1)
       '@nuxt/schema': 3.7.3(rollup@3.29.1)
-      nuxt-site-config-kit: 1.2.1(rollup@3.29.1)
+      nuxt-site-config-kit: 1.2.2(rollup@3.29.1)
       pathe: 1.1.1
-      site-config-stack: 1.2.1
+      site-config-stack: 1.2.2
       ufo: 1.3.0
     transitivePeerDependencies:
       - rollup
@@ -9791,6 +9800,12 @@ packages:
     resolution: {integrity: sha512-LjIOGoI5zx0o63vS61vZUlKz4zEJBZ6Lx0VduOMwyrKrhDlTaSpVTKz3tQU5bPOkACNUgxClxOwrEkdP31HkRA==}
     dependencies:
       ufo: 1.3.0
+    dev: false
+
+  /site-config-stack@1.2.2:
+    resolution: {integrity: sha512-9FqdLwsq2hGukUsZTLPxSO3g3v5cZyGw7F1IOh55QRL0Gxi8gTM8l7FOVjRzMVSCYbMZHPX75QyPdUpXHd5oXQ==}
+    dependencies:
+      ufo: 1.3.0
 
   /skin-tone@2.0.0:
     resolution: {integrity: sha512-kUMbT1oBJCpgrnKoSr0o6wPtvRWT9W9UKvGLwfJYO2WuahZRHOpEyL1ckyMGgMWh0UdpmaoFqKKD29WTomNEGA==}
@@ -11285,7 +11300,7 @@ packages:
       vue-router:
         optional: true
     dependencies:
-      '@intlify/shared': 9.4.0
+      '@intlify/shared': 9.4.1
       '@intlify/vue-i18n-bridge': 0.8.0(vue-i18n@9.3.0-beta.27)
       '@intlify/vue-router-bridge': 0.8.0(vue@3.3.4)
       ufo: 1.3.0
