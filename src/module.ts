@@ -241,7 +241,7 @@ export default defineNuxtModule<ModuleOptions>({
         driver: 'memory',
       }
     }
-    else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
+ else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
       nuxt.options.nitro.storage['nuxt-simple-sitemap'] = config.runtimeCacheStorage
     }
 
@@ -402,11 +402,11 @@ declare module 'nitropack' {
           for (const k in config.sitemaps)
             nuxt.options.routeRules[`/${k}-sitemap.xml`] = routeRules
         }
-        else {
+ else {
           nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
         }
       }
-      else {
+ else {
         nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
       }
     }

@@ -34,7 +34,7 @@ export default defineEventHandler(async (e) => {
     conditionalTips.push(`Your canonical site URL is <strong>${siteUrl}</strong>.`)
     conditionalTips.push(`You can preview your canonical sitemap by visiting <a href="${canonicalPreviewUrl}" style="color: #398465; white-space: nowrap;">${fixPath(canonicalPreviewUrl)}?canonical</a>`)
   }
-  else {
+ else {
     // avoid text wrap
     conditionalTips.push(`You are viewing the canonical sitemap. You can switch to using the request origin: <a href="${fixPath(referrer)}" style="color: #398465; white-space: nowrap ">${fixPath(referrer)}</a>`)
   }

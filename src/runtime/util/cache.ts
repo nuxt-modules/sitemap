@@ -22,13 +22,13 @@ export async function setupCache(e: H3Event, key: string) {
         xSitemapCacheHeader = 'PURGE'
         await cache.removeItem(key)
       }
-      else {
+ else {
         xSitemapCacheHeader = 'HIT'
         xSitemapCacheExpires = expiresAt
         cachedSitemap = value as string
       }
     }
-    else {
+ else {
       await cache.removeItem(key)
     }
   }

@@ -72,7 +72,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
             error: 'Received HTML response instead of JSON',
           })
         }
-        else {
+ else {
           entries.push({
             context,
             timeTakenMs,
@@ -123,7 +123,7 @@ export async function resolveAsyncDataSources(input: BuildSitemapInput | BuildSi
       })
     }
   }
-  else if (input.sitemap) {
+ else if (input.sitemap) {
     await loadSitemapSources(input.sitemap)
   }
 
