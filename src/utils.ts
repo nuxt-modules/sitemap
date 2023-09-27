@@ -37,7 +37,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         if (stats)
           p.lastmod = stats.mtime
       }
- catch (e) {}
+      catch (e) {}
     }
     return p
   })
@@ -49,7 +49,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         acc[name] = []
       acc[name].push({ ...entry, locale })
     }
- else {
+    else {
       acc.default = acc.default || []
       acc.default.push(entry)
     }

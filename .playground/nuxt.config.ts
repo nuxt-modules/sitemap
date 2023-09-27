@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxt/content',
     '@nuxthq/ui',
-    'nuxt-icon'
+    'nuxt-icon',
   ],
   ignorePrefix: 'ignore-',
   i18n: {
@@ -21,18 +21,18 @@ export default defineNuxtConfig({
       routes: [
         '/should-be-in-sitemap',
         '/foo.bar/',
-        '/test.doc'
+        '/test.doc',
       ],
       failOnError: false,
     },
   },
   content: {
     documentDriven: {
-      path: '/content'
+      path: '/content',
     },
   },
   site: {
-    url: 'https://nuxtseo.com'
+    url: 'https://nuxtseo.com',
   },
 
   // app: {
@@ -57,7 +57,7 @@ export default defineNuxtConfig({
     defaultSitemapsChunkSize: 10,
     sitemaps: {
       posts: {
-        include: ['/blog/**']
+        include: ['/blog/**'],
       },
       pages: {
         dynamicUrlsApiEndpoint: '/api/sitemap-foo',
@@ -69,37 +69,37 @@ export default defineNuxtConfig({
             alternatives: [
               {
                 href: '/fr/about',
-                hreflang: 'fr'
-              }
+                hreflang: 'fr',
+              },
             ],
             images: [
               {
                 loc: 'https://example.com/image-3.jpg',
               },
-            ]
-          }
-        ]
+            ],
+          },
+        ],
       },
       index: [
-        { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' }
-      ]
-    }
+        { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' },
+      ],
+    },
   },
   routeRules: {
     '/secret': {
-      index: false
+      index: false,
     },
     '/users-test/*': {
       sitemap: {
         lastmod: new Date(2023, 1, 21, 4, 50, 52),
         changefreq: 'weekly',
         priority: 0.3,
-        images: []
-      }
+        images: [],
+      },
     },
     '/should-not-be-in-sitemap/*': {},
     '/about-redirect': {
-      redirect: '/about'
+      redirect: '/about',
     },
     '/about': {
       sitemap: {
@@ -112,9 +112,9 @@ export default defineNuxtConfig({
           },
           {
             loc: 'https://example.com/image2.jpg',
-          }
-        ]
-      }
+          },
+        ],
+      },
     },
-  }
+  },
 })

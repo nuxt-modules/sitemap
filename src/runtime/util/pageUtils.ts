@@ -109,10 +109,10 @@ export function generateRoutesFromFiles(files: string[], pagesDir: string): Nuxt
         parent = child.children
         route.path = ''
       }
- else if (segmentName === 'index' && !route.path) {
+      else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       }
- else if (segmentName !== 'index') {
+      else if (segmentName !== 'index') {
         route.path += getRoutePath(tokens)
       }
     }
@@ -126,8 +126,8 @@ export function generateRoutesFromFiles(files: string[], pagesDir: string): Nuxt
 function getRoutePath(tokens: SegmentToken[]): string {
   return tokens.reduce((path, token) => {
     return (
-      path +
-      (token.type === SegmentTokenType.optional
+      path
+      + (token.type === SegmentTokenType.optional
         ? `:${token.value}?`
         : token.type === SegmentTokenType.dynamic
           ? `:${token.value}`
@@ -178,7 +178,7 @@ function parseSegment(segment: string) {
         if (c === '[') {
           state = SegmentParserState.dynamic
         }
- else {
+        else {
           i--
           state = SegmentParserState.static
         }
@@ -189,7 +189,7 @@ function parseSegment(segment: string) {
           consumeBuffer()
           state = SegmentParserState.dynamic
         }
- else {
+        else {
           buffer += c
         }
         break
@@ -212,10 +212,10 @@ function parseSegment(segment: string) {
 
           state = SegmentParserState.initial
         }
- else if (PARAM_CHAR_RE.test(c)) {
+        else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         }
- else {
+        else {
 
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }

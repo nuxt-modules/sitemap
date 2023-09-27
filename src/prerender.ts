@@ -9,7 +9,9 @@ import type { Nuxt } from '@nuxt/schema'
 import { buildSitemap, buildSitemapIndex } from './runtime/sitemap/builder'
 import type {
   BuildSitemapIndexInput,
-  ModuleComputedOptions, ModuleRuntimeConfig, RuntimeModuleOptions,
+  ModuleComputedOptions,
+  ModuleRuntimeConfig,
+  RuntimeModuleOptions,
   SitemapEntryInput,
   SitemapRenderCtx,
 } from './runtime/types'
@@ -144,7 +146,7 @@ export function setupPrerenderHandler(moduleConfig: ModuleRuntimeConfig['moduleC
           logs.push(`/${sitemap.sitemapName}-sitemap.xml (${generateTimeMS}ms)`)
         }
       }
- else {
+      else {
         let sitemapXml = await buildSitemap(options)
         const ctx = { sitemap: sitemapXml, sitemapName: moduleConfig.sitemapName }
         await nuxt.hooks.callHook('sitemap:output', ctx)

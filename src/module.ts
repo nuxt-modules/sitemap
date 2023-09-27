@@ -3,8 +3,10 @@ import {
   addServerHandler,
   addServerPlugin,
   createResolver,
-  defineNuxtModule, extendPages,
-  findPath, getNuxtModuleVersion,
+  defineNuxtModule,
+  extendPages,
+  findPath,
+  getNuxtModuleVersion,
   hasNuxtModule,
   hasNuxtModuleCompatibility,
   useLogger,
@@ -17,8 +19,10 @@ import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { version } from '../package.json'
 import { extendTypes } from './kit'
 import type {
-  AutoI18nConfig, ModuleComputedOptions,
-  ModuleRuntimeConfig, MultiSitemapsInput,
+  AutoI18nConfig,
+  ModuleComputedOptions,
+  ModuleRuntimeConfig,
+  MultiSitemapsInput,
   NormalisedLocales,
   SitemapEntry,
   SitemapEntryInput,
@@ -27,7 +31,8 @@ import type {
   SitemapRoot,
 } from './runtime/types'
 import {
-  convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig,
+  convertNuxtPagesToSitemapEntries,
+  generateExtraRoutesFromNuxtConfig,
   getNuxtModuleOptions,
 } from './utils'
 import { setupPrerenderHandler } from './prerender'
@@ -241,7 +246,7 @@ export default defineNuxtModule<ModuleOptions>({
         driver: 'memory',
       }
     }
- else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
+    else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
       nuxt.options.nitro.storage['nuxt-simple-sitemap'] = config.runtimeCacheStorage
     }
 
@@ -402,11 +407,11 @@ declare module 'nitropack' {
           for (const k in config.sitemaps)
             nuxt.options.routeRules[`/${k}-sitemap.xml`] = routeRules
         }
- else {
+        else {
           nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
         }
       }
- else {
+      else {
         nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
       }
     }

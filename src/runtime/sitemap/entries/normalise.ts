@@ -112,7 +112,7 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
         // xDefault is the e.loc replacing the prefix with the default lang
         xDefault = joinURL('/', autoI18n.defaultLocale, withoutPrefix)
       }
- else if (autoI18n.strategy === 'prefix_except_default') {
+      else if (autoI18n.strategy === 'prefix_except_default') {
         // xDefault is the e.loc without the prefix
         xDefault = withoutPrefix
       }
@@ -123,12 +123,12 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
           if (autoI18n.strategy === 'prefix') {
             href = joinURL('/', locale.code, withoutPrefix)
           }
- else if (autoI18n.strategy === 'prefix_except_default') {
+          else if (autoI18n.strategy === 'prefix_except_default') {
             if (isDefault) {
               // no prefix
               href = withoutPrefix
             }
- else {
+            else {
               href = joinURL('/', locale.code, withoutPrefix)
             }
           }

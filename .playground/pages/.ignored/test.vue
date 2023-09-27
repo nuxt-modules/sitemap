@@ -1,3 +1,3 @@
 <template>
-<div>shouldn't be added</div>
+  <div>shouldn't be added</div>
 </template>

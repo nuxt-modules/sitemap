@@ -25,7 +25,7 @@ export async function buildSitemapIndex(options: BuildSitemapIndexInput) {
       chunks[chunkIndex].urls.push(url)
     })
   }
- else {
+  else {
     for (const sitemap in multiSitemapConfig) {
       if (sitemap !== 'index') {
         // user provided sitemap config
