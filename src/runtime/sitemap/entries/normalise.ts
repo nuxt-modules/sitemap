@@ -181,7 +181,12 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     if (e.alternatives) {
       e.alternatives = mergeOnKey(e.alternatives.map((e) => {
         const a: AlternativeEntry & { key?: string } = { ...e }
-        a.href = resolve(typeof a.href === 'string' ? a.href : a.href.href)
+        // string
+        if (typeof a.href === 'string')
+          a.href = resolve(a.href)
+        // URL object
+        else if (typeof a.href === 'object' && a.href)
+          a.href = resolve(a.href.href)
         return a
       }), 'hreflang')
     }
