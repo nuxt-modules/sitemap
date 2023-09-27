@@ -277,6 +277,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     let nuxtI18nConfig: NuxtI18nOptions = {}
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
+    const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: NormalisedLocales = []
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
@@ -285,7 +286,7 @@ export default defineNuxtModule<ModuleOptions>({
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
       normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale), 'code')
       const usingI18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
-      if (usingI18nPages) {
+      if (usingI18nPages && !hasDisabledAutoI18n) {
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
           for (const locale in pageLocales) {
             // add root entry for default locale and ignore dynamic routes
@@ -312,7 +313,6 @@ export default defineNuxtModule<ModuleOptions>({
       }
       const hasDisabledAlternativePrefixes = typeof config.autoAlternativeLangPrefixes === 'boolean' && !config.autoAlternativeLangPrefixes
       const hasSetAlternativePrefixes = (Array.isArray(config.autoAlternativeLangPrefixes) && config.autoAlternativeLangPrefixes.length) || Object.keys(config.autoAlternativeLangPrefixes || {}).length
-      const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales
       if (!hasSetAutoI18n && !hasDisabledAutoI18n && !hasDisabledAlternativePrefixes && hasI18nConfigForAlternatives) {
