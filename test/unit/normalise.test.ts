@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fixSlashes } from 'site-config-stack'
-import {normaliseEntries, normaliseSitemapData} from '../../src/runtime/sitemap/entries'
+import { normaliseSitemapData } from '../../src/runtime/sitemap/entries'
 import type { BuildSitemapInput } from '../../src/runtime/types'
 
 const normaliseOptions: BuildSitemapInput = {
