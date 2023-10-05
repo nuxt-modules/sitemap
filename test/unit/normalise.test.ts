@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fixSlashes } from 'site-config-stack'
-import { normaliseSitemapData } from '../../src/runtime/sitemap/entries'
+import {normaliseEntries, normaliseSitemapData} from '../../src/runtime/sitemap/entries'
 import type { BuildSitemapInput } from '../../src/runtime/types'
 
 const normaliseOptions: BuildSitemapInput = {
@@ -34,6 +34,38 @@ describe('normalise', () => {
       [
         {
           "loc": "/query/?foo=bar",
+        },
+      ]
+    `)
+  })
+  it('sorting', async () => {
+    const data = await normaliseSitemapData([
+      { loc: '/a' },
+      { loc: '/b' },
+      { loc: '/c' },
+      { loc: '/1' },
+      { loc: '/2' },
+      { loc: '/10' },
+    ], normaliseOptions)
+    expect(data).toMatchInlineSnapshot(`
+      [
+        {
+          "loc": "/1/",
+        },
+        {
+          "loc": "/2/",
+        },
+        {
+          "loc": "/10/",
+        },
+        {
+          "loc": "/a/",
+        },
+        {
+          "loc": "/b/",
+        },
+        {
+          "loc": "/c/",
         },
       ]
     `)

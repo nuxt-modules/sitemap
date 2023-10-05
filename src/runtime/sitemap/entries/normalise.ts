@@ -213,13 +213,10 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
 
   function normaliseEntries(entries: SitemapEntry[]) {
     return mergeOnKey(entries.map(normaliseEntry), 'loc')
-      // sort based on logical string sorting of the loc
+      // sort based on logical string sorting of the loc, we need to properly account for numbers here
+      // so that urls: /route/1, /route/2 is displayed instead of /route/1, /route/10
       .sort((a, b) => {
-        if (a.loc > b.loc)
-          return 1
-        if (a.loc < b.loc)
-          return -1
-        return 0
+        return a.loc.localeCompare(b.loc, undefined, { numeric: true })
       })
       .sort((a, b) => {
         // we need to sort based on the path segments as well
