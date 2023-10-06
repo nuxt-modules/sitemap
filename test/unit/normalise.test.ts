@@ -5,7 +5,7 @@ import type { BuildSitemapInput } from '../../src/runtime/types'
 
 const normaliseOptions: BuildSitemapInput = {
   // @ts-expect-error test hack
-  moduleConfig: {},
+  moduleConfig: { sortEntries: true },
   // @ts-expect-error test hack
   buildTimeMeta: {},
   getRouteRulesForPath: () => ({}),
@@ -66,6 +66,40 @@ describe('normalise', () => {
         },
         {
           "loc": "/c/",
+        },
+      ]
+    `)
+  })
+  it('sorting disabled', async () => {
+    const data = await normaliseSitemapData([
+      { loc: '/b' },
+      { loc: '/a' },
+      { loc: '/c' },
+      { loc: '/1' },
+      { loc: '/10' },
+      { loc: '/2' },
+    ],
+      // @ts-expect-error untyped
+    { ...normaliseOptions, moduleConfig: { sortEntries: false } } )
+    expect(data).toMatchInlineSnapshot(`
+      [
+        {
+          "loc": "/b/",
+        },
+        {
+          "loc": "/a/",
+        },
+        {
+          "loc": "/c/",
+        },
+        {
+          "loc": "/1/",
+        },
+        {
+          "loc": "/10/",
+        },
+        {
+          "loc": "/2/",
         },
       ]
     `)

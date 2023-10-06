@@ -149,6 +149,12 @@ export interface ModuleOptions extends SitemapRoot {
    * @default 1 hour
    */
   cacheTtl: number | false
+  /**
+   * Should the entries be sorted by loc.
+   *
+   * @default true
+   */
+  sortEntries: boolean
   // deprecated
   /**
    * Should the URLs be inserted with a trailing slash.
@@ -201,6 +207,7 @@ export default defineNuxtModule<ModuleOptions>({
     discoverImages: true,
     dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
     urls: [],
+    sortEntries: true,
     xsl: '/__sitemap__/style.xsl',
     xslTips: true,
     strictNuxtContentPaths: false,
@@ -442,6 +449,7 @@ declare module 'nitropack' {
       exclude: config.exclude,
       sitemaps: config.sitemaps,
       sitemapName: config.sitemapName,
+      sortEntries: config.sortEntries,
       dynamicUrlsApiEndpoint: config.dynamicUrlsApiEndpoint,
       urls: config.urls as SitemapEntry[],
       debug: config.debug,

@@ -211,23 +211,30 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     return e as ResolvedSitemapEntry
   }
 
-  function normaliseEntries(entries: SitemapEntry[]) {
-    return mergeOnKey(entries.map(normaliseEntry), 'loc')
+  function sortEntries(entries: SitemapEntry[]) {
+    if (options.moduleConfig.sortEntries) {
       // sort based on logical string sorting of the loc, we need to properly account for numbers here
       // so that urls: /route/1, /route/2 is displayed instead of /route/1, /route/10
-      .sort((a, b) => {
-        return a.loc.localeCompare(b.loc, undefined, { numeric: true })
-      })
-      .sort((a, b) => {
-        // we need to sort based on the path segments as well
-        const aSegments = a.loc.split('/').length
-        const bSegments = b.loc.split('/').length
-        if (aSegments > bSegments)
-          return 1
-        if (aSegments < bSegments)
-          return -1
-        return 0
-      })
+      return entries
+        .sort((a, b) => {
+          return a.loc.localeCompare(b.loc, undefined, { numeric: true })
+        })
+        .sort((a, b) => {
+          // we need to sort based on the path segments as well
+          const aSegments = a.loc.split('/').length
+          const bSegments = b.loc.split('/').length
+          if (aSegments > bSegments)
+            return 1
+          if (aSegments < bSegments)
+            return -1
+          return 0
+        })
+    }
+    return entries
+  }
+
+  function normaliseEntries(entries: SitemapEntry[]) {
+    return sortEntries(mergeOnKey(entries.map(normaliseEntry), 'loc'))
   }
 
   // do first round normalising of each entry
