@@ -14,21 +14,35 @@ export interface NuxtPagesToSitemapEntriesOptions {
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
 }
 
+function deepForEachPage(pages: NuxtPage[], callback: Function, fullpath: string | undefined | null) {
+  pages.map((page: NuxtPage) => {
+    let currentPath = ''
+    if (fullpath == null) {
+      currentPath = ''
+    }
+    if (page.path.startsWith("/")) {
+      currentPath = page.path
+    } else {
+      currentPath = fullpath.replace(/\/$/, '') + '/' + page.path
+    }
+    if (page.children) {
+      deepForEachPage(page.children, callback, currentPath)
+    }
+    return callback(page, currentPath);
+  });
+}
+
+
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
   const routeNameSeperator = config.routeNameSeperator || '___'
-  const flattenedPages = pages
-    .map((page) => {
-      return page.children?.length
-        ? page.children.map((child) => {
-          return {
-            loc: joinURL(page.path, child.path),
-            page: child,
-          }
-        })
-        : { page, loc: page.path }
+  let flattenedPages = []
+  deepForEachPage(pages, (page, fullpath) => {
+    flattenedPages.push({
+      page,
+      loc: fullpath,
     })
-    .flat()
-    .filter(p => !p.loc.includes(':'))
+  }, null)
+  flattenedPages = flattenedPages.filter((p) => !p.loc.includes(':'))
 
   const pagesWithMeta = flattenedPages.map((p) => {
     if (config.autoLastmod && p.page.file) {
