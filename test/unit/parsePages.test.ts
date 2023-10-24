@@ -151,6 +151,74 @@ describe('page parser', () => {
         {
           "alternatives": [
             {
+              "href": "/blog/tags/edit",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/tags/edit",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags/edit",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/blog/tags/edit",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog/tags/edit",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/tags/edit",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags/edit",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/blog/tags/edit",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog/tags/new",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/tags/new",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags/new",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/blog/tags/new",
+        },
+        {
+          "alternatives": [
+            {
+              "href": "/blog/tags/new",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr/blog/tags/new",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/blog/tags/new",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/blog/tags/new",
+        },
+        {
+          "alternatives": [
+            {
               "href": "/hidden-path-but-in-sitemap",
               "hreflang": "en",
             },

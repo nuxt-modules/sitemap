@@ -1,6 +1,5 @@
 import { statSync } from 'node:fs'
 import type { NuxtModule, NuxtPage } from 'nuxt/schema'
-import { joinURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 import { loadNuxtModuleInstance, useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
@@ -13,36 +12,56 @@ export interface NuxtPagesToSitemapEntriesOptions {
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
 }
-
-function deepForEachPage(pages: NuxtPage[], callback: Function, fullpath: string | undefined | null) {
+function deepForEachPage(
+  pages: NuxtPage[],
+  callback: Function,
+  fullpath: string | undefined | null = null,
+  depth: number = 0
+) {
   pages.map((page: NuxtPage) => {
     let currentPath = ''
     if (fullpath == null) {
       currentPath = ''
     }
-    if (page.path.startsWith("/")) {
+    if (page.path.startsWith('/')) {
       currentPath = page.path
     } else {
-      currentPath = fullpath.replace(/\/$/, '') + '/' + page.path
+      currentPath = page.path === '' ? fullpath : fullpath.replace(/\/$/, '') + '/' + page.path
     }
+    callback(page, currentPath, depth)
     if (page.children) {
-      deepForEachPage(page.children, callback, currentPath)
+      deepForEachPage(page.children, callback, currentPath, depth + 1)
     }
-    return callback(page, currentPath);
-  });
+  })
 }
-
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
   const routeNameSeperator = config.routeNameSeperator || '___'
+
   let flattenedPages = []
-  deepForEachPage(pages, (page, fullpath) => {
-    flattenedPages.push({
-      page,
-      loc: fullpath,
+  deepForEachPage(
+    pages,
+    (page, fullpath, depth) => {
+      flattenedPages.push({
+        page,
+        loc: fullpath,
+        depth,
+      })
+    }
+  )
+  flattenedPages = flattenedPages
+    // Removing dynamic routes
+    .filter((page) => !page.loc.includes(':'))
+    // Removing duplicates
+    .filter((page, idx, arr) => {
+      return !arr.find((p) => {
+        return p.loc === page.loc && p.depth > page.depth
+      })
     })
-  }, null)
-  flattenedPages = flattenedPages.filter((p) => !p.loc.includes(':'))
+    .map((p) => {
+      delete p['depth']
+      return p
+    })
 
   const pagesWithMeta = flattenedPages.map((p) => {
     if (config.autoLastmod && p.page.file) {
