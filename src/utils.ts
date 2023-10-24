@@ -16,22 +16,19 @@ function deepForEachPage(
   pages: NuxtPage[],
   callback: Function,
   fullpath: string | undefined | null = null,
-  depth: number = 0
+  depth: number = 0,
 ) {
   pages.map((page: NuxtPage) => {
     let currentPath = ''
-    if (fullpath == null) {
+    if (fullpath == null)
       currentPath = ''
-    }
-    if (page.path.startsWith('/')) {
+    if (page.path.startsWith('/'))
       currentPath = page.path
-    } else {
-      currentPath = page.path === '' ? fullpath : fullpath.replace(/\/$/, '') + '/' + page.path
-    }
+    else
+      currentPath = page.path === '' ? fullpath : `${fullpath.replace(/\/$/, '')}/${page.path}`
     callback(page, currentPath, depth)
-    if (page.children) {
+    if (page.children)
       deepForEachPage(page.children, callback, currentPath, depth + 1)
-    }
   })
 }
 
@@ -47,11 +44,11 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         loc: fullpath,
         depth,
       })
-    }
+    },
   )
   flattenedPages = flattenedPages
     // Removing dynamic routes
-    .filter((page) => !page.loc.includes(':'))
+    .filter(page => !page.loc.includes(':'))
     // Removing duplicates
     .filter((page, idx, arr) => {
       return !arr.find((p) => {
@@ -59,7 +56,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       })
     })
     .map((p) => {
-      delete p['depth']
+      delete p.depth
       return p
     })
 

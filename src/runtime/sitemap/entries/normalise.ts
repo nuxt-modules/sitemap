@@ -15,9 +15,12 @@ import { mergeOnKey } from '../../util/pageUtils'
 
 export async function normaliseSitemapData(data: SitemapEntryInput[], options: BuildSitemapInput | BuildSitemapIndexInput) {
   const {
-    defaults, exclude,
-    include, autoLastmod,
-    autoI18n, isI18nMap,
+    defaults,
+    exclude,
+    include,
+    autoLastmod,
+    autoI18n,
+    isI18nMap,
   } = options.moduleConfig
   // make sure include and exclude start with baseURL
   const combinedInclude = [...(options.sitemap?.include || []), ...(include || [])]
