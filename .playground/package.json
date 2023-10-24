@@ -2,10 +2,5 @@
   "private": true,
   "scripts": {
     "prepare": "nuxi prepare"
-  },
-  "devDependencies": {
-    "@nuxt/devtools": "^0.6.7",
-    "@nuxthq/ui": "^2.5.0",
-    "nuxt-icon": "^0.4.2"
   }
 }

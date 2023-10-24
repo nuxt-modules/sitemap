@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "lint": "eslint . --fix",
-    "build": "nuxt-module-build --stub && nuxt-module-build prepare && nuxt-module-build",
+    "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build",
     "dev": "nuxi dev .playground",
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build --stub && nuxi prepare .playground",
@@ -57,14 +57,16 @@
     "@nuxt/kit": "^3.8.0",
     "@nuxt/module-builder": "^0.5.2",
     "@nuxt/test-utils": "^3.8.0",
+    "@nuxt/ui": "^2.9.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/i18n": "8.0.0-rc.5",
     "bumpp": "^9.2.0",
     "eslint": "8.52.0",
     "execa": "^8.0.1",
     "nuxt": "^3.8.0",
-    "nuxt-simple-robots": "3.1.6",
-    "vitest": "0.34.6"
+    "nuxt-icon": "^0.5.0",
+    "nuxt-simple-robots": "^3.1.6",
+    "vitest": "^0.34.6"
   },
   "build": {
     "externals": [

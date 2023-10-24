@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     'nuxt-simple-robots',
     '@nuxtjs/i18n',
     '@nuxt/content',
-    '@nuxthq/ui',
+    '@nuxt/ui',
     'nuxt-icon',
   ],
   ignorePrefix: 'ignore-',

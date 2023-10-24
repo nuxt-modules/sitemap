@@ -460,7 +460,7 @@ declare module 'nitropack' {
       moduleConfig.autoI18n = resolvedAutoI18n
     nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
       version,
-      // @ts-expect-error untyped
+      // @ts-ignore runtime type untyped
       moduleConfig,
       buildTimeMeta,
     }
