@@ -32,7 +32,6 @@ export function setupDevToolsUI(options: ModuleOptions, resolve: Resolver['resol
         followRedirects: true,
         rewrite: path => path.replace(DEVTOOLS_UI_ROUTE, ''),
       }
-      console.log('adding proxy settings', config.server.proxy)
     })
   }
 
