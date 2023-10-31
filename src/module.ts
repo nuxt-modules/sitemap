@@ -13,7 +13,6 @@ import {
 } from '@nuxt/kit'
 import { withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig, updateSiteConfig } from 'nuxt-site-config-kit'
-import { addCustomTab } from '@nuxt/devtools-kit'
 import type { NuxtPage } from 'nuxt/schema'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { version } from '../package.json'
@@ -37,6 +36,7 @@ import {
 } from './utils'
 import { setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/util/pageUtils'
+import { setupDevToolsUI } from './devtools'
 
 export interface ModuleOptions extends SitemapRoot {
   /**
@@ -460,7 +460,7 @@ declare module 'nitropack' {
       moduleConfig.autoI18n = resolvedAutoI18n
     nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = {
       version,
-      // @ts-ignore runtime type untyped
+      // @ts-expect-error runtime type untyped
       moduleConfig,
       buildTimeMeta,
     }
@@ -470,20 +470,8 @@ declare module 'nitropack' {
         route: '/api/__sitemap__/debug',
         handler: resolve('./runtime/routes/debug'),
       })
-      // pretty hacky but works for now
-      addCustomTab({
-        // unique identifier
-        name: 'nuxt-simple-sitemap',
-        // title to display in the tab
-        title: 'Sitemap',
-        // any icon from Iconify, or a URL to an image
-        icon: 'carbon:tree-view',
-        // iframe view
-        view: {
-          type: 'iframe',
-          src: '/api/__sitemap__/debug',
-        },
-      })
+
+      setupDevToolsUI(config, resolve)
     }
 
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
