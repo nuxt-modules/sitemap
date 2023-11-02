@@ -143,30 +143,39 @@ export interface ImageEntry {
 
 export interface VideoEntry {
   title: string
-  thumbnailLoc: string | URL
+  thumbnail_loc: string | URL
   description: string
-  contentLoc?: string | URL
-  playerLoc?: string | URL
+  content_loc?: string | URL
+  player_loc?: string | URL
   duration?: number
-  expirationDate?: Date | string
+  expiration_date?: Date | string
   rating?: number
-  viewCount?: number
-  publicationDate?: Date | string
-  familyFriendly?: boolean
+  view_count?: number
+  publication_date?: Date | string
+  family_friendly?: 'yes' | 'no' | boolean
   restriction?: Restriction
-  platform?: Restriction
-  requiresSubscription?: boolean
+  platform?: Platform
+  price?: ({
+    price?: number | string
+    currency?: string
+    type?: 'rent' | 'purchase' | 'package' | 'subscription'
+  })[]
+  requires_subscription?: 'yes' | 'no' | boolean
   uploader?: {
-    name: string
+    uploader: string
     info?: string | URL
   }
-  live?: boolean
-  tag?: string
+  live?: 'yes' | 'no' | boolean
+  tag?: string | string[]
 }
 
 export interface Restriction {
   relationship: 'allow' | 'deny'
-  content: string
+  restriction: string
+}
+export interface Platform {
+  relationship: 'allow' | 'deny'
+  platform: string
 }
 
 export interface BuildSitemapInput {
