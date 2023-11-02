@@ -205,7 +205,8 @@ export async function normaliseSitemapData(data: SitemapEntryInput[], options: B
     if (e.videos) {
       e.videos = e.videos.map((v) => {
         v = { ...v }
-        v.contentLoc = resolve(v.contentLoc)
+        if (v.content_loc)
+          v.content_loc = resolve(v.content_loc)
         return v
       })
     }
