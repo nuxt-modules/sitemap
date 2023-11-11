@@ -10,7 +10,7 @@ export default defineEventHandler(async (e) => {
 
   const fixPath = createSitePathResolver(e, { absolute: false, withBase: true })
 
-  const { version, xslColumns, xslTips } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { sitemapName: fallbackSitemapName, version, xslColumns, xslTips } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
 
   const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon" style="margin-right: 4px; font-size: 25px;" width="1em" height="1em" viewBox="0 0 32 32"><path fill="#93c5fd" d="M4 26h4v4H4zm10 0h4v4h-4zm10 0h4v4h-4zm1-10h-8v-2h-2v2H7a2.002 2.002 0 0 0-2 2v6h2v-6h8v6h2v-6h8v6h2v-6a2.002 2.002 0 0 0-2-2zM9 2v10h14V2zm2 2h2v6h-2zm10 6h-6V4h6z"></path></svg>`
   const creditName = `<a href="https://github.com/harlan-zw/nuxt-simple-sitemap" style="color: black; display: flex; align-items: center; font-weight: 500;" target="_blank" rel="noopener">${svgIcon} Nuxt
@@ -20,7 +20,7 @@ export default defineEventHandler(async (e) => {
 
   const referrer = getHeader(e, 'Referer')! || '/'
   const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && parseURL(referrer).pathname.endsWith('-sitemap.xml')
-  const sitemapName = parseURL(referrer).pathname.split('/').pop()?.split('-sitemap')[0] || undefined
+  const sitemapName = parseURL(referrer).pathname.split('/').pop()?.split('-sitemap')[0] || fallbackSitemapName
   // we need to tell the user their site url and allow them to render the sitemap with the canonical url
   // check if referrer has the query
   const canonicalQuery = getQuery(referrer).canonical
@@ -162,7 +162,7 @@ export default defineEventHandler(async (e) => {
             <div>
              <div id="content">
           <h1 class="text-2xl mb-5">XML Sitemap</h1>
-          <h2>${siteName} - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}</h2>
+          <h2>${siteName}${sitemapName ? `- ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}</h2>
           ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${fixPath('/sitemap_index.xml')}">${fixPath('/sitemap_index.xml')}</a></p>` : ''}
           <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &gt; 0">
             <p class="expl" style="margin-bottom: 1rem;">
