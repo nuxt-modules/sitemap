@@ -39,52 +39,74 @@ describe('i18n prefix', () => {
           <url>
               <loc>https://nuxtseo.com/en</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/es</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/extra</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/fr</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en\\" />
           </url>
           <url>
-              <loc>https://nuxtseo.com/en/extra</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/extra\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/extra\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/extra\\" />
+              <loc>https://nuxtseo.com/no-i18n</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/en/test</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/test\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/test\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/test\\" />
           </url>
           <url>
-              <loc>https://nuxtseo.com/fr/extra</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/extra\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/extra\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/extra\\" />
+              <loc>https://nuxtseo.com/es/test</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/test\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr/test</loc>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/test\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/test\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/test\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/en/__sitemap/url</loc>
               <changefreq>weekly</changefreq>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/__sitemap/url\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/es/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/__sitemap/url\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr/__sitemap/url</loc>
               <changefreq>weekly</changefreq>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/__sitemap/url\\" />
               <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/__sitemap/url\\" />
           </url>
       </urlset>"
     `)

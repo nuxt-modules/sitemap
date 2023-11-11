@@ -11,20 +11,28 @@ export default defineNuxtConfig({
   },
   sitemap: {
     dynamicUrlsApiEndpoint: '/__sitemap',
-    autoAlternativeLangPrefixes: true,
     autoLastmod: false,
     credits: false,
     debug: true,
   },
   i18n: {
-    baseUrl: '',
+    baseUrl: 'https://nuxtseo.com',
     detectBrowserLanguage: false,
     defaultLocale: 'en',
-    vueI18n: './nuxt-i18n.ts',
     strategy: 'prefix',
     locales: [
-      'en',
-      'fr',
+      {
+        code: 'en',
+        iso: 'en-US',
+      },
+      {
+        code: 'es',
+        iso: 'es-ES',
+      },
+      {
+        code: 'fr',
+        iso: 'fr-FR',
+      },
     ],
   },
 })

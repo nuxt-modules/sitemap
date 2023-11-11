@@ -1,193 +1,137 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import chalk from 'chalk'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import { withoutBase, withoutTrailingSlash } from 'ufo'
-import { defu } from 'defu'
-import { assertSiteConfig, createSitePathResolver, withSiteUrl } from 'nuxt-site-config-kit'
-import { createResolver, useNuxt } from '@nuxt/kit'
+import { join } from 'node:path'
+import { parseURL, withBase, withoutLeadingSlash } from 'ufo'
+import { assertSiteConfig } from 'nuxt-site-config-kit'
+import { useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { buildSitemap, buildSitemapIndex } from './runtime/sitemap/builder'
-import type {
-  BuildSitemapIndexInput,
-  ModuleComputedOptions,
-  ModuleRuntimeConfig,
-  RuntimeModuleOptions,
-  SitemapEntryInput,
-  SitemapRenderCtx,
-} from './runtime/types'
-import { resolveAsyncDataSources } from './runtime/sitemap/entries'
-import { generateExtraRoutesFromNuxtConfig } from './utils'
+import type { Nitro, PrerenderRoute } from 'nitropack'
+import chalk from 'chalk'
+import { dirname } from 'pathe'
+import { build } from 'nitropack'
+import { extractImages } from './util/extractImages'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapUrl } from '~/src/runtime/types'
 
-export function setupPrerenderHandler(moduleConfig: ModuleRuntimeConfig['moduleConfig'], buildTimeMeta: ModuleComputedOptions, pagesPromise: Promise<SitemapEntryInput[]>, nuxt: Nuxt = useNuxt()) {
-  const { resolve } = createResolver(import.meta.url)
+function formatPrerenderRoute(route: PrerenderRoute) {
+  let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
+
+  if (route.error) {
+    const errorColor = chalk[route.error.statusCode === 404 ? 'yellow' : 'red']
+    const errorLead = '└──'
+    str += `\n  │ ${errorLead} ${errorColor(route.error)}`
+  }
+
+  return chalk.gray(str)
+}
+
+declare module 'nitropack' {
+  interface PrerenderRoute {
+    _sitemap?: SitemapUrl
+  }
+}
+
+export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt = useNuxt()) {
+  const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
+  const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${options.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
 
   nuxt.hooks.hook('nitro:init', async (nitro) => {
-    const sitemapImages: Record<string, { loc: string }[]> = {}
-    nitro.hooks.hook('prerender:init', () => {
+    let prerenderer: Nitro
+    nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
+      prerenderer = _prerenderer
       assertSiteConfig('nuxt-simple-sitemap', {
         url: 'Required to generate absolute canonical URLs for your sitemap.',
       }, { throwError: false })
     })
-    // setup a hook for the prerender so we can inspect the image sources
-    nitro.hooks.hook('prerender:route', async (ctx) => {
-      const html = ctx.contents
-      if (ctx.fileName?.endsWith('.html') && html) {
-        // only scan within the <main> tag
-        const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
-        const mainMatch = mainRegex.exec(html)
-        if (!mainMatch || !mainMatch[1])
-          return
-        if (moduleConfig.discoverImages && mainMatch[1].includes('<img')) {
-          // extract image src using regex on the html
-          const imgRegex = /<img[^>]+src="([^">]+)"/g
-          let match
-          // eslint-disable-next-line no-cond-assign
-          while ((match = imgRegex.exec(mainMatch[1])) !== null) {
-            // This is necessary to avoid infinite loops with zero-width matches
-            if (match.index === imgRegex.lastIndex)
-              imgRegex.lastIndex++
-            let url = match[1]
-            // if the match is relative
-            if (url.startsWith('/'))
-              url = withSiteUrl(url)
-            sitemapImages[ctx.route] = sitemapImages[ctx.route] || []
-            sitemapImages[ctx.route].push({
-              loc: url,
-            })
-          }
+    nitro.hooks.hook('prerender:generate', async (route) => {
+      const html = route.contents
+      // extract alternatives from the html
+      if (!route.fileName?.endsWith('.html') || !html)
+        return
+
+      route._sitemap = {
+        loc: route.route,
+      }
+      // we need to figure out which sitemap this belongs to
+      if (options.autoI18n && Object.keys(options.sitemaps).length > 1) {
+        const path = route.route
+        const match = path.match(new RegExp(`^/(${options.autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+        // if it's missing a locale then we put it in the default locale sitemap
+        let locale = options.autoI18n.defaultLocale
+        if (match)
+          locale = match[1]
+        if (options.isI18nMapped) {
+          const { code, iso } = options.autoI18n.locales.find(l => l.code === locale) || { code: locale, iso: locale }
+          // this will filter the results to only the sitemap that matches the locale
+          route._sitemap._sitemap = iso || code
         }
+      }
+      // do a loose regex match, get all alternative link lines
+      const alternatives = (html.match(/<link[^>]+rel="alternate"[^>]+>/g) || [])
+        .map((a) => {
+          // extract the href, lang and type from the link
+          const href = a.match(/href="([^"]+)"/)?.[1]
+          const hreflang = a.match(/hreflang="([^"]+)"/)?.[1]
+          return { hreflang, href: parseURL(href).pathname }
+        })
+        .filter(a => a.hreflang && a.href) as ResolvedSitemapUrl['alternatives']
+      if (alternatives?.length && (alternatives.length > 1 || alternatives?.[0].hreflang !== 'x-default'))
+        route._sitemap.alternatives = alternatives
+
+      if (options.discoverImages) {
+        route._sitemap.images = <Required<ResolvedSitemapUrl>['images']>[...extractImages(html)]
+          .map(loc => ({ loc }))
       }
     })
+    nitro.hooks.hook('prerender:done', async () => {
+      // force templates to be rebuilt
+      await build(prerenderer)
 
-    let sitemapGenerated = false
-    const outputSitemap = async () => {
-      if (sitemapGenerated || nuxt.options.dev || nuxt.options._prepare)
-        return
-
-      const prerenderUrls = (nitro._prerenderedRoutes || [])
-        .filter(r => (!r.fileName || r.fileName.endsWith('.html')) && !r.route.endsWith('.html') && !r.route.startsWith('/api/'))
-        .map(r => ({ loc: r.route })) || []
-
-      if (buildTimeMeta.hasPrerenderedRoutesPayload) {
-        // for SSR we always need to generate the routes.json payload
-        await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
-        await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__/routes.json'), JSON.stringify(prerenderUrls))
-        nitro.logger.log(chalk.gray(
-          '  ├─ /__sitemap__/routes.json (0ms)',
-        ))
-        return
+      const routes: string[] = []
+      if (options.debug)
+        routes.push('/__sitemap__/debug.json')
+      if (prerenderSitemap) {
+        routes.push(
+          options.isMultiSitemap
+            ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
+            : `/${Object.keys(options.sitemaps)[0]}`,
+        )
       }
-
-      if (!buildTimeMeta.prerenderSitemap)
-        return
-
-      sitemapGenerated = true
-
-      // we need a siteUrl set for pre-rendering
-      let start = Date.now()
-
-      const _routeRulesMatcher = toRouteMatcher(
-        createRadixRouter({ routes: nitro.options.routeRules }),
-      )
-
-      const routeMatcher = (path: string) => {
-        const matchedRoutes = _routeRulesMatcher.matchAll(withoutBase(withoutTrailingSlash(path), nuxt.options.app.baseURL)).reverse()
-        // inject our discovered images
-        if (sitemapImages[path]) {
-          matchedRoutes.push({
-            sitemap: {
-              images: sitemapImages[path],
-            },
-          })
-        }
-        return defu({}, ...matchedRoutes) as Record<string, any>
-      }
-
-      const callHook = async (ctx: SitemapRenderCtx) => {
-        // @ts-expect-error runtime type
-        await nuxt.hooks.callHook('sitemap:prerender', ctx)
-        // @ts-expect-error runtime type
-        await nuxt.hooks.callHook('sitemap:resolved', ctx)
-      }
-
-      const options: BuildSitemapIndexInput = {
-        moduleConfig: moduleConfig as RuntimeModuleOptions,
-        canonicalUrlResolver: createSitePathResolver({ canonical: true, absolute: true, withBase: true }),
-        relativeBaseUrlResolver: createSitePathResolver({ absolute: false, withBase: true }),
-        buildTimeMeta,
-        extraRoutes: generateExtraRoutesFromNuxtConfig(),
-        getRouteRulesForPath: routeMatcher,
-        callHook,
-        prerenderUrls,
-        pages: await pagesPromise,
-      }
-      const logs: string[] = []
-      if (moduleConfig.sitemaps) {
-        start = Date.now()
-
-        // rendering a sitemap_index
-        const { xml, sitemaps } = await buildSitemapIndex(options)
-        const indexHookCtx = { sitemap: xml, sitemapName: 'index' }
-        await nuxt.hooks.callHook('sitemap:output', indexHookCtx)
-        await writeFile(resolve(nitro.options.output.publicDir, 'sitemap_index.xml'), indexHookCtx.sitemap)
-        const generateTimeMS = Date.now() - start
-        logs.push(`/sitemap_index.xml (${generateTimeMS}ms)`)
-        // now generate all sub sitemaps
-        for (const sitemap of sitemaps) {
-          let sitemapXml = await buildSitemap({
-            ...options,
-            sitemap,
-          })
-          const ctx = { sitemap: sitemapXml, sitemapName: sitemap.sitemapName }
-          await nuxt.hooks.callHook('sitemap:output', ctx)
-          sitemapXml = ctx.sitemap
-          await writeFile(resolve(nitro.options.output.publicDir, `${sitemap.sitemapName}-sitemap.xml`), sitemapXml)
-          const generateTimeMS = Date.now() - start
-          logs.push(`/${sitemap.sitemapName}-sitemap.xml (${generateTimeMS}ms)`)
-        }
-      }
-      else {
-        let sitemapXml = await buildSitemap(options)
-        const ctx = { sitemap: sitemapXml, sitemapName: moduleConfig.sitemapName }
-        await nuxt.hooks.callHook('sitemap:output', ctx)
-        sitemapXml = ctx.sitemap
-        await writeFile(resolve(nitro.options.output.publicDir, moduleConfig.sitemapName), sitemapXml)
-        const generateTimeMS = Date.now() - start
-        logs.push(`/${moduleConfig.sitemapName} (${generateTimeMS}ms)`)
-      }
-
-      if (moduleConfig.debug) {
-        const sources = await resolveAsyncDataSources(options)
-        start = Date.now()
-        await mkdir(resolve(nitro.options.output.publicDir, '__sitemap__'), { recursive: true })
-        await writeFile(resolve(nitro.options.output.publicDir, '__sitemap__', 'debug.json'), JSON.stringify({
-          moduleConfig,
-          buildTimeMeta,
-          data: sources,
-          _sources: sources
-            .map((s) => {
-              return {
-                ...s,
-                urls: s.urls.length || 0,
-              }
-            }),
-        }))
-        const generateTimeMS = Date.now() - start
-        logs.push(`/__sitemap__/debug.json (${generateTimeMS}ms)`)
-      }
-
-      for (const k in logs)
-        nitro.logger.log(chalk.gray(`  ${Number.parseInt(k) === logs.length - 1 ? '└─' : '├─'} ${logs[k]}`))
-    }
-
-    // SSR mode
-    nitro.hooks.hook('rollup:before', async () => {
-      await outputSitemap()
-    })
-
-    // SSG mode
-    nitro.hooks.hook('close', async () => {
-      await outputSitemap()
+      for (const route of routes)
+        await prerenderRoute(nitro, route)
     })
   })
+}
+
+async function prerenderRoute(nitro: Nitro, route: string) {
+  const start = Date.now()
+  // Create result object
+  const _route: PrerenderRoute = { route, fileName: withoutLeadingSlash(route) }
+  // Fetch the route
+  const encodedRoute = encodeURI(route)
+  const res = await globalThis.$fetch.raw(
+    withBase(encodedRoute, nitro.options.baseURL),
+    {
+      headers: { 'x-nitro-prerender': encodedRoute },
+      retry: nitro.options.prerender.retry,
+      retryDelay: nitro.options.prerender.retryDelay,
+    },
+  )
+  const header = (res.headers.get('x-nitro-prerender') || '') as string
+  const prerenderUrls = [...header
+    .split(',')
+    .map(i => i.trim())
+    .map(i => decodeURIComponent(i))
+    .filter(Boolean),
+  ]
+  const filePath = join(nitro.options.output.publicDir, _route.fileName!)
+  await mkdir(dirname(filePath), { recursive: true })
+  const data = res._data
+  if (filePath.endsWith('json') || typeof data === 'object')
+    await writeFile(filePath, JSON.stringify(data), 'utf8')
+  else
+    await writeFile(filePath, data, 'utf8')
+  _route.generateTimeMS = Date.now() - start
+  nitro._prerenderedRoutes!.push(_route)
+  nitro.logger.log(formatPrerenderRoute(_route))
+  for (const url of prerenderUrls)
+    await prerenderRoute(nitro, url)
 }

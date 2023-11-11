@@ -1,11 +1,13 @@
+import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
+import type { ResolvedSitemapUrl, SitemapDefinition } from '../../types'
 
-export interface CreateFilterOptions {
+interface CreateFilterOptions {
   include?: (string | RegExp)[]
   exclude?: (string | RegExp)[]
 }
 
-export function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
+function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
   const include = options.include || []
   const exclude = options.exclude || []
   if (include.length === 0 && exclude.length === 0)
@@ -36,4 +38,21 @@ export function createFilter(options: CreateFilterOptions = {}): (path: string) 
     }
     return include.length === 0
   }
+}
+
+export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], filter: Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
+  // base may be wrong here
+  const urlFilter = createFilter(filter)
+  return _urls.filter((e) => {
+    if (e._sitemap && filter.sitemapName)
+      return e._sitemap === filter.sitemapName
+    try {
+      const url = parseURL(e.loc)
+      return urlFilter(url.pathname)
+    }
+    catch {
+      // invalid URL
+      return false
+    }
+  })
 }

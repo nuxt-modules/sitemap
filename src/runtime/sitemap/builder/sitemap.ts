@@ -1,71 +1,117 @@
-import type { BuildSitemapInput } from '../../types'
-import { normaliseSitemapData, resolveAsyncDataSources } from '../entries'
-import { escapeValueForXml, wrapSitemapXml } from './util'
+import { defu } from 'defu'
+import { resolveSitePath } from 'site-config-stack'
+import { withHttps } from 'ufo'
+import type {
+  ModuleRuntimeConfig,
+  NitroUrlResolvers,
+  ResolvedSitemapUrl,
+  SitemapDefinition,
+  SitemapRenderCtx,
+} from '../../types'
+import { normaliseSitemapUrls } from '../urlset/normalise'
+import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
+import { filterSitemapUrls } from '../urlset/filter'
+import { applyI18nEnhancements } from '../urlset/i18n'
+import { sortSitemapUrls } from '../urlset/sort'
+import { handleEntry, wrapSitemapXml } from './xml'
+import { useNitroApp, useRuntimeConfig } from '#imports'
 
-export async function buildSitemap(options: BuildSitemapInput) {
-  const sitemapsConfig = options.moduleConfig.sitemaps
-  // always fetch all sitemap data
-  const sources = await resolveAsyncDataSources(options)
-  // dedupes data
-  let entries = await normaliseSitemapData(sources.map(e => e.urls).flat(), options)
+export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers) {
+  // 0. resolve sources
+  // 1. normalise
+  // 2. filter
+  // 3. enhance
+  // 4. sort
+  // 5. chunking
+  // 6. nitro hooks
+  // 7. normalise and sort again
+
+  const {
+    sitemaps,
+    // enhancing
+    autoLastmod,
+    autoI18n,
+    isI18nMapped,
+    // sorting
+    sortEntries,
+    // chunking
+    defaultSitemapsChunkSize,
+    // xls
+    version,
+    xsl,
+    credits,
+  } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))
+  function maybeSort(urls: ResolvedSitemapUrl[]) {
+    return sortEntries ? sortSitemapUrls(urls) : urls
+  }
+  function maybeSlice(urls: ResolvedSitemapUrl[]) {
+    if (isChunking && defaultSitemapsChunkSize) {
+      const chunk = Number(sitemap.sitemapName)
+      return urls.slice(chunk * defaultSitemapsChunkSize, (chunk + 1) * defaultSitemapsChunkSize)
+    }
+    return urls
+  }
+  if (autoI18n?.differentDomains) {
+    const domain = autoI18n.locales.find(e => [e.iso, e.code].includes(sitemap.sitemapName))?.domain
+    if (domain) {
+      const _tester = resolvers.canonicalUrlResolver
+      resolvers.canonicalUrlResolver = (path: string) => resolveSitePath(path, {
+        absolute: true,
+        withBase: false,
+        siteUrl: withHttps(domain),
+        trailingSlash: !_tester('/test/').endsWith('/'),
+        base: '/',
+      })
+    }
+  }
+  // 0. resolve sources
+  // always fetch all sitemap data for the primary sitemap
+  const sources = sitemap.includeAppSources ? await globalSitemapSources() : []
+  sources.push(...await childSitemapSources(sitemap))
+  const resolvedSources = await resolveSitemapSources(sources)
+  // 1. normalise
+  const normalisedUrls = normaliseSitemapUrls(resolvedSources.map(e => e.urls).flat(), resolvers)
+  // 2. enhance
+  const defaults = sitemap.defaults
+  if (autoLastmod && defaults?.lastmod)
+    defaults.lastmod = new Date()
+
+  let enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
+    .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
+  // TODO enable
+  if (autoI18n?.locales)
+    enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
+  // 3. filtered urls
+  // TODO make sure include and exclude start with baseURL?
+  const filteredUrls = filterSitemapUrls(enhancedUrls, sitemap)
+  // 4. sort
+  const sortedUrls = maybeSort(filteredUrls)
+  // 5. maybe slice for chunked
   // if we're rendering a partial sitemap, slice the entries
-  if (sitemapsConfig === true && options.moduleConfig.defaultSitemapsChunkSize)
-    entries = entries.slice(Number(options.sitemap?.sitemapName) * options.moduleConfig.defaultSitemapsChunkSize, (Number(options.sitemap?.sitemapName) + 1) * options.moduleConfig.defaultSitemapsChunkSize)
-
-  function resolveKey(k: string) {
-    switch (k) {
-      case 'images':
-        return 'image'
-      case 'videos':
-        return 'video'
-      // news & others?
-      case 'news':
-        return 'news'
-      default:
-        return k
-    }
+  const slicedUrls = maybeSlice(sortedUrls)
+  // 6. nitro hooks
+  const nitro = useNitroApp()
+  const ctx: SitemapRenderCtx = {
+    urls: slicedUrls,
+    sitemapName: sitemap.sitemapName,
   }
-  function handleObject(key: string, obj: Record<string, any>) {
+  await nitro.hooks.callHook('sitemap:resolved', ctx)
+
+  // final urls
+  const urls = maybeSort(normaliseSitemapUrls(ctx.urls, resolvers))
+
+  const urlset = urls.map((e) => {
+    const keys = Object.keys(e).filter(k => !k.startsWith('_'))
     return [
-      `        <${key}:${key}>`,
-      ...Object.entries(obj).map(([sk, sv]) => {
-        if (typeof sv === 'object') {
-          return [
-            `            <${key}:${sk}>`,
-            ...Object.entries(sv).map(([ssk, ssv]) => `                <${key}:${ssk}>${escapeValueForXml(ssv)}</${key}:${ssk}>`),
-            `            </${key}:${sk}>`,
-          ].join('\n')
-        }
-        return `            <${key}:${sk}>${escapeValueForXml(sv)}</${key}:${sk}>`
-      }),
-      `        </${key}:${key}>`,
+      '    <url>',
+      keys.map(k => handleEntry(k, e)).filter(Boolean).join('\n'),
+      '    </url>',
     ].join('\n')
-  }
-
-  function handleArray(key: string, arr: Record<string, any>[]) {
-    if (arr.length === 0)
-      return false
-    key = resolveKey(key)
-    if (key === 'alternatives') {
-      return arr.map(obj => [
-        `        <xhtml:link rel="alternate" ${Object.entries(obj).map(([sk, sv]) => `${sk}="${escapeValueForXml(sv)}"`).join(' ')} />`,
-      ].join('\n')).join('\n')
-    }
-    return arr.map(obj => handleObject(key, obj)).join('\n')
-  }
-  function handleEntry(k: string, e: Record<string, any> | (string | Record<string, any>)[]) {
-    // @ts-expect-error type juggling
-    return Array.isArray(e[k]) ? handleArray(k, e[k]) : typeof e[k] === 'object' ? handleObject(k, e[k]) : `        <${k}>${escapeValueForXml(e[k])}</${k}>`
-  }
+  })
   return wrapSitemapXml([
     '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...(entries?.map(e => `    <url>
-${Object.keys(e).map(k => handleEntry(k, e)).filter(l => l !== false).join('\n')}
-    </url>`) ?? []),
+    urlset.join('\n'),
     '</urlset>',
-  ], {
-    xsl: options.moduleConfig.xsl ? options.relativeBaseUrlResolver(options.moduleConfig.xsl) : false,
-    credits: options.moduleConfig.credits,
-    version: options.buildTimeMeta.version,
-  })
+  ], resolvers, { version, xsl, credits })
 }

@@ -10,10 +10,11 @@ export default defineEventHandler(async (e) => {
 
   const fixPath = createSitePathResolver(e, { absolute: false, withBase: true })
 
-  const { version, moduleConfig } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { version, xslColumns, xslTips } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
 
-  const creditName = `<a href="https://github.com/harlan-zw/nuxt-simple-sitemap" style="color: black; font-weight: 500;" target="_blank" rel="noopener">Nuxt
-            Simple Sitemap</a> v${version}`
+  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon" style="margin-right: 4px; font-size: 25px;" width="1em" height="1em" viewBox="0 0 32 32"><path fill="#93c5fd" d="M4 26h4v4H4zm10 0h4v4h-4zm10 0h4v4h-4zm1-10h-8v-2h-2v2H7a2.002 2.002 0 0 0-2 2v6h2v-6h8v6h2v-6h8v6h2v-6a2.002 2.002 0 0 0-2-2zM9 2v10h14V2zm2 2h2v6h-2zm10 6h-6V4h6z"></path></svg>`
+  const creditName = `<a href="https://github.com/harlan-zw/nuxt-simple-sitemap" style="color: black; display: flex; align-items: center; font-weight: 500;" target="_blank" rel="noopener">${svgIcon} Nuxt
+            Simple Sitemap v${version}</a>`
 
   const { name: siteName, url: siteUrl } = useSiteConfig(e)
 
@@ -27,7 +28,7 @@ export default defineEventHandler(async (e) => {
 
   const conditionalTips = [
     'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #398465" target="_blank">XML stylesheet</a>. Read the <a href="https://nuxtseo.com/sitemap/guides/customising-ui" style="color: #398465" target="_blank">docs</a> to learn how to customize it.',
-    `URLs missing? Check the <a href="${withQuery('/api/__sitemap__/debug', { sitemap: sitemapName })}" style="color: #398465" target="_blank">debug endpoint</a>`,
+    `URLs missing? Check Nuxt Dev Tools Sitemap tab (or the <a href="${withQuery('/__sitemap__/debug.json', { sitemap: sitemapName })}" style="color: #398465" target="_blank">debug endpoint</a>).`,
   ]
   if (!isShowingCanonical) {
     const canonicalPreviewUrl = withQuery(referrer, { canonical: '' })
@@ -41,8 +42,8 @@ export default defineEventHandler(async (e) => {
 
   const tips = conditionalTips.map(t => `<li><p>${t}</p></li>`).join('\n')
 
-  const showTips = process.dev && moduleConfig.xslTips !== false
-  let columns = [...moduleConfig.xslColumns!]
+  const showTips = process.dev && xslTips !== false
+  let columns = [...xslColumns!]
   if (!columns.length) {
     columns = [
       { label: 'URL', width: '50%' },
@@ -160,7 +161,8 @@ export default defineEventHandler(async (e) => {
         <div style="grid-template-columns: 1fr 1fr; display: grid; margin: 3rem;">
             <div>
              <div id="content">
-          <h1 class="text-2xl mb-5">${siteName} XML Sitemap</h1>
+          <h1 class="text-2xl mb-5">XML Sitemap</h1>
+          <h2>${siteName} - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}</h2>
           ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${fixPath('/sitemap_index.xml')}">${fixPath('/sitemap_index.xml')}</a></p>` : ''}
           <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &gt; 0">
             <p class="expl" style="margin-bottom: 1rem;">
@@ -226,7 +228,7 @@ export default defineEventHandler(async (e) => {
           </xsl:if>
         </div>
         </div>
-                    ${showTips ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;"><p><strong>Sitemap Tips</strong></p><ul style="margin: 1rem; padding: 0;">${tips}</ul><p style="margin-top: 1rem;">${creditName}</p></div>` : ''}
+                    ${showTips ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;"><p><strong>Sitemap Tips (development only)</strong></p><ul style="margin: 1rem; padding: 0;">${tips}</ul><p style="margin-top: 1rem;">${creditName}</p></div>` : ''}
         </div>
       </body>
     </html>

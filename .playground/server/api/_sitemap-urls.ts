@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 
-export default defineEventHandler((e) => {
+export default defineEventHandler(() => {
   const posts = Array.from({ length: 5 }, (_, i) => i + 1)
   return [
     '/users-lazy/1',

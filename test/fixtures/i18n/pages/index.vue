@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { useI18n } from '#imports'
+import { prerenderRoutes } from '#imports'
 
-const i18n = useI18n()
-const { t } = useI18n()
+prerenderRoutes([
+  '/en/dynamic/foo',
+  '/en/dynamic/bar',
+])
 </script>
 
 <template>

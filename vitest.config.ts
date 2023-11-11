@@ -10,12 +10,6 @@ export default defineConfig({
     threads: isCI, // kills my computer
     testTimeout: 300000, // 5 minutes
     hookTimeout: 300000, // 5 minutes,
-    deps: {
-      inline: [
-        '@nuxt/test-utils',
-        '@nuxt/test-utils-edge',
-      ],
-    },
     include: [
       'test/integration/**',
       'test/unit/**',

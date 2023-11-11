@@ -4,5 +4,9 @@
     <NuxtLink to="/crawled">
       crawled
     </NuxtLink>
+    <br>
+    <a href="/sitemap.xml">
+      sitemap.xml
+    </a>
   </div>
 </template>

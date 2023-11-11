@@ -13,5 +13,5 @@ export default defineNuxtConfig({
     credits: false,
     debug: true,
   },
-  debug: true,
+  debug: process.env.NODE_ENV === 'test',
 })

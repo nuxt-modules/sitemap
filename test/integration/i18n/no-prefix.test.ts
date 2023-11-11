@@ -17,7 +17,6 @@ await setup({
       strategy: 'no_prefix',
     },
     sitemap: {
-      autoAlternativeLangPrefixes: true,
       urls: ['/extra'],
       sitemaps: false,
     },
@@ -35,6 +34,9 @@ describe('i18n prefix', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/extra</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/no-i18n</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/test</loc>

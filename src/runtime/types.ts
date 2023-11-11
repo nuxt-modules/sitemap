@@ -1,49 +1,80 @@
+import type { FetchOptions } from 'ofetch'
+import type { H3Event } from 'h3'
 import type { ModuleOptions } from '../module'
-import type { CreateFilterOptions } from './util/urlFilter'
 
 export interface IndexSitemapRemotes {
   index?: (string | SitemapIndexEntry)[]
 }
 
-export interface IndexSitemapLocals {
-  [key: string]: Partial<SitemapRoot>
+export interface MultiSitemapEntry {
+  [key: string]: Partial<SitemapDefinition>
 }
 
-export type MultiSitemapsInput = Partial<IndexSitemapLocals & IndexSitemapRemotes>
+export type MultiSitemapsInput = Partial<MultiSitemapEntry & IndexSitemapRemotes>
 
 export type MaybeFunction<T> = T | (() => T)
 export type MaybePromise<T> = T | Promise<T>
 
-export type SitemapEntryInput = SitemapEntry | string
+export type SitemapUrlInput = SitemapUrl | string
 
-export interface DataSourceResult {
-  context: 'pages' | 'nuxt-config.module' | 'nuxt-config.nitro-prerender' | 'nuxt-config.route-rules' | 'api' | 'prerender'
-  urls: SitemapEntryInput[]
-  path?: string
-  error?: Error | string
+export interface SitemapSourceBase {
+  context: {
+    name: string
+    description?: string
+    tips?: string[]
+  }
+  fetch?: string | [string, FetchOptions]
+  urls?: SitemapUrlInput[]
+  sourceType?: 'app' | 'user'
+}
+export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
+  urls: SitemapUrlInput[]
+  error?: any
   timeTakenMs?: number
 }
 
-export type NormalisedLocales = { code: string; iso?: string }[]
-export interface AutoI18nConfig { locales: NormalisedLocales; defaultLocale: string; strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' }
+export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'
 
-export type RuntimeModuleOptions = { urls: SitemapEntryInput[]; autoI18n?: AutoI18nConfig; isI18nMap?: boolean } & Pick<ModuleOptions, 'sortEntries' | 'defaultSitemapsChunkSize' | 'sitemapName' | 'cacheTtl' | 'runtimeCacheStorage' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' | 'defaults' | 'include' | 'exclude' | 'sitemaps' | 'dynamicUrlsApiEndpoint'>
+export type SitemapSourceInput = string | SitemapSourceBase | SitemapSourceResolved
 
-export interface ModuleRuntimeConfig { moduleConfig: RuntimeModuleOptions; buildTimeMeta: ModuleComputedOptions }
+export type NormalisedLocales = { code: string; iso?: string; domain?: string }[]
+export interface AutoI18nConfig {
+  differentDomains?: boolean
+  locales: NormalisedLocales
+  defaultLocale: string
+  strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
+}
+
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
+  version: string
+  sitemaps: { index?: { sitemapName: string; sitemaps: string[] } } & Record<string, Omit<SitemapDefinition, 'urls' | 'sources'> & { _hasSourceChunk?: boolean }>
+  autoI18n?: AutoI18nConfig
+  isMultiSitemap: boolean
+  isI18nMapped: boolean
+}
 
 export interface SitemapIndexEntry {
   sitemap: string
   lastmod?: string
-  /**
-   * Internally used to decide if the entry needs to be generated. Useful for ignoring remote sitemaps.
-   */
-  referenceOnly?: boolean
 }
-export type SitemapItemDefaults = Omit<Partial<SitemapEntry>, 'loc'>
 
-export type ResolvedSitemapEntry = Omit<SitemapEntry, 'url'> & Required<Pick<SitemapEntry, 'loc'>>
+export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<SitemapUrl, 'loc'>>
 
-export interface SitemapRoot extends CreateFilterOptions {
+export interface SitemapDefinition {
+  /**
+   * A collection include patterns for filtering which URLs end up in the sitemap.
+   */
+  include?: (string | RegExp)[]
+  /**
+   * A collection exclude patterns for filtering which URLs end up in the sitemap.
+   */
+  exclude?: (string | RegExp)[]
+  /**
+   * Should the sitemap be generated using global sources.
+   *
+   * This is enabled by default when using a single sitemap. Otherwise, it will be opt-in.
+   */
+  includeAppSources?: boolean
   /**
    * The root sitemap name.
    * Only works when multiple sitemaps option `sitemaps` isn't used.
@@ -51,25 +82,31 @@ export interface SitemapRoot extends CreateFilterOptions {
    * @default `sitemap.xml`
    */
   sitemapName: string
-  urls: MaybeFunction<MaybePromise<SitemapEntryInput[]>>
-  defaults?: Omit<SitemapEntry, 'loc'>
+  /**
+   * A resolvable collection of URLs to include in the sitemap.
+   *
+   * Will be resolved when the sitemap is generated.
+   */
+  urls?: MaybeFunction<MaybePromise<SitemapUrlInput[]>>
+  /**
+   * Default options for all URLs in the sitemap.
+   */
+  defaults?: Omit<SitemapUrl, 'loc'>
+  /**
+   * Additional sources of URLs to include in the sitemap.
+   */
+  sources?: SitemapSourceInput[]
   /**
    * The endpoint to fetch dynamic URLs from.
+   *
+   * @deprecated use `sources`
    */
-  dynamicUrlsApiEndpoint: string
-}
-
-export interface ModuleComputedOptions {
-  hasApiRoutesUrl: boolean
-  isNuxtContentDocumentDriven: boolean
-  hasPrerenderedRoutesPayload: boolean
-  prerenderSitemap: boolean
-  version: string
+  dynamicUrlsApiEndpoint?: string
 }
 
 export interface SitemapRenderCtx {
   sitemapName: string
-  urls: ResolvedSitemapEntry[]
+  urls: ResolvedSitemapUrl[]
 }
 
 export interface SitemapOutputHookCtx {
@@ -86,7 +123,7 @@ export type Changefreq =
   | 'yearly'
   | 'never'
 
-export interface SitemapEntry {
+export interface SitemapUrl {
   loc: string
   lastmod?: string | Date
   changefreq?: Changefreq
@@ -95,6 +132,8 @@ export interface SitemapEntry {
   news?: GoogleNewsEntry
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
+  _i18nTransform?: boolean
+  _sitemap?: string
   /**
    * @deprecated use `loc`
    */
@@ -178,21 +217,8 @@ export interface Platform {
   platform: string
 }
 
-export interface BuildSitemapInput {
-  /**
-   * prerender: config
-   * ssr: useRuntimeConfig()['nuxt-simple-sitemaps]
-   */
-  moduleConfig: ModuleRuntimeConfig['moduleConfig']
-  buildTimeMeta: ModuleRuntimeConfig['buildTimeMeta']
-  sitemap?: SitemapRoot
-  getRouteRulesForPath: (path: string) => Record<string, any>
+export interface NitroUrlResolvers {
+  event: H3Event
   canonicalUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
-  callHook?: (ctx: SitemapRenderCtx) => Promise<void>
-  extraRoutes: { routeRules: string[]; prerenderUrls: string[] }
-  prerenderUrls?: SitemapEntryInput[]
-  pages: SitemapEntryInput[]
 }
-
-export type BuildSitemapIndexInput = BuildSitemapInput

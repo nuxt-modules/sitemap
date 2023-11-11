@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { loadShiki } from './composables/shiki'
 import { data, refreshSources } from './composables/state'
 
@@ -9,60 +9,220 @@ const loading = ref(false)
 
 async function refresh() {
   loading.value = true
+  data.value = null
   await refreshSources()
   setTimeout(() => {
     loading.value = false
   }, 300)
 }
+
+const tab = ref('sitemaps')
+
+function resolveSitemapUrl(sitemapName: string) {
+  if (!data.value)
+    return ''
+  if (sitemapName === 'sitemap' || sitemapName === 'sitemap.xml')
+    return `${data.value.nitroOrigin}sitemap.xml`
+  if (sitemapName === 'index')
+    return `${data.value.nitroOrigin}sitemap_index.xml`
+  return `${data.value.nitroOrigin}${sitemapName}-sitemap.xml`
+}
+
+const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
+const appSources = computed(() => (data.value?.globalSources || []).filter(s => s.sourceType === 'app'))
+const userSources = computed(() => (data.value?.globalSources || []).filter(s => s.sourceType === 'user'))
 </script>
 
 <template>
   <div class="relative p8 n-bg-base flex flex-col h-screen">
     <div>
-      <div class="flex justify-between" mb6>
+      <div class="flex justify-between items-center" mb6>
         <div>
           <h1 text-xl mb2 flex items-center gap-2>
-            <NIcon icon="carbon:load-balancer-application text-blue-300" />
-            Nuxt Simple Sitemap <span v-if="data?.buildTimeMeta" class="text-sm opacity-60">{{ data.buildTimeMeta.version }}</span>
+            <NIcon icon="carbon:load-balancer-application" class="text-blue-300" />
+            Nuxt Simple Sitemap <NBadge class="text-sm">
+              {{ data?.runtimeConfig?.version }}
+            </NBadge>
           </h1>
+          <div class="space-x-3 mt-1 ml-1 opacity-80 text-sm">
+            <NLink href="https://nuxtseo.com/sitemap" target="_blank">
+              <NuxtSeoLogo class="mr-[2px] w-5 h-5 inline" />
+              Documentation
+            </NLink>
+            <NLink href="https://github.com/harlan-zw/nuxt-simple-sitemap" target="_blank">
+              <NIcon icon="logos:github-icon" class="mr-[2px]" />
+              Submit an issue
+            </NLink>
+          </div>
+        </div>
+        <div>
+          <a href="https://nuxtseo.com" target="_blank" class="flex items-end gap-1.5 font-semibold text-xl text-gray-700 dark:text-white font-title">
+            <NuxtSeoLogo />
+            <span class="hidden sm:block">Nuxt</span><span class="sm:text-primary-500 dark:sm:text-primary-400">SEO</span>
+          </a>
         </div>
       </div>
     </div>
-    <div class="flex items-center space-x-5">
-      <div>
-        <h2 text-lg mb2 flex items-center gap-2>
-          <NIcon icon="carbon:connect-source opacity-50" />
-          Sources <span class="text-sm opacity-60">{{ data?.sources.length }}</span>
-        </h2>
-        <p text-sm op60 mb3>
-          See the sources used to generate your sitemap.
-        </p>
-      </div>
+    <div class="mb-6 text-xl">
+      <fieldset
+        class="n-select-tabs flex flex-inline flex-wrap items-center border n-border-base rounded-lg n-bg-base"
+      >
+        <label
+          v-for="(value, idx) of ['sitemaps', 'user-sources', 'app-sources']"
+          :key="idx"
+          class="relative n-border-base hover:n-bg-active px-0.5em py-0.1em"
+          :class="[
+            idx ? 'border-l n-border-base ml--1px' : '',
+            value === tab ? 'n-bg-active' : '',
+          ]"
+        >
+          <div v-if="value === 'app-sources'" :class="[value === tab ? '' : 'op35']">
+            <div class="px-2 py-1">
+              <h2 text-lg flex items-center gap-2 mb-1>
+                <NIcon icon="carbon:connect-source opacity-50" />
+                App Sources <NBadge class="text-sm">
+                  {{ appSources.length }}
+                </NBadge>
+              </h2>
+              <p text-xs op60>
+                Automatic global sources generated from your application.
+              </p>
+            </div>
+          </div>
+          <div v-else-if="value === 'user-sources'" :class="[value === tab ? '' : 'op35']">
+            <div class="px-2 py-1">
+              <h2 text-lg flex items-center gap-2 mb-1>
+                <NIcon icon="carbon:connect-source opacity-50" />
+                User Sources <NBadge class="text-sm">
+                  {{ userSources.length }}
+                </NBadge>
+              </h2>
+              <p text-xs op60>
+                Manually provided global sources provided by you.
+              </p>
+            </div>
+          </div>
+          <div v-else-if="value === 'sitemaps'" :class="[value === tab ? '' : 'op35']">
+            <div class="px-2 py-1">
+              <h2 text-lg flex items-center gap-2 mb-1>
+                <NIcon icon="carbon:load-balancer-application opacity-50" />
+                Sitemaps <NBadge class="text-sm">
+                  {{ data?.sitemaps.length }}
+                </NBadge>
+              </h2>
+              <p text-xs op60>
+                The sitemaps generated from your site.
+              </p>
+            </div>
+          </div>
+          <input
+            v-model="tab"
+            type="radio"
+            :value="value"
+            :title="value"
+            class="absolute inset-0 op-0.1"
+          >
+        </label>
+      </fieldset>
       <button
-        class="mr-5 hover:shadow-lg text-xs transition items-center gap-2 inline-flex border-green-500/50 border-1 rounded-lg shadow-sm px-3 py-1"
+        class="ml-5 hover:shadow-lg text-xs transition items-center gap-2 inline-flex border-green-500/50 border-1 rounded-lg shadow-sm px-3 py-1"
         @click="refresh"
       >
         <div v-if="!loading">
-          Refresh
+          Refresh Data
         </div>
         <NIcon v-else icon="carbon:progress-bar-round" class="animated animate-spin op50 text-xs" />
       </button>
     </div>
-    <div class="space-y-10">
-      <div v-for="source in data?.sources">
-        <div v-if="source.count > 0" class="mb-3">
-          <h3 class="text-gray-800 text-base mb-1">
-            {{ source.context }} <span class="bg-gray-100 rounded text-gray-500 px-1 text-xs">{{ source.count }}</span>
-          </h3>
-          <div v-if="source.path" class="text-sm flex items-center opacity-70 space-x-3">
-            <div>{{ source.path }}</div>
-            <div v-if="source.timeTakenMs" class="text-gray-700">
-              {{ source.timeTakenMs }}ms
+    <div>
+      <NLoading v-if="!data?.globalSources || loading" />
+      <template v-else>
+        <div v-if="tab === 'sitemaps'" class="space-y-5">
+          <OSectionBlock v-for="(sitemap, key) in data.sitemaps" :key="key">
+            <template #text>
+              <h3 class="text-gray-800 text-base mb-1">
+                {{ sitemap.sitemapName }}
+                <NIcon v-if="(sitemap.sources || []).some(s => !!s.error)" icon="carbon:warning" class="text-red-500" />
+              </h3>
+            </template>
+            <template #description>
+              <NLink target="_blank" :href="resolveSitemapUrl(sitemap.sitemapName)">
+                {{ resolveSitemapUrl(sitemap.sitemapName) }}
+              </NLink>
+            </template>
+            <div class="px-3 py-2 space-y-5">
+              <template v-if="sitemap.sitemapName === 'index'">
+                <div>
+                  <div class="text-sm mb-1 text-gray-800">
+                    This is a special sitemap file that links to your other sitemaps.
+                  </div>
+                  <div class="text-sm text-gray-700">
+                    You can learn about this on the <NLink underline target="_blank" href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps">
+                      Google Search Central
+                    </NLink>.
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div class="flex space-x-5">
+                  <div>
+                    <div class="font-bold text-sm mb-1">
+                      Sources
+                    </div>
+                    <div class="opacity-40 text-xs max-w-60">
+                      Local sources associated with just this sitemap.<br>Example: Load in a dynamic list of URLs from an API endpoint.
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 flex-grow">
+                    <Source v-for="(source, k) in sitemap.sources" :key="k" :source="source" />
+                  </div>
+                </div>
+                <div class="flex space-x-5">
+                  <div>
+                    <div class="font-bold text-sm mb-1">
+                      App Sources
+                    </div>
+                    <div class="opacity-40 text-xs max-w-60">
+                      Use global app sources to generate the sitemap data. <br>See the <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
+                        App Sources
+                      </NLink> tab.
+                    </div>
+                  </div>
+                  <div class="bg-red-50/35 rounded flex-grow flex items-center px-3">
+                    <div v-if="sitemap.includeAppSources && appSourcesExcluded !== true" class="opacity-70">
+                      <NIcon icon="carbon:checkmark" class="text-green-500 text-lg" />
+                      Enabled
+                    </div>
+                    <div v-else class="opacity-70">
+                      <NIcon icon="carbon:close" class="text-red-500 text-lg" />
+                      Disabled
+                    </div>
+                  </div>
+                </div>
+                <div class="flex space-x-5">
+                  <div>
+                    <div class="font-bold text-sm mb-1">
+                      Sitemap Options
+                    </div>
+                    <div class="opacity-40 text-xs max-w-60">
+                      Extra options used to filter the URLs on the final sitemap and set defaults.
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 flex-grow">
+                    <OCodeBlock class="max-h-[350px] min-h-full overflow-y-auto" :code="JSON.stringify({ include: sitemap.include, exclude: sitemap.exclude, defaults: sitemap.defaults }, null, 2)" lang="json" />
+                  </div>
+                </div>
+              </template>
             </div>
-          </div>
+          </OSectionBlock>
         </div>
-        <OCodeBlock class="max-h-[350px] max-w-2/3 overflow-y-auto" :code="JSON.stringify(source.urls, null, 2)" lang="json" />
-      </div>
+        <div v-if="tab === 'app-sources'" class="space-y-5">
+          <Source v-for="(source, key) in appSources" :key="key" :source="source" />
+        </div>
+        <div v-if="tab === 'user-sources'" class="space-y-5">
+          <Source v-for="(source, key) in userSources" :key="key" :source="source" />
+        </div>
+      </template>
     </div>
     <div class="flex-auto" />
   </div>

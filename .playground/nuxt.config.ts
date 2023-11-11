@@ -34,6 +34,7 @@ export default defineNuxtConfig({
           },
         )
         subprocess.getProcess().stdout?.on('data', (data) => {
+          // eslint-disable-next-line no-console
           console.log(` sub: ${data.toString()}`)
         })
 
@@ -80,7 +81,6 @@ export default defineNuxtConfig({
   },
   sitemap: {
     debug: true,
-    autoAlternativeLangPrefixes: true,
     // sitemapName: 'test.xml',
     // dynamicUrlsApiEndpoint: '/__sitemap',
     xslColumns: [
@@ -88,14 +88,32 @@ export default defineNuxtConfig({
       { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },
       { label: 'Hreflangs', select: 'count(xhtml:link)', width: '25%' },
     ],
+    urls: [
+      '/manual-url-test',
+    ],
+    sources: [
+      '/some-invalid-url',
+      ['https://api.example.com/pages/urls', { headers: { Authorization: 'Bearer <token>' } }],
+    ],
     defaultSitemapsChunkSize: 10,
     sitemaps: {
       posts: {
-        include: ['/blog/**'],
+        includeAppSources: true,
+        urls: async () => {
+          await new Promise((then) => {
+            setTimeout(then, 5000)
+          })
+          return ['/slow-url']
+        },
+        include: ['/slow-url', '/en/blog/**', '/fr/blog/**', '/blog/**'],
       },
       pages: {
-        dynamicUrlsApiEndpoint: '/api/sitemap-foo',
-        exclude: ['/blog/**'],
+        includeAppSources: true,
+        sources: [
+          '/api/sitemap-foo',
+          'https://example.com/invalid.json',
+        ],
+        exclude: ['/en/blog/**', '/fr/blog/**', '/blog/**'],
         urls: [
           {
             loc: '/about',

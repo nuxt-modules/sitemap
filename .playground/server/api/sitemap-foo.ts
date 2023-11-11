@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 
-export default defineEventHandler((e) => {
+export default defineEventHandler(() => {
   return [
     '/foo/1',
     '/foo/2',

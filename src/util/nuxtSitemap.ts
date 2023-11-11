@@ -1,49 +1,59 @@
 import { statSync } from 'node:fs'
-import type { NuxtModule, NuxtPage } from 'nuxt/schema'
+import type { NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { loadNuxtModuleInstance, useNuxt } from '@nuxt/kit'
+import { useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
-import type { SitemapEntryInput } from './runtime/types'
+import type { SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+
+export async function resolveUrls(urls: Required<SitemapDefinition>['urls']): Promise<SitemapUrlInput[]> {
+  if (typeof urls === 'function')
+    urls = urls()
+  // resolve promise
+  urls = await urls
+  return urls
+}
 
 export interface NuxtPagesToSitemapEntriesOptions {
   normalisedLocales: { code: string; iso?: string }[]
-  routeNameSeperator?: string
+  routesNameSeparator?: string
   autoLastmod: boolean
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
+  isI18nMapped: boolean
 }
+
+interface PageEntry extends SitemapUrl {
+  page?: NuxtPage
+  locale?: string
+  depth?: number
+}
+
 function deepForEachPage(
   pages: NuxtPage[],
-  callback: Function,
+  callback: (page: NuxtPage, fullpath: string, depth: number) => void,
   fullpath: string | undefined | null = null,
   depth: number = 0,
 ) {
-  pages.map((page: NuxtPage) => {
-    let currentPath = ''
-    if (fullpath == null)
-      currentPath = ''
+  pages.forEach((page: NuxtPage) => {
+    let currentPath: string | null
     if (page.path.startsWith('/'))
       currentPath = page.path
     else
-      currentPath = page.path === '' ? fullpath : `${fullpath.replace(/\/$/, '')}/${page.path}`
-    callback(page, currentPath, depth)
+      currentPath = page.path === '' ? fullpath : `${fullpath!.replace(/\/$/, '')}/${page.path}`
+    callback(page, currentPath || '', depth)
     if (page.children)
       deepForEachPage(page.children, callback, currentPath, depth + 1)
   })
 }
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
-  const routeNameSeperator = config.routeNameSeperator || '___'
+  const routesNameSeparator = config.routesNameSeparator || '___'
 
-  let flattenedPages = []
+  let flattenedPages: PageEntry[] = []
   deepForEachPage(
     pages,
-    (page, fullpath, depth) => {
-      flattenedPages.push({
-        page,
-        loc: fullpath,
-        depth,
-      })
+    (page, loc, depth) => {
+      flattenedPages.push({ page, loc, depth })
     },
   )
   flattenedPages = flattenedPages
@@ -52,7 +62,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     // Removing duplicates
     .filter((page, idx, arr) => {
       return !arr.find((p) => {
-        return p.loc === page.loc && p.depth > page.depth
+        return p.loc === page.loc && p.depth! > page.depth!
       })
     })
     .map((p) => {
@@ -61,45 +71,51 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     })
 
   const pagesWithMeta = flattenedPages.map((p) => {
-    if (config.autoLastmod && p.page.file) {
+    if (config.autoLastmod && p.page!.file) {
       try {
-        const stats = statSync(p.page.file)
-        if (stats)
+        const stats = statSync(p.page!.file)
+        if (stats?.mtime)
           p.lastmod = stats.mtime
       }
       catch (e) {}
     }
     return p
   })
-  const localeGroups = {}
-  pagesWithMeta.reduce((acc: Record<string, any>, entry) => {
-    if (entry.page.name?.includes(routeNameSeperator)) {
-      const [name, locale] = entry.page.name.split(routeNameSeperator)
+  const localeGroups: Record<string, PageEntry[]> = {}
+  pagesWithMeta.reduce((acc: Record<string, any>, e) => {
+    if (e.page!.name?.includes(routesNameSeparator)) {
+      const [name, locale] = e.page!.name.split(routesNameSeparator)
       if (!acc[name])
         acc[name] = []
-      acc[name].push({ ...entry, locale })
+      const { iso, code } = config.normalisedLocales.find(l => l.code === locale) || { iso: locale, code: locale }
+      acc[name].push({ ...e, _sitemap: config.isI18nMapped ? (iso || code) : undefined, locale })
     }
     else {
       acc.default = acc.default || []
-      acc.default.push(entry)
+      acc.default.push(e)
     }
 
     return acc
   }, localeGroups)
 
   // now need to convert to alternatives
-  const final: SitemapEntryInput[] = Object.entries(localeGroups).map(([locale, entries]) => {
+  return Object.entries(localeGroups).map(([locale, entries]) => {
     if (locale === 'default') {
-      // routes must have a locale if we're prefixing them
-      if (config.strategy === 'prefix')
-        return []
+      // we add pages without a prefix, they may have disabled i18n
       return entries.map((e) => {
+        const [name] = (e.page?.name || '').split(routesNameSeparator)
+        // we need to check if the same page with a prefix exists within the default locale
+        // for example this will fix the `/` if the configuration is set to `prefix`
+        if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
+          return false
+        const defaultLocale = config.normalisedLocales.find(l => l.code === config.defaultLocale)
+        if (defaultLocale && config.isI18nMapped)
+          e._sitemap = defaultLocale.iso || defaultLocale.code
         delete e.page
         delete e.locale
-        return e
-      })
+        return { ...e }
+      }).filter(Boolean)
     }
-
     return entries.map((entry) => {
       const alternatives = entries.map((entry) => {
         // check if the locale has a iso code
@@ -110,13 +126,17 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         }
       })
       const xDefault = entries.find(a => a.locale === config.defaultLocale)
-      if (xDefault) {
+      if (xDefault && alternatives.length) {
         alternatives.push({
           hreflang: 'x-default',
           href: xDefault.loc,
         })
       }
       const e = { ...entry }
+      if (config.isI18nMapped) {
+        const { iso, code } = config.normalisedLocales.find(l => l.code === entry.locale) || { iso: locale, code: locale }
+        e._sitemap = iso || code
+      }
       delete e.page
       delete e.locale
       return {
@@ -126,38 +146,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     })
   })
     .filter(Boolean)
-    .flat()
-
-  return final
-}
-
-/**
- * Get the user provided options for a Nuxt module.
- *
- * These options may not be the resolved options that the module actually uses.
- * @param module
- * @param nuxt
- */
-export async function getNuxtModuleOptions(module: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
-  const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
-  const { nuxtModule } = (await loadNuxtModuleInstance(module, nuxt))
-  const inlineOptions = (
-    await Promise.all(
-      nuxt.options.modules
-        .filter(async (m) => {
-          if (!Array.isArray(m))
-            return false
-          const _module = m[0]
-          return typeof module === 'object'
-            ? (await (_module as any as NuxtModule).getMeta?.() === moduleMeta.name)
-            : _module === moduleMeta.name
-        })
-        .map(m => m?.[1 as keyof typeof m]),
-    )
-  )[0] || {}
-  if (nuxtModule.getOptions)
-    return nuxtModule.getOptions(inlineOptions, nuxt)
-  return inlineOptions
+    // TODO fix types
+    .flat() as SitemapUrlInput[]
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
