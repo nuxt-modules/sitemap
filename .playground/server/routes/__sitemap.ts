@@ -1,10 +1,10 @@
-import { defineEventHandler } from 'h3'
+import { defineSitemapEventHandler, defineSitemapUrls } from '#imports'
 
-export default defineEventHandler(() => {
+export default defineSitemapEventHandler(() => {
   const posts = Array.from({ length: 3 }, (_, i) => i + 1)
-  return [
+  return defineSitemapUrls([
     ...posts.map(post => ({
       loc: `/blog/${post}`,
     })),
-  ]
+  ])
 })

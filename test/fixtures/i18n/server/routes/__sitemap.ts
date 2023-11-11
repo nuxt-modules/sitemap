@@ -1,6 +1,6 @@
-import { defineEventHandler } from 'h3'
+import { defineSitemapEventHandler } from '#imports'
 
-export default defineEventHandler(() => {
+export default defineSitemapEventHandler(() => {
   return [
     {
       loc: '/__sitemap/url',

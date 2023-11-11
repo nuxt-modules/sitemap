@@ -1,9 +1,9 @@
-import { defineEventHandler } from 'h3'
+import { defineSitemapEventHandler, defineSitemapUrls } from '#imports'
 
-export default defineEventHandler(() => {
-  return [
+export default defineSitemapEventHandler(() => {
+  return defineSitemapUrls([
     '/foo/1',
     '/foo/2',
     '/foo/3',
-  ]
+  ])
 })
