@@ -29,7 +29,7 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 
 ## Features
 
-- 🌴 You decide: single sitemap `/sitemap.xml` or multiple sitemaps `/sitemap_index.xml`, `/posts-sitemap.xml`
+- 🌴 Single `/sitemap.xml` or multiple `/posts-sitemap.xml`, `/pages-sitemap.xml`
 - 📊 Fetch your sitemap URLs from anywhere
 - 😌 Automatic `lastmod`, image discovery and best practice sitemaps
 - 🔄 SWR caching, route rules support
