@@ -73,7 +73,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   // 1. normalise
   const normalisedUrls = normaliseSitemapUrls(resolvedSources.map(e => e.urls).flat(), resolvers)
   // 2. enhance
-  const defaults = sitemap.defaults
+  const defaults = { ...(sitemap.defaults || {}) }
   if (autoLastmod && defaults?.lastmod)
     defaults.lastmod = new Date()
 
