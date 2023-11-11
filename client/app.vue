@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { SitemapDefinition } from '../src/runtime/types'
 import { loadShiki } from './composables/shiki'
 import { data, refreshSources } from './composables/state'
 
@@ -26,6 +27,16 @@ function resolveSitemapUrl(sitemapName: string) {
   if (sitemapName === 'index')
     return `${data.value.nitroOrigin}sitemap_index.xml`
   return `${data.value.nitroOrigin}${sitemapName}-sitemap.xml`
+}
+
+function resolveSitemapOptions(definition: SitemapDefinition) {
+  const options: Record< string, any> = {}
+  // add all definition keys / values that have a defined value
+  Object.entries(definition).forEach(([key, value]) => {
+    if (value !== undefined)
+      options[key] = value
+  })
+  return options
 }
 
 const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
@@ -164,7 +175,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                 </div>
               </template>
               <template v-else>
-                <div class="flex space-x-5">
+                <div v-if="sitemap.sources && sitemap.sources.length" class="flex space-x-5">
                   <div>
                     <div class="font-bold text-sm mb-1">
                       Sources
@@ -183,7 +194,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       App Sources
                     </div>
                     <div class="opacity-40 text-xs max-w-60">
-                      Use global app sources to generate the sitemap data. <br>See the <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
+                      Are application sources enabled. <br>See the <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
                         App Sources
                       </NLink> tab.
                     </div>
@@ -209,7 +220,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                     </div>
                   </div>
                   <div class="bg-gray-50 flex-grow">
-                    <OCodeBlock class="max-h-[350px] min-h-full overflow-y-auto" :code="JSON.stringify({ include: sitemap.include, exclude: sitemap.exclude, defaults: sitemap.defaults }, null, 2)" lang="json" />
+                    <OCodeBlock class="max-h-[350px] min-h-full overflow-y-auto" :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)" lang="json" />
                   </div>
                 </div>
               </template>
