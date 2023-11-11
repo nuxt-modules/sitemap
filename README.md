@@ -29,14 +29,16 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 
 ## Features
 
-- 📦 Single and Multi Sitemap support
-- 🤝 Integrates seamlessly with Nuxt I18n and Nuxt Content
-- 🤖 Dynamic runtime URL support with caching by default
-- 🎨 Styled XML for easier debugging
-- 😌 Automatic `lastmod`, image discovery and best practice URLS
-- 🔄 Route config using route rules
+- 🌴 You decide: single sitemap `/sitemap.xml` or multiple sitemaps (`/sitemap_index.xml`)
+- 📊 Fetch your sitemap URLs from anywhere
+- 😌 Automatic `lastmod`, image discovery and best practice sitemaps
+- 🔄 SWR caching, route rules support
+- 🎨 Debug using the Nuxt DevTools integration or the XML Stylesheet
+- 🤝 Integrates seamlessly with [Nuxt I18n](https://github.com/nuxt-modules/i18n) and [Nuxt Content](https://github.com/nuxt/content)
 
 ## Installation
+
+💡 Need a more complete SEO solution for Nuxt? This module is included as part of [Nuxt SEO](https://nuxtseo.com).
 
 1. Install `nuxt-simple-sitemap` dependency to your project:
 
