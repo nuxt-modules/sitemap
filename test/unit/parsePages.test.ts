@@ -1,7 +1,194 @@
 import { describe, expect, it } from 'vitest'
+import type { NuxtPage } from 'nuxt/schema'
 import { convertNuxtPagesToSitemapEntries } from '../../src/util/nuxtSitemap'
 
-const payload = [{ name: 'slug___en', path: '/:slug(.*)*', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/[...slug].vue', children: [] }, { name: 'slug___fr', path: '/fr/:slug(.*)*', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/[...slug].vue', children: [] }, { name: 'about___en', path: '/about', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/about.vue', children: [] }, { name: 'about___fr', path: '/fr/a-propos', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/about.vue', children: [] }, { path: '/blog', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog.vue', children: [{ name: 'blog-id___en', path: ':id()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/[id].vue', children: [] }, { name: 'blog-categories___en', path: 'categories', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/categories.vue', children: [] }, { name: 'blog___en', path: '', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/index.vue', children: [] }, { name: 'blog-tags___en', path: 'tags', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags.vue', children: [{ name: 'blog-tags-edit___en', path: 'edit', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/edit.vue', children: [] }, { name: 'blog-tags-new___en', path: 'new', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/new.vue', children: [] }] }] }, { path: '/fr/blog', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog.vue', children: [{ name: 'blog-id___fr', path: ':id()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/[id].vue', children: [] }, { name: 'blog-categories___fr', path: 'categories', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/categories.vue', children: [] }, { name: 'blog___fr', path: '', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/index.vue', children: [] }, { name: 'blog-tags___fr', path: 'tags', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags.vue', children: [{ name: 'blog-tags-edit___fr', path: 'edit', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/edit.vue', children: [] }, { name: 'blog-tags-new___fr', path: 'new', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/new.vue', children: [] }] }] }, { name: 'hidden-path-but-in-sitemap___en', path: '/hidden-path-but-in-sitemap', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/hidden-path-but-in-sitemap/index.vue', children: [] }, { name: 'hidden-path-but-in-sitemap___fr', path: '/fr/hidden-path-but-in-sitemap', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/hidden-path-but-in-sitemap/index.vue', children: [] }, { name: 'index___en', path: '/', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue', children: [] }, { name: 'index___fr', path: '/fr', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue', children: [] }, { name: 'new-page___en', path: '/new-page', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/new-page.vue', children: [] }, { name: 'new-page___fr', path: '/fr/new-page', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/new-page.vue', children: [] }, { name: 'secret___en', path: '/secret', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/secret.vue', children: [] }, { name: 'secret___fr', path: '/fr/secret', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/secret.vue', children: [] }, { name: 'users-group-id___en', path: '/users-:group()/:id()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/[id].vue', children: [] }, { name: 'users-group-id___fr', path: '/fr/users-:group()/:id()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/[id].vue', children: [] }, { name: 'users-group___en', path: '/users-:group()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/index.vue', children: [] }, { name: 'users-group___fr', path: '/fr/users-:group()', file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/index.vue', children: [] }]
+const payload: NuxtPage[] = [
+  {
+    name: 'index___en',
+    path: '/',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue',
+    children: [],
+  },
+  {
+    name: 'index___fr',
+    path: '/fr',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue',
+    children: [],
+  },
+  {
+    name: 'custom',
+    path: '/custom',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/[...slug].vue',
+    meta: { sitemap: { lastmod: '2021-08-24T14:00:00.000Z' } },
+    children: [],
+  },
+  {
+    name: 'slug___en',
+    path: '/:slug(.*)*',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/[...slug].vue',
+    children: [],
+  },
+  {
+    name: 'slug___fr',
+    path: '/fr/:slug(.*)*',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/[...slug].vue',
+    children: [],
+  },
+  {
+    name: 'about___en',
+    path: '/about',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/about.vue',
+    children: [],
+  },
+  {
+    name: 'about___fr',
+    path: '/fr/a-propos',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/about.vue',
+    children: [],
+  },
+  {
+    path: '/blog',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog.vue',
+    children: [{
+      name: 'blog-id___en',
+      path: ':id()',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/[id].vue',
+      children: [],
+    }, {
+      name: 'blog-categories___en',
+      path: 'categories',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/categories.vue',
+      children: [],
+    }, {
+      name: 'blog___en',
+      path: '',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/index.vue',
+      children: [],
+    }, {
+      name: 'blog-tags___en',
+      path: 'tags',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags.vue',
+      children: [{
+        name: 'blog-tags-edit___en',
+        path: 'edit',
+        file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/edit.vue',
+        children: [],
+      }, {
+        name: 'blog-tags-new___en',
+        path: 'new',
+        file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/new.vue',
+        children: [],
+      }],
+    }],
+  },
+  {
+    path: '/fr/blog',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog.vue',
+    children: [{
+      name: 'blog-id___fr',
+      path: ':id()',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/[id].vue',
+      children: [],
+    }, {
+      name: 'blog-categories___fr',
+      path: 'categories',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/categories.vue',
+      children: [],
+    }, {
+      name: 'blog___fr',
+      path: '',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/index.vue',
+      children: [],
+    }, {
+      name: 'blog-tags___fr',
+      path: 'tags',
+      file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags.vue',
+      children: [{
+        name: 'blog-tags-edit___fr',
+        path: 'edit',
+        file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/edit.vue',
+        children: [],
+      }, {
+        name: 'blog-tags-new___fr',
+        path: 'new',
+        file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/blog/tags/new.vue',
+        children: [],
+      }],
+    }],
+  },
+  {
+    name: 'hidden-path-but-in-sitemap___en',
+    path: '/hidden-path-but-in-sitemap',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/hidden-path-but-in-sitemap/index.vue',
+    children: [],
+  },
+  {
+    name: 'hidden-path-but-in-sitemap___fr',
+    path: '/fr/hidden-path-but-in-sitemap',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/hidden-path-but-in-sitemap/index.vue',
+    children: [],
+  },
+  {
+    name: 'index___en',
+    path: '/',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue',
+    children: [],
+  },
+  {
+    name: 'index___fr',
+    path: '/fr',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/index.vue',
+    children: [],
+  },
+  {
+    name: 'new-page___en',
+    path: '/new-page',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/new-page.vue',
+    children: [],
+  },
+  {
+    name: 'new-page___fr',
+    path: '/fr/new-page',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/new-page.vue',
+    children: [],
+  },
+  {
+    name: 'secret___en',
+    path: '/secret',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/secret.vue',
+    children: [],
+  },
+  {
+    name: 'secret___fr',
+    path: '/fr/secret',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/secret.vue',
+    children: [],
+  },
+  {
+    name: 'users-group-id___en',
+    path: '/users-:group()/:id()',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/[id].vue',
+    children: [],
+  },
+  {
+    name: 'users-group-id___fr',
+    path: '/fr/users-:group()/:id()',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/[id].vue',
+    children: [],
+  },
+  {
+    name: 'users-group___en',
+    path: '/users-:group()',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/index.vue',
+    children: [],
+  },
+  {
+    name: 'users-group___fr',
+    path: '/fr/users-:group()',
+    file: '/home/harlan/packages/nuxt-simple-sitemap/.playground/pages/users-[group]/index.vue',
+    children: [],
+  },
+]
 
 describe('page parser', () => {
   it('is parsed', () => {
@@ -13,6 +200,115 @@ describe('page parser', () => {
       strategy: 'no_prefix',
     })).toMatchInlineSnapshot(`
       [
+        {
+          "_sitemap": "en",
+          "alternatives": [
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/",
+        },
+        {
+          "_sitemap": "fr",
+          "alternatives": [
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr",
+        },
+        {
+          "_sitemap": "en",
+          "alternatives": [
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/",
+        },
+        {
+          "_sitemap": "fr",
+          "alternatives": [
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "en",
+            },
+            {
+              "href": "/fr",
+              "hreflang": "fr",
+            },
+            {
+              "href": "/",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr",
+        },
+        {
+          "_sitemap": "en",
+          "lastmod": "2021-08-24T14:00:00.000Z",
+          "loc": "/custom",
+        },
         {
           "_sitemap": "en",
           "alternatives": [
@@ -264,42 +560,6 @@ describe('page parser', () => {
             },
           ],
           "loc": "/fr/hidden-path-but-in-sitemap",
-        },
-        {
-          "_sitemap": "en",
-          "alternatives": [
-            {
-              "href": "/",
-              "hreflang": "en",
-            },
-            {
-              "href": "/fr",
-              "hreflang": "fr",
-            },
-            {
-              "href": "/",
-              "hreflang": "x-default",
-            },
-          ],
-          "loc": "/",
-        },
-        {
-          "_sitemap": "fr",
-          "alternatives": [
-            {
-              "href": "/",
-              "hreflang": "en",
-            },
-            {
-              "href": "/fr",
-              "hreflang": "fr",
-            },
-            {
-              "href": "/",
-              "hreflang": "x-default",
-            },
-          ],
-          "loc": "/fr",
         },
         {
           "_sitemap": "en",

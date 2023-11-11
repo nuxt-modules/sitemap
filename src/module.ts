@@ -353,6 +353,11 @@ declare module 'nitropack' {
     'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
   }
 }
+declare module 'vue-router' {
+    interface RouteMeta {
+        sitemap?: import('${typesPath}').SitemapItemDefaults
+    }
+}
 `
     })
     // check if the user provided route /api/_sitemap-urls exists
@@ -477,6 +482,7 @@ declare module 'nitropack' {
 
     const runtimeConfig: ModuleRuntimeConfig = {
       isI18nMapped,
+      sitemapName: config.sitemapName,
       isMultiSitemap: usingMultiSitemaps,
       excludeAppSources: config.excludeAppSources,
 

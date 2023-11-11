@@ -45,9 +45,9 @@ export interface AutoI18nConfig {
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
   version: string
-  sitemaps: { index?: { sitemapName: string; sitemaps: string[] } } & Record<string, Omit<SitemapDefinition, 'urls' | 'sources'> & { _hasSourceChunk?: boolean }>
+  sitemaps: { index?: { sitemapName: string; sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls' | 'sources'> & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
   isMultiSitemap: boolean
   isI18nMapped: boolean

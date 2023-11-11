@@ -8,8 +8,9 @@ import type { Nitro, PrerenderRoute } from 'nitropack'
 import chalk from 'chalk'
 import { dirname } from 'pathe'
 import { build } from 'nitropack'
+import { defu } from 'defu'
 import { extractImages } from './util/extractImages'
-import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapUrl } from '~/src/runtime/types'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapUrl } from './runtime/types'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -47,9 +48,10 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
       if (!route.fileName?.endsWith('.html') || !html)
         return
 
-      route._sitemap = {
+      // maybe the user already provided a _sitemap on the route
+      route._sitemap = defu(route._sitemap, {
         loc: route.route,
-      }
+      })
       // we need to figure out which sitemap this belongs to
       if (options.autoI18n && Object.keys(options.sitemaps).length > 1) {
         const path = route.route
@@ -65,6 +67,7 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
         }
       }
       // do a loose regex match, get all alternative link lines
+      // this is not tested
       const alternatives = (html.match(/<link[^>]+rel="alternate"[^>]+>/g) || [])
         .map((a) => {
           // extract the href, lang and type from the link

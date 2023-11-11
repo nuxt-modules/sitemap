@@ -23,6 +23,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
     // chunking
     defaultSitemapsChunkSize,
     autoI18n,
+    isI18nMapped,
     sortEntries,
     // xls
     version,
@@ -51,7 +52,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
     // TODO enable
     if (autoI18n?.locales)
-      enhancedUrls = applyI18nEnhancements(enhancedUrls, { autoI18n, sitemapName: sitemap.sitemapName })
+      enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
     // 3. filtered urls
     // TODO make sure include and exclude start with baseURL?
     const filteredUrls = filterSitemapUrls(enhancedUrls, sitemap)
@@ -104,7 +105,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
 
   // allow extending the index sitemap
   if (sitemaps.index)
-    entries.push(...sitemaps.index.sitemaps.map(s => ({ sitemap: s })))
+    entries.push(...sitemaps.index.sitemaps)
 
   const sitemapXml = entries.map(e => [
     '    <sitemap>',

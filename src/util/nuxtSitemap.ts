@@ -3,6 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
+import { defu } from 'defu'
 import type { SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls']): Promise<SitemapUrlInput[]> {
@@ -48,7 +49,6 @@ function deepForEachPage(
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
   const routesNameSeparator = config.routesNameSeparator || '___'
-
   let flattenedPages: PageEntry[] = []
   deepForEachPage(
     pages,
@@ -78,6 +78,10 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
           p.lastmod = stats.mtime
       }
       catch (e) {}
+    }
+    if (p.page?.meta?.sitemap) {
+      // merge in page meta
+      p = defu(p.page.meta.sitemap, p)
     }
     return p
   })
