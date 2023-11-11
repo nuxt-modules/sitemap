@@ -358,16 +358,15 @@ declare module 'nitropack' {
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
-    const routeRules: NitroRouteConfig = {
-    }
-    if (config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
+    const routeRules: NitroRouteConfig = {}
+    if (!nuxt.options.dev && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
       routeRules.swr = config.cacheMaxAgeSeconds
       routeRules.cache = {
         // handle multi-tenancy
         varies: ['X-Forwarded-Host', 'X-Forwarded-Proto', 'Host'],
       }
       // use different cache base if configured
-      if (!nuxt.options.dev && typeof config.runtimeCacheStorage === 'object')
+      if (typeof config.runtimeCacheStorage === 'object')
         routeRules.cache.base = 'nuxt-simple-sitemap'
     }
     if (prerenderSitemap) {
