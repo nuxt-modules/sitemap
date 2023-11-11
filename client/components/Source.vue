@@ -15,10 +15,10 @@ const fetchUrl = computed(() => {
   <OSectionBlock>
     <template #text>
       <div class="flex space-x-5">
-        <h3 class="text-gray-800 text-base mb-1 flex space-x-3 items-center">
+        <h3 class="opacity-80 text-base mb-1 flex space-x-3 items-center">
           <div v-if="source.fetch" class="flex space-x-2">
-            <NIcon icon="carbon:api-1" class="text-gray-500 text-lg" />
-            <div v-if="source.timeTakenMs" class="text-gray-600 text-sm">
+            <NIcon icon="carbon:api-1" class="opacity-50 text-lg" />
+            <div v-if="source.timeTakenMs" class="opacity-60 text-sm">
               {{ source.timeTakenMs }}ms
             </div>
           </div>
@@ -48,7 +48,7 @@ const fetchUrl = computed(() => {
     </div>
     <template v-else>
       <OCodeBlock class="max-h-[250px] overflow-y-auto" :code="JSON.stringify(source.urls, null, 2)" lang="json" />
-      <div v-if="source.context.tips" class="px-3 py-3 mt-2 bg-gray-50/50 text-gray-700">
+      <div v-if="source.context.tips" class="px-3 py-3 mt-2 bg-gray-50/50 opacity-70">
         <h3 class="text-sm font-bold mb-1">
           Hints
         </h3>

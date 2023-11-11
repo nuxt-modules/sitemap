@@ -2,7 +2,9 @@
 import { computed, ref } from 'vue'
 import type { SitemapDefinition } from '../src/runtime/types'
 import { loadShiki } from './composables/shiki'
+import { colorMode } from './composables/rpc'
 import { data, refreshSources } from './composables/state'
+import { useHead } from '#imports'
 
 await loadShiki()
 
@@ -39,6 +41,12 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
   return options
 }
 
+useHead({
+  htmlAttrs: {
+    class: () => colorMode.value || '',
+  },
+})
+
 const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
 const appSources = computed(() => (data.value?.globalSources || []).filter(s => s.sourceType === 'app'))
 const userSources = computed(() => (data.value?.globalSources || []).filter(s => s.sourceType === 'user'))
@@ -67,9 +75,9 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
           </div>
         </div>
         <div>
-          <a href="https://nuxtseo.com" target="_blank" class="flex items-end gap-1.5 font-semibold text-xl text-gray-700 dark:text-white font-title">
+          <a href="https://nuxtseo.com" target="_blank" class="flex items-end gap-1.5 font-semibold text-xl dark:text-white font-title">
             <NuxtSeoLogo />
-            <span class="hidden sm:block">Nuxt</span><span class="sm:text-primary-500 dark:sm:text-primary-400">SEO</span>
+            <span class="hidden sm:block">Nuxt</span><span class="sm:text-green-500 dark:sm:text-green-400">SEO</span>
           </a>
         </div>
       </div>
@@ -151,7 +159,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
         <div v-if="tab === 'sitemaps'" class="space-y-5">
           <OSectionBlock v-for="(sitemap, key) in data.sitemaps" :key="key">
             <template #text>
-              <h3 class="text-gray-800 text-base mb-1">
+              <h3 class="opacity-80 text-base mb-1">
                 {{ sitemap.sitemapName }}
                 <NIcon v-if="(sitemap.sources || []).some(s => !!s.error)" icon="carbon:warning" class="text-red-500" />
               </h3>
@@ -164,10 +172,10 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
             <div class="px-3 py-2 space-y-5">
               <template v-if="sitemap.sitemapName === 'index'">
                 <div>
-                  <div class="text-sm mb-1 text-gray-800">
+                  <div class="text-sm mb-1 opacity-80">
                     This is a special sitemap file that links to your other sitemaps.
                   </div>
-                  <div class="text-sm text-gray-700">
+                  <div class="text-sm opacity-70">
                     You can learn about this on the <NLink underline target="_blank" href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps">
                       Google Search Central
                     </NLink>.
@@ -176,7 +184,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
               </template>
               <template v-else>
                 <div v-if="sitemap.sources && sitemap.sources.length" class="flex space-x-5">
-                  <div>
+                  <div class="w-40">
                     <div class="font-bold text-sm mb-1">
                       Sources
                     </div>
@@ -184,12 +192,12 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       Local sources associated with just this sitemap.<br>Example: Load in a dynamic list of URLs from an API endpoint.
                     </div>
                   </div>
-                  <div class="bg-gray-50 flex-grow">
+                  <div class="flex-grow">
                     <Source v-for="(source, k) in sitemap.sources" :key="k" :source="source" />
                   </div>
                 </div>
                 <div class="flex space-x-5">
-                  <div>
+                  <div class="w-40">
                     <div class="font-bold text-sm mb-1">
                       App Sources
                     </div>
@@ -199,7 +207,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       </NLink> tab.
                     </div>
                   </div>
-                  <div class="bg-red-50/35 rounded flex-grow flex items-center px-3">
+                  <div class="flex-grow flex items-center">
                     <div v-if="sitemap.includeAppSources && appSourcesExcluded !== true" class="opacity-70">
                       <NIcon icon="carbon:checkmark" class="text-green-500 text-lg" />
                       Enabled
@@ -211,7 +219,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   </div>
                 </div>
                 <div class="flex space-x-5">
-                  <div>
+                  <div class="w-40">
                     <div class="font-bold text-sm mb-1">
                       Sitemap Options
                     </div>
@@ -219,7 +227,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       Extra options used to filter the URLs on the final sitemap and set defaults.
                     </div>
                   </div>
-                  <div class="bg-gray-50 flex-grow">
+                  <div class="n-bg-base/20 flex-grow">
                     <OCodeBlock class="max-h-[350px] min-h-full overflow-y-auto" :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)" lang="json" />
                   </div>
                 </div>

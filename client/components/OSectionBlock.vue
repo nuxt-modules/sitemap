@@ -28,7 +28,7 @@ function onToggle(e: any) {
 
 <template>
   <details :open="open" @toggle="onToggle">
-    <summary class="cursor-pointer select-none hover:bg-active p4 bg-gray-50 hover:bg-gray-100 rounded transition-all" :class="collapse ? '' : 'pointer-events-none'">
+    <summary class="cursor-pointer select-none n-bg-active hover:bg-active p4 rounded transition-all" :class="collapse ? '' : 'pointer-events-none'">
       <NIconTitle :icon="icon" :text="text" text-xl transition :class="[open ? 'op100' : 'op60', headerClass]">
         <div>
           <div text-base>
@@ -57,7 +57,7 @@ function onToggle(e: any) {
       :class="typeof padding === 'string' ? padding : padding ? 'px4' : ''"
     >
       <slot name="details" />
-      <div :class="containerClass" class="mt1 border-gray-100 border-1">
+      <div :class="containerClass" class="mt1">
         <slot />
       </div>
       <slot name="footer" />
