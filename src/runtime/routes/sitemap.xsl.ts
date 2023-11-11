@@ -28,7 +28,7 @@ export default defineEventHandler(async (e) => {
 
   const conditionalTips = [
     'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #398465" target="_blank">XML stylesheet</a>. Read the <a href="https://nuxtseo.com/sitemap/guides/customising-ui" style="color: #398465" target="_blank">docs</a> to learn how to customize it.',
-    `URLs missing? Check Nuxt Dev Tools Sitemap tab (or the <a href="${withQuery('/__sitemap__/debug.json', { sitemap: sitemapName })}" style="color: #398465" target="_blank">debug endpoint</a>).`,
+    `URLs missing? Check Nuxt Devtools Sitemap tab (or the <a href="${withQuery('/__sitemap__/debug.json', { sitemap: sitemapName })}" style="color: #398465" target="_blank">debug endpoint</a>).`,
   ]
   if (!isShowingCanonical) {
     const canonicalPreviewUrl = withQuery(referrer, { canonical: '' })
