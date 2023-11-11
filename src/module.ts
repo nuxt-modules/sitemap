@@ -1,6 +1,7 @@
 import {
   addPrerenderRoutes,
   addServerHandler,
+  addServerImports,
   addServerPlugin,
   createResolver,
   defineNuxtModule,
@@ -514,7 +515,7 @@ declare module 'nitropack' {
     if (!config.inferStaticPagesAsRoutes)
       config.excludeAppSources = true
 
-    const composable: typeof nuxt.options.imports.imports = [
+    const imports: typeof nuxt.options.imports.imports = [
       {
         from: resolve('./runtime/composables/defineSitemapEventHandler'),
         name: 'defineSitemapEventHandler',
@@ -524,21 +525,13 @@ declare module 'nitropack' {
         name: 'defineSitemapUrls',
       },
     ]
-    // technically this shouldn't be used in Nuxt but we may need the types here
-    nuxt.options.imports.imports = nuxt.options.imports.imports || []
-    nuxt.options.imports.imports.push(...composable)
+    addServerImports(imports)
 
     // we may not have pages
     const pagesPromise = createPagesPromise()
     const nitroPromise = createNitroPromise()
     let resolvedConfigUrls = false
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-      if (nitroConfig.imports !== false) {
-        nitroConfig.imports = nitroConfig.imports || {}
-        nitroConfig.imports.imports = nitroConfig.imports.imports || []
-        nitroConfig.imports.imports.push(...composable)
-      }
-
       nitroConfig.virtual!['#nuxt-simple-sitemap/global-sources.mjs'] = async () => {
         const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
         const prerenderUrlsFinal = [
