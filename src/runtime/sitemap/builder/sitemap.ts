@@ -93,7 +93,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
       ).reverse()) as NitroRouteRules
 
       // apply top-level path without prefix, users can still target the localed path
-      if (autoI18n?.locales && autoI18n?.strategy === 'no_prefix') {
+      if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
         // remove the locale path from the prefix, if it exists, need to use regex
         const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
         const pathWithoutPrefix = match?.[2]
@@ -117,7 +117,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
-  const filteredUrls = filterSitemapUrls(enhancedUrls, sitemap)
+  const filteredUrls = filterSitemapUrls(enhancedUrls, { autoI18n, ...sitemap })
   // 4. sort
   const sortedUrls = maybeSort(filteredUrls)
   // 5. maybe slice for chunked

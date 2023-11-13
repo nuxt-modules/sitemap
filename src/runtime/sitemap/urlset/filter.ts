@@ -1,6 +1,6 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
-import type { ResolvedSitemapUrl, SitemapDefinition } from '../../types'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
 
 interface CreateFilterOptions {
   include?: (string | RegExp)[]
@@ -40,15 +40,29 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
   }
 }
 
-export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], filter: Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
+export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n'> & Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
   // base may be wrong here
-  const urlFilter = createFilter(filter)
+  const urlFilter = createFilter(options)
   return _urls.filter((e) => {
-    if (e._sitemap && filter.sitemapName)
-      return e._sitemap === filter.sitemapName
+    if (e._sitemap && options.sitemapName)
+      return e._sitemap === options.sitemapName
     try {
-      const url = parseURL(e.loc)
-      return urlFilter(url.pathname)
+      const path = parseURL(e.loc).pathname
+      if (!urlFilter(path))
+        return false
+
+      const { autoI18n } = options
+      // if the non-prefixed locale is blocked then we block the prefixed versions
+      if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
+        // remove the locale path from the prefix, if it exists, need to use regex
+        const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+        const pathWithoutPrefix = match?.[2]
+        if (pathWithoutPrefix && pathWithoutPrefix !== path) {
+          if (!urlFilter(pathWithoutPrefix))
+            return false
+        }
+      }
+      return true
     }
     catch {
       // invalid URL
