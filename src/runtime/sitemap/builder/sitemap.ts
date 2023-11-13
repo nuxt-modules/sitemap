@@ -1,6 +1,8 @@
 import { defu } from 'defu'
 import { resolveSitePath } from 'site-config-stack'
-import { withHttps } from 'ufo'
+import { parseURL, withHttps, withoutBase } from 'ufo'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import type { NitroRouteRules } from 'nitropack'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -17,6 +19,7 @@ import { handleEntry, wrapSitemapXml } from './xml'
 import { useNitroApp, useRuntimeConfig } from '#imports'
 
 export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers) {
+  const config = useRuntimeConfig()
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -25,7 +28,6 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   // 5. chunking
   // 6. nitro hooks
   // 7. normalise and sort again
-
   const {
     sitemaps,
     // enhancing
@@ -40,7 +42,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     version,
     xsl,
     credits,
-  } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  } = config['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
   const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls
@@ -76,9 +78,27 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   const defaults = { ...(sitemap.defaults || {}) }
   if (autoLastmod && defaults?.lastmod)
     defaults.lastmod = new Date()
-
+  // apply route rules
+  const _routeRulesMatcher = toRouteMatcher(
+    createRadixRouter({ routes: config.nitro?.routeRules }),
+  )
   let enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
+    // apply defaults
     .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
+    // apply route rules
+    .map((e) => {
+      const path = parseURL(e.loc).pathname
+      const routeRules = defu({}, ..._routeRulesMatcher.matchAll(
+        withoutBase(path.split('?')[0], useRuntimeConfig().app.baseURL),
+      ).reverse()) as NitroRouteRules
+      if (routeRules.sitemap)
+        return defu(e, routeRules.sitemap) as ResolvedSitemapUrl
+
+      if (typeof routeRules.index !== 'undefined' && !routeRules.index)
+        return false
+      return e
+    })
+    .filter(Boolean) as ResolvedSitemapUrl[]
   // TODO enable
   if (autoI18n?.locales)
     enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
