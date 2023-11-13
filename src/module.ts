@@ -415,17 +415,29 @@ declare module 'vue-router' {
         fetch: '/__sitemap__/document-driven-urls.json',
       })
     }
-    if (!!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls'))) || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls') {
+    const hasLegacyDefaultApiSource = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
+    if (
+      // make sure they didn't manually add it as a source
+      !config.sources?.includes('/api/_sitemap-urls')
+      // if they didn't and they have the file OR if they've manually configured the URL to something else, provide the source
+      && (hasLegacyDefaultApiSource || config.dynamicUrlsApiEndpoint !== '/api/_sitemap-urls')
+    ) {
       userGlobalSources.push({
         context: {
           name: 'dynamicUrlsApiEndpoint',
           description: 'Generated from your dynamicUrlsApiEndpoint config.',
           tips: [
-            'You should switch to using the `sitemap.sources` config which also supports fetch options.',
+            'The `dynamicUrlsApiEndpoint` config is deprecated.',
+            hasLegacyDefaultApiSource
+              ? 'Consider renaming the `api/_sitemap-urls` file and add it the `sitemap.sources` config instead. This provides more explicit sitemap generation.'
+              : 'Consider switching to using the `sitemap.sources` config which also supports fetch options.',
           ],
         },
-        fetch: config.dynamicUrlsApiEndpoint!,
+        fetch: hasLegacyDefaultApiSource ? '/api/_sitemap-urls' : config.dynamicUrlsApiEndpoint as string,
       })
+    }
+    else {
+      config.dynamicUrlsApiEndpoint = false
     }
 
     // config -> sitemaps

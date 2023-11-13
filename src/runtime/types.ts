@@ -101,7 +101,7 @@ export interface SitemapDefinition {
    *
    * @deprecated use `sources`
    */
-  dynamicUrlsApiEndpoint?: string
+  dynamicUrlsApiEndpoint?: string | false
 }
 
 export interface SitemapRenderCtx {
