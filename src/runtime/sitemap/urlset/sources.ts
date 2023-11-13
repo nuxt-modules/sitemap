@@ -7,7 +7,8 @@ import type {
 } from '../../types'
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved): Promise<SitemapSourceResolved> {
-  input.context = input.context || 'fetch'
+  const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
+  context.tips = context.tips || []
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
   const options = typeof input.fetch === 'string' ? {} : input.fetch![1]
   const start = Date.now()
@@ -30,24 +31,31 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     })
     const timeTakenMs = Date.now() - start
     if (isHtmlResponse) {
+      context.tips.push('This is usually because the URL isn\'t correct or is throwing an error. Please check the URL')
       return {
         ...input,
+        context,
+        urls: [],
         timeTakenMs,
         error: 'Received HTML response instead of JSON',
       }
     }
     return {
       ...input,
+      context,
       timeTakenMs,
       urls: urls as SitemapUrlInput[],
     }
   }
-  catch (err) {
-    const error = (err as FetchError).message
+  catch (_err) {
+    const error = (_err as FetchError)
     console.error('[nuxt-simple-sitemap] Failed to fetch source.', { url, error })
+    context.tips.push(`Response returned a status of ${error.response?.status || 'unknown'}.`)
     return {
       ...input,
-      error,
+      context,
+      urls: [],
+      error: error.message,
     }
   }
   finally {

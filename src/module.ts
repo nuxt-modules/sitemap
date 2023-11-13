@@ -596,7 +596,7 @@ declare module 'vue-router' {
                   name: 'nuxt:pages',
                   description: 'Generated from your static page files.',
                   tips: [
-                    'Can be disabled with `excludeAppSources: [\'nuxt:pages\']`.',
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
                   ],
                 },
                 urls: pageSource,
@@ -606,7 +606,7 @@ declare module 'vue-router' {
                   name: 'nuxt:route-rules',
                   description: 'Generated from your route rules config.',
                   tips: [
-                    'Can be disabled with `excludeAppSources: [\'nuxt:route-rules\']`.',
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
                   ],
                 },
                 urls: routeRules,
@@ -616,7 +616,7 @@ declare module 'vue-router' {
                   name: 'nuxt:prerender',
                   description: 'Generated at build time when prerendering.',
                   tips: [
-                    'You can disable this with `excludeAppSources: [\'nuxt:prerender\']`',
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
                   ],
                 },
                 urls: prerenderUrlsFinal,

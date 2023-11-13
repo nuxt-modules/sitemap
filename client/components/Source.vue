@@ -9,6 +9,12 @@ const fetchUrl = computed(() => {
   const url = typeof props.source.fetch === 'string' ? props.source.fetch : props.source.fetch![0]
   return joinURL(data.value?.nitroOrigin || 'localhost', url)
 })
+
+function normaliseTip(tip: string) {
+  // we need to convert code in the tip for example
+  // this is `someCode` -> this is <code>someCode</code>
+  return tip.replace(/`([^`]+)`/g, '<code>$1</code>')
+}
 </script>
 
 <template>
@@ -46,18 +52,14 @@ const fetchUrl = computed(() => {
     <div v-if="source.error">
       <NIcon icon="carbon:warning" class="text-red-500" /> {{ source.error }}
     </div>
-    <template v-else>
-      <OCodeBlock class="max-h-[250px] overflow-y-auto" :code="JSON.stringify(source.urls, null, 2)" lang="json" />
-      <div v-if="source.context.tips" class="px-3 py-3 mt-2 bg-gray-50/50 opacity-70">
-        <h3 class="text-sm font-bold mb-1">
-          Hints
-        </h3>
-        <ul class="list-disc ml-5">
-          <li v-for="(tip, key) in source.context.tips" :key="key" class="text-sm opacity-80 mb-1">
-            {{ tip }}
-          </li>
-        </ul>
-      </div>
-    </template>
+    <OCodeBlock v-else class="max-h-[250px] overflow-y-auto" :code="JSON.stringify(source.urls, null, 2)" lang="json" />
+    <div v-if="source.context.tips?.length" class="px-3 py-3 mt-2 dark:bg-gray-900/50 bg-gray-50/50 opacity-70">
+      <h3 class="text-sm font-bold mb-1">
+        Hints
+      </h3>
+      <ul class="list-disc ml-5">
+        <li v-for="(tip, key) in source.context.tips" :key="key" class="text-sm opacity-80 mb-1" v-html="normaliseTip(tip)" />
+      </ul>
+    </div>
   </OSectionBlock>
 </template>

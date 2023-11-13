@@ -35,7 +35,7 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
   const options: Record< string, any> = {}
   // add all definition keys / values that have a defined value
   Object.entries(definition).forEach(([key, value]) => {
-    if (value !== undefined)
+    if (value !== undefined && (!Array.isArray(value) || value.length > 0) && key !== 'includeAppSources')
       options[key] = value
   })
   return options
@@ -202,12 +202,10 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       App Sources
                     </div>
                     <div class="opacity-40 text-xs max-w-60">
-                      Are application sources enabled. <br>See the <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
-                        App Sources
-                      </NLink> tab.
+                      Configured with the <code>includeAppSources</code> option.
                     </div>
                   </div>
-                  <div class="flex-grow flex items-center">
+                  <div class="flex-grow flex flex-col justify-center">
                     <div v-if="sitemap.includeAppSources && appSourcesExcluded !== true" class="opacity-70">
                       <NIcon icon="carbon:checkmark" class="text-green-500 text-lg" />
                       Enabled
@@ -215,6 +213,11 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                     <div v-else class="opacity-70">
                       <NIcon icon="carbon:close" class="text-red-500 text-lg" />
                       Disabled
+                    </div>
+                    <div class="opacity-50 text-xs mt-2">
+                      Switch to <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
+                        App sources
+                      </NLink> to learn more.
                     </div>
                   </div>
                 </div>
