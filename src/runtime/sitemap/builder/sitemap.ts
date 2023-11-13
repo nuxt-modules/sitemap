@@ -34,6 +34,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     autoLastmod,
     autoI18n,
     isI18nMapped,
+    isMultiSitemap,
     // sorting
     sortEntries,
     // chunking
@@ -117,7 +118,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
-  const filteredUrls = filterSitemapUrls(enhancedUrls, { autoI18n, ...sitemap })
+  const filteredUrls = filterSitemapUrls(enhancedUrls, { isMultiSitemap, autoI18n, ...sitemap })
   // 4. sort
   const sortedUrls = maybeSort(filteredUrls)
   // 5. maybe slice for chunked

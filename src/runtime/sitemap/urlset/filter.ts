@@ -40,11 +40,11 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
   }
 }
 
-export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n'> & Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
+export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isMultiSitemap'> & Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
   // base may be wrong here
   const urlFilter = createFilter(options)
   return _urls.filter((e) => {
-    if (e._sitemap && options.sitemapName)
+    if (options.isMultiSitemap && e._sitemap && options.sitemapName)
       return e._sitemap === options.sitemapName
     try {
       const path = parseURL(e.loc).pathname

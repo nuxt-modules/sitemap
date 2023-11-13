@@ -55,7 +55,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
       enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
     // 3. filtered urls
     // TODO make sure include and exclude start with baseURL?
-    const filteredUrls = filterSitemapUrls(enhancedUrls, sitemap)
+    const filteredUrls = filterSitemapUrls(enhancedUrls, { ...sitemap, autoI18n, isMultiSitemap: true })
     // 4. sort
     const sortedUrls = maybeSort(filteredUrls)
     // split into the max size which should be 1000
