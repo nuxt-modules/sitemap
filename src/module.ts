@@ -199,7 +199,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaults: {},
     // index sitemap options filtering
     include: [],
-    exclude: [],
+    exclude: ['/_nuxt/**', '/api/**'],
     // sources
     sources: [],
     excludeAppSources: [],
