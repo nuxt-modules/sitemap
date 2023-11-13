@@ -54,6 +54,9 @@ export interface ModuleOptions extends SitemapDefinition {
   /**
    * Should lastmod be automatically added to the sitemap.
    *
+   * Warning: This may not be following best practices for sitemaps.
+   *
+   * @see https://nuxtseo.com/sitemap/guides/best-practices.
    * @default true
    */
   autoLastmod: boolean
@@ -193,7 +196,7 @@ export default defineNuxtModule<ModuleOptions>({
     cacheMaxAgeSeconds: 60 * 10, // cache for 10 minutes
     debug: false,
     defaultSitemapsChunkSize: 1000,
-    autoLastmod: true,
+    autoLastmod: false,
     discoverImages: true,
     dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
     urls: [],
