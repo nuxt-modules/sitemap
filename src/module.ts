@@ -159,6 +159,14 @@ export interface ModuleOptions extends SitemapDefinition {
    * @default true
    */
   sortEntries: boolean
+  /**
+   * Warm up the sitemap route(s) cache when Nitro starts.
+   *
+   * May be implemented by default in a future minor version.
+   *
+   * @experimental
+   */
+  experimentalWarmUp?: boolean
 }
 
 export interface ModuleHooks {
@@ -396,6 +404,9 @@ declare module 'vue-router' {
       nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
     }
 
+    if (config.experimentalWarmUp)
+      addServerPlugin(resolve('./runtime/plugins/warm-up'))
+
     // @ts-expect-error runtime types
     if (hasNuxtModule('@nuxt/content') && (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)) {
       addServerPlugin(resolve('./runtime/plugins/nuxt-content'))
@@ -452,6 +463,7 @@ declare module 'vue-router' {
       })
       sitemaps.index = {
         sitemapName: 'index',
+        _route: withBase('sitemap_index.xml', nuxt.options.app.baseURL || '/'),
         // TODO better index support
         // @ts-expect-error untyped
         sitemaps: config.sitemaps!.index || [],
@@ -464,6 +476,7 @@ declare module 'vue-router' {
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
               sitemapName,
+              _route: withBase(`${sitemapName}-sitemap.xml`, nuxt.options.app.baseURL || '/'),
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
@@ -485,6 +498,7 @@ declare module 'vue-router' {
       // note: we don't need urls for the root sitemap, only child sitemaps
       sitemaps[config.sitemapName] = <SitemapDefinition> {
         sitemapName: config.sitemapName,
+        route: withBase(config.sitemapName, nuxt.options.app.baseURL || '/'), // will contain the xml
         defaults: config.defaults,
         include: config.include,
         exclude: config.exclude,
