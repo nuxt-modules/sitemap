@@ -21,6 +21,8 @@ export default defineEventHandler(async (e) => {
   const referrer = getHeader(e, 'Referer')! || '/'
   const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && parseURL(referrer).pathname.endsWith('-sitemap.xml')
   const sitemapName = parseURL(referrer).pathname.split('/').pop()?.split('-sitemap')[0] || fallbackSitemapName
+  const title = `${siteName}${sitemapName !== 'sitemap.xml' ? ` - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}`
+
   // we need to tell the user their site url and allow them to render the sitemap with the canonical url
   // check if referrer has the query
   const canonicalQuery = getQuery(referrer).canonical
@@ -155,14 +157,15 @@ export default defineEventHandler(async (e) => {
           li { padding-bottom: 0.5rem; line-height: 1.5; }
           h1 { margin: 0; }
           .mb-5 { margin-bottom: 1.25rem; }
+          .mb-3 { margin-bottom: 0.75rem; }
         </style>
       </head>
       <body>
         <div style="grid-template-columns: 1fr 1fr; display: grid; margin: 3rem;">
             <div>
              <div id="content">
-          <h1 class="text-2xl mb-5">XML Sitemap</h1>
-          <h2>${siteName}${sitemapName ? `- ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}</h2>
+          <h1 class="text-2xl mb-3">XML Sitemap</h1>
+          <h2>${title}</h2>
           ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${fixPath('/sitemap_index.xml')}">${fixPath('/sitemap_index.xml')}</a></p>` : ''}
           <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &gt; 0">
             <p class="expl" style="margin-bottom: 1rem;">
