@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { parseURL, withBase, withoutLeadingSlash } from 'ufo'
+import { withBase, withoutLeadingSlash } from 'ufo'
 import { assertSiteConfig } from 'nuxt-site-config-kit'
 import { useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
@@ -9,8 +9,8 @@ import chalk from 'chalk'
 import { dirname } from 'pathe'
 import { build } from 'nitropack'
 import { defu } from 'defu'
-import { extractImages } from './util/extractImages'
-import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapUrl } from './runtime/types'
+import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
+import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -66,23 +66,12 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
           route._sitemap._sitemap = iso || code
         }
       }
-      // do a loose regex match, get all alternative link lines
-      // this is not tested
-      const alternatives = (html.match(/<link[^>]+rel="alternate"[^>]+>/g) || [])
-        .map((a) => {
-          // extract the href, lang and type from the link
-          const href = a.match(/href="([^"]+)"/)?.[1]
-          const hreflang = a.match(/hreflang="([^"]+)"/)?.[1]
-          return { hreflang, href: parseURL(href).pathname }
-        })
-        .filter(a => a.hreflang && a.href) as ResolvedSitemapUrl['alternatives']
-      if (alternatives?.length && (alternatives.length > 1 || alternatives?.[0].hreflang !== 'x-default'))
-        route._sitemap.alternatives = alternatives
-
-      if (options.discoverImages) {
-        route._sitemap.images = <Required<ResolvedSitemapUrl>['images']>[...extractImages(html)]
-          .map(loc => ({ loc }))
-      }
+      route._sitemap = defu(extractSitemapMetaFromHtml(html, {
+        images: options.discoverImages,
+        // TODO configurable?
+        lastmod: true,
+        alternatives: true,
+      }), route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
       // force templates to be rebuilt
