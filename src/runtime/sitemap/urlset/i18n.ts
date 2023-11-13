@@ -52,7 +52,7 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
       return autoI18n.locales
         .map((l) => {
           let loc = joinURL(`/${l.code}`, pathWithoutLocale)
-          if (autoI18n.differentDomains || (autoI18n.strategy === 'prefix_except_default' && l.code === autoI18n.defaultLocale))
+          if (autoI18n.differentDomains || (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
             loc = pathWithoutLocale
 
           return {
@@ -66,7 +66,7 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
               if (autoI18n.strategy === 'prefix') {
                 href = joinURL('/', code, pathWithoutLocale)
               }
-              else if (autoI18n.strategy === 'prefix_except_default') {
+              else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
                 if (isDefault) {
                   // no prefix
                   href = pathWithoutLocale
