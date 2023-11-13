@@ -88,9 +88,22 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     // apply route rules
     .map((e) => {
       const path = parseURL(e.loc).pathname
-      const routeRules = defu({}, ..._routeRulesMatcher.matchAll(
+      let routeRules = defu({}, ..._routeRulesMatcher.matchAll(
         withoutBase(path.split('?')[0], useRuntimeConfig().app.baseURL),
       ).reverse()) as NitroRouteRules
+
+      // apply top-level path without prefix, users can still target the localed path
+      if (autoI18n?.locales && autoI18n?.strategy === 'no_prefix') {
+        // remove the locale path from the prefix, if it exists, need to use regex
+        const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+        const pathWithoutPrefix = match?.[2]
+        if (pathWithoutPrefix && pathWithoutPrefix !== path) {
+          routeRules = defu(routeRules, ..._routeRulesMatcher.matchAll(
+            withoutBase(pathWithoutPrefix.split('?')[0], useRuntimeConfig().app.baseURL),
+          ).reverse()) as NitroRouteRules
+        }
+      }
+
       if (routeRules.sitemap)
         return defu(e, routeRules.sitemap) as ResolvedSitemapUrl
 
