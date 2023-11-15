@@ -56,6 +56,7 @@ export default defineNuxtConfig({
     plugins: ['plugins/sitemap.ts'],
     prerender: {
       routes: [
+        '/sitemap_index.xml',
         '/should-be-in-sitemap',
         '/foo.bar/',
         '/test.doc',
@@ -64,9 +65,7 @@ export default defineNuxtConfig({
     },
   },
   content: {
-    documentDriven: {
-      path: '/content',
-    },
+    documentDriven: true,
   },
   site: {
     url: 'https://nuxtseo.com',
@@ -168,5 +167,8 @@ export default defineNuxtConfig({
         ],
       },
     },
+  },
+  experimental: {
+    inlineRouteRules: true,
   },
 })

@@ -412,23 +412,30 @@ declare module 'vue-router' {
     if (config.experimentalWarmUp)
       addServerPlugin(resolve('./runtime/plugins/warm-up'))
 
-    // @ts-expect-error runtime types
-    if (hasNuxtModule('@nuxt/content') && (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)) {
+    // @ts-expect-error untyped
+    const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
+    if (hasNuxtModule('@nuxt/content')) {
       addServerPlugin(resolve('./runtime/plugins/nuxt-content'))
       addServerHandler({
-        route: '/__sitemap__/document-driven-urls.json',
-        handler: resolve('./runtime/routes/__sitemap__/document-driven-urls'),
+        route: '/__sitemap__/nuxt-content-urls.json',
+        handler: resolve('./runtime/routes/__sitemap__/nuxt-content-urls'),
       })
+      const tips: string[] = []
+      // @ts-expect-error untyped
+      if (nuxt.options.content?.documentDriven)
+        tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
+      else if (config.strictNuxtContentPaths)
+        tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
+      else
+        tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
+
       appGlobalSources.push({
         context: {
-          name: '@nuxt/content:document-driven',
+          name: '@nuxt/content:urls',
           description: 'Generated from your markdown files.',
-          tips: [
-            'Enabled because of `content.documentDriven` or `sitemap.strictNuxtContentPaths`',
-            'You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs.',
-          ],
+          tips,
         },
-        fetch: '/__sitemap__/document-driven-urls.json',
+        fetch: '/__sitemap__/nuxt-content-urls.json',
       })
     }
     const hasLegacyDefaultApiSource = !!(await findPath(resolve(nuxt.options.serverDir, 'api/_sitemap-urls')))
@@ -522,8 +529,11 @@ declare module 'vue-router' {
 
       sortEntries: config.sortEntries,
       debug: config.debug,
-      // needed for nuxt/content integration
+      // needed for nuxt/content integration and prerendering
       discoverImages: config.discoverImages,
+
+      /* @nuxt/content */
+      isNuxtContentDocumentDriven,
 
       /* xsl styling */
       xsl: config.xsl,

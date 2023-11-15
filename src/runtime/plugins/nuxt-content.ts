@@ -1,36 +1,50 @@
-import type { NitroAppPlugin } from 'nitropack'
-import { prefixStorage } from 'unstorage'
 import { defu } from 'defu'
+import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
+import type { ParsedContent } from '@nuxt/content/dist/runtime/types'
 import type { ModuleRuntimeConfig, SitemapUrl } from '../types'
-import { useRuntimeConfig, useStorage } from '#imports'
+import { useRuntimeConfig } from '#imports'
 
-export const NuxtContentSimpleSitemapPlugin: NitroAppPlugin = (nitroApp) => {
-  const { discoverImages, autoLastmod } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
-  const contentStorage = prefixStorage(useStorage(), 'content:source')
-  nitroApp.hooks.hook('content:file:afterParse', async (content) => {
-    if (content._extension !== 'md' || content._partial || content.sitemap === false || content.indexable === false)
+export default defineNitroPlugin((nitroApp) => {
+  const { discoverImages, isNuxtContentDocumentDriven } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
+    if (content.sitemap === false || content._extension !== 'md' || content._partial || content.indexable === false || content.index === false)
       return
+
     // add any top level images
-    let images = []
+    let images: SitemapUrl['images'] = []
     if (discoverImages) {
       images = (content.body?.children
-        ?.filter(c => ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag?.toLowerCase()) && c.props?.src)
-        .map(i => ({
-          loc: i.props.src,
-        })) || [])
+        ?.filter(c =>
+          c.tag && c.props?.src && ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c.tag.toLowerCase()),
+        )
+        .map(i => ({ loc: i.props!.src })) || [])
     }
 
-    let lastmod
-    if (autoLastmod) {
-      const meta = await contentStorage.getMeta(content._id)
-      lastmod = content.modifiedAt || meta?.mtime
-    }
-    const defaults: Partial<SitemapUrl> = { loc: content._path, images }
+    const sitemapConfig = typeof content.sitemap === 'object' ? content.sitemap : {}
+    const lastmod = content.modifiedAt || content.updatedAt
+    const defaults: Partial<SitemapUrl> = {}
+    if (isNuxtContentDocumentDriven)
+      defaults.loc = content._path
+    if (content.path) // automatically set when document driven
+      defaults.loc = content.path
+    if (images.length > 0)
+      defaults.images = images
     if (lastmod)
       defaults.lastmod = lastmod
-    content.sitemap = defu(content.sitemap, defaults)
+    const definition = defu(sitemapConfig, defaults) as Partial<SitemapUrl>
+    if (!definition.loc) {
+      // user hasn't provided a loc... lets fallback to a relative path
+      if (content.path && content.path && content.path.startsWith('/'))
+        definition.loc = content.path
+      // otherwise let's warn them
+      if (Object.keys(sitemapConfig).length > 0 && import.meta.dev)
+        console.warn(`[nuxt-simple-sitemap] The @nuxt/content file \`${content._path}\` is missing a sitemap \`loc\`.`)
+    }
+    content.sitemap = definition
+    // loc is required
+    if (!definition.loc)
+      delete content.sitemap
+
     return content
   })
-}
-
-export default NuxtContentSimpleSitemapPlugin
+})

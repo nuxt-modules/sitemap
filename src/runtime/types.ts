@@ -47,6 +47,7 @@ export interface AutoI18nConfig {
 
 export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
   version: string
+  isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls' | 'sources'> & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
   isMultiSitemap: boolean
