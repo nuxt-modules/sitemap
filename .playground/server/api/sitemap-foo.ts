@@ -1,9 +1,9 @@
-import { defineSitemapEventHandler, defineSitemapUrls } from '#imports'
+import { defineSitemapEventHandler } from '#imports'
 
 export default defineSitemapEventHandler(() => {
-  return defineSitemapUrls([
+  return [
     '/foo/1',
     '/foo/2',
     '/foo/3',
-  ])
+  ]
 })

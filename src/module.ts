@@ -557,8 +557,8 @@ declare module 'vue-router' {
         name: 'defineSitemapEventHandler',
       },
       {
-        from: resolve('./runtime/composables/defineSitemapUrls'),
-        name: 'defineSitemapUrls',
+        from: resolve('./runtime/composables/asSitemapUrl'),
+        name: 'asSitemapUrl',
       },
     ]
     addServerImports(imports)
