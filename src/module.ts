@@ -290,9 +290,10 @@ export default defineNuxtModule<ModuleOptions>({
           urls: [],
         }
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
-          for (const locale in pageLocales) {
+          for (const localeCode in pageLocales) {
+            const locale = normalisedLocales.find(l => l.code === localeCode)
             // add root entry for default locale and ignore dynamic routes
-            if (!pageLocales[locale] || pageLocales[locale].includes('['))
+            if (!locale || !pageLocales[localeCode] || pageLocales[localeCode].includes('['))
               continue
 
             // add to sitemap
@@ -304,7 +305,8 @@ export default defineNuxtModule<ModuleOptions>({
             if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
               alternatives.push({ hreflang: 'x-default', href: pageLocales[nuxtI18nConfig.defaultLocale] })
             i18nPagesSources.urls!.push({
-              loc: pageLocales[locale],
+              _sitemap: locale.iso || locale.code,
+              loc: pageLocales[localeCode],
               alternatives,
             })
           }
