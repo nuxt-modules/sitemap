@@ -44,29 +44,31 @@ export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<Mod
   // base may be wrong here
   const urlFilter = createFilter(options)
   return _urls.filter((e) => {
-    if (options.isMultiSitemap && e._sitemap && options.sitemapName)
-      return e._sitemap === options.sitemapName
+    let path = e.loc
     try {
-      const path = parseURL(e.loc).pathname
-      if (!urlFilter(path))
-        return false
-
-      const { autoI18n } = options
-      // if the non-prefixed locale is blocked then we block the prefixed versions
-      if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
-        // remove the locale path from the prefix, if it exists, need to use regex
-        const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
-        const pathWithoutPrefix = match?.[2]
-        if (pathWithoutPrefix && pathWithoutPrefix !== path) {
-          if (!urlFilter(pathWithoutPrefix))
-            return false
-        }
-      }
-      return true
+      // e.loc is absolute here
+      path = parseURL(e.loc).pathname
     }
     catch {
       // invalid URL
       return false
     }
+    if (!urlFilter(path))
+      return false
+
+    const { autoI18n } = options
+    // if the non-prefixed locale is blocked then we block the prefixed versions
+    if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
+      // remove the locale path from the prefix, if it exists, need to use regex
+      const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+      const pathWithoutPrefix = match?.[2]
+      if (pathWithoutPrefix && pathWithoutPrefix !== path) {
+        if (!urlFilter(pathWithoutPrefix))
+          return false
+      }
+    }
+    if (options.isMultiSitemap && e._sitemap && options.sitemapName)
+      return e._sitemap === options.sitemapName
+    return true
   })
 }
