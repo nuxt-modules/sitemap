@@ -1,4 +1,4 @@
-import { joinURL, parseURL, withHttps } from 'ufo'
+import { joinURL, parseURL, withHttps, withLeadingSlash } from 'ufo'
 import type {
   AlternativeEntry,
   ModuleRuntimeConfig,
@@ -11,7 +11,10 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
   if (autoI18n && isI18nMapped) {
     return sources.map((s) => {
       const urls = (s.urls || []).map((_url) => {
-        return typeof _url === 'string' ? { loc: _url } : _url
+        const url = typeof _url === 'string' ? { loc: _url } : _url
+        url.loc = url.loc || url.url!
+        url.loc = withLeadingSlash(url.loc)
+        return url
       })
       s.urls = urls.map((url) => {
         // only if the url wasn't already configured, excludes page, etc
@@ -76,7 +79,7 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
       if (!e._i18nTransform)
         return e
       delete e._i18nTransform
-      const path = parseURL(e.loc).pathname
+      const path = withLeadingSlash(parseURL(e.loc).pathname)
       const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
       let pathWithoutLocale = path
       let locale
