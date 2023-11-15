@@ -30,10 +30,16 @@ declare module 'nitropack' {
   }
 }
 
+export function includesSitemapRoot(sitemapName: string, routes: string[]) {
+  return routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
+}
+
 export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt = useNuxt()) {
   const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-  const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${options.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
-
+  const prerenderSitemap = nuxt.options._generate || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
+  // need to filter it out of the config as we render it after all other routes
+  if (nuxt.options.nitro.prerender?.routes)
+    nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
   nuxt.hooks.hook('nitro:init', async (nitro) => {
     let prerenderer: Nitro
     nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
