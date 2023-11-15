@@ -15,7 +15,7 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
       })
       s.urls = urls.map((url) => {
         // only if the url wasn't already configured, excludes page, etc
-        if (url._sitemap)
+        if (url._sitemap || url._i18nTransform)
           return url
         // if the url starts with a prefix, we should automatically bundle it to the correct sitemap using _sitemap
         if (url.loc) {
