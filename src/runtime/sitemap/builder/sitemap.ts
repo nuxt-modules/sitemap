@@ -13,7 +13,7 @@ import type {
 import { normaliseSitemapUrls } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { filterSitemapUrls } from '../urlset/filter'
-import { applyI18nEnhancements } from '../urlset/i18n'
+import { applyI18nEnhancements, normaliseI18nSources } from '../urlset/i18n'
 import { sortSitemapUrls } from '../urlset/sort'
 import { handleEntry, wrapSitemapXml } from './xml'
 import { useNitroApp, useRuntimeConfig } from '#imports'
@@ -72,7 +72,10 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   // always fetch all sitemap data for the primary sitemap
   const sources = sitemap.includeAppSources ? await globalSitemapSources() : []
   sources.push(...await childSitemapSources(sitemap))
-  const resolvedSources = await resolveSitemapSources(sources)
+  let resolvedSources = await resolveSitemapSources(sources)
+  // normalise the sources for i18n
+  if (autoI18n)
+    resolvedSources = normaliseI18nSources(resolvedSources, { autoI18n, isI18nMapped })
   // 1. normalise
   const normalisedUrls = normaliseSitemapUrls(resolvedSources.map(e => e.urls).flat(), resolvers)
   // 2. enhance

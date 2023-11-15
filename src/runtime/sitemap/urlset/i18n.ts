@@ -1,8 +1,71 @@
 import { joinURL, parseURL, withHttps } from 'ufo'
 import type {
+  AlternativeEntry,
   ModuleRuntimeConfig,
   ResolvedSitemapUrl,
+  SitemapSourceResolved,
+  SitemapUrl,
 } from '../../types'
+
+export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n']; isI18nMapped: boolean }) {
+  if (autoI18n && isI18nMapped) {
+    return sources.map((s) => {
+      const urls = (s.urls || []).map((_url) => {
+        return typeof _url === 'string' ? { loc: _url } : _url
+      })
+      s.urls = urls.map((url) => {
+        // only if the url wasn't already configured, excludes page, etc
+        if (url._sitemap)
+          return url
+        // if the url starts with a prefix, we should automatically bundle it to the correct sitemap using _sitemap
+        if (url.loc) {
+          const match = url.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+          const localeCode = match?.[1] || autoI18n.defaultLocale
+          const pathWithoutPrefix = match?.[2]
+          const locale = autoI18n.locales.find(e => e.code === localeCode)
+          if (locale) {
+            // let's try and find other urls that we can use for alternatives
+            if (!url.alternatives) {
+              let defaultPath: string | undefined
+              const alternatives = urls
+                .map((u) => {
+                  const _match = u.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+                  const _localeCode = _match?.[1]
+                  const _pathWithoutPrefix = _match?.[2]
+                  if (_localeCode === autoI18n.defaultLocale)
+                    defaultPath = u.loc
+                  if (pathWithoutPrefix === _pathWithoutPrefix) {
+                    return <AlternativeEntry>{
+                      href: u.loc,
+                      hreflang: _localeCode || autoI18n.defaultLocale,
+                    }
+                  }
+                  return false
+                })
+                .filter(Boolean) as AlternativeEntry[]
+              if (alternatives.length && defaultPath) {
+                // add x-default
+                alternatives.unshift({
+                  href: defaultPath,
+                  hreflang: 'x-default',
+                })
+              }
+              if (alternatives.length)
+                url.alternatives = alternatives
+            }
+            return <SitemapUrl> {
+              _sitemap: locale.iso || locale.code,
+              ...url,
+            }
+          }
+        }
+        return url
+      })
+      return s
+    })
+  }
+  return sources
+}
 
 export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick<Required<ModuleRuntimeConfig>, 'autoI18n' | 'isI18nMapped'> & { sitemapName: string }): ResolvedSitemapUrl[] {
   const { autoI18n } = options
