@@ -32,15 +32,20 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
               let defaultPath: string | undefined
               const alternatives = urls
                 .map((u) => {
-                  const _match = u.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
-                  const _localeCode = _match?.[1]
-                  const _pathWithoutPrefix = _match?.[2]
-                  if (_localeCode === autoI18n.defaultLocale)
-                    defaultPath = u.loc
-                  if (pathWithoutPrefix === _pathWithoutPrefix) {
-                    return <AlternativeEntry>{
-                      href: u.loc,
-                      hreflang: _localeCode || autoI18n.defaultLocale,
+                  // only if the url wasn't already configured, excludes page, etc
+                  if (u._sitemap || u._i18nTransform)
+                    return false
+                  if (u?.loc) {
+                    const _match = u.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+                    const _localeCode = _match?.[1]
+                    const _pathWithoutPrefix = _match?.[2]
+                    if (_localeCode === autoI18n.defaultLocale)
+                      defaultPath = u.loc
+                    if (pathWithoutPrefix === _pathWithoutPrefix) {
+                      return <AlternativeEntry>{
+                        href: u.loc,
+                        hreflang: _localeCode || autoI18n.defaultLocale,
+                      }
                     }
                   }
                   return false
