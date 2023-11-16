@@ -37,6 +37,7 @@ import { setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
+import { splitPathForI18nLocales } from './util/i18n'
 
 export interface ModuleOptions extends SitemapDefinition {
   /**
@@ -515,6 +516,19 @@ declare module 'vue-router' {
         include: config.include,
         exclude: config.exclude,
         includeAppSources: true,
+      }
+    }
+
+    // for each sitemap, we need to transform the include and exclude
+    // if the include or exclude has a URL without a locale prefix, then we insert all locale prefixes
+    if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
+      const i18n = resolvedAutoI18n
+      for (const sitemapName in sitemaps) {
+        if (['index', 'chunks'].includes(sitemapName))
+          continue
+        const sitemap = sitemaps[sitemapName]
+        sitemap.include = (sitemap.include || []).map(path => splitPathForI18nLocales(path, i18n)).flat()
+        sitemap.exclude = (sitemap.exclude || []).map(path => splitPathForI18nLocales(path, i18n)).flat()
       }
     }
 
