@@ -7,6 +7,8 @@ const props = defineProps<{ source: SitemapSourceResolved, showContext?: boolean
 
 const fetchUrl = computed(() => {
   const url = typeof props.source.fetch === 'string' ? props.source.fetch : props.source.fetch![0]
+  if (url.includes('http'))
+    return url
   return joinURL(data.value?.nitroOrigin || 'localhost', url)
 })
 
