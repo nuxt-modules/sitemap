@@ -7,7 +7,7 @@ import type {
   SitemapUrl,
 } from '../../types'
 
-export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n']; isI18nMapped: boolean }) {
+export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n'], isI18nMapped: boolean }) {
   if (autoI18n && isI18nMapped) {
     return sources.map((s) => {
       const urls = (s.urls || []).map((_url) => {

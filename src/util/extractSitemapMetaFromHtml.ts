@@ -2,7 +2,7 @@ import { withSiteUrl } from 'nuxt-site-config-kit'
 import { parseURL } from 'ufo'
 import type { ResolvedSitemapUrl, SitemapUrl } from '../runtime/types'
 
-export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean; lastmod?: boolean; alternatives?: boolean }) {
+export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, lastmod?: boolean, alternatives?: boolean }) {
   options = options || { images: true, lastmod: true, alternatives: true }
   const payload: Partial<SitemapUrl> = {}
   if (options?.images) {

@@ -29,6 +29,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
+  ModuleOptions as _ModuleOptions,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
@@ -37,7 +38,6 @@ import { mergeOnKey } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
 import { splitPathForI18nLocales } from './util/i18n'
-import type { ModuleOptions as _ModuleOptions } from './runtime/types'
 
 export interface ModuleOptions extends _ModuleOptions {}
 

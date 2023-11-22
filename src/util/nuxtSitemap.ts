@@ -15,7 +15,7 @@ export async function resolveUrls(urls: Required<SitemapDefinition>['urls']): Pr
 }
 
 export interface NuxtPagesToSitemapEntriesOptions {
-  normalisedLocales: { code: string; iso?: string }[]
+  normalisedLocales: { code: string, iso?: string }[]
   routesNameSeparator?: string
   autoLastmod: boolean
   defaultLocale: string

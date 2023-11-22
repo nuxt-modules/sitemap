@@ -3,7 +3,7 @@ import { joinURL } from 'ufo'
 import type { SitemapSourceResolved } from '../../src/runtime/types'
 import { data } from '../composables/state'
 
-const props = defineProps<{ source: SitemapSourceResolved; showContext?: boolean }>()
+const props = defineProps<{ source: SitemapSourceResolved, showContext?: boolean }>()
 
 const fetchUrl = computed(() => {
   const url = typeof props.source.fetch === 'string' ? props.source.fetch : props.source.fetch![0]

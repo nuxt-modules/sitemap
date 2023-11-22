@@ -62,7 +62,7 @@ export interface ModuleOptions extends SitemapDefinition {
    *
    * @default [{ label: 'URL', width: '50%', select: 'string' }, { label: 'Last Modified', width: '25%', select: 'lastmod' }, { label: 'Change Frequency', width: '25%', select: 'changefreq' }]
    */
-  xslColumns?: { label: string; width: `${string}%`; select?: string }[]
+  xslColumns?: { label: string, width: `${string}%`, select?: string }[]
   /**
    * When prerendering, should images be automatically be discovered and added to the sitemap.
    *
@@ -173,7 +173,7 @@ export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rul
 
 export type SitemapSourceInput = string | SitemapSourceBase | SitemapSourceResolved
 
-export type NormalisedLocales = { code: string; iso?: string; domain?: string }[]
+export type NormalisedLocales = { code: string, iso?: string, domain?: string }[]
 export interface AutoI18nConfig {
   differentDomains?: boolean
   locales: NormalisedLocales
