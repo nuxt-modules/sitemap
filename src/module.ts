@@ -22,7 +22,6 @@ import type {
   AutoI18nConfig,
   ModuleRuntimeConfig,
   MultiSitemapEntry,
-  MultiSitemapsInput,
   NormalisedLocales,
   SitemapDefinition,
   SitemapOutputHookCtx,
@@ -38,140 +37,9 @@ import { mergeOnKey } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
 import { splitPathForI18nLocales } from './util/i18n'
+import type { ModuleOptions as _ModuleOptions } from './runtime/types'
 
-export interface ModuleOptions extends SitemapDefinition {
-  /**
-   * Whether the sitemap.xml should be generated.
-   *
-   * @default true
-   */
-  enabled: boolean
-  /**
-   * Enables debug logs and a debug endpoint.
-   *
-   * @default false
-   */
-  debug: boolean
-  /**
-   * Should lastmod be automatically added to the sitemap.
-   *
-   * Warning: This may not be following best practices for sitemaps.
-   *
-   * @see https://nuxtseo.com/sitemap/guides/best-practices.
-   * @default true
-   */
-  autoLastmod: boolean
-  /**
-   * Should pages be automatically added to the sitemap.
-   *
-   * @default true
-   * @deprecated If set to false, use `excludeAppSources: ['pages', 'route-rules', 'prerender']` instead. Otherwise, remove this.
-   */
-  inferStaticPagesAsRoutes: boolean
-  /**
-   * Sources to exclude from the sitemap.
-   */
-  excludeAppSources: true | (AppSourceContext[])
-  /**
-   * Multiple sitemap support for large sites.
-   *
-   * @default false
-   */
-  sitemaps?: boolean | MultiSitemapsInput
-  /**
-   * Path to the xsl that styles sitemap.xml.
-   *
-   * Set to `false` to disable styling.
-   *
-   * @default /__sitemap__/style.xsl
-   */
-  xsl: string | false
-  /**
-   * Toggle the tips displayed in the xsl.
-   *
-   * @default true
-   */
-  xslTips: boolean
-  /**
-   * Customised the columns displayed in the xsl.
-   *
-   * @default [{ label: 'URL', width: '50%', select: 'string' }, { label: 'Last Modified', width: '25%', select: 'lastmod' }, { label: 'Change Frequency', width: '25%', select: 'changefreq' }]
-   */
-  xslColumns?: { label: string; width: `${string}%`; select?: string }[]
-  /**
-   * When prerendering, should images be automatically be discovered and added to the sitemap.
-   *
-   * @default true
-   */
-  discoverImages: boolean
-  /**
-   * When chunking the sitemaps into multiple files, how many entries should each file contain.
-   *
-   * Set to `false` to disabling chunking completely.
-   *
-   * @default 1000
-   */
-  defaultSitemapsChunkSize: number | false
-  /**
-   * Modify the cache behavior.
-   *
-   * Passing a boolean will enable or disable the runtime cache with the default options.
-   *
-   * Providing a record will allow you to configure the runtime cache fully.
-   *
-   * @default true
-   * @see https://nitro.unjs.io/guide/storage#mountpoints
-   * @example { driver: 'redis', host: 'localhost', port: 6379, password: 'password' }
-   */
-  runtimeCacheStorage: boolean | (Record<string, any> & {
-    driver: string
-  })
-  /**
-   * Automatically add alternative links to the sitemap based on a prefix list.
-   * Is used by @nuxtjs/i18n to automatically add alternative links to the sitemap.
-   */
-  autoI18n?: boolean | AutoI18nConfig
-  /**
-   * Enable when your nuxt/content files match your pages. This will automatically add sitemap content to the sitemap.
-   *
-   * This is similar behavior to using `nuxt/content` with `documentDriven: true`.
-   */
-  strictNuxtContentPaths: boolean
-  /**
-   * Should the sitemap.xml display credits for the module.
-   *
-   * @default true
-   */
-  credits: boolean
-  /**
-   * How long, in milliseconds, should the sitemap be cached for.
-   *
-   * @default 1 hour
-   *
-   * @deprecated use cacheMaxAgeSeconds
-   */
-  cacheTtl?: number | false
-  /**
-   * How long, in seconds, should the sitemap be cached for.
-   *
-   * @default 600
-   */
-  cacheMaxAgeSeconds: number | false
-  /**
-   * Should the entries be sorted by loc.
-   *
-   * @default true
-   */
-  sortEntries: boolean
-  /**
-   * Warm up the sitemap route(s) cache when Nitro starts.
-   *
-   * May be implemented by default in a future minor version.
-   *
-   * @experimental
-   */
-  experimentalWarmUp?: boolean
-}
+export interface ModuleOptions extends _ModuleOptions {}
 
 export interface ModuleHooks {
   /**
