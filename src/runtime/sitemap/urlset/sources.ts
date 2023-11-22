@@ -51,11 +51,11 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
   catch (_err) {
     const error = (_err as FetchError)
-    if (error.message.includes('This operation was aborted')) {
+    if (error.message.includes('This operation was aborted'))
       context.tips.push('The request has taken too long. Make sure app sources respond within 5 seconds or adjust the timeout fetch option.')
-    } else {
+    else
       context.tips.push(`Response returned a status of ${error.response?.status || 'unknown'}.`)
-    }
+
     console.error('[nuxt-simple-sitemap] Failed to fetch source.', { url, error })
     return {
       ...input,

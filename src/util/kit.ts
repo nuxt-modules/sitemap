@@ -15,20 +15,22 @@ import type { MaybePromise } from '../runtime/types'
 export async function getNuxtModuleOptions(module: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}
   const { nuxtModule } = (await loadNuxtModuleInstance(module, nuxt))
-  const inlineOptions = (
-    await Promise.all(
-      nuxt.options.modules
-        .filter(async (m) => {
-          if (!Array.isArray(m))
-            return false
-          const _module = m[0]
-          return typeof module === 'object'
-            ? (await (_module as any as NuxtModule).getMeta?.() === moduleMeta.name)
-            : _module === moduleMeta.name
-        })
-        .map(m => m?.[1 as keyof typeof m]),
-    )
-  )[0] || {}
+
+  let moduleEntry: [string | NuxtModule, Record<string, any>] | undefined
+  for (const m of nuxt.options.modules) {
+    if (Array.isArray(m) && m.length >= 2) {
+      const _module = m[0]
+      const _moduleEntryName = typeof _module === 'string'
+        ? _module
+        : (await (_module as any as NuxtModule).getMeta?.())?.name || ''
+      if (_moduleEntryName === moduleMeta.name)
+        moduleEntry = m as [string | NuxtModule, Record<string, any>]
+    }
+  }
+
+  let inlineOptions = {}
+  if (moduleEntry)
+    inlineOptions = moduleEntry[1]
   if (nuxtModule.getOptions)
     return nuxtModule.getOptions(inlineOptions, nuxt)
   return inlineOptions
