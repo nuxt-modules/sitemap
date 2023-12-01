@@ -16,14 +16,8 @@ function resolve(s: string | undefined | URL, resolvers: NitroUrlResolvers): str
   // convert url to string
   s = typeof s === 'string' ? s : s.toString()
   // avoid transforming remote urls and urls already resolved
-  if (hasProtocol(s, { acceptRelative: true, strict: false })) {
-    // check if the host starts with the siteURL
-    if (s.startsWith(resolvers.canonicalUrlResolver('/')))
-      // strip the siteURL
-      s = s.replace(resolvers.canonicalUrlResolver('/'), '')
-    else
-      return s
-  }
+  if (hasProtocol(s, { acceptRelative: true, strict: false }))
+    return s
 
   return resolvers.canonicalUrlResolver(s)
 }
@@ -40,8 +34,10 @@ export function normaliseSitemapUrls(data: SitemapUrlInput[], resolvers: NitroUr
         e.loc = e.url
         delete e.url
       }
-      // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
-      e.loc = fixSlashes(false, e.loc)
+      if (!hasProtocol(e.loc, { acceptRelative: true, strict: false })) {
+        // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
+        e.loc = fixSlashes(false, e.loc)
+      }
       return e
     })
     .filter(Boolean)
