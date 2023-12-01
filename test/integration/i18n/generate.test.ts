@@ -74,9 +74,23 @@ describe('generate', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/en/dynamic/bar</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en\\" href=\\"https://nuxtseo.com/en/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es\\" href=\\"https://nuxtseo.com/es/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/dynamic/bar\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/dynamic/bar\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/en/dynamic/foo</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en\\" href=\\"https://nuxtseo.com/en/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es\\" href=\\"https://nuxtseo.com/es/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr\\" href=\\"https://nuxtseo.com/fr/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/dynamic/foo\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/dynamic/foo\\" />
           </url>
       </urlset>"
     `)

@@ -362,4 +362,5 @@ export interface NitroUrlResolvers {
   event: H3Event
   canonicalUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
+  fixSlashes: (path: string) => string
 }

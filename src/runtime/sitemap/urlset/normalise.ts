@@ -17,7 +17,7 @@ function resolve(s: string | undefined | URL, resolvers: NitroUrlResolvers): str
   s = typeof s === 'string' ? s : s.toString()
   // avoid transforming remote urls and urls already resolved
   if (hasProtocol(s, { acceptRelative: true, strict: false }))
-    return s
+    return resolvers.fixSlashes(s)
 
   return resolvers.canonicalUrlResolver(s)
 }
@@ -34,10 +34,8 @@ export function normaliseSitemapUrls(data: SitemapUrlInput[], resolvers: NitroUr
         e.loc = e.url
         delete e.url
       }
-      if (!hasProtocol(e.loc, { acceptRelative: true, strict: false })) {
-        // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
-        e.loc = fixSlashes(false, e.loc)
-      }
+      // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
+      e.loc = fixSlashes(false, e.loc)
       return e
     })
     .filter(Boolean)

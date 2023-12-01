@@ -3,10 +3,11 @@ import { fixSlashes } from 'site-config-stack'
 import { normaliseSitemapUrls } from '../../src/runtime/sitemap/urlset/normalise'
 import type { NitroUrlResolvers } from '../../src/runtime/types'
 
-const resolvers: NitroUrlResolvers = {
+const resolvers = {
+  fixSlashes: (path: string) => fixSlashes(true, path),
   canonicalUrlResolver: (path: string) => fixSlashes(true, path),
   relativeBaseUrlResolver: (path: string) => path,
-}
+} as NitroUrlResolvers
 
 describe('normalise', () => {
   it('query', async () => {

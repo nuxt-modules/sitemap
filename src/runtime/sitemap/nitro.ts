@@ -1,13 +1,16 @@
 import { type H3Event, getQuery, setHeader } from 'h3'
+import { fixSlashes } from 'site-config-stack'
 import type { SitemapDefinition } from '../types'
 import { buildSitemap } from './builder/sitemap'
 import { buildSitemapIndex } from './builder/sitemap-index'
-import { createSitePathResolver, useNitroApp } from '#imports'
+import { createSitePathResolver, useNitroApp, useSiteConfig } from '#imports'
 
 export function useNitroUrlResolvers(e: H3Event) {
   const canonicalQuery = getQuery(e).canonical
   const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
+  const siteConfig = useSiteConfig(e)
   return {
+    fixSlashes: (path: string) => fixSlashes(siteConfig.trailingSlash, path),
     // we need these as they depend on the nitro event
     canonicalUrlResolver: createSitePathResolver(e, {
       canonical: isShowingCanonical || !process.dev,

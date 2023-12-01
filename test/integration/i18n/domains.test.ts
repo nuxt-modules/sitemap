@@ -64,18 +64,18 @@ describe('i18n domains', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://fr.nuxtseo.com/\\" />
           </url>
           <url>
-              <loc>https://fr.nuxtseo.com/test/</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://fr.nuxtseo.com/test/\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://fr.nuxtseo.com/test/\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://fr.nuxtseo.com/test/\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://fr.nuxtseo.com/test/\\" />
+              <loc>https://fr.nuxtseo.com/test</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://fr.nuxtseo.com/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://fr.nuxtseo.com/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://fr.nuxtseo.com/test\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://fr.nuxtseo.com/test\\" />
           </url>
           <url>
-              <loc>https://fr.nuxtseo.com/__sitemap/url/</loc>
+              <loc>https://fr.nuxtseo.com/__sitemap/url</loc>
               <changefreq>weekly</changefreq>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/__sitemap/url/\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://es.nuxtseo.com/__sitemap/url/\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://fr.nuxtseo.com/__sitemap/url/\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://es.nuxtseo.com/__sitemap/url\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://fr.nuxtseo.com/__sitemap/url\\" />
           </url>
       </urlset>"
     `)

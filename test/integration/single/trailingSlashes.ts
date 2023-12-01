@@ -8,7 +8,7 @@ await setup({
   rootDir: resolve('../../fixtures/basic'),
   nuxtConfig: {
     site: {
-      site: 'https://nuxtseo.com',
+      url: 'https://nuxtseo.com',
       trailingSlash: true,
     },
     sitemap: {
