@@ -11,7 +11,7 @@ import {
   hasNuxtModuleCompatibility,
   useLogger,
 } from '@nuxt/kit'
-import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
+import { withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { defu } from 'defu'
@@ -37,7 +37,7 @@ import { setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
-import { splitPathForI18nLocales } from './util/i18n'
+import { splitPathForI18nLocales, generatePathForI18nPages } from './util/i18n'
 
 export interface ModuleOptions extends _ModuleOptions {}
 
@@ -169,13 +169,13 @@ export default defineNuxtModule<ModuleOptions>({
             const alternatives = Object.keys(pageLocales)
               .map(l => ({
                 hreflang: normalisedLocales.find(nl => nl.code === l)?.iso || l,
-                href: nuxtI18nConfig?.strategy !== 'no_prefix' ? joinURL(l, pageLocales[l]) : pageLocales[l],
+                href: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[l], nuxtI18nConfig }),
               }))
             if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
               alternatives.push({ hreflang: 'x-default', href: pageLocales[nuxtI18nConfig.defaultLocale] })
             i18nPagesSources.urls!.push({
               _sitemap: locale.iso || locale.code,
-              loc: nuxtI18nConfig?.strategy === 'prefix' ? joinURL(localeCode, pageLocales[localeCode]) : pageLocales[localeCode],
+              loc: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig }),
               alternatives,
             })
           }
