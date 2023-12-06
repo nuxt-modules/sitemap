@@ -1,12 +1,13 @@
 import type { AutoI18nConfig } from '../runtime/types'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
-import { join } from 'pathe'
+import type { Strategies } from 'vue-i18n-routing';
 import { joinURL } from 'ufo'
 
 export type StrategyProps = {
   localeCode: string,
   pageLocales: string,
-  nuxtI18nConfig: NuxtI18nOptions
+  nuxtI18nConfig: NuxtI18nOptions,
+  forcedStrategy?: Strategies,
 }
 
 export function splitPathForI18nLocales(path: string | RegExp, autoI18n: AutoI18nConfig) {
@@ -24,12 +25,12 @@ export function splitPathForI18nLocales(path: string | RegExp, autoI18n: AutoI18
   ]
 }
 
-export function generatePathForI18nPages({localeCode, pageLocales, nuxtI18nConfig}: StrategyProps): string {
-  switch(nuxtI18nConfig.strategy) {
+export function generatePathForI18nPages({ localeCode, pageLocales, nuxtI18nConfig, forcedStrategy }: StrategyProps): string {
+  switch(forcedStrategy ?? nuxtI18nConfig.strategy) {
     case 'prefix_except_default':
+    case 'prefix_and_default':
       return localeCode === nuxtI18nConfig.defaultLocale ? pageLocales : joinURL(localeCode, pageLocales)
     case 'prefix':
-    case 'prefix_and_default':
       return joinURL(localeCode, pageLocales)
     case 'no_prefix':
     default:
