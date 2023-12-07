@@ -61,8 +61,8 @@ describe('video', () => {
     sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')
 
     expect(sitemap).toMatchInlineSnapshot(`
-      "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
-      <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:video=\\"http://www.google.com/schemas/sitemap-video/1.1\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xmlns:news=\\"http://www.google.com/schemas/sitemap-news/0.9\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
+      "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
+      <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <url>
               <loc>https://nuxtseo.com/</loc>
           </url>
@@ -89,11 +89,11 @@ describe('video', () => {
                   <video:view_count>12345</video:view_count>
                   <video:publication_date>2007-11-05T19:00:00+00:00</video:publication_date>
                   <video:family_friendly>yes</video:family_friendly>
-                  <video:restriction relationship=\\"allow\\">IE GB US CA</video:restriction>
-                  <video:platform relationship=\\"allow\\">web mobile</video:platform>
+                  <video:restriction relationship="allow">IE GB US CA</video:restriction>
+                  <video:platform relationship="allow">web mobile</video:platform>
                   <video:requires_subscription>yes</video:requires_subscription>
-                  <video:price currency=\\"EUR\\" type=\\"rent\\">3.99</video:price>
-                  <video:uploader info=\\"https://example.com/users/grillymcgrillerson\\">GrillyMcGrillerson</video:uploader>
+                  <video:price currency="EUR" type="rent">3.99</video:price>
+                  <video:uploader info="https://example.com/users/grillymcgrillerson">GrillyMcGrillerson</video:uploader>
                   <video:live>no</video:live>
                   <video:tag>steak</video:tag>
                   <video:tag>grilling</video:tag>

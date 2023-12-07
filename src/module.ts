@@ -37,7 +37,7 @@ import { setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
-import { splitPathForI18nLocales, generatePathForI18nPages } from './util/i18n'
+import { generatePathForI18nPages, splitPathForI18nLocales } from './util/i18n'
 
 export interface ModuleOptions extends _ModuleOptions {}
 
@@ -171,20 +171,21 @@ export default defineNuxtModule<ModuleOptions>({
                 hreflang: normalisedLocales.find(nl => nl.code === l)?.iso || l,
                 href: generatePathForI18nPages({ localeCode: l, pageLocales: pageLocales[l], nuxtI18nConfig }),
               }))
-              if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
-                alternatives.push({ hreflang: 'x-default', href: generatePathForI18nPages({ localeCode: nuxtI18nConfig.defaultLocale, pageLocales: pageLocales[nuxtI18nConfig.defaultLocale], nuxtI18nConfig}) })
-                  i18nPagesSources.urls!.push({
-                  _sitemap: locale.iso || locale.code,
-                  loc: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig }),
-                  alternatives,
-                })
-              // add extra loc with the default locale code prefix on prefix and default strategy
-              if (nuxtI18nConfig.strategy === 'prefix_and_default' && localeCode === nuxtI18nConfig.defaultLocale)
-                i18nPagesSources.urls!.push({
-                  _sitemap: locale.iso || locale.code,
-                  loc: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, forcedStrategy: 'prefix' }),
-                  alternatives,
-                })
+            if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
+              alternatives.push({ hreflang: 'x-default', href: generatePathForI18nPages({ localeCode: nuxtI18nConfig.defaultLocale, pageLocales: pageLocales[nuxtI18nConfig.defaultLocale], nuxtI18nConfig }) })
+            i18nPagesSources.urls!.push({
+              _sitemap: locale.iso || locale.code,
+              loc: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig }),
+              alternatives,
+            })
+            // add extra loc with the default locale code prefix on prefix and default strategy
+            if (nuxtI18nConfig.strategy === 'prefix_and_default' && localeCode === nuxtI18nConfig.defaultLocale) {
+              i18nPagesSources.urls!.push({
+                _sitemap: locale.iso || locale.code,
+                loc: generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, forcedStrategy: 'prefix' }),
+                alternatives,
+              })
+            }
           }
         }
         appGlobalSources.push(i18nPagesSources)
