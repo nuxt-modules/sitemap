@@ -21,7 +21,7 @@ export default defineEventHandler(async (e) => {
   const referrer = getHeader(e, 'Referer')! || '/'
   const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && parseURL(referrer).pathname.endsWith('-sitemap.xml')
   const sitemapName = parseURL(referrer).pathname.split('/').pop()?.split('-sitemap')[0] || fallbackSitemapName
-  const title = `${siteName}${sitemapName !== 'sitemap.xml' ? ` - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}`
+  const title = `${siteName}${sitemapName !== 'sitemap.xml' ? ` - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}`.replace(/&/g, '&amp;')
 
   // we need to tell the user their site url and allow them to render the sitemap with the canonical url
   // check if referrer has the query
