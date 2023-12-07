@@ -1,52 +1,50 @@
-import { describe, expect, it } from 'vitest'
-import { createResolver } from '@nuxt/kit'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { describe, expect, it } from "vitest";
+import { createResolver } from "@nuxt/kit";
+import { $fetch, setup } from "@nuxt/test-utils";
 
-const { resolve } = createResolver(import.meta.url)
+const { resolve } = createResolver(import.meta.url);
 
 await setup({
-  rootDir: resolve('../../fixtures/i18n'),
+  rootDir: resolve("../../fixtures/i18n"),
   build: true,
   server: true,
   nuxtConfig: {
     sitemap: { sitemaps: false },
     i18n: {
-      locales: [
-        'en',
-        'fr',
-      ],
+      strategy: "prefix",
+      locales: ["en", "fr"],
       pages: {
-        'about': {
-          en: '/about',
-          fr: '/a-propos',
+        about: {
+          en: "/about",
+          fr: "/a-propos",
         },
-        'services/index': {
-          en: '/services',
-          fr: '/offres',
+        "services/index": {
+          en: "/services",
+          fr: "/offres",
         },
-        'services/development/index': {
-          en: '/services/development',
-          fr: '/offres/developement',
+        "services/development/index": {
+          en: "/services/development",
+          fr: "/offres/developement",
         },
-        'services/development/app/index': {
-          en: '/services/development/app',
-          fr: '/offres/developement/app',
+        "services/development/app/index": {
+          en: "/services/development/app",
+          fr: "/offres/developement/app",
         },
-        'services/development/website/index': {
-          en: '/services/development/website',
-          fr: '/offres/developement/site-web',
+        "services/development/website/index": {
+          en: "/services/development/website",
+          fr: "/offres/developement/site-web",
         },
-        'services/coaching/index': {
-          en: '/services/coaching',
-          fr: '/offres/formation',
+        "services/coaching/index": {
+          en: "/services/coaching",
+          fr: "/offres/formation",
         },
       },
     },
   },
-})
-describe('i18n', () => {
-  it('basic', async () => {
-    const posts = await $fetch('/sitemap.xml')
+});
+describe("i18n pages with prefix strategy", () => {
+  it("prefix", async () => {
+    const posts = await $fetch("/sitemap.xml");
 
     expect(posts).toMatchInlineSnapshot(`
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
@@ -148,6 +146,6 @@ describe('i18n', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services/development/website\\" />
           </url>
       </urlset>"
-    `)
-  }, 60000)
-})
+    `);
+  }, 60000);
+});

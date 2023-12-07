@@ -69,28 +69,16 @@ describe('i18n pages multi', () => {
       "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><?xml-stylesheet type=\\"text/xsl\\" href=\\"/__sitemap__/style.xsl\\"?>
       <urlset xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" xmlns:video=\\"http://www.google.com/schemas/sitemap-video/1.1\\" xmlns:xhtml=\\"http://www.w3.org/1999/xhtml\\" xmlns:image=\\"http://www.google.com/schemas/sitemap-image/1.1\\" xmlns:news=\\"http://www.google.com/schemas/sitemap-news/0.9\\" xsi:schemaLocation=\\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd\\" xmlns=\\"http://www.sitemaps.org/schemas/sitemap/0.9\\">
           <url>
-              <loc>https://nuxtseo.com/a-propos</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/about\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/a-propos\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/about\\" />
+              <loc>https://nuxtseo.com/fr/a-propos</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/about\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/a-propos\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/about\\" />
           </url>
           <url>
-              <loc>https://nuxtseo.com/offres</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/services\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/offres\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/services\\" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/offres/developement</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/services/development\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/offres/developement\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/services/development\\" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/offres/formation</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/services/coaching\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/offres/formation\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/services/coaching\\" />
+              <loc>https://nuxtseo.com/fr/offres</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/services\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/offres\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services\\" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr/__sitemap/url</loc>
@@ -101,16 +89,28 @@ describe('i18n pages multi', () => {
               <xhtml:link rel=\\"alternate\\" hreflang=\\"es-ES\\" href=\\"https://nuxtseo.com/es/__sitemap/url\\" />
           </url>
           <url>
-              <loc>https://nuxtseo.com/offres/developement/app</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/services/development/app\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/offres/developement/app\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/services/development/app\\" />
+              <loc>https://nuxtseo.com/fr/offres/developement</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/services/development\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/offres/developement\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services/development\\" />
           </url>
           <url>
-              <loc>https://nuxtseo.com/offres/developement/site-web</loc>
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/services/development/website\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/offres/developement/site-web\\" />
-              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/services/development/website\\" />
+              <loc>https://nuxtseo.com/fr/offres/formation</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/services/coaching\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/offres/formation\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services/coaching\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/fr/offres/developement/app</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/services/development/app\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/offres/developement/app\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services/development/app\\" />
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/fr/offres/developement/site-web</loc>
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"en-US\\" href=\\"https://nuxtseo.com/en/services/development/website\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"fr-FR\\" href=\\"https://nuxtseo.com/fr/offres/developement/site-web\\" />
+              <xhtml:link rel=\\"alternate\\" hreflang=\\"x-default\\" href=\\"https://nuxtseo.com/en/services/development/website\\" />
           </url>
       </urlset>"
     `)
