@@ -69,7 +69,7 @@
     "nuxt": "^3.8.2",
     "nuxt-icon": "^0.6.7",
     "nuxt-simple-robots": "^3.1.9",
-    "vitest": "^1.0.1"
+    "vitest": "^1.0.2"
   },
   "build": {
     "externals": [

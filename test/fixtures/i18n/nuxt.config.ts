@@ -9,6 +9,12 @@ export default defineNuxtConfig({
   site: {
     url: 'https://nuxtseo.com',
   },
+  nitro: {
+    prerender: {
+      failOnError: false,
+      ignore: ['/']
+    },
+  },
   sitemap: {
     dynamicUrlsApiEndpoint: '/__sitemap',
     autoLastmod: false,
