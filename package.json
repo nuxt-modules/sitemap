@@ -66,7 +66,6 @@
     "bumpp": "^9.2.0",
     "eslint": "8.54.0",
     "execa": "^8.0.1",
-    "typescript": "^5.3.2",
     "nuxt": "^3.8.2",
     "nuxt-icon": "^0.6.6",
     "nuxt-simple-robots": "^3.1.9",
