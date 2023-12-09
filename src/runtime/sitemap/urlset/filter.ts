@@ -4,7 +4,6 @@ import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from 
 
 interface RegexObjectType {
   regex: string
-  flags?: string
 }
 interface CreateFilterOptions {
   include?: (string | RegexObjectType)[]
@@ -18,9 +17,16 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
     return () => true
 
   return function (path: string): boolean {
+    const regexPattern = /\/(.*?)\/([gimsuy]*)$/
     for (const v of [{ rules: exclude, result: false }, { rules: include, result: true }]) {
-      const regexRules = (v.rules.filter(r => typeof r === 'object' && r.regex) as RegexObjectType[])
-                                 .map((r) => new RegExp(r.regex, r.flags)) as RegExp[]
+      const regexRules = (v.rules.filter(r => typeof r === 'object' && r.regex && typeof r.regex === 'string') as RegexObjectType[])
+                                 .map((r) => {
+                                  const match = r.regex.match(regexPattern)
+                                  if (!match || match.length < 3){
+                                    console.warn(`Invalid regex rule: ${r.regex}`)
+                                    return new RegExp('')
+                                  }
+                                  return new RegExp(match[1], match[2])}) as RegExp[]
 
       if (regexRules.some(r => r.test(path)))
         return v.result
