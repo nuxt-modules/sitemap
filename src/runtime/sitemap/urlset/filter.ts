@@ -6,8 +6,8 @@ interface RegexObjectType {
   regex: string
 }
 interface CreateFilterOptions {
-  include?: (string | RegexObjectType)[]
-  exclude?: (string | RegexObjectType)[]
+  include?: (string | RegExp | RegexObjectType)[]
+  exclude?: (string | RegExp | RegexObjectType)[]
 }
 
 function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
@@ -23,8 +23,7 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
                                  .map((r) => {
                                   const match = r.regex.match(regexPattern)
                                   if (!match || match.length < 3){
-                                    console.warn(`Invalid regex rule: ${r.regex}`)
-                                    return new RegExp('')
+                                    throw new Error(`Invalid regex rule: ${r.regex}`)
                                   }
                                   return new RegExp(match[1], match[2])}) as RegExp[]
 
