@@ -369,7 +369,9 @@ declare module 'vue-router' {
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
-            { include: config.include, exclude: config.exclude },
+            { include: (config.include || []).map(r => r instanceof RegExp ? { regex: r.toString() } : r), 
+              exclude: (config.exclude || []).map(r => r instanceof RegExp ? { regex: r.toString() } : r)
+            },
           ) as ModuleRuntimeConfig['sitemaps'][string]
         }
       }
