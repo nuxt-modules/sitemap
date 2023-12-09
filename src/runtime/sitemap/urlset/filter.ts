@@ -2,9 +2,12 @@ import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
 import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
 
+interface RegexObjectType {
+  regex: string
+}
 interface CreateFilterOptions {
-  include?: (string | RegExp)[]
-  exclude?: (string | RegExp)[]
+  include?: (string | RegexObjectType)[]
+  exclude?: (string | RegexObjectType)[]
 }
 
 function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
@@ -15,7 +18,9 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
 
   return function (path: string): boolean {
     for (const v of [{ rules: exclude, result: false }, { rules: include, result: true }]) {
-      const regexRules = v.rules.filter(r => r instanceof RegExp) as RegExp[]
+      const regexRules = (v.rules.filter(r => typeof r === 'object' && r.regex) as RegexObjectType[])
+                                 .map((r) => new RegExp(r.regex)) as RegExp[]
+
       if (regexRules.some(r => r.test(path)))
         return v.result
 
