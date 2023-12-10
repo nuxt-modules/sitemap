@@ -34,7 +34,7 @@ import type {
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
 import { setupPrerenderHandler } from './prerender'
-import { mergeOnKey } from './runtime/utils'
+import { isValidFilter, mergeOnKey, normaliseFilters } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
 import { generatePathForI18nPages, splitPathForI18nLocales } from './util/i18n'
@@ -342,6 +342,12 @@ declare module 'vue-router' {
 
     // config -> sitemaps
     const sitemaps: ModuleRuntimeConfig['sitemaps'] = {}
+
+    // we need to normalize the RegExp to a string
+    // because of the useRuntimeConfig can't jsonify it
+    config.include = (config.include || []).filter(r => isValidFilter(r)).map(r => normaliseFilters(r))
+    config.exclude = (config.exclude || []).filter(r => isValidFilter(r)).map(r => normaliseFilters(r))
+
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
@@ -369,9 +375,7 @@ declare module 'vue-router' {
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
-            { include: (config.include || []).map(r => r instanceof RegExp ? { regex: r.toString() } : r), 
-              exclude: (config.exclude || []).map(r => r instanceof RegExp ? { regex: r.toString() } : r)
-            },
+            { include: config.include, exclude: config.exclude },
           ) as ModuleRuntimeConfig['sitemaps'][string]
         }
       }
@@ -386,6 +390,7 @@ declare module 'vue-router' {
       }
     }
     else {
+      console.log("NOT Using multi sitemaps")
       // note: we don't need urls for the root sitemap, only child sitemaps
       sitemaps[config.sitemapName] = <SitemapDefinition> {
         sitemapName: config.sitemapName,
