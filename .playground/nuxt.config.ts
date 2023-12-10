@@ -112,7 +112,7 @@ export default defineNuxtConfig({
           '/api/sitemap-foo',
           'https://example.com/invalid.json',
         ],
-        exclude: ['/en/blog/**', '/fr/blog/**', '/blog/**', { regex: '/.*hide-me.*/g' }, { regex: '/.*hide-me.*/' }],
+        exclude: ['/en/blog/**', '/fr/blog/**', '/blog/**', /.*hide-me.*/g],
         urls: [
           {
             loc: '/about',
