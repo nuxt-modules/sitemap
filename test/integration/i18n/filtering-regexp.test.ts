@@ -1,25 +1,23 @@
-import { describe, expect, it } from 'vitest'
-import { createResolver } from '@nuxt/kit'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { describe, expect, it } from "vitest";
+import { createResolver } from "@nuxt/kit";
+import { $fetch, setup } from "@nuxt/test-utils";
 
-const { resolve } = createResolver(import.meta.url)
+const { resolve } = createResolver(import.meta.url);
 
 await setup({
-  rootDir: resolve('../../fixtures/i18n'),
+  rootDir: resolve("../../fixtures/i18n"),
   nuxtConfig: {
     sitemap: {
-      exclude: [
-        { regex: '/.*test.*/g' },
-      ],
+      exclude: [/.*test.*/g],
     },
   },
-})
-describe('i18n filtering with regexp', () => {
-  it('basic', async () => {
-    let sitemap = await $fetch('/en-US-sitemap.xml')
+});
+describe("i18n filtering with regexp", () => {
+  it("basic", async () => {
+    let sitemap = await $fetch("/en-US-sitemap.xml");
 
     // strip lastmod
-    sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')
+    sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, "");
 
     expect(sitemap).toMatchInlineSnapshot(`
       "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
@@ -43,6 +41,6 @@ describe('i18n filtering with regexp', () => {
               <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
           </url>
       </urlset>"
-    `)
-  }, 60000)
-})
+    `);
+  }, 60000);
+});
