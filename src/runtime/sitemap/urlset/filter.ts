@@ -1,31 +1,22 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
-import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
+import type { ModuleRuntimeConfig, RegexObjectType, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
+import { transformIntoRegex } from '../../utils'
 
-interface RegexObjectType {
-  regex: string
-}
 interface CreateFilterOptions {
   include?: (string | RegExp | RegexObjectType)[]
   exclude?: (string | RegExp | RegexObjectType)[]
 }
 
 function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
-  const include = options.include || []
-  const exclude = options.exclude || []
+  const include = options.include ? options.include.map(r => transformIntoRegex(r)) : []
+  const exclude = options.exclude ? options.exclude.map(r => transformIntoRegex(r)) : []
   if (include.length === 0 && exclude.length === 0)
     return () => true
 
   return function (path: string): boolean {
-    const regexPattern = /\/(.*?)\/([gimsuy]*)$/
     for (const v of [{ rules: exclude, result: false }, { rules: include, result: true }]) {
-      const regexRules = (v.rules.filter(r => typeof r === 'object' && r.regex && typeof r.regex === 'string') as RegexObjectType[])
-                                 .map((r) => {
-                                  const match = r.regex.match(regexPattern)
-                                  if (!match || match.length < 3){
-                                    throw new Error(`Invalid regex rule: ${r.regex}`)
-                                  }
-                                  return new RegExp(match[1], match[2])}) as RegExp[]
+      const regexRules = v.rules.filter(r => r instanceof RegExp) as RegExp[]
 
       if (regexRules.some(r => r.test(path)))
         return v.result
