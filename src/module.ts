@@ -390,7 +390,6 @@ declare module 'vue-router' {
       }
     }
     else {
-      console.log("NOT Using multi sitemaps")
       // note: we don't need urls for the root sitemap, only child sitemaps
       sitemaps[config.sitemapName] = <SitemapDefinition> {
         sitemapName: config.sitemapName,
