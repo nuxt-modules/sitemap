@@ -200,8 +200,8 @@ export interface RegexObjectType {
 }
 
 export interface FilterTypes {
-  include?: (string | RegExp | RegexObjectType)
-  exclude?: (string | RegExp | RegexObjectType)
+  include: (string | RegExp | RegexObjectType)
+  exclude: (string | RegExp | RegexObjectType)
 }
 export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<SitemapUrl, 'loc'>>
 
