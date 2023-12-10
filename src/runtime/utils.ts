@@ -34,25 +34,20 @@ export function isValidFilter(filter: FilterTypes['include'] | FilterTypes['excl
 }
 
 /**
- * Transform the RegeExp into a valid { regex: string }
+ * Transform the RegeExp into RegexObjectType
  * @param filter string | RegExp | RegexObjectType
  * @return Object | string
  */
 
-export function normaliseFilters(filter: FilterTypes['include'] | FilterTypes['exclude']): RegexObjectType | string | undefined {
+export function normaliseRegexp(filter: FilterTypes['include'] | FilterTypes['exclude']) : FilterTypes['include'] | FilterTypes['exclude']{
   
-  if (!filter) return undefined
-  
-  else if (filter instanceof RegExp)
+  if (filter instanceof RegExp)
     return { regex: filter.toString() }
 
-  else if (typeof filter === 'string' || typeof filter === 'object' && filter.regex && typeof filter.regex === 'string')
-    return filter
-
-  else if (filter.regex as any instanceof RegExp)
+  else if ( typeof filter === 'object' && filter.regex && filter.regex as any instanceof RegExp)
     return { regex: filter.regex.toString() }
 
-  return undefined
+  return filter 
 }
 
 /**

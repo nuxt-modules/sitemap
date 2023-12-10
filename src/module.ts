@@ -34,7 +34,7 @@ import type {
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
 import { setupPrerenderHandler } from './prerender'
-import { isValidFilter, mergeOnKey, normaliseFilters } from './runtime/utils'
+import { isValidFilter, mergeOnKey, normaliseRegexp } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
 import { generatePathForI18nPages, splitPathForI18nLocales } from './util/i18n'
@@ -345,8 +345,8 @@ declare module 'vue-router' {
 
     // we need to normalize the RegExp to a string
     // because of the useRuntimeConfig can't jsonify it
-    config.include = (config.include || []).filter(r => isValidFilter(r)).map(r => normaliseFilters(r))
-    config.exclude = (config.exclude || []).filter(r => isValidFilter(r)).map(r => normaliseFilters(r))
+    config.include = (config.include || []).filter(r => isValidFilter(r)).map(r => normaliseRegexp(r))
+    config.exclude = (config.exclude || []).filter(r => isValidFilter(r)).map(r => normaliseRegexp(r))
 
     if (usingMultiSitemaps) {
       addServerHandler({
