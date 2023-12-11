@@ -30,5 +30,6 @@ export function useSimpleSitemapRuntimeConfig() {
     sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
     clone.sitemaps[k] = sitemap
   }
-  return clone
+  // avoid mutation
+  return Object.freeze(clone)
 }
