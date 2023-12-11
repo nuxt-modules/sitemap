@@ -1,11 +1,11 @@
 import { defu } from 'defu'
 import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
 import type { ParsedContent } from '@nuxt/content/dist/runtime/types'
-import type { ModuleRuntimeConfig, SitemapUrl } from '../types'
-import { useRuntimeConfig } from '#imports'
+import type { SitemapUrl } from '../types'
+import { useSimpleSitemapRuntimeConfig } from '../utils'
 
 export default defineNitroPlugin((nitroApp) => {
-  const { discoverImages, isNuxtContentDocumentDriven } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { discoverImages, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
     if (content.sitemap === false || content._extension !== 'md' || content._partial || content.indexable === false || content.index === false)
       return

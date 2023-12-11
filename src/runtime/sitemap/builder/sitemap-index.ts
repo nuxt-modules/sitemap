@@ -1,7 +1,6 @@
 import { defu } from 'defu'
 import { appendHeader } from 'h3'
 import type {
-  ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapIndexEntry,
@@ -12,8 +11,8 @@ import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { applyI18nEnhancements } from '../urlset/i18n'
 import { filterSitemapUrls } from '../urlset/filter'
 import { sortSitemapUrls } from '../urlset/sort'
+import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
-import { useRuntimeConfig } from '#imports'
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
   const {
@@ -29,7 +28,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
     version,
     xsl,
     credits,
-  } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  } = useSimpleSitemapRuntimeConfig()
 
   if (!sitemaps)
     throw new Error('Attempting to build a sitemap index without required `sitemaps` configuration.')

@@ -34,10 +34,11 @@ import type {
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
-import { mergeOnKey } from './runtime/utils'
+import { mergeOnKey } from './runtime/utils-pure'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
 import { generatePathForI18nPages, splitPathForI18nLocales } from './util/i18n'
+import { normalizeFilters } from './util/filter'
 
 export interface ModuleOptions extends _ModuleOptions {}
 
@@ -337,6 +338,7 @@ declare module 'vue-router' {
 
     // config -> sitemaps
     const sitemaps: ModuleRuntimeConfig['sitemaps'] = {}
+
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
@@ -401,6 +403,13 @@ declare module 'vue-router' {
         sitemap.include = (sitemap.include || []).map(path => splitPathForI18nLocales(path, i18n)).flat()
         sitemap.exclude = (sitemap.exclude || []).map(path => splitPathForI18nLocales(path, i18n)).flat()
       }
+    }
+    for (const sitemapName in sitemaps) {
+      const sitemap = sitemaps[sitemapName]
+      // we need to normalize the RegExp to a string because of the useRuntimeConfig can't jsonify it
+      // note: this needs to occur after i18n has extended the rules
+      sitemap.include = normalizeFilters(sitemap.include)
+      sitemap.exclude = normalizeFilters(sitemap.exclude)
     }
 
     const runtimeConfig: ModuleRuntimeConfig = {

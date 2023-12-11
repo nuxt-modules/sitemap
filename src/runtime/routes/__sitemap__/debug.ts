@@ -4,11 +4,12 @@ import {
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import type { ModuleRuntimeConfig, SitemapDefinition } from '../../types'
-import { useNitroOrigin, useRuntimeConfig } from '#imports'
+import type { SitemapDefinition } from '../../types'
+import { useSimpleSitemapRuntimeConfig } from '../../utils'
+import { useNitroOrigin } from '#imports'
 
 export default defineEventHandler(async (e) => {
-  const _runtimeConfig = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const _runtimeConfig = useSimpleSitemapRuntimeConfig()
   const { sitemaps: _sitemaps } = _runtimeConfig
   const runtimeConfig = { ..._runtimeConfig }
   // @ts-expect-error hack

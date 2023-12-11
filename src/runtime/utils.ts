@@ -1,19 +1,35 @@
-import { createDefu } from 'defu'
+import type { FilterInput, ModuleRuntimeConfig } from './types'
+import { useRuntimeConfig } from '#imports'
 
-const merger = createDefu((obj, key, value) => {
-  // merge arrays using a set
-  if (Array.isArray(obj[key]) && Array.isArray(value))
-    obj[key] = Array.from(new Set([...obj[key], ...value]))
+export * from './utils-pure'
 
-  return obj[key]
-})
+const StringifiedRegExpPattern = /\/(.*?)\/([gimsuy]*)$/
 
-export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K) {
-  const res: Record<string, T> = {}
-  arr.forEach((item) => {
-    const k = item[key] as string
-    // @ts-expect-error untyped
-    res[k] = merger(item, res[k] || {})
-  })
-  return Object.values(res)
+/**
+ * Transform a literal notation string regex to RegExp
+ */
+export function normalizeRuntimeFilters(input?: FilterInput[]): (RegExp | string)[] {
+  return (input || []).map((rule) => {
+    if (rule instanceof RegExp || typeof rule === 'string')
+      return rule
+    // regex is already validated
+    const match = rule.regex.match(StringifiedRegExpPattern)
+    if (match)
+      return new RegExp(match[1], match[2])
+    return false
+  }).filter(Boolean) as (RegExp | string)[]
+}
+
+export function useSimpleSitemapRuntimeConfig() {
+  // we need to clone with this hack so that we can write to the config
+  const clone = JSON.parse(JSON.stringify(useRuntimeConfig()['nuxt-simple-sitemap'])) as any as ModuleRuntimeConfig
+  // normalize the filters for runtime
+  for (const k in clone.sitemaps) {
+    const sitemap = clone.sitemaps[k]
+    sitemap.include = normalizeRuntimeFilters(sitemap.include)
+    sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
+    clone.sitemaps[k] = sitemap
+  }
+  // avoid mutation
+  return Object.freeze(clone)
 }

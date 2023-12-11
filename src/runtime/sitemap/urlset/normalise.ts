@@ -7,7 +7,7 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../types'
-import { mergeOnKey } from '../../utils'
+import { mergeOnKey } from '../../utils-pure'
 
 function resolve(s: string | URL, resolvers: NitroUrlResolvers): string
 function resolve(s: string | undefined | URL, resolvers: NitroUrlResolvers): string | undefined {

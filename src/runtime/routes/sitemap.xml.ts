@@ -1,11 +1,11 @@
 import { defineEventHandler, sendRedirect } from 'h3'
 import { withBase } from 'ufo'
-import type { ModuleRuntimeConfig } from '../types'
 import { createSitemap } from '../sitemap/nitro'
+import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async (e) => {
-  const { sitemaps } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { sitemaps } = useSimpleSitemapRuntimeConfig()
   // we need to check if we're rendering multiple sitemaps from the index sitemap
   if ('index' in sitemaps) {
     // redirect to sitemap_index.xml (302 in dev to avoid caching issues)
