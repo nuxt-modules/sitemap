@@ -195,25 +195,20 @@ export interface SitemapIndexEntry {
   lastmod?: string
 }
 
-export interface RegexObjectType {
+export type FilterInput = (string | RegExp | {
   regex: string
-}
-
-export interface FilterTypes {
-  include: (string | RegExp | RegexObjectType)
-  exclude: (string | RegExp | RegexObjectType)
-}
+})
 export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<SitemapUrl, 'loc'>>
 
 export interface SitemapDefinition {
   /**
    * A collection include patterns for filtering which URLs end up in the sitemap.
    */
-  include?: (FilterTypes['include'])[]
+  include?: FilterInput[]
   /**
    * A collection exclude patterns for filtering which URLs end up in the sitemap.
    */
-  exclude?: (FilterTypes['exclude'])[]
+  exclude?: FilterInput[]
   /**
    * Should the sitemap be generated using global sources.
    *

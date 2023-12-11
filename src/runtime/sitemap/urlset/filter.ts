@@ -1,16 +1,15 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
-import type { ModuleRuntimeConfig, RegexObjectType, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
-import { transformIntoRegex } from '../../utils'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
 
 interface CreateFilterOptions {
-  include?: (string | RegExp | RegexObjectType)[]
-  exclude?: (string | RegExp | RegexObjectType)[]
+  include?: (string | RegExp)[]
+  exclude?: (string | RegExp)[]
 }
 
 function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
-  const include = options.include ? options.include.map(r => transformIntoRegex(r)) : []
-  const exclude = options.exclude ? options.exclude.map(r => transformIntoRegex(r)) : []
+  const include = options.include || []
+  const exclude = options.exclude || []
   if (include.length === 0 && exclude.length === 0)
     return () => true
 

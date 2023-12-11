@@ -1,15 +1,14 @@
 import { createError, defineEventHandler } from 'h3'
 import { parseURL } from 'ufo'
-import type { ModuleRuntimeConfig } from '../types'
 import { createSitemap } from '../sitemap/nitro'
-import { useRuntimeConfig } from '#imports'
+import { useSimpleSitemapRuntimeConfig } from '../utils'
 
 export default defineEventHandler(async (e) => {
   const path = parseURL(e.path).pathname
   if (!path.endsWith('-sitemap.xml'))
     return
 
-  const { sitemaps } = useRuntimeConfig()['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  const { sitemaps } = useSimpleSitemapRuntimeConfig()
 
   const sitemapName = path
     .replace('-sitemap.xml', '')

@@ -4,7 +4,6 @@ import { parseURL, withHttps, withoutBase } from 'ufo'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import type { NitroRouteRules } from 'nitropack'
 import type {
-  ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapDefinition,
@@ -15,6 +14,7 @@ import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from
 import { filterSitemapUrls } from '../urlset/filter'
 import { applyI18nEnhancements, normaliseI18nSources } from '../urlset/i18n'
 import { sortSitemapUrls } from '../urlset/sort'
+import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import { handleEntry, wrapSitemapXml } from './xml'
 import { useNitroApp, useRuntimeConfig } from '#imports'
 
@@ -43,7 +43,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     version,
     xsl,
     credits,
-  } = config['nuxt-simple-sitemap'] as any as ModuleRuntimeConfig
+  } = useSimpleSitemapRuntimeConfig()
   const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls
