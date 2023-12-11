@@ -34,9 +34,13 @@ export function includesSitemapRoot(sitemapName: string, routes: string[]) {
   return routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
 }
 
+export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
+  return nuxt.options._generate || nuxt.options.nitro.static || nuxt.options.nitro.preset === 'static'
+}
+
 export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt = useNuxt()) {
   const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-  const prerenderSitemap = nuxt.options._generate || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
+  const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
   // need to filter it out of the config as we render it after all other routes
   if (nuxt.options.nitro.prerender?.routes)
     nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))

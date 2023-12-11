@@ -8,7 +8,6 @@
 <a href="https://github.com/harlan-zw/nuxt-simple-sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/harlan-zw/nuxt-simple-sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 </p>
 
-
 <p align="center">
 Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 </p>
@@ -51,7 +50,6 @@ npm install -D nuxt-simple-sitemap
 pnpm i -D nuxt-simple-sitemap
 ```
 
-
 2. Add it to your `modules` section in your `nuxt.config`:
 
 ```ts
@@ -63,7 +61,6 @@ export default defineNuxtConfig({
 # Documentation
 
 [📖 Read the full documentation](https://nuxtseo.com/sitemap) for more information.
-
 
 ### Demos
 
@@ -78,7 +75,6 @@ export default defineNuxtConfig({
     <img src='https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg'/>
   </a>
 </p>
-
 
 ## License
 
