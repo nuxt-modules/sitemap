@@ -7,7 +7,7 @@ import { useSimpleSitemapRuntimeConfig } from '../utils'
 export default defineNitroPlugin((nitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
-    if (content.sitemap === false || content._extension !== 'md' || content._partial || content.indexable === false || content.index === false)
+    if (content.sitemap === false || content._draft || content._extension !== 'md' || content._partial || content.indexable === false || content.index === false)
       return
 
     // add any top level images
