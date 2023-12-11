@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       failOnError: false,
-      ignore: ['/']
+      ignore: ['/'],
     },
   },
   sitemap: {

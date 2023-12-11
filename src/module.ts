@@ -33,7 +33,7 @@ import type {
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
-import { setupPrerenderHandler } from './prerender'
+import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { isValidFilter, mergeOnKey, normaliseRegexp } from './runtime/utils'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/sitemap/urlset/normalise'
@@ -117,14 +117,8 @@ export default defineNuxtModule<ModuleOptions>({
 
     nuxt.options.nitro.storage = nuxt.options.nitro.storage || {}
     // provide cache storage for prerendering
-    if (nuxt.options._generate) {
-      nuxt.options.nitro.storage['nuxt-simple-sitemap'] = {
-        driver: 'memory',
-      }
-    }
-    else if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object') {
+    if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object')
       nuxt.options.nitro.storage['nuxt-simple-sitemap'] = config.runtimeCacheStorage
-    }
 
     if (!config.sitemapName.endsWith('xml')) {
       const newName = `${config.sitemapName.split('.')[0]}.xml`
@@ -252,8 +246,16 @@ declare module 'vue-router' {
     })
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const prerenderSitemap = nuxt.options._generate || prerenderedRoutes.includes(`/${config.sitemapName}`) || prerenderedRoutes.includes('/sitemap_index.xml')
+    const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
     const routeRules: NitroRouteConfig = {}
+    nuxt.options.routeRules = nuxt.options.routeRules || {}
+    if (prerenderSitemap) {
+      routeRules.prerender = true
+      // add route rules for sitemap xmls so they're rendered properly
+      routeRules.headers = {
+        'Content-Type': 'text/xml; charset=UTF-8',
+      }
+    }
     if (!nuxt.options.dev && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
       routeRules.swr = config.cacheMaxAgeSeconds
       routeRules.cache = {
@@ -264,13 +266,6 @@ declare module 'vue-router' {
       if (typeof config.runtimeCacheStorage === 'object')
         routeRules.cache.base = 'nuxt-simple-sitemap'
     }
-    if (prerenderSitemap) {
-      // add route rules for sitemap xmls so they're rendered properly
-      routeRules.headers = {
-        'Content-Type': 'text/xml; charset=UTF-8',
-      }
-    }
-    nuxt.options.routeRules = nuxt.options.routeRules || {}
     if (usingMultiSitemaps) {
       nuxt.options.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
