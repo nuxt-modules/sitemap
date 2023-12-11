@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { withBase, withoutLeadingSlash } from 'ufo'
+import { withBase } from 'ufo'
 import { assertSiteConfig } from 'nuxt-site-config-kit'
 import { useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
@@ -106,7 +106,7 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
 async function prerenderRoute(nitro: Nitro, route: string) {
   const start = Date.now()
   // Create result object
-  const _route: PrerenderRoute = { route, fileName: withoutLeadingSlash(route) }
+  const _route: PrerenderRoute = { route, fileName: route }
   // Fetch the route
   const encodedRoute = encodeURI(route)
   const res = await globalThis.$fetch.raw(

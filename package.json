@@ -74,6 +74,7 @@
   "build": {
     "externals": [
       "h3",
+      "std-env",
       "nitropack"
     ]
   }

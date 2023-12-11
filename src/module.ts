@@ -32,7 +32,7 @@ import type {
   ModuleOptions as _ModuleOptions,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
-import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
+import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/utils-pure'
 import { setupDevToolsUI } from './devtools'
@@ -245,11 +245,12 @@ declare module 'vue-router' {
 }
 `
     })
+    const nitroPreset = resolveNitroPreset()
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
     const routeRules: NitroRouteConfig = {}
-    nuxt.options.routeRules = nuxt.options.routeRules || {}
+    nuxt.options.nitro.routeRules = nuxt.options.nitro.routeRules || {}
     if (prerenderSitemap) {
       routeRules.prerender = true
       // add route rules for sitemap xmls so they're rendered properly
@@ -258,7 +259,7 @@ declare module 'vue-router' {
       }
     }
     if (!nuxt.options.dev && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
-      routeRules.swr = config.cacheMaxAgeSeconds
+      routeRules[nitroPreset.includes('vercel') ? 'isr' : 'swr'] = config.cacheMaxAgeSeconds
       routeRules.cache = {
         // handle multi-tenancy
         varies: ['X-Forwarded-Host', 'X-Forwarded-Proto', 'Host'],
@@ -267,19 +268,24 @@ declare module 'vue-router' {
       if (typeof config.runtimeCacheStorage === 'object')
         routeRules.cache.base = 'nuxt-simple-sitemap'
     }
+    nuxt.options.nitro.routeRules['/sitemap.xsl'] = {
+      headers: {
+        'Content-Type': 'application/xslt+xml',
+      },
+    }
     if (usingMultiSitemaps) {
-      nuxt.options.routeRules['/sitemap_index.xml'] = routeRules
+      nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps)
-          nuxt.options.routeRules[`/${k}-sitemap.xml`] = routeRules
+          nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = routeRules
       }
       else {
         // TODO we should support the chunked generated sitemap names
-        nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
+        nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
       }
     }
     else {
-      nuxt.options.routeRules[`/${config.sitemapName}`] = routeRules
+      nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
     }
 
     if (config.experimentalWarmUp)
