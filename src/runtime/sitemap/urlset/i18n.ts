@@ -29,7 +29,6 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
           if (locale) {
             // let's try and find other urls that we can use for alternatives
             if (!url.alternatives) {
-              let defaultPath: string | undefined
               const alternatives = urls
                 .map((u) => {
                   // only if the url wasn't already configured, excludes page, etc
@@ -39,26 +38,26 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
                     const _match = u.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
                     const _localeCode = _match?.[1]
                     const _pathWithoutPrefix = _match?.[2]
-                    if (_localeCode === autoI18n.defaultLocale)
-                      defaultPath = u.loc
                     if (pathWithoutPrefix === _pathWithoutPrefix) {
-                      return <AlternativeEntry>{
+                      const entries: AlternativeEntry[] = [{
                         href: u.loc,
                         hreflang: _localeCode || autoI18n.defaultLocale,
+                      }]
+                      if (_localeCode === autoI18n.defaultLocale) {
+                        entries.push({
+                          href: u.loc,
+                          hreflang: 'x-default',
+                        })
                       }
+                      return entries
                     }
                   }
                   return false
                 })
+                .flat()
                 .filter(Boolean) as AlternativeEntry[]
-              if (alternatives.length && defaultPath) {
-                // add x-default
-                alternatives.unshift({
-                  href: defaultPath,
-                  hreflang: 'x-default',
-                })
-              }
-              if (alternatives.length)
+              // default and original locale are 2
+              if (alternatives.length > 2)
                 url.alternatives = alternatives
             }
             return <SitemapUrl> {
