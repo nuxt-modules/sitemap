@@ -1,8 +1,6 @@
 import { defu } from 'defu'
 import { resolveSitePath } from 'site-config-stack'
-import { parseURL, withHttps, withoutBase } from 'ufo'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import type { NitroRouteRules } from 'nitropack'
+import { parseURL, withHttps } from 'ufo'
 import type {
   NitroUrlResolvers,
   ResolvedSitemapUrl,
@@ -15,11 +13,11 @@ import { filterSitemapUrls } from '../urlset/filter'
 import { applyI18nEnhancements, normaliseI18nSources } from '../urlset/i18n'
 import { sortSitemapUrls } from '../urlset/sort'
 import { useSimpleSitemapRuntimeConfig } from '../../utils'
+import { createNitroRouteRuleMatcher } from '../../nitro/kit'
 import { handleEntry, wrapSitemapXml } from './xml'
-import { useNitroApp, useRuntimeConfig } from '#imports'
+import { useNitroApp } from '#internal/nitro'
 
 export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers) {
-  const config = useRuntimeConfig()
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -82,30 +80,22 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   const defaults = { ...(sitemap.defaults || {}) }
   if (autoLastmod && defaults?.lastmod)
     defaults.lastmod = new Date()
-  // apply route rules
-  const _routeRulesMatcher = toRouteMatcher(
-    createRadixRouter({ routes: config.nitro?.routeRules }),
-  )
+
+  const routeRuleMatcher = createNitroRouteRuleMatcher()
   let enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
     // apply defaults
     .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
     // apply route rules
     .map((e) => {
       const path = parseURL(e.loc).pathname
-      let routeRules = defu({}, ..._routeRulesMatcher.matchAll(
-        withoutBase(path.split('?')[0], useRuntimeConfig().app.baseURL),
-      ).reverse()) as NitroRouteRules
-
+      let routeRules = routeRuleMatcher(path)
       // apply top-level path without prefix, users can still target the localed path
       if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
         // remove the locale path from the prefix, if it exists, need to use regex
         const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
         const pathWithoutPrefix = match?.[2]
-        if (pathWithoutPrefix && pathWithoutPrefix !== path) {
-          routeRules = defu(routeRules, ..._routeRulesMatcher.matchAll(
-            withoutBase(pathWithoutPrefix.split('?')[0], useRuntimeConfig().app.baseURL),
-          ).reverse()) as NitroRouteRules
-        }
+        if (pathWithoutPrefix && pathWithoutPrefix !== path)
+          routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
       }
 
       if (routeRules.sitemap)
