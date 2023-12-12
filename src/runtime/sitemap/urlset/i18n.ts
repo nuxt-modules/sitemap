@@ -39,16 +39,17 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
                     const _localeCode = _match?.[1]
                     const _pathWithoutPrefix = _match?.[2]
                     if (pathWithoutPrefix === _pathWithoutPrefix) {
-                      const entries: AlternativeEntry[] = [{
-                        href: u.loc,
-                        hreflang: _localeCode || autoI18n.defaultLocale,
-                      }]
+                      const entries: AlternativeEntry[] = []
                       if (_localeCode === autoI18n.defaultLocale) {
                         entries.push({
                           href: u.loc,
                           hreflang: 'x-default',
                         })
                       }
+                      entries.push({
+                        href: u.loc,
+                        hreflang: _localeCode || autoI18n.defaultLocale,
+                      })
                       return entries
                     }
                   }
