@@ -23,7 +23,7 @@ export interface ModuleOptions extends SitemapDefinition {
    * Warning: This may not be following best practices for sitemaps.
    *
    * @see https://nuxtseo.com/sitemap/guides/best-practices.
-   * @default true
+   * @default false
    */
   autoLastmod: boolean
   /**
