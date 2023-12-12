@@ -57,8 +57,7 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
                 })
                 .flat()
                 .filter(Boolean) as AlternativeEntry[]
-              // default and original locale are 2
-              if (alternatives.length > 2)
+              if (alternatives.length)
                 url.alternatives = alternatives
             }
             return <SitemapUrl> {
