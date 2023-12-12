@@ -9,9 +9,18 @@ await setup({
   nuxtConfig: {
     sitemap: {
       excludeAppSources: true,
-      urls: ['/hidden', '/defaults', '/wildcard/defaults/foo', '/wildcard/hidden/foo'],
+      urls: ['/x-robots-tag', '/redirect', '/hidden', '/defaults', '/wildcard/defaults/foo', '/wildcard/hidden/foo'],
     },
     routeRules: {
+      '/x-robots-tag': {
+        headers: {
+          'x-robots-tag': 'noindex',
+        },
+      },
+      // won't be indexed
+      '/redirect': {
+        redirect: '/defaults',
+      },
       '/hidden': {
         index: false,
       },

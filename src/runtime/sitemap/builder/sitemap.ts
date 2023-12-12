@@ -98,12 +98,17 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
           routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
       }
 
-      if (routeRules.sitemap)
-        return defu(e, routeRules.sitemap) as ResolvedSitemapUrl
-
+      if (routeRules.sitemap === false)
+        return false
       if (typeof routeRules.index !== 'undefined' && !routeRules.index)
         return false
-      return e
+      const hasRobotsDisabled = Object.entries(routeRules.headers || {})
+        .some(([name, value]) => name.toLowerCase() === 'x-robots-tag' && value.toLowerCase() === 'noindex')
+      // check for redirects and headers which aren't indexable
+      if (routeRules.redirect || hasRobotsDisabled)
+        return false
+
+      return routeRules.sitemap ? defu(e, routeRules.sitemap) as ResolvedSitemapUrl : e
     })
     .filter(Boolean) as ResolvedSitemapUrl[]
   // TODO enable
