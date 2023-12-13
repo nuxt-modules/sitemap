@@ -6,16 +6,19 @@ describe('generate', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
     process.env.prerender = true
+    process.env.NITRO_PRESET = 'static'
     process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'
     const { resolve } = createResolver(import.meta.url)
     const rootDir = resolve('../../fixtures/basic')
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
+        nitro: {
+          preset: 'static',
+        },
         _generate: true,
       },
     })
-
     await buildNuxt(nuxt)
 
     await new Promise(resolve => setTimeout(resolve, 1000))
@@ -33,6 +36,9 @@ describe('generate', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/crawled</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/dynamic/crawled</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/sub/page</loc>

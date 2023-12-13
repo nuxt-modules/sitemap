@@ -252,13 +252,12 @@ declare module 'vue-router' {
     const routeRules: NitroRouteConfig = {}
     nuxt.options.nitro.routeRules = nuxt.options.nitro.routeRules || {}
     if (prerenderSitemap) {
-      routeRules.prerender = true
       // add route rules for sitemap xmls so they're rendered properly
       routeRules.headers = {
         'Content-Type': 'text/xml; charset=UTF-8',
       }
     }
-    if (!nuxt.options.dev && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
+    if (!nuxt.options.dev && !isNuxtGenerate() && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
       routeRules[nitroPreset.includes('vercel') ? 'isr' : 'swr'] = config.cacheMaxAgeSeconds
       routeRules.cache = {
         // handle multi-tenancy

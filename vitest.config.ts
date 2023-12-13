@@ -7,9 +7,11 @@ import { isCI } from 'std-env'
 export default defineConfig({
   test: {
     isolate: true,
-    threads: isCI, // kills my computer
-    testTimeout: 300000, // 5 minutes
-    hookTimeout: 300000, // 5 minutes,
+    poolOptions: {
+      threads: {
+        singleThread: !isCI,
+      },
+    },
     include: [
       'test/integration/**',
       'test/unit/**',
