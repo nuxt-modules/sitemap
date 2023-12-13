@@ -3,8 +3,8 @@ import { createDefu } from 'defu'
 const merger = createDefu((obj, key, value) => {
   // merge arrays using a set
   if (Array.isArray(obj[key]) && Array.isArray(value))
+    // @ts-expect-error untyped
     obj[key] = Array.from(new Set([...obj[key], ...value]))
-
   return obj[key]
 })
 

@@ -1,7 +1,7 @@
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import type { Strategies } from 'vue-i18n-routing'
 import { joinURL } from 'ufo'
-import type { AutoI18nConfig, RegexObjectType } from '../runtime/types'
+import type { AutoI18nConfig, FilterInput } from '../runtime/types'
 
 export interface StrategyProps {
   localeCode: string
@@ -10,7 +10,7 @@ export interface StrategyProps {
   forcedStrategy?: Strategies
 }
 
-export function splitPathForI18nLocales(path: string | RegExp | RegexObjectType, autoI18n: AutoI18nConfig) {
+export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nConfig) {
   const locales = autoI18n.strategy === 'prefix_except_default' ? autoI18n.locales.filter(l => l.code !== autoI18n.defaultLocale) : autoI18n.locales
   if (typeof path !== 'string' || path.startsWith('/api') || path.startsWith('/_nuxt'))
     return path
