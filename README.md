@@ -62,11 +62,12 @@ export default defineNuxtConfig({
 
 [📖 Read the full documentation](https://nuxtseo.com/sitemap) for more information.
 
-### Demos
+### StackBlitz Demos / Reproductions
 
-- [Dynamic URLs - StackBlitz](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
-- [i18n - StackBlitz](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
-- [Manual Chunking - StackBlitz](https://stackblitz.com/edit/nuxt-starter-umyso3?file=nuxt.config.ts)
+- [Dynamic URLs](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
+- [i18n](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
+- [Manual Chunking](https://stackblitz.com/edit/nuxt-starter-umyso3?file=nuxt.config.ts)
+- [Nuxt Content Document Driven](https://stackblitz.com/edit/nuxt-starter-a5qk3s?file=nuxt.config.ts)
 
 ## Sponsors
 
