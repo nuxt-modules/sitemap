@@ -52,9 +52,6 @@ export default defineNuxtConfig({
     locales: ['en', 'fr'],
     defaultLocale: 'en',
   },
-  typescript: {
-    typeCheck: true,
-  },
   nitro: {
     typescript: {
       internalPaths: true,
