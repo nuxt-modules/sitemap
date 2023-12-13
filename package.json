@@ -35,7 +35,8 @@
     "dev:devtool": "nuxi dev .playground-devtools",
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build --stub && nuxi prepare .playground",
-    "release": "bumpp package.json --commit --push --tag",
+    "release": "bumpp && pnpm -r publish",
+    "typecheck": "tsc --noEmit ",
     "test": "vitest"
   },
   "dependencies": {
@@ -69,6 +70,7 @@
     "nuxt": "^3.8.2",
     "nuxt-icon": "^0.6.7",
     "nuxt-simple-robots": "^3.1.10",
+    "typescript": "^5.3.3",
     "vitest": "^1.0.4"
   },
   "build": {
