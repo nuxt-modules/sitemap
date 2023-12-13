@@ -3,7 +3,11 @@ import { fixSlashes } from 'site-config-stack'
 import type { NitroUrlResolvers, SitemapDefinition } from '../types'
 import { buildSitemap } from './builder/sitemap'
 import { buildSitemapIndex } from './builder/sitemap-index'
+
+// @ts-expect-error virtual
 import { useNitroApp } from '#internal/nitro'
+
+// @ts-expect-error virtual
 import { createSitePathResolver, useSiteConfig } from '#internal/nuxt-site-config'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {

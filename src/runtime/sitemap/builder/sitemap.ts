@@ -6,6 +6,7 @@ import type {
   ResolvedSitemapUrl,
   SitemapDefinition,
   SitemapRenderCtx,
+  SitemapUrlInput,
 } from '../../types'
 import { normaliseSitemapUrls } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
@@ -46,10 +47,10 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls
   }
-  function maybeSlice(urls: ResolvedSitemapUrl[]) {
+  function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
     if (isChunking && defaultSitemapsChunkSize) {
       const chunk = Number(sitemap.sitemapName)
-      return urls.slice(chunk * defaultSitemapsChunkSize, (chunk + 1) * defaultSitemapsChunkSize)
+      return urls.slice(chunk * defaultSitemapsChunkSize, (chunk + 1) * defaultSitemapsChunkSize) as T
     }
     return urls
   }

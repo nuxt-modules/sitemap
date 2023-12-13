@@ -26,6 +26,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       headers: {
         Accept: 'application/json',
       },
+      // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
           isHtmlResponse = true

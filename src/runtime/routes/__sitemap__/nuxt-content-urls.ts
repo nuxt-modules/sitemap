@@ -1,5 +1,7 @@
 import { defineEventHandler } from 'h3'
 import type { ParsedContent } from '@nuxt/content/dist/runtime/types'
+
+// @ts-expect-error alias module
 import { serverQueryContent } from '#content/server'
 
 export default defineEventHandler(async (e) => {

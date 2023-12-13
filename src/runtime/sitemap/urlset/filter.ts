@@ -1,6 +1,6 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
-import type { ModuleRuntimeConfig, ResolvedSitemapUrl, SitemapDefinition } from '../../types'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl } from '../../types'
 
 interface CreateFilterOptions {
   include?: (string | RegExp)[]
@@ -41,9 +41,12 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
   }
 }
 
-export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isMultiSitemap'> & Pick<SitemapDefinition, 'sitemapName' | 'include' | 'exclude'>) {
+export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isMultiSitemap'> & Pick<ModuleRuntimeConfig['sitemaps'][string], 'sitemapName' | 'include' | 'exclude'>) {
   // base may be wrong here
-  const urlFilter = createFilter(options)
+  const urlFilter = createFilter({
+    include: options.include,
+    exclude: options.exclude,
+  })
   return _urls.filter((e) => {
     let path = e.loc
     try {

@@ -22,7 +22,7 @@ function resolve(s: string | undefined | URL, resolvers: NitroUrlResolvers): str
   return resolvers.canonicalUrlResolver(s)
 }
 
-export function normaliseSitemapUrls(data: SitemapUrlInput[], resolvers: NitroUrlResolvers) {
+export function normaliseSitemapUrls(data: SitemapUrlInput[], resolvers: NitroUrlResolvers): ResolvedSitemapUrl[] {
   // make sure we're working with objects
   const entries: SitemapUrl[] = data
     .map(e => typeof e === 'string' ? { loc: e } : e)
