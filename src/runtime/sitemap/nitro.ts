@@ -1,5 +1,5 @@
 import { type H3Event, getQuery, setHeader } from 'h3'
-import { fixSlashes } from 'site-config-stack'
+import { fixSlashes } from 'site-config-stack/urls'
 import type { NitroUrlResolvers, SitemapDefinition } from '../types'
 import { buildSitemap } from './builder/sitemap'
 import { buildSitemapIndex } from './builder/sitemap-index'

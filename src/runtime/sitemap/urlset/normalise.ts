@@ -1,5 +1,5 @@
 import { hasProtocol } from 'ufo'
-import { fixSlashes } from 'site-config-stack'
+import { fixSlashes } from 'site-config-stack/urls'
 import type {
   AlternativeEntry,
   NitroUrlResolvers,

@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { resolveSitePath } from 'site-config-stack'
+import { resolveSitePath } from 'site-config-stack/urls'
 import { parseURL, withHttps } from 'ufo'
 import type {
   NitroUrlResolvers,
