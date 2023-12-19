@@ -1,4 +1,4 @@
-import { withSiteUrl } from 'nuxt-site-config-kit'
+import { withSiteUrl } from 'nuxt-site-config-kit/urls'
 import { parseURL } from 'ufo'
 import type { ResolvedSitemapUrl, SitemapUrl } from '../runtime/types'
 
