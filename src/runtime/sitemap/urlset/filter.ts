@@ -1,6 +1,8 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
+import type { H3Event } from 'h3'
 import type { ModuleRuntimeConfig, ResolvedSitemapUrl } from '../../types'
+import { getPathRobotConfig } from '#imports'
 
 interface CreateFilterOptions {
   include?: (string | RegExp)[]
@@ -41,7 +43,7 @@ function createFilter(options: CreateFilterOptions = {}): (path: string) => bool
   }
 }
 
-export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isMultiSitemap'> & Pick<ModuleRuntimeConfig['sitemaps'][string], 'sitemapName' | 'include' | 'exclude'>) {
+export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isMultiSitemap'> & Pick<ModuleRuntimeConfig['sitemaps'][string], 'sitemapName' | 'include' | 'exclude'> & { event: H3Event }) {
   // base may be wrong here
   const urlFilter = createFilter({
     include: options.include,
@@ -62,6 +64,11 @@ export function filterSitemapUrls(_urls: ResolvedSitemapUrl[], options: Pick<Mod
 
     if (options.isMultiSitemap && e._sitemap && options.sitemapName)
       return e._sitemap === options.sitemapName
+
+    // blocked by nuxt-simple-robots (this is a polyfill if not installed)
+    if (!getPathRobotConfig(e, { path, skipSiteIndexable: true }).indexable)
+      return false
+
     return true
   })
 }
