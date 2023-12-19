@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fixSlashes } from 'site-config-stack'
+import { fixSlashes } from 'site-config-stack/urls'
 import { normaliseSitemapUrls } from '../../src/runtime/sitemap/urlset/normalise'
 import type { NitroUrlResolvers } from '../../src/runtime/types'
 

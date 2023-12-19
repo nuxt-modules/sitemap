@@ -229,7 +229,7 @@ export default defineNuxtModule<ModuleOptions>({
       addServerImports([{
         name: 'getPathRobotConfigPolyfill',
         as: 'getPathRobotConfig',
-        from: resolve('./nitro/composables/getPathRobotConfigPolyfill'),
+        from: resolve('./runtime/nitro/composables/getPathRobotConfigPolyfill'),
       }])
     }
 
