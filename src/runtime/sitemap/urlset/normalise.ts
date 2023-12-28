@@ -102,10 +102,15 @@ export function normaliseDate(date: string | Date): string
 export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
-    // we may have a value like this "2023-12-21T13:49:27.963745", this needs to be converted to w3c datetime
+    // we may have milliseconds at the end with a dot prefix like ".963745", we should remove this
+    d = d.replace(/\.\d+$/, '')
+    console.log('match', d, d.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/))
+    // we may have a value like this "2023-12-21T13:49:27", this needs to be converted to w3c datetime
     // accept if they are already in the right format, accept small format too such as "2023-12-21"
-    if (d.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/) || d.match(/^\d{4}-\d{2}-\d{2}$/))
+    if (d.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/) || d.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      console.log('pass')
       return d
+    }
     // otherwise we need to parse it
     d = new Date(d)
     // check for invalid date
