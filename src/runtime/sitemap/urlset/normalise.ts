@@ -103,6 +103,7 @@ export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
     // we may have milliseconds at the end with a dot prefix like ".963745", we should remove this
+    d = d.replace('Z', '')
     d = d.replace(/\.\d+$/, '')
     // we may have a value like this "2023-12-21T13:49:27", this needs to be converted to w3c datetime
     // accept if they are already in the right format, accept small format too such as "2023-12-21"
