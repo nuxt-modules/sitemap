@@ -11,6 +11,7 @@ import { build } from 'nitropack'
 import { defu } from 'defu'
 import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
+import { splitForLocales } from './runtime/utils-pure'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -65,11 +66,9 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
       // we need to figure out which sitemap this belongs to
       if (options.autoI18n && Object.keys(options.sitemaps).length > 1) {
         const path = route.route
-        const match = path.match(new RegExp(`^/(${options.autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+        const match = splitForLocales(path, options.autoI18n.locales.map(l => l.code))
         // if it's missing a locale then we put it in the default locale sitemap
-        let locale = options.autoI18n.defaultLocale
-        if (match)
-          locale = match[1]
+        const locale = match[0] || options.autoI18n.defaultLocale
         if (options.isI18nMapped) {
           const { code, iso } = options.autoI18n.locales.find(l => l.code === locale) || { code: locale, iso: locale }
           // this will filter the results to only the sitemap that matches the locale

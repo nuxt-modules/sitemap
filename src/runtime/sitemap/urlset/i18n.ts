@@ -6,6 +6,7 @@ import type {
   SitemapSourceResolved,
   SitemapUrl,
 } from '../../types'
+import { splitForLocales } from '../../utils-pure'
 
 export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n'], isI18nMapped: boolean }) {
   if (autoI18n && isI18nMapped) {
@@ -22,9 +23,9 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
           return url
         // if the url starts with a prefix, we should automatically bundle it to the correct sitemap using _sitemap
         if (url.loc) {
-          const match = url.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
-          const localeCode = match?.[1] || autoI18n.defaultLocale
-          const pathWithoutPrefix = match?.[2]
+          const match = splitForLocales(url.loc, autoI18n.locales.map(l => l.code))
+          const localeCode = match[0] || autoI18n.defaultLocale
+          const pathWithoutPrefix = match[1]
           const locale = autoI18n.locales.find(e => e.code === localeCode)
           if (locale) {
             // let's try and find other urls that we can use for alternatives
@@ -35,9 +36,7 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
                   if (u._sitemap || u._i18nTransform)
                     return false
                   if (u?.loc) {
-                    const _match = u.loc.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
-                    const _localeCode = _match?.[1]
-                    const _pathWithoutPrefix = _match?.[2]
+                    const [_localeCode, _pathWithoutPrefix] = splitForLocales(u.loc, autoI18n.locales.map(l => l.code))
                     if (pathWithoutPrefix === _pathWithoutPrefix) {
                       const entries: AlternativeEntry[] = []
                       if (_localeCode === autoI18n.defaultLocale) {
@@ -84,12 +83,12 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
         return e
       delete e._i18nTransform
       const path = withLeadingSlash(parseURL(e.loc).pathname)
-      const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
+      const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
       let pathWithoutLocale = path
       let locale
-      if (match) {
-        pathWithoutLocale = match[2] || '/'
-        locale = match[1]
+      if (match[0]) {
+        pathWithoutLocale = match[1] || '/'
+        locale = match[0]
       }
       if (locale && import.meta.dev) {
         console.warn('You\'re providing a locale in the url, but the url is marked as inheritI18n. This will cause issues with the sitemap. Please remove the locale from the url.')

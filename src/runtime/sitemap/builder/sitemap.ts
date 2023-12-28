@@ -13,7 +13,7 @@ import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from
 import { filterSitemapUrls } from '../urlset/filter'
 import { applyI18nEnhancements, normaliseI18nSources } from '../urlset/i18n'
 import { sortSitemapUrls } from '../urlset/sort'
-import { useSimpleSitemapRuntimeConfig } from '../../utils'
+import { splitForLocales, useSimpleSitemapRuntimeConfig } from '../../utils'
 import { createNitroRouteRuleMatcher } from '../../nitro/kit'
 import { handleEntry, wrapSitemapXml } from './xml'
 import { useNitroApp } from '#internal/nitro'
@@ -93,8 +93,8 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
       // apply top-level path without prefix, users can still target the localed path
       if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
         // remove the locale path from the prefix, if it exists, need to use regex
-        const match = path.match(new RegExp(`^/(${autoI18n.locales.map(l => l.code).join('|')})(.*)`))
-        const pathWithoutPrefix = match?.[2]
+        const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
+        const pathWithoutPrefix = match[1]
         if (pathWithoutPrefix && pathWithoutPrefix !== path)
           routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
       }
