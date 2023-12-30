@@ -360,9 +360,6 @@ declare module 'vue-router' {
         route: '/sitemap_index.xml',
         handler: resolve('./runtime/routes/sitemap_index.xml'),
       })
-      addServerHandler({
-        handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
-      })
       sitemaps.index = {
         sitemapName: 'index',
         _route: withBase('sitemap_index.xml', nuxt.options.app.baseURL || '/'),
@@ -374,6 +371,10 @@ declare module 'vue-router' {
         for (const sitemapName in config.sitemaps) {
           if (sitemapName === 'index')
             continue
+          addServerHandler({
+            route: `/${sitemapName}-sitemap.xml`,
+            handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
+          })
           const definition = config.sitemaps[sitemapName] as MultiSitemapEntry[string]
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
@@ -387,6 +388,10 @@ declare module 'vue-router' {
         }
       }
       else {
+        // we have to registrer it as a middleware we can't match the URL pattern
+        addServerHandler({
+          handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
+        })
         sitemaps.chunks = {
           sitemapName: 'chunks',
           defaults: config.defaults,
