@@ -188,6 +188,10 @@ export default defineNuxtModule<ModuleOptions>({
         if (Array.isArray(config.excludeAppSources))
           config.excludeAppSources.push('nuxt:pages')
       }
+      else {
+        if (!normalisedLocales.length)
+          logger.warn('You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with nuxt-simple-sitemap. Please configure `locales`.')
+      }
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.differentDomains || usingI18nPages || (nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales)
       if (!hasSetAutoI18n && !hasDisabledAutoI18n && hasI18nConfigForAlternatives) {
