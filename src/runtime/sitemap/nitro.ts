@@ -42,5 +42,6 @@ export async function createSitemap(e: H3Event, definition: SitemapDefinition) {
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
   if (!process.dev)
     setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+  e.context._isSitemap = true
   return sitemap
 }

@@ -303,12 +303,14 @@ declare module 'vue-router' {
     }
 
     if (config.experimentalWarmUp)
-      addServerPlugin(resolve('./runtime/plugins/warm-up'))
+      addServerPlugin(resolve('./runtime/nitro/plugins/warm-up'))
+    if (config.experimentalCompression)
+      addServerPlugin(resolve('./runtime/nitro/plugins/compression'))
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
     if (hasNuxtModule('@nuxt/content')) {
-      addServerPlugin(resolve('./runtime/plugins/nuxt-content'))
+      addServerPlugin(resolve('./runtime/nitro/plugins/nuxt-content'))
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
         handler: resolve('./runtime/routes/__sitemap__/nuxt-content-urls'),

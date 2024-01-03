@@ -133,9 +133,15 @@ export interface ModuleOptions extends SitemapDefinition {
    *
    * May be implemented by default in a future minor version.
    *
-   * @experimental
+   * @experimental Will be enabled by default in v5 (if stable)
    */
   experimentalWarmUp?: boolean
+  /**
+   * Send the Sitemap as a compressed stream supporting gzip, brolti, etc.
+   *
+   * @experimental Will be enabled by default in v5 (if stable)
+   */
+  experimentalCompression?: boolean
 }
 
 export interface IndexSitemapRemotes {
