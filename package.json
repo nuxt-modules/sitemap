@@ -11,13 +11,13 @@
   },
   "license": "MIT",
   "funding": "https://github.com/sponsors/harlan-zw",
-  "homepage": "https://github.com/nuxt/sitemap#readme",
+  "homepage": "https://github.com/nuxt-modules/sitemap#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/sitemap.git"
+    "url": "git+https://github.com/nuxt-modules/sitemap.git"
   },
   "bugs": {
-    "url": "https://github.com/nuxt/sitemap/issues"
+    "url": "https://github.com/nuxt-modules/sitemap/issues"
   },
   "exports": {
     ".": {

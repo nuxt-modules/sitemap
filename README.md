@@ -1,11 +1,11 @@
 <h1 align='center'>nuxt-simple-sitemap</h1>
 
 <p align="center">
-<a href='https://github.com/nuxt/sitemap/actions/workflows/test.yml'>
+<a href='https://github.com/nuxt-modules/sitemap/actions/workflows/test.yml'>
 </a>
 <a href="https://www.npmjs.com/package/nuxt-simple-sitemap" target="__blank"><img src="https://img.shields.io/npm/v/nuxt-simple-sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
 <a href="https://www.npmjs.com/package/nuxt-simple-sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/nuxt-simple-sitemap?flat&colorA=002438&colorB=28CF8D"></a>
-<a href="https://github.com/nuxt/sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/nuxt/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
+<a href="https://github.com/nuxt-modules/sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/nuxt-modules/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> <a href="https://github.com/nuxt/sitemap/releases/tag/v4.0.0">v4 Released 🎉</a></b> <br>
+<i>Status:</i> <a href="https://github.com/nuxt-modules/sitemap/releases/tag/v4.0.0">v4 Released 🎉</a></b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
