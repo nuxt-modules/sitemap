@@ -68,7 +68,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
               <NuxtSeoLogo class="mr-[2px] w-5 h-5 inline" />
               Documentation
             </NLink>
-            <NLink href="https://github.com/harlan-zw/nuxt-simple-sitemap" target="_blank">
+            <NLink href="https://github.com/nuxt/sitemap" target="_blank">
               <NIcon icon="logos:github-icon" class="mr-[2px]" />
               Submit an issue
             </NLink>
