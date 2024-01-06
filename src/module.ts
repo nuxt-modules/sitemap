@@ -278,6 +278,8 @@ declare module 'vue-router' {
       routeRules[nitroPreset.includes('vercel') ? 'isr' : 'swr'] = config.cacheMaxAgeSeconds
       routeRules.cache = {
         // handle multi-tenancy
+        swr: true,
+        maxAge: config.cacheMaxAgeSeconds,
         varies: ['X-Forwarded-Host', 'X-Forwarded-Proto', 'Host'],
       }
       // use different cache base if configured
@@ -447,6 +449,7 @@ declare module 'vue-router' {
       sitemapName: config.sitemapName,
       isMultiSitemap: usingMultiSitemaps,
       excludeAppSources: config.excludeAppSources,
+      cacheMaxAgeSeconds: nuxt.options.dev ? 0 : config.cacheMaxAgeSeconds,
 
       autoLastmod: config.autoLastmod,
       defaultSitemapsChunkSize: config.defaultSitemapsChunkSize,
