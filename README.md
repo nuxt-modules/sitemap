@@ -3,8 +3,8 @@
 <p align="center">
 <a href='https://github.com/nuxt-modules/sitemap/actions/workflows/test.yml'>
 </a>
-<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img src="https://img.shields.io/npm/v/nuxt-simple-sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
-<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/nuxt-simple-sitemap?flat&colorA=002438&colorB=28CF8D"></a>
+<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img src="https://img.shields.io/npm/v/@nuxtjs/sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
+<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/@nuxtjs/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 <a href="https://github.com/nuxt-modules/sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/nuxt-modules/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 </p>
 
