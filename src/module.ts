@@ -16,7 +16,7 @@ import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
-import { version } from '../package.json'
+import { readPackageJSON } from 'pkg-types'
 import type {
   AppSourceContext,
   AutoI18nConfig,
@@ -87,7 +87,9 @@ export default defineNuxtModule<ModuleOptions>({
     inferStaticPagesAsRoutes: true,
   },
   async setup(config, nuxt) {
-    const logger = useLogger('@nuxtjs/sitemap')
+    const { resolve } = createResolver(import.meta.url)
+    const { name, version } = await readPackageJSON(resolve('../package.json'))
+    const logger = useLogger(name)
     logger.level = (config.debug || nuxt.options.debug) ? 4 : 3
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
@@ -108,7 +110,6 @@ export default defineNuxtModule<ModuleOptions>({
       config.defaults.lastmod = normaliseDate(new Date())
     }
 
-    const { resolve } = createResolver(import.meta.url)
     // for trailing slashes / canonical absolute urls
     await installNuxtSiteConfig()
     const userGlobalSources: SitemapSourceInput[] = [
@@ -190,7 +191,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         if (!normalisedLocales.length)
-          logger.warn('You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with @nuxtjs/sitemap. Please configure `locales`.')
+          logger.warn(`You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with ${name}. Please configure \`locales\`.`)
       }
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.differentDomains || usingI18nPages || (nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales)
@@ -237,7 +238,7 @@ export default defineNuxtModule<ModuleOptions>({
       }])
     }
 
-    extendTypes('@nuxtjs/sitemap', async ({ typesPath }) => {
+    extendTypes(name!, async ({ typesPath }) => {
       return `
 declare module 'nitropack' {
   interface NitroRouteRules {
