@@ -84,6 +84,9 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   <div class="px-5 py-2">
                     <h2 text-lg flex items-center>
                       <NIcon icon="carbon:load-balancer-application opacity-50" />
+                      <NBadge class="text-sm">
+                        {{ Object.keys(data.sitemaps).length || 0 }}
+                      </NBadge>
                     </h2>
                   </div>
                   <template #popper>
@@ -96,6 +99,9 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   <div class="px-5 py-2">
                     <h2 text-lg flex items-center>
                       <NIcon icon="carbon:group-account opacity-50" />
+                      <NBadge class="text-sm">
+                        {{ userSources.length }}
+                      </NBadge>
                     </h2>
                   </div>
                   <template #popper>
@@ -108,6 +114,9 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   <div class="px-5 py-2">
                     <h2 text-lg flex items-center>
                       <NIcon icon="carbon:bot opacity-50" />
+                      <NBadge class="text-sm">
+                        {{ appSources.length }}
+                      </NBadge>
                     </h2>
                   </div>
                   <template #popper>
@@ -181,6 +190,14 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
         <NLoading v-if="!data?.globalSources || loading" />
         <template v-else>
           <div v-if="tab === 'sitemaps'" class="space-y-5">
+            <div>
+              <h2 class="text-lg mb-1">
+                Sitemaps
+              </h2>
+              <p text-xs op60>
+                The sitemaps generated from your site.
+              </p>
+            </div>
             <OSectionBlock v-for="(sitemap, key) in data.sitemaps" :key="key">
               <template #text>
                 <h3 class="opacity-80 text-base mb-1">
@@ -263,9 +280,25 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
             </OSectionBlock>
           </div>
           <div v-else-if="tab === 'app-sources'" class="space-y-5">
+            <div>
+              <h2 class="text-lg mb-1">
+                App Sources
+              </h2>
+              <p text-xs op60>
+                Automatic global sources generated from your application.
+              </p>
+            </div>
             <Source v-for="(source, key) in appSources" :key="key" :source="source" />
           </div>
           <div v-else-if="tab === 'user-sources'" class="space-y-5">
+            <div>
+              <h2 class="text-lg mb-1">
+                User Sources
+              </h2>
+              <p text-xs op60>
+                Manually provided global sources provided by you.
+              </p>
+            </div>
             <Source v-for="(source, key) in userSources" :key="key" :source="source" />
           </div>
           <div v-else-if="tab === 'debug'" class="h-full max-h-full overflow-hidden">
