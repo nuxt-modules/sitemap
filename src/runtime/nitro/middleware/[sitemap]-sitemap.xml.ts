@@ -8,7 +8,8 @@ export default defineEventHandler(async (e) => {
   if (!path.endsWith('-sitemap.xml'))
     return
 
-  const { sitemaps } = useSimpleSitemapRuntimeConfig()
+  const runtimeConfig = useSimpleSitemapRuntimeConfig()
+  const { sitemaps } = runtimeConfig
 
   const sitemapName = path
     .replace('-sitemap.xml', '')
@@ -26,5 +27,5 @@ export default defineEventHandler(async (e) => {
         ...sitemaps.chunks,
         sitemapName,
       }
-    : sitemaps[sitemapName])
+    : sitemaps[sitemapName], runtimeConfig)
 })

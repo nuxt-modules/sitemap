@@ -40,8 +40,10 @@ export async function createSitemap(e: H3Event, definition: SitemapDefinition) {
   sitemap = ctx.sitemap
   // need to clone the config object to make it writable
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (!process.dev)
-    setHeader(e, 'Cache-Control', 'max-age=600, must-revalidate')
+  if (runtimeConfig.cacheMaxAgeSeconds)
+    setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, must-revalidate`)
+  else
+    setHeader(e, 'Cache-Control', `no-cache, no-store`)
   e.context._isSitemap = true
   return sitemap
 }
