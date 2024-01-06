@@ -270,6 +270,8 @@ declare module 'vue-router' {
       // add route rules for sitemap xmls so they're rendered properly
       routeRules.headers = {
         'Content-Type': 'text/xml; charset=UTF-8',
+        'Cache-Control': config.cacheMaxAgeSeconds ? `public, max-age=${config.cacheMaxAgeSeconds}, must-revalidate` : 'no-cache, no-store',
+        'X-Sitemap-Prerendered': new Date().toISOString(),
       }
     }
     if (!nuxt.options.dev && !isNuxtGenerate() && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
