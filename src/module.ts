@@ -468,7 +468,7 @@ declare module 'vue-router' {
       xslTips: config.xslTips,
       xslColumns: config.xslColumns,
       credits: config.credits,
-      version,
+      version: version!,
       sitemaps,
     }
     if (resolvedAutoI18n)
