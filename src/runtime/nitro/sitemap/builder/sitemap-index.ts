@@ -1,20 +1,20 @@
 import { defu } from 'defu'
 import { appendHeader } from 'h3'
 import type {
+  ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapIndexEntry,
   SitemapUrl,
-} from '../../types'
+} from '../../../types'
 import { normaliseDate, normaliseSitemapUrls } from '../urlset/normalise'
 import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { applyI18nEnhancements } from '../urlset/i18n'
 import { filterSitemapUrls } from '../urlset/filter'
 import { sortSitemapUrls } from '../urlset/sort'
-import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
 
-export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
+export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const {
     sitemaps,
     // enhancing
@@ -28,7 +28,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers) {
     version,
     xsl,
     credits,
-  } = useSimpleSitemapRuntimeConfig()
+  } = runtimeConfig
 
   if (!sitemaps)
     throw new Error('Attempting to build a sitemap index without required `sitemaps` configuration.')

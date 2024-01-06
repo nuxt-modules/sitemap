@@ -5,8 +5,8 @@ import type {
   ResolvedSitemapUrl,
   SitemapSourceResolved,
   SitemapUrl,
-} from '../../types'
-import { splitForLocales } from '../../utils-pure'
+} from '../../../types'
+import { splitForLocales } from '../../../utils-pure'
 
 export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n'], isI18nMapped: boolean }) {
   if (autoI18n && isI18nMapped) {

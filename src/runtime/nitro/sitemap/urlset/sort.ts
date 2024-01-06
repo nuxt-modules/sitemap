@@ -1,7 +1,7 @@
 import type {
   ResolvedSitemapUrl,
   SitemapUrlInput,
-} from '../../types'
+} from '../../../types'
 
 export function sortSitemapUrls<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
   // sort based on logical string sorting of the loc, we need to properly account for numbers here

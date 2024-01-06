@@ -1,7 +1,7 @@
 import { createError, defineEventHandler } from 'h3'
 import { parseURL } from 'ufo'
-import { createSitemap } from '../sitemap/nitro'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { createSitemap } from '../sitemap/nitro'
 
 export default defineEventHandler(async (e) => {
   const path = parseURL(e.path).pathname

@@ -2,23 +2,24 @@ import { defu } from 'defu'
 import { resolveSitePath } from 'site-config-stack/urls'
 import { parseURL, withHttps } from 'ufo'
 import type {
+  ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapDefinition,
   SitemapRenderCtx,
   SitemapUrlInput,
-} from '../../types'
+} from '../../../types'
 import { normaliseSitemapUrls } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { filterSitemapUrls } from '../urlset/filter'
 import { applyI18nEnhancements, normaliseI18nSources } from '../urlset/i18n'
 import { sortSitemapUrls } from '../urlset/sort'
-import { splitForLocales, useSimpleSitemapRuntimeConfig } from '../../utils'
-import { createNitroRouteRuleMatcher } from '../../nitro/kit'
+import { splitForLocales } from '../../utils'
+import { createNitroRouteRuleMatcher } from '../../kit'
 import { handleEntry, wrapSitemapXml } from './xml'
-import { useNitroApp } from '#internal/nitro'
+import { useNitroApp } from '#imports'
 
-export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers) {
+export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -42,7 +43,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     version,
     xsl,
     credits,
-  } = useSimpleSitemapRuntimeConfig()
+  } = runtimeConfig
   const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls

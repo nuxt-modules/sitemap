@@ -1,7 +1,7 @@
 import { parseURL } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
 import type { H3Event } from 'h3'
-import type { ModuleRuntimeConfig, ResolvedSitemapUrl } from '../../types'
+import type { ModuleRuntimeConfig, ResolvedSitemapUrl } from '../../../types'
 import { getPathRobotConfig } from '#imports'
 
 interface CreateFilterOptions {

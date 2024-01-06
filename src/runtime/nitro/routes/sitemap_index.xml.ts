@@ -1,21 +1,25 @@
 import { defineEventHandler, getQuery, setHeader } from 'h3'
+import { fixSlashes } from 'site-config-stack/urls'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { buildSitemapIndex } from '../sitemap/builder/sitemap-index'
-import { createSitePathResolver, useNitroApp } from '#imports'
+import type { SitemapOutputHookCtx } from '../../types'
+import { createSitePathResolver, useNitroApp, useSiteConfig } from '#imports'
 
 export default defineEventHandler(async (e) => {
   const canonicalQuery = getQuery(e).canonical
   const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
   const runtimeConfig = useSimpleSitemapRuntimeConfig()
+  const siteConfig = useSiteConfig(e)
   let sitemap = (await buildSitemapIndex({
     event: e,
     canonicalUrlResolver: createSitePathResolver(e, { canonical: isShowingCanonical || !import.meta.dev, absolute: true, withBase: true }),
     relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true }),
-  }))
+    fixSlashes: (path: string) => fixSlashes(siteConfig.trailingSlash, path),
+  }, runtimeConfig))
 
   const nitro = useNitroApp()
 
-  const ctx = { sitemap, sitemapName: 'sitemap' }
+  const ctx: SitemapOutputHookCtx = { sitemap, sitemapName: 'sitemap' }
   await nitro.hooks.callHook('sitemap:output', ctx)
   sitemap = ctx.sitemap
 

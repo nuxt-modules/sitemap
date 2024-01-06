@@ -1,11 +1,11 @@
 import { defineEventHandler } from 'h3'
+import type { SitemapDefinition } from '../../../types'
+import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import {
   childSitemapSources,
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import type { SitemapDefinition } from '../../types'
-import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import { useNitroOrigin } from '#imports'
 
 export default defineEventHandler(async (e) => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createResolver } from '@nuxt/kit'
 import { $fetch, setup } from '@nuxt/test-utils'
-import type { SitemapUrlInput } from '~/src/runtime/types'
+import type { SitemapUrlInput } from '../../../src/runtime/types'
 
 const { resolve } = createResolver(import.meta.url)
 

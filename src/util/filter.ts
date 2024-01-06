@@ -22,7 +22,7 @@ function isValidFilter(filter: FilterInput): boolean {
 export function normalizeFilters(filters: FilterInput[] | undefined) {
   return (filters || []).map((filter) => {
     if (!isValidFilter(filter)) {
-      console.warn(`[Nuxt Simple Sitemap] You have provided an invalid filter: ${filter}, ignoring.`)
+      console.warn(`[@nuxtjs/sitemap] You have provided an invalid filter: ${filter}, ignoring.`)
       return false
     }
     // regex needs to be converted into an object that can be serialized

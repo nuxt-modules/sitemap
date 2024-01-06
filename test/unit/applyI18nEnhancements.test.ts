@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyI18nEnhancements } from '../../src/runtime/sitemap/urlset/i18n'
+import { applyI18nEnhancements } from '../../src/runtime/nitro/sitemap/urlset/i18n'
 
 describe('i18n', () => {
   it('prefix', async () => {

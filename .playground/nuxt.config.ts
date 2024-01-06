@@ -59,7 +59,7 @@ export default defineNuxtConfig({
     plugins: ['plugins/sitemap.ts'],
     prerender: {
       routes: [
-        '/sitemap_index.xml',
+        // '/sitemap_index.xml',
         '/should-be-in-sitemap',
         '/foo.bar/',
         '/test.doc',
@@ -85,6 +85,7 @@ export default defineNuxtConfig({
     debug: true,
     // sitemapName: 'test.xml',
     // dynamicUrlsApiEndpoint: '/__sitemap',
+    cacheMaxAgeSeconds: 10,
     xslColumns: [
       { label: 'URL', width: '50%' },
       { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },

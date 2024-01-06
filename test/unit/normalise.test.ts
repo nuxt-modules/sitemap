@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { fixSlashes } from 'site-config-stack/urls'
-import { normaliseSitemapUrls } from '../../src/runtime/sitemap/urlset/normalise'
 import type { NitroUrlResolvers } from '../../src/runtime/types'
+import { normaliseSitemapUrls } from '../../src/runtime/nitro/sitemap/urlset/normalise'
 
 const resolvers = {
   fixSlashes: (path: string) => fixSlashes(true, path),

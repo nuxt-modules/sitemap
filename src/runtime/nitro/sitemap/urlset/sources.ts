@@ -4,7 +4,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceResolved,
   SitemapUrlInput,
-} from '../../types'
+} from '../../../types'
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }

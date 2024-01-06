@@ -36,7 +36,7 @@ import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptio
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { mergeOnKey } from './runtime/utils-pure'
 import { setupDevToolsUI } from './devtools'
-import { normaliseDate } from './runtime/sitemap/urlset/normalise'
+import { normaliseDate } from './runtime/nitro/sitemap/urlset/normalise'
 import { generatePathForI18nPages, splitPathForI18nLocales } from './util/i18n'
 import { normalizeFilters } from './util/filter'
 
@@ -318,7 +318,7 @@ declare module 'vue-router' {
       addServerPlugin(resolve('./runtime/nitro/plugins/nuxt-content'))
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/routes/__sitemap__/nuxt-content-urls'),
+        handler: resolve('./runtime/nitro/routes/__sitemap__/nuxt-content-urls'),
       })
       const tips: string[] = []
       // @ts-expect-error untyped
@@ -369,7 +369,7 @@ declare module 'vue-router' {
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
-        handler: resolve('./runtime/routes/sitemap_index.xml'),
+        handler: resolve('./runtime/nitro/routes/sitemap_index.xml'),
       })
       sitemaps.index = {
         sitemapName: 'index',
@@ -384,7 +384,7 @@ declare module 'vue-router' {
             continue
           addServerHandler({
             route: `/${sitemapName}-sitemap.xml`,
-            handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
+            handler: resolve('./runtime/nitro/middleware/[sitemap]-sitemap.xml'),
           })
           const definition = config.sitemaps[sitemapName] as MultiSitemapEntry[string]
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
@@ -401,7 +401,7 @@ declare module 'vue-router' {
       else {
         // we have to registrer it as a middleware we can't match the URL pattern
         addServerHandler({
-          handler: resolve('./runtime/middleware/[sitemap]-sitemap.xml'),
+          handler: resolve('./runtime/nitro/middleware/[sitemap]-sitemap.xml'),
         })
         sitemaps.chunks = {
           sitemapName: 'chunks',
@@ -478,7 +478,7 @@ declare module 'vue-router' {
     if (config.debug || nuxt.options.dev) {
       addServerHandler({
         route: '/__sitemap__/debug.json',
-        handler: resolve('./runtime/routes/__sitemap__/debug'),
+        handler: resolve('./runtime/nitro/routes/__sitemap__/debug'),
       })
 
       setupDevToolsUI(config, resolve)
@@ -490,11 +490,11 @@ declare module 'vue-router' {
 
     const imports: typeof nuxt.options.imports.imports = [
       {
-        from: resolve('./runtime/composables/defineSitemapEventHandler'),
+        from: resolve('./runtime/nitro/composables/defineSitemapEventHandler'),
         name: 'defineSitemapEventHandler',
       },
       {
-        from: resolve('./runtime/composables/asSitemapUrl'),
+        from: resolve('./runtime/nitro/composables/asSitemapUrl'),
         name: 'asSitemapUrl',
       },
     ]
@@ -635,7 +635,7 @@ declare module 'vue-router' {
     if (config.xsl === '/__sitemap__/style.xsl') {
       addServerHandler({
         route: config.xsl,
-        handler: resolve('./runtime/routes/sitemap.xsl'),
+        handler: resolve('./runtime/nitro/routes/sitemap.xsl'),
       })
       config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
 
@@ -646,7 +646,7 @@ declare module 'vue-router' {
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
       route: `/${config.sitemapName}`,
-      handler: resolve('./runtime/routes/sitemap.xml'),
+      handler: resolve('./runtime/nitro/routes/sitemap.xml'),
     })
 
     setupPrerenderHandler(runtimeConfig)

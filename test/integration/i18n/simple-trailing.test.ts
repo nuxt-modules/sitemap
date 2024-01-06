@@ -17,7 +17,7 @@ await setup({
         'en',
         'fr',
       ],
-      trailingSlash: true
+      trailingSlash: true,
     },
     sitemap: {
       urls: ['/extra'],

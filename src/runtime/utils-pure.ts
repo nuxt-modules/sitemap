@@ -1,5 +1,6 @@
 import { createDefu } from 'defu'
 import { withLeadingSlash } from 'ufo'
+import type { FilterInput } from './types'
 
 const merger = createDefu((obj, key, value) => {
   // merge arrays using a set
@@ -26,4 +27,21 @@ export function splitForLocales(path: string, locales: string[]) {
   if (locales.includes(prefix))
     return [prefix, path.replace(`/${prefix}`, '')]
   return [null, path]
+}
+
+const StringifiedRegExpPattern = /\/(.*?)\/([gimsuy]*)$/
+
+/**
+ * Transform a literal notation string regex to RegExp
+ */
+export function normalizeRuntimeFilters(input?: FilterInput[]): (RegExp | string)[] {
+  return (input || []).map((rule) => {
+    if (rule instanceof RegExp || typeof rule === 'string')
+      return rule
+    // regex is already validated
+    const match = rule.regex.match(StringifiedRegExpPattern)
+    if (match)
+      return new RegExp(match[1], match[2])
+    return false
+  }).filter(Boolean) as (RegExp | string)[]
 }

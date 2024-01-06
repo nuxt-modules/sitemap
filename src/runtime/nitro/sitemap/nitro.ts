@@ -1,14 +1,9 @@
 import { type H3Event, getQuery, setHeader } from 'h3'
 import { fixSlashes } from 'site-config-stack/urls'
-import type { NitroUrlResolvers, SitemapDefinition } from '../types'
+import type { ModuleRuntimeConfig, NitroUrlResolvers, SitemapDefinition } from '../../types'
 import { buildSitemap } from './builder/sitemap'
 import { buildSitemapIndex } from './builder/sitemap-index'
-
-// @ts-expect-error virtual
-import { useNitroApp } from '#internal/nitro'
-
-// @ts-expect-error virtual
-import { createSitePathResolver, useSiteConfig } from '#internal/nuxt-site-config'
+import { createSitePathResolver, useNitroApp, useSiteConfig } from '#imports'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
@@ -27,13 +22,13 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   }
 }
 
-export async function createSitemap(e: H3Event, definition: SitemapDefinition) {
+export async function createSitemap(e: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp()
   let sitemap = await (
     definition.sitemapName === 'index'
-      ? buildSitemapIndex(useNitroUrlResolvers(e))
-      : buildSitemap(definition, useNitroUrlResolvers(e))
+      ? buildSitemapIndex(useNitroUrlResolvers(e), runtimeConfig)
+      : buildSitemap(definition, useNitroUrlResolvers(e), runtimeConfig)
   )
   const ctx = { sitemap, sitemapName }
   await nitro.hooks.callHook('sitemap:output', ctx)

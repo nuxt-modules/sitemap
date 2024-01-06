@@ -1,4 +1,4 @@
-import type { ModuleRuntimeConfig, NitroUrlResolvers } from '../../types'
+import type { ModuleRuntimeConfig, NitroUrlResolvers } from '../../../types'
 
 function resolveKey(k: string) {
   switch (k) {
@@ -80,9 +80,9 @@ export function handleEntry(k: string, e: Record<string, any> | (string | Record
   return Array.isArray(e[k]) ? handleArray(k, e[k]) : typeof e[k] === 'object' ? handleObject(k, e[k]) : `        <${k}>${escapeValueForXml(e[k])}</${k}>`
 }
 
-export function wrapSitemapXml(input: string[], resolvers: NitroUrlResolvers, wrapSitemapXmlOptions: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits'>) {
-  const xsl = wrapSitemapXmlOptions.xsl ? resolvers.relativeBaseUrlResolver(wrapSitemapXmlOptions.xsl) : false
-  const credits = wrapSitemapXmlOptions.credits
+export function wrapSitemapXml(input: string[], resolvers: NitroUrlResolvers, options: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits'>) {
+  const xsl = options.xsl ? resolvers.relativeBaseUrlResolver(options.xsl) : false
+  const credits = options.credits
 
   input.unshift(`<?xml version="1.0" encoding="UTF-8"?>${xsl ? `<?xml-stylesheet type="text/xsl" href="${xsl}"?>` : ''}`)
   if (credits)
