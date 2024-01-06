@@ -40,7 +40,7 @@
     "dev:devtool": "nuxi dev .playground-devtools",
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build --stub && nuxi prepare .playground",
-    "release": "bumpp && pnpm -r publish",
+    "release": "pnpm build && bumpp && pnpm -r publish",
     "typecheck": "tsc --noEmit ",
     "test": "vitest"
   },
