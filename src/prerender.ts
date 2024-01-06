@@ -49,7 +49,7 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
     let prerenderer: Nitro
     nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
       prerenderer = _prerenderer
-      assertSiteConfig('nuxt-simple-sitemap', {
+      assertSiteConfig('@nuxtjs/sitemap', {
         url: 'Required to generate absolute canonical URLs for your sitemap.',
       }, { throwError: false })
     })

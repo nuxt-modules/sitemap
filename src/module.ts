@@ -53,7 +53,7 @@ export interface ModuleHooks {
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'nuxt-simple-sitemap',
+    name: '@nuxtjs/sitemap',
     compatibility: {
       nuxt: '^3.9.0',
       bridge: false,
@@ -87,7 +87,7 @@ export default defineNuxtModule<ModuleOptions>({
     inferStaticPagesAsRoutes: true,
   },
   async setup(config, nuxt) {
-    const logger = useLogger('nuxt-simple-sitemap')
+    const logger = useLogger('@nuxtjs/sitemap')
     logger.level = (config.debug || nuxt.options.debug) ? 4 : 3
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
@@ -119,7 +119,7 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.nitro.storage = nuxt.options.nitro.storage || {}
     // provide cache storage for prerendering
     if (config.runtimeCacheStorage && !nuxt.options.dev && typeof config.runtimeCacheStorage === 'object')
-      nuxt.options.nitro.storage['nuxt-simple-sitemap'] = config.runtimeCacheStorage
+      nuxt.options.nitro.storage.sitemap = config.runtimeCacheStorage
 
     if (!config.sitemapName.endsWith('xml')) {
       const newName = `${config.sitemapName.split('.')[0]}.xml`
@@ -190,7 +190,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         if (!normalisedLocales.length)
-          logger.warn('You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with nuxt-simple-sitemap. Please configure `locales`.')
+          logger.warn('You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with @nuxtjs/sitemap. Please configure `locales`.')
       }
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.differentDomains || usingI18nPages || (nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales)
@@ -237,7 +237,7 @@ export default defineNuxtModule<ModuleOptions>({
       }])
     }
 
-    extendTypes('nuxt-simple-sitemap', async ({ typesPath }) => {
+    extendTypes('@nuxtjs/sitemap', async ({ typesPath }) => {
       return `
 declare module 'nitropack' {
   interface NitroRouteRules {
@@ -280,7 +280,7 @@ declare module 'vue-router' {
       }
       // use different cache base if configured
       if (typeof config.runtimeCacheStorage === 'object')
-        routeRules.cache.base = 'nuxt-simple-sitemap'
+        routeRules.cache.base = 'sitemap'
     }
     nuxt.options.nitro.routeRules['/sitemap.xsl'] = {
       headers: {
@@ -467,7 +467,7 @@ declare module 'vue-router' {
     if (resolvedAutoI18n)
       runtimeConfig.autoI18n = resolvedAutoI18n
     // @ts-expect-error untyped
-    nuxt.options.runtimeConfig['nuxt-simple-sitemap'] = runtimeConfig
+    nuxt.options.runtimeConfig.sitemap = runtimeConfig
 
     if (config.debug || nuxt.options.dev) {
       addServerHandler({
@@ -499,7 +499,7 @@ declare module 'vue-router' {
     const nitroPromise = createNitroPromise()
     let resolvedConfigUrls = false
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-      nitroConfig.virtual!['#nuxt-simple-sitemap/global-sources.mjs'] = async () => {
+      nitroConfig.virtual!['#sitemap/global-sources.mjs'] = async () => {
         const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
         const prerenderUrlsFinal = [
           ...prerenderUrls,
@@ -585,7 +585,7 @@ declare module 'vue-router' {
 
       const extraSitemapModules = typeof config.sitemaps == 'object' ? Object.keys(config.sitemaps).filter(n => n !== 'index') : []
       const sitemapSources: Record<string, SitemapSourceInput[]> = {}
-      nitroConfig.virtual![`#nuxt-simple-sitemap/child-sources.mjs`] = async () => {
+      nitroConfig.virtual![`#sitemap/child-sources.mjs`] = async () => {
         for (const sitemapName of extraSitemapModules) {
           sitemapSources[sitemapName] = sitemapSources[sitemapName] || []
           const definition = (config.sitemaps as Record<string, SitemapDefinition>)[sitemapName] as SitemapDefinition

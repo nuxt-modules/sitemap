@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-simple-sitemap",
+  "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "4.4.1",
   "packageManager": "pnpm@8.14.0",

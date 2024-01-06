@@ -39,7 +39,7 @@ export default defineNitroPlugin((nitroApp) => {
         definition.loc = content.path
       // otherwise let's warn them
       if (Object.keys(sitemapConfig).length > 0 && import.meta.dev)
-        console.warn(`[nuxt-simple-sitemap] The @nuxt/content file \`${content._path}\` is missing a sitemap \`loc\`.`)
+        console.warn(`[@nuxtjs/content] The @nuxt/content file \`${content._path}\` is missing a sitemap \`loc\`.`)
     }
     content.sitemap = definition
     // loc is required

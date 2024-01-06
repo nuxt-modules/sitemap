@@ -57,7 +57,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     else
       context.tips.push(`Response returned a status of ${error.response?.status || 'unknown'}.`)
 
-    console.error('[nuxt-simple-sitemap] Failed to fetch source.', { url, error })
+    console.error('[@nuxtjs/sitemap] Failed to fetch source.', { url, error })
     return {
       ...input,
       context,
@@ -72,7 +72,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
 export function globalSitemapSources(): Promise<(SitemapSourceBase | SitemapSourceResolved)[]> {
   // @ts-expect-error untyped
-  return import('#nuxt-simple-sitemap/global-sources.mjs')
+  return import('#sitemap/global-sources.mjs')
     .then(m => m.sources) as (SitemapSourceBase | SitemapSourceResolved)[]
 }
 
@@ -80,7 +80,7 @@ export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][
   return (
     definition?._hasSourceChunk
       // @ts-expect-error untyped
-      ? import(`#nuxt-simple-sitemap/child-sources.mjs`)
+      ? import(`#sitemap/child-sources.mjs`)
         .then(m => m.sources[definition.sitemapName] || [])
       : Promise.resolve([])
   ) as Promise<(SitemapSourceBase | SitemapSourceResolved)[]>

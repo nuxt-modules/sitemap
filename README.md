@@ -1,10 +1,10 @@
-<h1 align='center'>nuxt-simple-sitemap</h1>
+<h1 align='center'>@nuxtjs/sitemap</h1>
 
 <p align="center">
 <a href='https://github.com/nuxt-modules/sitemap/actions/workflows/test.yml'>
 </a>
-<a href="https://www.npmjs.com/package/nuxt-simple-sitemap" target="__blank"><img src="https://img.shields.io/npm/v/nuxt-simple-sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
-<a href="https://www.npmjs.com/package/nuxt-simple-sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/nuxt-simple-sitemap?flat&colorA=002438&colorB=28CF8D"></a>
+<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img src="https://img.shields.io/npm/v/nuxt-simple-sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
+<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/nuxt-simple-sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 <a href="https://github.com/nuxt-modules/sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/nuxt-modules/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
 </p>
 
@@ -39,22 +39,22 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.
 
 💡 Need a more complete SEO solution for Nuxt? This module is included as part of [Nuxt SEO](https://nuxtseo.com).
 
-1. Install `nuxt-simple-sitemap` dependency to your project:
+1. Install `@nuxtjs/sitemap` dependency to your project:
 
 ```bash
 #
-yarn add -D nuxt-simple-sitemap
+yarn add -D @nuxtjs/sitemap
 #
-npm install -D nuxt-simple-sitemap
+npm install -D @nuxtjs/sitemap
 #
-pnpm i -D nuxt-simple-sitemap
+pnpm i -D @nuxtjs/sitemap
 ```
 
 2. Add it to your `modules` section in your `nuxt.config`:
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['nuxt-simple-sitemap']
+  modules: ['@nuxtjs/sitemap']
 })
 ```
 

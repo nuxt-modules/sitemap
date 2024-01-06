@@ -16,6 +16,6 @@ export default defineNuxtConfig({
     },
   },
   app: {
-    baseURL: '/__nuxt-simple-sitemap',
+    baseURL: '/__sitemap__/devtools',
   },
 })

@@ -22,7 +22,7 @@ export function normalizeRuntimeFilters(input?: FilterInput[]): (RegExp | string
 
 export function useSimpleSitemapRuntimeConfig() {
   // we need to clone with this hack so that we can write to the config
-  const clone = JSON.parse(JSON.stringify(useRuntimeConfig()['nuxt-simple-sitemap'])) as any as ModuleRuntimeConfig
+  const clone = JSON.parse(JSON.stringify(useRuntimeConfig().sitemap)) as any as ModuleRuntimeConfig
   // normalize the filters for runtime
   for (const k in clone.sitemaps) {
     const sitemap = clone.sitemaps[k]

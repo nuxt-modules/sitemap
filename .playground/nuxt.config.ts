@@ -29,8 +29,8 @@ export default defineNuxtConfig({
             cwd: resolve(__dirname, '../client'),
           },
           {
-            id: 'nuxt-simple-sitemap:client',
-            name: 'Nuxt Simple Sitemap Client Dev',
+            id: 'sitemap',
+            name: 'Sitemap Client Dev',
           },
         )
         subprocess.getProcess().stdout?.on('data', (data) => {
