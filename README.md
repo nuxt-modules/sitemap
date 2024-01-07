@@ -37,7 +37,9 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt. Previously
 
 ## Installation
 
-💡 Need a more complete SEO solution for Nuxt? This module is included as part of [Nuxt SEO](https://nuxtseo.com).
+💡 Need a complete SEO solution for Nuxt?  Check out [Nuxt SEO](https://nuxtseo.com).
+
+💡 Using Nuxt 2? Use the [nuxt-community/sitemap-module](https://github.com/nuxt-community/sitemap-module) docs.
 
 1. Install `@nuxtjs/sitemap` dependency to your project:
 
