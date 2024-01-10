@@ -27,8 +27,8 @@ importers:
         specifier: ^6.1.4
         version: 6.1.4
       floating-vue:
-        specifier: 2.0.0-beta.24
-        version: 2.0.0-beta.24(@nuxt/kit@3.9.1)(vue@3.4.5)
+        specifier: 5.0.3
+        version: 5.0.3(@nuxt/kit@3.9.1)(vue@3.4.5)
       h3-compression:
         specifier: ^0.3.2
         version: 0.3.2(h3@1.10.0)
@@ -5593,8 +5593,8 @@ packages:
   /flatted@3.2.9:
     resolution: {integrity: sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ==}
 
-  /floating-vue@2.0.0-beta.24(@nuxt/kit@3.9.1)(vue@3.4.5):
-    resolution: {integrity: sha512-URSzP6YXaF4u1oZ9XGL8Sn8puuM7ivp5jkOUrpy5Q1mfo9BfGppJOn+ierTmsSUfJEeHBae8KT7r5DeI3vQIEw==}
+  /floating-vue@5.0.3(@nuxt/kit@3.9.1)(vue@3.4.5):
+    resolution: {integrity: sha512-AM7yczIuFACI6T2l8z0ozpTSqHDagcxiQCCanUqvm7Zxtk4CUJNyF6nSuBkkeEYX6hDyTAcmNHe2NJ5x54qnnw==}
     peerDependencies:
       '@nuxt/kit': ^3.2.0
       vue: ^3.2.0
