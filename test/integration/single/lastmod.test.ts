@@ -53,21 +53,21 @@ describe('lastmod', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/baz</loc>
-              <lastmod>2023-12-21T13:49:27</lastmod>
+              <lastmod>2023-12-21T13:49:27+00:00</lastmod>
           </url>
           <url>
               <loc>https://nuxtseo.com/crawled</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/foo</loc>
-              <lastmod>2023-12-21T13:49:27</lastmod>
+              <lastmod>2023-12-21T13:49:27+00:00</lastmod>
           </url>
           <url>
               <loc>https://nuxtseo.com/quux</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/qux</loc>
-              <lastmod>2023-12-21T13:49:27</lastmod>
+              <lastmod>2023-12-21T13:49:27+00:00</lastmod>
           </url>
           <url>
               <loc>https://nuxtseo.com/sub/page</loc>
