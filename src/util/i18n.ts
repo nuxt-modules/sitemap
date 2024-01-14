@@ -27,14 +27,25 @@ export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nCon
 }
 
 export function generatePathForI18nPages({ localeCode, pageLocales, nuxtI18nConfig, forcedStrategy }: StrategyProps): string {
+  // If the locale has a different domain, prioritize that
+  let basePageLocale = pageLocales
+  if (nuxtI18nConfig.differentDomains && nuxtI18nConfig.locales){
+    const domainLocale = nuxtI18nConfig?.locales.find(e => {
+      if(typeof e === 'string') return false
+      return [e.iso, e.code].includes(localeCode) && e.domain ? e.domain : false
+    }) as string
+    
+    if(domainLocale) basePageLocale = domainLocale
+    }
+
   switch (forcedStrategy ?? nuxtI18nConfig.strategy) {
     case 'prefix_except_default':
     case 'prefix_and_default':
-      return localeCode === nuxtI18nConfig.defaultLocale ? pageLocales : joinURL(localeCode, pageLocales)
+      return (localeCode === nuxtI18nConfig.defaultLocale ? basePageLocale : joinURL(localeCode, basePageLocale))
     case 'prefix':
-      return joinURL(localeCode, pageLocales)
+      return joinURL(localeCode, basePageLocale)
     case 'no_prefix':
     default:
-      return pageLocales
+      return basePageLocale
   }
 }
