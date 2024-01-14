@@ -112,15 +112,20 @@ export function normaliseDate(date: string | Date): string
 export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
-    // accept if they are already in the right format, accept small format too such as "2023-12-21"
+    // use as if if it's already valid
     if (isValidW3CDate(d))
       return d
-    // we may have milliseconds at the end with a dot prefix like ".963745", we should remove this
-    d = d.replace('Z', '')
-    // we may have a value like this "2023-12-21T13:49:27", this needs to be converted to w3c datetime
-    d = d.replace(/\.\d+$/, '')
+    // correct a time component without a timezone
+    if (d.includes('T')) {
+      const t = d.split('T')[1]
+      if (!t.includes('+') && !t.includes('-') && !t.includes('Z')) {
+        // add UTC timezone
+        d += 'Z'
+      }
+    }
     // otherwise we need to parse it
     d = new Date(d)
+    d.setMilliseconds(0)
     // check for invalid date
     if (Number.isNaN(d.getTime()))
       return false
@@ -138,6 +143,6 @@ export function normaliseDate(d: Date | string) {
       z(d.getUTCMinutes())
     }:${
       z(d.getUTCSeconds())
-    }+00:00`
+    }Z`
   )
 }
