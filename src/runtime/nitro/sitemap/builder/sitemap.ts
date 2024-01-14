@@ -31,7 +31,6 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   const {
     sitemaps,
     // enhancing
-    autoLastmod,
     autoI18n,
     isI18nMapped,
     isMultiSitemap,
@@ -78,10 +77,6 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     resolvedSources = normaliseI18nSources(resolvedSources, { autoI18n, isI18nMapped })
   // 1. normalise
   const normalisedUrls = normaliseSitemapUrls(resolvedSources.map(e => e.urls).flat(), resolvers)
-  // 2. enhance
-  const defaults = { ...(sitemap.defaults || {}) }
-  if (autoLastmod && defaults?.lastmod)
-    defaults.lastmod = new Date()
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   let enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
