@@ -98,19 +98,27 @@ export function normaliseSitemapUrls(data: SitemapUrlInput[], resolvers: NitroUr
   )
 }
 
+const IS_VALID_W3C_DATE = [
+  /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/,
+  /^\d{4}-[01]\d-[0-3]\d$/,
+  /^\d{4}-[01]\d$/,
+  /^\d{4}$/,
+]
+export function isValidW3CDate(d: string) {
+  return IS_VALID_W3C_DATE.some(r => r.test(d))
+}
+
 export function normaliseDate(date: string | Date): string
 export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
+    // accept if they are already in the right format, accept small format too such as "2023-12-21"
+    if (isValidW3CDate(d))
+      return d
     // we may have milliseconds at the end with a dot prefix like ".963745", we should remove this
     d = d.replace('Z', '')
-    d = d.replace(/\.\d+$/, '')
     // we may have a value like this "2023-12-21T13:49:27", this needs to be converted to w3c datetime
-    // accept if they are already in the right format, accept small format too such as "2023-12-21"
-    const validW3CDate = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/
-    if (d.match(validW3CDate) || d.match(/^\d{4}-\d{2}-\d{2}$/))
-      return d
-
+    d = d.replace(/\.\d+$/, '')
     // otherwise we need to parse it
     d = new Date(d)
     // check for invalid date
