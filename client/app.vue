@@ -85,7 +85,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                     <h2 text-lg flex items-center>
                       <NIcon icon="carbon:load-balancer-application opacity-50" />
                       <NBadge class="text-sm">
-                        {{ Object.keys(data.sitemaps).length || 0 }}
+                        {{ Object.keys(data?.sitemaps || {}).length || 0 }}
                       </NBadge>
                     </h2>
                   </div>
