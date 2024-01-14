@@ -107,7 +107,8 @@ export function normaliseDate(d: Date | string) {
     d = d.replace(/\.\d+$/, '')
     // we may have a value like this "2023-12-21T13:49:27", this needs to be converted to w3c datetime
     // accept if they are already in the right format, accept small format too such as "2023-12-21"
-    if (d.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/) || d.match(/^\d{4}-\d{2}-\d{2}$/))
+    const validW3CDate = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/
+    if (d.match(validW3CDate) || d.match(/^\d{4}-\d{2}-\d{2}$/))
       return d
 
     // otherwise we need to parse it
