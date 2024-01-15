@@ -75,7 +75,7 @@ describe('lastmod', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/issue/206</loc>
-              <lastmod>2023-12-21T22:46:58.441+00:00</lastmod>
+              <lastmod>2023-12-21T22:46:58Z</lastmod>
           </url>
           <url>
               <loc>https://nuxtseo.com/sub/page</loc>

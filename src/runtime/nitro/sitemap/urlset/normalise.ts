@@ -112,9 +112,6 @@ export function normaliseDate(date: string | Date): string
 export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
-    // use as if if it's already valid
-    if (isValidW3CDate(d))
-      return d
     // correct a time component without a timezone
     if (d.includes('T')) {
       const t = d.split('T')[1]
@@ -123,6 +120,9 @@ export function normaliseDate(d: Date | string) {
         d += 'Z'
       }
     }
+    // skip invalid w3c date
+    if (!isValidW3CDate(d))
+      return false
     // otherwise we need to parse it
     d = new Date(d)
     d.setMilliseconds(0)
@@ -131,18 +131,24 @@ export function normaliseDate(d: Date | string) {
       return false
   }
   const z = (n: number) => (`0${n}`).slice(-2)
-  return (
-    `${d.getUTCFullYear()
+  // need to normalise for google sitemap spec
+  const date = `${d.getUTCFullYear()
     }-${
       z(d.getUTCMonth() + 1)
     }-${
       z(d.getUTCDate())
-    }T${
-      z(d.getUTCHours())
-    }:${
-      z(d.getUTCMinutes())
-    }:${
-      z(d.getUTCSeconds())
-    }Z`
-  )
+    }`
+  // check if we have a time set
+  if (d.getUTCHours() > 0 || d.getUTCMinutes() > 0 || d.getUTCSeconds() > 0) {
+    return (
+      `${date}T${
+        z(d.getUTCHours())
+      }:${
+        z(d.getUTCMinutes())
+      }:${
+        z(d.getUTCSeconds())
+      }Z`
+    )
+  }
+  return date
 }
