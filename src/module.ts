@@ -535,8 +535,8 @@ declare module 'vue-router' {
         }
         const globalSources: SitemapSourceInput[] = [
           ...userGlobalSources.map((s) => {
-            if (typeof s === 'string') {
-              return <SitemapSourceBase>{
+            if (typeof s === 'string' || Array.isArray(s)) {
+              return <SitemapSourceBase> {
                 sourceType: 'user',
                 fetch: s,
               }
@@ -616,7 +616,7 @@ declare module 'vue-router' {
             })
             sitemapSources[sitemapName].push(...(definition.sources || [])
               .map((s) => {
-                if (typeof s === 'string') {
+                if (typeof s === 'string' || Array.isArray(s)) {
                   return <SitemapSourceBase> {
                     sourceType: 'user',
                     fetch: s,

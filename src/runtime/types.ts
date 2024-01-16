@@ -177,7 +177,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
 
 export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'
 
-export type SitemapSourceInput = string | SitemapSourceBase | SitemapSourceResolved
+export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 
 export type NormalisedLocales = { code: string, iso?: string, domain?: string }[]
 export interface AutoI18nConfig {
@@ -190,7 +190,7 @@ export interface AutoI18nConfig {
 export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
   version: string
   isNuxtContentDocumentDriven: boolean
-  sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls' | 'sources'> & { _hasSourceChunk?: boolean }>
+  sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
   isMultiSitemap: boolean
   isI18nMapped: boolean
