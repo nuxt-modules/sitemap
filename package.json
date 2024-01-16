@@ -51,7 +51,7 @@
     "@vueuse/core": "^10.7.2",
     "chalk": "^5.3.0",
     "defu": "^6.1.4",
-    "floating-vue": "5.0.3",
+    "floating-vue": "5.1.0",
     "h3-compression": "^0.3.2",
     "nuxt-site-config": "^2.2.5",
     "nuxt-site-config-kit": "^2.2.5",
