@@ -203,7 +203,7 @@ export default defineNuxtModule<ModuleOptions>({
           strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
         }
       }
-      let canI18nMap = nuxtI18nConfig.strategy !== 'no_prefix'
+      let canI18nMap = config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
       if (typeof config.sitemaps === 'object') {
         const isSitemapIndexOnly = typeof config.sitemaps.index !== 'undefined' && Object.keys(config.sitemaps).length === 1
         if (!isSitemapIndexOnly)
