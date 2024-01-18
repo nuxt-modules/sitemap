@@ -203,14 +203,18 @@ export default defineNuxtModule<ModuleOptions>({
           strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
         }
       }
+      let canI18nMap = nuxtI18nConfig.strategy !== 'no_prefix'
+      if (typeof config.sitemaps === 'object') {
+        const isSitemapIndexOnly = typeof config.sitemaps.index !== 'undefined' && Object.keys(config.sitemaps).length === 1
+        if (!isSitemapIndexOnly)
+          canI18nMap = false
+      }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
-      if (typeof config.sitemaps === 'undefined' && !!resolvedAutoI18n && nuxtI18nConfig.strategy !== 'no_prefix') {
+      if (canI18nMap && resolvedAutoI18n) {
         // @ts-expect-error untyped
-        config.sitemaps = { index: [] }
-        for (const locale of resolvedAutoI18n.locales) {
-          // @ts-expect-error untyped
+        config.sitemaps = { index: config.sitemaps?.index || [] }
+        for (const locale of resolvedAutoI18n.locales)
           config.sitemaps[locale.iso || locale.code] = { includeAppSources: true }
-        }
         isI18nMapped = true
         usingMultiSitemaps = true
       }
