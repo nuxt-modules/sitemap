@@ -70,7 +70,7 @@
     "@nuxt/kit": "^3.9.3",
     "@nuxt/module-builder": "^0.5.5",
     "@nuxt/test-utils": "^3.10.0",
-    "@nuxt/ui": "^2.12.0",
+    "@nuxt/ui": "^2.12.3",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/i18n": "8.0.0",
     "bumpp": "^9.3.0",
@@ -78,7 +78,7 @@
     "execa": "^8.0.1",
     "nuxt": "^3.9.3",
     "nuxt-icon": "^0.6.8",
-    "nuxt-simple-robots": "^4.0.0-rc.11",
+    "nuxt-simple-robots": "^4.0.0-rc.12",
     "typescript": "^5.3.3",
     "vitest": "^1.2.1"
   },
