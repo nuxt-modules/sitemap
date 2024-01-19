@@ -152,7 +152,7 @@ export interface MultiSitemapEntry {
   [key: string]: Partial<SitemapDefinition>
 }
 
-export type MultiSitemapsInput = Partial<MultiSitemapEntry & IndexSitemapRemotes>
+export type MultiSitemapsInput = Partial<MultiSitemapEntry> & Partial<IndexSitemapRemotes>
 
 export type MaybeFunction<T> = T | (() => T)
 export type MaybePromise<T> = T | Promise<T>
