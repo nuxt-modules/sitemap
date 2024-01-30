@@ -13,7 +13,7 @@ import {
 } from '@nuxt/kit'
 import { withBase, withoutLeadingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
-import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
+import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
 import { readPackageJSON } from 'pkg-types'

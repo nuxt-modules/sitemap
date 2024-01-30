@@ -1,4 +1,4 @@
-import type { NuxtI18nOptions } from '@nuxtjs/i18n/dist/module'
+import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import type { Strategies } from 'vue-i18n-routing'
 import { joinURL } from 'ufo'
 import type { AutoI18nConfig, FilterInput } from '../runtime/types'
