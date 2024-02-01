@@ -132,7 +132,7 @@ export default defineNuxtModule<ModuleOptions>({
     let usingMultiSitemaps = !!config.sitemaps
 
     let isI18nMapped = false
-    let nuxtI18nConfig: NuxtI18nOptions = {}
+    let nuxtI18nConfig = {} as NuxtI18nOptions
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: NormalisedLocales = []
@@ -141,7 +141,7 @@ export default defineNuxtModule<ModuleOptions>({
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
-      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map(locale => typeof locale === 'string' ? { code: locale } : locale), 'code')
+      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
       const usingI18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
         const i18nPagesSources: SitemapSourceBase = {
