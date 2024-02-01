@@ -103,8 +103,11 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
   }
 
   // allow extending the index sitemap
-  if (sitemaps.index)
-    entries.push(...sitemaps.index.sitemaps)
+  if (sitemaps.index) {
+    entries.push(...sitemaps.index.sitemaps.map((entry) => {
+      return typeof entry === 'string' ? { sitemap: entry } : entry
+    }))
+  }
 
   const sitemapXml = entries.map(e => [
     '    <sitemap>',

@@ -44,6 +44,12 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   sitemaps?: boolean | MultiSitemapsInput
   /**
+   * Sitemaps to append to the sitemap index.
+   *
+   * This will only do anything when using multiple sitemaps.
+   */
+  appendSitemaps?: (string | SitemapIndexEntry)[]
+  /**
    * Path to the xsl that styles sitemap.xml.
    *
    * Set to `false` to disable styling.

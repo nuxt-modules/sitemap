@@ -212,8 +212,9 @@ export default defineNuxtModule<ModuleOptions>({
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
       if (canI18nMap && resolvedAutoI18n) {
         // @ts-expect-error untyped
-        config.sitemaps = { index: config.sitemaps?.index || [] }
+        config.sitemaps = { index: [...(config.sitemaps?.index || []), ...(config.appendSitemaps || [])] }
         for (const locale of resolvedAutoI18n.locales)
+          // @ts-expect-error untyped
           config.sitemaps[locale.iso || locale.code] = { includeAppSources: true }
         isI18nMapped = true
         usingMultiSitemaps = true
@@ -379,9 +380,8 @@ declare module 'vue-router' {
       sitemaps.index = {
         sitemapName: 'index',
         _route: withBase('sitemap_index.xml', nuxt.options.app.baseURL || '/'),
-        // TODO better index support
         // @ts-expect-error untyped
-        sitemaps: config.sitemaps!.index || [],
+        sitemaps: [...(config.sitemaps!.index || []), ...(config.appendSitemaps || [])],
       }
       if (typeof config.sitemaps === 'object') {
         for (const sitemapName in config.sitemaps) {
