@@ -8,7 +8,8 @@ export default defineNitroPlugin((nitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
   // @ts-expect-error runtime type
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
-    if (content.sitemap === false || content._draft || content._extension !== 'md' || content._partial || content.indexable === false || content.index === false)
+    const validExtensions = ['md', 'mdx']
+    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension) || content._partial || content.indexable === false || content.index === false)
       return
 
     // add any top level images
