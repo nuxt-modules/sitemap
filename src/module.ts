@@ -517,10 +517,8 @@ declare module 'vue-router' {
           ...prerenderUrls,
           ...((await nitroPromise)._prerenderedRoutes || [])
             .filter((r) => {
-              // make sure it's not excluded
-              // search for just noindex in a robots meta tag
-              const isRobotsBlocking = r.contents?.match(/<meta[^>]+name="robots"[^>]+content="[^"]*noindex[^"]*"[^>]*>/)
-              return r.contentType === 'text/html' && !isRobotsBlocking
+              const isExplicitFile = r.route.split('/').pop()!.includes('.')
+              return r.contentType.includes('text/html') && !isExplicitFile
             })
             .map(r => r._sitemap),
         ]
