@@ -518,7 +518,7 @@ declare module 'vue-router' {
           ...((await nitroPromise)._prerenderedRoutes || [])
             .filter((r) => {
               const isExplicitFile = r.route.split('/').pop()!.includes('.')
-              return r.contentType.includes('text/html') && !isExplicitFile
+              return r.contentType?.includes('text/html') && !isExplicitFile
             })
             .map(r => r._sitemap),
         ]
