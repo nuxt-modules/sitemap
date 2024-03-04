@@ -25,6 +25,8 @@ await setup({
             '/valid',
           ],
           exclude: [
+            '/api',
+            '/api/**',
             '/admin/**',
           ],
         },

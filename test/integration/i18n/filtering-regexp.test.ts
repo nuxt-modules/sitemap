@@ -11,6 +11,7 @@ await setup({
       exclude: [
         /.*test.*/g,
         /.no-i18n/,
+        '**/__sitemap/**',
         '/__sitemap/**',
       ],
     },
