@@ -80,7 +80,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaults: {},
     // index sitemap options filtering
     include: [],
-    exclude: ['/_nuxt/**', '/api/**'],
+    exclude: ['/_nuxt/**', '/_**'],
     // sources
     sources: [],
     excludeAppSources: [],
@@ -516,7 +516,12 @@ declare module 'vue-router' {
         const prerenderUrlsFinal = [
           ...prerenderUrls,
           ...((await nitroPromise)._prerenderedRoutes || [])
-            .filter(r => (!r.fileName || r.fileName.endsWith('.html')) && !r.route.endsWith('.html') && !r.route.startsWith('/api/'))
+            .filter((r) => {
+              // make sure it's not excluded
+              // search for just noindex in a robots meta tag
+              const isRobotsBlocking = r.contents?.match(/<meta[^>]+name="robots"[^>]+content="[^"]*noindex[^"]*"[^>]*>/)
+              return r.contentType === 'text/html' && !isRobotsBlocking
+            })
             .map(r => r._sitemap),
         ]
         const pageSource = convertNuxtPagesToSitemapEntries(await pagesPromise, {

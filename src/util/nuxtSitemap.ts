@@ -155,6 +155,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
+  const filterForValidPage = p => p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
   const routeRules = Object.entries(nuxt.options.routeRules || {})
     .filter(([k, v]) => {
       // make sure key doesn't use a wildcard and its not for a file
@@ -166,8 +167,9 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
       return !v.redirect
     })
     .map(([k]) => k)
+    .filter(filterForValidPage)
   // don't support files
   const prerenderUrls = (nuxt.options.nitro.prerender?.routes || [])
-    .filter(p => p && !extname(p) && !p.startsWith('/api/')) as string[]
+    .filter(filterForValidPage) as string[]
   return { routeRules, prerenderUrls }
 }

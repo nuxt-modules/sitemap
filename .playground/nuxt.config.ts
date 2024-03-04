@@ -63,6 +63,7 @@ export default defineNuxtConfig({
         '/should-be-in-sitemap',
         '/foo.bar/',
         '/test.doc',
+        '/api/prerendered',
       ],
       failOnError: false,
     },
@@ -141,6 +142,9 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
+    '/api/prerendered': {
+      prerender: true,
+    },
     '/secret': {
       index: false,
     },

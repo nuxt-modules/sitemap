@@ -13,7 +13,7 @@ export interface StrategyProps {
 
 export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nConfig) {
   const locales = autoI18n.strategy === 'prefix_except_default' ? autoI18n.locales.filter(l => l.code !== autoI18n.defaultLocale) : autoI18n.locales
-  if (typeof path !== 'string' || path.startsWith('/api') || path.startsWith('/_nuxt'))
+  if (typeof path !== 'string' || path.startsWith('/_'))
     return path
   const match = splitForLocales(path, locales.map(l => l.code))
   const locale = match[0]
