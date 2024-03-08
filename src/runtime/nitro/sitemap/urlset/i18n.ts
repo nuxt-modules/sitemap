@@ -82,7 +82,8 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
       if (!e._i18nTransform)
         return e
       delete e._i18nTransform
-      const path = withLeadingSlash(parseURL(e.loc).pathname)
+      const parsedURL = parseURL(e.loc)
+      const path = withLeadingSlash(parsedURL.pathname + parsedURL.search + parsedURL.hash)
       const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
       let pathWithoutLocale = path
       let locale
