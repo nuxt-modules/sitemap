@@ -44,11 +44,7 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt. Previously
 1. Install `@nuxtjs/sitemap` dependency to your project:
 
 ```bash
-pnpm add -D @nuxtjs/sitemap
-#
-yarn add -D @nuxtjs/sitemap
-#
-npm install -D @nuxtjs/sitemap
+npx nuxi@latest module add sitemap
 ```
 
 2. Add it to your `modules` section in your `nuxt.config`:
