@@ -1,6 +1,6 @@
-import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
 import { withLeadingSlash } from 'ufo'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { defineNitroPlugin } from '#imports'
 
 export default defineNitroPlugin((nitroApp) => {
   const { sitemaps } = useSimpleSitemapRuntimeConfig()

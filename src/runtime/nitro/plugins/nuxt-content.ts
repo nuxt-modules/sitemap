@@ -1,12 +1,13 @@
 import { defu } from 'defu'
-import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
 import type { ParsedContent } from '@nuxt/content/dist/runtime/types'
+import type { NitroApp } from 'nitropack'
 import type { SitemapUrl } from '../../types'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { defineNitroPlugin } from '#imports'
 
-export default defineNitroPlugin((nitroApp) => {
+export default defineNitroPlugin((nitroApp: NitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
-  // @ts-expect-error runtime type
+  // @ts-expect-error untyped
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
     const validExtensions = ['md', 'mdx']
     if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension) || content._partial || content.indexable === false || content.index === false)
