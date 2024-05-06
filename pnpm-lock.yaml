@@ -73,8 +73,8 @@ importers:
         specifier: ^2.12.1
         version: 2.12.1(ioredis@5.3.2)(nuxt@3.11.2(@parcel/watcher@2.4.1)(@types/node@20.12.5)(@unocss/reset@0.59.4)(encoding@0.1.13)(eslint@9.1.1)(floating-vue@5.2.2(@nuxt/kit@3.11.2(rollup@4.14.0))(vue@3.4.21(typescript@5.4.5)))(fuse.js@6.6.2)(ioredis@5.3.2)(optionator@0.9.3)(rollup@4.14.0)(terser@5.30.3)(typescript@5.4.5)(unocss@0.59.4(@unocss/webpack@0.59.4(rollup@4.14.0)(webpack@5.91.0))(postcss@8.4.38)(rollup@4.14.0)(vite@5.2.8(@types/node@20.12.5)(terser@5.30.3)))(vite@5.2.8(@types/node@20.12.5)(terser@5.30.3)))(rollup@4.14.0)(vue@3.4.21(typescript@5.4.5))
       '@nuxt/module-builder':
-        specifier: ^0.6.0
-        version: 0.6.0(@nuxt/kit@3.11.2(rollup@4.14.0))(nuxi@3.11.1)(typescript@5.4.5)
+        specifier: 0.5.5
+        version: 0.5.5(@nuxt/kit@3.11.2(rollup@4.14.0))(nuxi@3.11.1)(typescript@5.4.5)
       '@nuxt/test-utils':
         specifier: ^3.12.1
         version: 3.12.1(h3@1.11.1)(rollup@4.14.0)(vite@5.2.8(@types/node@20.12.5)(terser@5.30.3))(vitest@1.6.0(@types/node@20.12.5)(terser@5.30.3))(vue-router@4.3.0(vue@3.4.21(typescript@5.4.5)))(vue@3.4.21(typescript@5.4.5))
@@ -1007,12 +1007,12 @@ packages:
     resolution: {integrity: sha512-yiYKP0ZWMW7T3TCmsv4H8+jEsB/nFriRAR8bKoSqSV9bkVYWPE36sf7JDux30dQ91jSlQG6LQkB3vCHYTS2cIg==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
-  '@nuxt/module-builder@0.6.0':
-    resolution: {integrity: sha512-d/sn+6n23qB+yGuItNvGnNlPpDzwcsW6riyISdo4H2MO/3TWFsIzB5+JZK104t0G6ftxB71xWHmBBYEdkXOhVw==}
+  '@nuxt/module-builder@0.5.5':
+    resolution: {integrity: sha512-ifFfwA1rbSXSae25RmqA2kAbV3xoShZNrq1yK8VXB/EnIcDn4WiaYR1PytaSxIt5zsvWPn92BJXiIUBiMQZ0hw==}
     hasBin: true
     peerDependencies:
-      '@nuxt/kit': ^3.11.2
-      nuxi: ^3.11.1
+      '@nuxt/kit': ^3.8.2
+      nuxi: ^3.10.0
 
   '@nuxt/schema@3.11.2':
     resolution: {integrity: sha512-Z0bx7N08itD5edtpkstImLctWMNvxTArsKXzS35ZuqyAyKBPcRjO1CU01slH0ahO30Gg9kbck3/RKNZPwfOjJg==}
@@ -7623,16 +7623,14 @@ snapshots:
       - rollup
       - supports-color
 
-  '@nuxt/module-builder@0.6.0(@nuxt/kit@3.11.2(rollup@4.14.0))(nuxi@3.11.1)(typescript@5.4.5)':
+  '@nuxt/module-builder@0.5.5(@nuxt/kit@3.11.2(rollup@4.14.0))(nuxi@3.11.1)(typescript@5.4.5)':
     dependencies:
       '@nuxt/kit': 3.11.2(rollup@4.14.0)
       citty: 0.1.6
       consola: 3.2.3
-      defu: 6.1.4
       mlly: 1.6.1
       nuxi: 3.11.1
       pathe: 1.1.2
-      pkg-types: 1.1.0
       unbuild: 2.0.0(typescript@5.4.5)
     transitivePeerDependencies:
       - sass
