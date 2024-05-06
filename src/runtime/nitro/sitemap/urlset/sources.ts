@@ -1,4 +1,5 @@
 import type { FetchError } from 'ofetch'
+import { defu } from 'defu'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
@@ -21,11 +22,12 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   let isHtmlResponse = false
   try {
     const urls = await globalThis.$fetch(url, {
+      ...options,
       responseType: 'json',
       signal: timeoutController.signal,
-      headers: {
+      headers: defu(options?.headers, {
         Accept: 'application/json',
-      },
+      }),
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
