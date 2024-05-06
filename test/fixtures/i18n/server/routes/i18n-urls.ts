@@ -15,5 +15,7 @@ export default defineSitemapEventHandler(() => {
     {
       loc: 'english-url', // issue with en being picked up as the locale
     },
+    // absolute URL issue
+    { loc: 'https://www.somedomain.com/abc/def' },
   ]
 })

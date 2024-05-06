@@ -1,4 +1,4 @@
-import { joinURL, parseURL, withHttps, withLeadingSlash } from 'ufo'
+import { hasProtocol, joinURL, parseURL, withHttps, withLeadingSlash } from 'ufo'
 import type {
   AlternativeEntry,
   ModuleRuntimeConfig,
@@ -14,7 +14,9 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
       const urls = (s.urls || []).map((_url) => {
         const url = typeof _url === 'string' ? { loc: _url } : _url
         url.loc = url.loc || url.url!
-        url.loc = withLeadingSlash(url.loc)
+        if (!hasProtocol(url.loc, { acceptRelative: true }))
+          url.loc = withLeadingSlash(url.loc)
+
         return url
       })
       s.urls = urls.map((url) => {
@@ -22,7 +24,7 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
         if (url._sitemap || url._i18nTransform)
           return url
         // if the url starts with a prefix, we should automatically bundle it to the correct sitemap using _sitemap
-        if (url.loc) {
+        if (url.loc && !hasProtocol(url.loc, { acceptRelative: true })) {
           const match = splitForLocales(url.loc, autoI18n.locales.map(l => l.code))
           const localeCode = match[0] || autoI18n.defaultLocale
           const pathWithoutPrefix = match[1]

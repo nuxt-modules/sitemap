@@ -52,6 +52,9 @@ describe('i18n dynamic urls', () => {
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
           </url>
           <url>
+              <loc>https://www.somedomain.com/abc/def</loc>
+          </url>
+          <url>
               <loc>https://nuxtseo.com/en/dynamic/foo</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/en/dynamic/foo" hreflang="x-default" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/en/dynamic/foo" hreflang="en" />
