@@ -6,9 +6,14 @@ import type {
   SitemapSourceResolved,
   SitemapUrl,
 } from '../../../types'
-import { splitForLocales } from '../../../utils-pure'
+import { createPathFilter, splitForLocales } from '../../../utils-pure'
 
-export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped }: { autoI18n: ModuleRuntimeConfig['autoI18n'], isI18nMapped: boolean }) {
+export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18n, isI18nMapped, include, exclude }: { autoI18n: ModuleRuntimeConfig['autoI18n'], isI18nMapped: boolean } & Pick<ModuleRuntimeConfig['sitemaps'][string], 'sitemapName' | 'include' | 'exclude'>) {
+  // base may be wrong here
+  const filterPath = createPathFilter({
+    include,
+    exclude,
+  })
   if (autoI18n && isI18nMapped) {
     return sources.map((s) => {
       const urls = (s.urls || []).map((_url) => {
@@ -38,6 +43,8 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
                   if (u._sitemap || u._i18nTransform)
                     return false
                   if (u?.loc) {
+                    if (!filterPath(u.loc))
+                      return false
                     const [_localeCode, _pathWithoutPrefix] = splitForLocales(u.loc, autoI18n.locales.map(l => l.code))
                     if (pathWithoutPrefix === _pathWithoutPrefix) {
                       const entries: AlternativeEntry[] = []
@@ -75,8 +82,13 @@ export function normaliseI18nSources(sources: SitemapSourceResolved[], { autoI18
   return sources
 }
 
-export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick<Required<ModuleRuntimeConfig>, 'autoI18n' | 'isI18nMapped'> & { sitemapName: string }): ResolvedSitemapUrl[] {
-  const { autoI18n } = options
+export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick<Required<ModuleRuntimeConfig>, 'autoI18n' | 'isI18nMapped'> & Pick<ModuleRuntimeConfig['sitemaps'][string], 'sitemapName' | 'include' | 'exclude'>): ResolvedSitemapUrl[] {
+  // base may be wrong here
+  const { autoI18n, include, exclude } = options
+  const filterPath = createPathFilter({
+    include,
+    exclude,
+  })
   // we won't remove any urls, only add and modify
   // for example an API returns ['/foo', '/bar'] but we want i18n integration
   return _urls
@@ -148,11 +160,13 @@ export function applyI18nEnhancements(_urls: ResolvedSitemapUrl[], options: Pick
                 }
               }
               const hreflang = locale.iso || locale.code
+              if (!filterPath(href))
+                return false
               return {
                 hreflang,
                 href,
               }
-            }),
+            }).filter(Boolean),
           }
         })
     })

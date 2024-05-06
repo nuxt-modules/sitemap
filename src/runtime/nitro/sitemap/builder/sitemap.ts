@@ -74,7 +74,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   let resolvedSources = await resolveSitemapSources(sources)
   // normalise the sources for i18n
   if (autoI18n)
-    resolvedSources = normaliseI18nSources(resolvedSources, { autoI18n, isI18nMapped })
+    resolvedSources = normaliseI18nSources(resolvedSources, { autoI18n, isI18nMapped, ...sitemap })
   // 1. normalise
   const normalisedUrls = normaliseSitemapUrls(resolvedSources.map(e => e.urls).flat(), resolvers)
 
@@ -110,7 +110,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
     .filter(Boolean) as ResolvedSitemapUrl[]
   // TODO enable
   if (autoI18n?.locales)
-    enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
+    enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, ...sitemap })
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = filterSitemapUrls(enhancedUrls, { event: resolvers.event, isMultiSitemap, autoI18n, ...sitemap })

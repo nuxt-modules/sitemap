@@ -531,6 +531,10 @@ declare module 'vue-router' {
           strategy: nuxtI18nConfig.strategy || 'no_prefix',
           routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
           normalisedLocales,
+          filter: {
+            include: normalizeFilters(config.include),
+            exclude: normalizeFilters(config.exclude),
+          },
         })
         if (!resolvedConfigUrls) {
           config.urls && userGlobalSources.push({

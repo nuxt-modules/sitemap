@@ -13,6 +13,8 @@ await setup({
         /.no-i18n/,
         '/en/__sitemap/**',
         '/__sitemap/**',
+        // exclude fr
+        '/fr',
       ],
     },
   },
@@ -31,7 +33,6 @@ describe('i18n filtering with regexp', () => {
               <loc>https://nuxtseo.com/en</loc>
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr" />
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en" />
           </url>
       </urlset>"

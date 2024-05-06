@@ -5,6 +5,7 @@ import { useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
 import { defu } from 'defu'
 import type { SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+import { type CreateFilterOptions, createPathFilter } from '../runtime/utils-pure'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls']): Promise<SitemapUrlInput[]> {
   if (typeof urls === 'function')
@@ -21,6 +22,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
   isI18nMapped: boolean
+  filter: CreateFilterOptions
 }
 
 interface PageEntry extends SitemapUrl {
@@ -48,6 +50,7 @@ function deepForEachPage(
 }
 
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
+  const pathFilter = createPathFilter(config.filter)
   const routesNameSeparator = config.routesNameSeparator || '___'
   let flattenedPages: PageEntry[] = []
   deepForEachPage(
@@ -124,11 +127,13 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       const alternatives = entries.map((entry) => {
         // check if the locale has a iso code
         const hreflang = config.normalisedLocales.find(l => l.code === entry.locale)?.iso || entry.locale
+        if (!pathFilter(entry.loc))
+          return false
         return {
           hreflang,
           href: entry.loc,
         }
-      })
+      }).filter(Boolean)
       const xDefault = entries.find(a => a.locale === config.defaultLocale)
       if (xDefault && alternatives.length) {
         alternatives.push({
