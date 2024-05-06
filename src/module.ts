@@ -96,6 +96,8 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
     nuxt.options.alias['#sitemap'] = resolve('./runtime/types')
+    nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
+    nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime/types')
     config.xslColumns = config.xslColumns || [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
