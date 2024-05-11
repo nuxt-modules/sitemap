@@ -1,3 +1,4 @@
+import { type H3Event, getHeader } from 'h3';
 import type { FetchError } from 'ofetch'
 import { defu } from 'defu'
 import type {
@@ -7,7 +8,7 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 
-export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved): Promise<SitemapSourceResolved> {
+export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
   context.tips = context.tips || []
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
@@ -21,12 +22,14 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
   let isHtmlResponse = false
   try {
+    const currentRequestHost = event ? getHeader(event, 'host') : ''
     const urls = await globalThis.$fetch(url, {
       ...options,
       responseType: 'json',
       signal: timeoutController.signal,
       headers: defu(options?.headers, {
         Accept: 'application/json',
+        Host: currentRequestHost,
       }),
       // @ts-expect-error untyped
       onResponse({ response }) {
@@ -88,7 +91,7 @@ export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][
   ) as Promise<(SitemapSourceBase | SitemapSourceResolved)[]>
 }
 
-export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[]) {
+export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {
   return (await Promise.all(
     sources.map((source) => {
       if (typeof source === 'object' && 'urls' in source) {
@@ -99,7 +102,7 @@ export async function resolveSitemapSources(sources: (SitemapSourceBase | Sitema
         }
       }
       if (source.fetch)
-        return fetchDataSource(source)
+        return fetchDataSource(source, event)
 
       return <SitemapSourceResolved> {
         ...source,
