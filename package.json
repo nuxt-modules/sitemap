@@ -76,7 +76,7 @@
     "@nuxtjs/i18n": "8.3.0",
     "bumpp": "^9.4.1",
     "eslint": "9.1.1",
-    "execa": "^8.0.1",
+    "execa": "^9.1.0",
     "nuxt": "^3.11.2",
     "nuxt-icon": "^0.6.10",
     "nuxt-simple-robots": "^4.0.0-rc.17",
