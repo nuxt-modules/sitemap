@@ -71,7 +71,7 @@ export async function buildSitemap(sitemap: SitemapDefinition, resolvers: NitroU
   // always fetch all sitemap data for the primary sitemap
   const sources = sitemap.includeAppSources ? await globalSitemapSources() : []
   sources.push(...await childSitemapSources(sitemap))
-  let resolvedSources = await resolveSitemapSources(sources)
+  let resolvedSources = await resolveSitemapSources(sources, resolvers.event)
   // normalise the sources for i18n
   if (autoI18n)
     resolvedSources = normaliseI18nSources(resolvedSources, { autoI18n, isI18nMapped, ...sitemap })
