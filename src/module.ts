@@ -24,8 +24,6 @@ import type {
   MultiSitemapEntry,
   NormalisedLocales,
   SitemapDefinition,
-  SitemapOutputHookCtx,
-  SitemapRenderCtx,
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
@@ -42,14 +40,7 @@ import { normalizeFilters } from './util/filter'
 
 export interface ModuleOptions extends _ModuleOptions {}
 
-export interface ModuleHooks {
-  /**
-   * @deprecated use `sitemap:resolved` or `sitemap:output`
-   */
-  'sitemap:prerender': (ctx: SitemapRenderCtx) => Promise<void> | void
-  'sitemap:resolved': (ctx: SitemapRenderCtx) => Promise<void> | void
-  'sitemap:output': (ctx: SitemapOutputHookCtx) => Promise<void> | void
-}
+export interface ModuleHooks {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
