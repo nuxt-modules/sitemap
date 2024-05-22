@@ -1,4 +1,4 @@
-import { type H3Event, getHeader } from 'h3';
+import { type H3Event, getRequestHost } from 'h3'
 import type { FetchError } from 'ofetch'
 import { defu } from 'defu'
 import type {
@@ -22,15 +22,13 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
   let isHtmlResponse = false
   try {
-    const currentRequestHost = event ? getHeader(event, 'host') : ''
     const urls = await globalThis.$fetch(url, {
       ...options,
       responseType: 'json',
       signal: timeoutController.signal,
       headers: defu(options?.headers, {
         Accept: 'application/json',
-        Host: currentRequestHost,
-      }),
+      }, event ? { Host: getRequestHost(event, { xForwardedHost: true }) } : {}),
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
