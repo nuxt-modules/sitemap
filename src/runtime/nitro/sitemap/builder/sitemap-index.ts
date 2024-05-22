@@ -13,6 +13,7 @@ import { applyI18nEnhancements } from '../urlset/i18n'
 import { filterSitemapUrls } from '../urlset/filter'
 import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
+import { useNitroApp } from '#imports'
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const {
@@ -109,7 +110,11 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     }))
   }
 
-  const sitemapXml = entries.map(e => [
+  const ctx = { sitemaps: entries }
+  const nitro = useNitroApp()
+  await nitro.hooks.callHook('sitemap:index-resolved', ctx)
+
+  const sitemapXml = ctx.sitemaps.map(e => [
     '    <sitemap>',
     `        <loc>${escapeValueForXml(e.sitemap)}</loc>`,
     // lastmod is optional

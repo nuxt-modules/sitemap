@@ -260,6 +260,10 @@ export interface SitemapDefinition {
   _route?: string
 }
 
+export interface SitemapIndexRenderCtx {
+  sitemaps: SitemapIndexEntry[]
+}
+
 export interface SitemapRenderCtx {
   sitemapName: string
   urls: ResolvedSitemapUrl[]
