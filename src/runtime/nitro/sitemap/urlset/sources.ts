@@ -1,4 +1,5 @@
-import { type H3Event, getRequestHost } from 'h3'
+import { getRequestHost } from 'h3'
+import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
 import { defu } from 'defu'
 import type {

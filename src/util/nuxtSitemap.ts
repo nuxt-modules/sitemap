@@ -5,7 +5,8 @@ import { useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
 import { defu } from 'defu'
 import type { SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
-import { type CreateFilterOptions, createPathFilter } from '../runtime/utils-pure'
+import { createPathFilter } from '../runtime/utils-pure'
+import type { CreateFilterOptions } from '../runtime/utils-pure'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls']): Promise<SitemapUrlInput[]> {
   if (typeof urls === 'function')
