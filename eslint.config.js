@@ -1,5 +1,6 @@
 // @ts-check
 import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
+import pluginNode from 'eslint-plugin-n'
 
 export default createConfigForNuxt({
   features: {
@@ -33,5 +34,18 @@ export default createConfigForNuxt({
   .append({
     rules: {
       'no-console': ['error', { allow: ['warn', 'error'] }],
+    },
+  })
+  .append({
+    plugins: {
+      node: pluginNode,
+    },
+    rules: {
+      'node/handle-callback-err': ['error', '^(err|error)$'],
+      'node/no-deprecated-api': 'error',
+      'node/no-exports-assign': 'error',
+      'node/no-new-require': 'error',
+      'node/no-path-concat': 'error',
+      'node/process-exit-as-throw': 'error',
     },
   })
