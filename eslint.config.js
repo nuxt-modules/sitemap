@@ -30,3 +30,8 @@ export default createConfigForNuxt({
       'vue/no-v-html': 'off',
     },
   })
+  .append({
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+    },
+  })
