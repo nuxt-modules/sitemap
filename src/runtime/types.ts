@@ -76,6 +76,12 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   discoverImages: boolean
   /**
+   * When prerendering, should videos be automatically be discovered and added to the sitemap.
+   *
+   * @default true
+   */
+  discoverVideos: boolean
+  /**
    * When chunking the sitemaps into multiple files, how many entries should each file contain.
    *
    * Set to `false` to disabling chunking completely.
@@ -193,7 +199,7 @@ export interface AutoI18nConfig {
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'autoLastmod' | 'xsl' | 'credits' > {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' > {
   version: string
   isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>

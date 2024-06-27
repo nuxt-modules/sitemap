@@ -6,7 +6,7 @@ import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { defineNitroPlugin } from '#imports'
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
-  const { discoverImages, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
+  const { discoverImages, discoverVideos, isNuxtContentDocumentDriven } = useSimpleSitemapRuntimeConfig()
   // @ts-expect-error untyped
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
     const validExtensions = ['md', 'mdx']
@@ -23,6 +23,16 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
         .map(i => ({ loc: i.props!.src })) || [])
     }
 
+    // add any top level videos
+    let videos: SitemapUrl['videos'] = []
+    if (discoverVideos) {
+      videos = (content.body?.children
+        ?.filter(c =>
+          c.tag && c.props?.src && ['video'].includes(c.tag.toLowerCase()),
+        )
+        .map(i => ({ content_loc: i.props!.src })) || [])
+    }
+
     const sitemapConfig = typeof content.sitemap === 'object' ? content.sitemap : {}
     const lastmod = content.modifiedAt || content.updatedAt
     const defaults: Partial<SitemapUrl> = {}
@@ -32,6 +42,8 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       defaults.loc = content.path
     if (images.length > 0)
       defaults.images = images
+    if (videos.length > 0)
+      defaults.videos = videos
     if (lastmod)
       defaults.lastmod = lastmod
     const definition = defu(sitemapConfig, defaults) as Partial<SitemapUrl>

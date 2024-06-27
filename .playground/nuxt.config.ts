@@ -61,6 +61,7 @@ export default defineNuxtConfig({
       routes: [
         // '/sitemap_index.xml',
         '/prerender',
+        '/prerender-video',
         '/should-be-in-sitemap',
         '/foo.bar/',
         '/test.doc',

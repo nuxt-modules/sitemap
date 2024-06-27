@@ -59,6 +59,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaultSitemapsChunkSize: 1000,
     autoLastmod: false,
     discoverImages: true,
+    discoverVideos: true,
     dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
     urls: [],
     sortEntries: true,
@@ -458,6 +459,7 @@ declare module 'vue-router' {
       debug: config.debug,
       // needed for nuxt/content integration and prerendering
       discoverImages: config.discoverImages,
+      discoverVideos: config.discoverVideos,
 
       /* @nuxt/content */
       isNuxtContentDocumentDriven,

@@ -1,9 +1,9 @@
 import { withSiteUrl } from 'nuxt-site-config-kit/urls'
 import { parseURL } from 'ufo'
-import type { ResolvedSitemapUrl, SitemapUrl } from '../runtime/types'
+import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/types'
 
-export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, lastmod?: boolean, alternatives?: boolean }) {
-  options = options || { images: true, lastmod: true, alternatives: true }
+export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean }) {
+  options = options || { images: true, videos: true, lastmod: true, alternatives: true }
   const payload: Partial<SitemapUrl> = {}
   if (options?.images) {
     const images = new Set<string>()
@@ -29,6 +29,76 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     if (images.size > 0)
       payload.images = [...images].map(i => ({ loc: i }))
   }
+
+  if (options?.videos) {
+    const videos = []
+    const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
+    const mainMatch = mainRegex.exec(html)
+
+    if (mainMatch?.[1] && mainMatch[1].includes('<video')) {
+      // Extract video src & child source attributes using regex on the HTML
+      const videoRegex = /<video[^>]*>([\s\S]*?)<\/video>/g
+      const videoAttrRegex = /<video[^>]*\s+src="([^"]+)"(?:[^>]*\s+poster="([^"]+)")?/
+      const videoPosterRegex = /<video[^>]*\s+poster="([^"]+)"/
+      const videoTitleRegex = /<video[^>]*\s+data-title="([^"]+)"/
+      const videoDescriptionRegex = /<video[^>]*\s+data-description="([^"]+)"/
+      const sourceRegex = /<source[^>]*\s+src="([^"]+)"/g
+
+      let videoMatch;
+      while ((videoMatch = videoRegex.exec(mainMatch[1])) !== null) {
+        const videoContent = videoMatch[1]
+        const videoTag = videoMatch[0]
+
+        // Extract src and poster attributes from the <video> tag
+        const videoAttrMatch = videoAttrRegex.exec(videoTag);
+        const videoSrc = videoAttrMatch ? videoAttrMatch[1] : ''
+        const poster = (videoPosterRegex.exec(videoTag) || [])[1] || ''
+        const title = (videoTitleRegex.exec(videoTag) || [])[1] || ''
+        const description = (videoDescriptionRegex.exec(videoTag) || [])[1] || ''
+
+        // Extract src attributes from child <source> elements
+        const sources = [];
+        let sourceMatch;
+        while ((sourceMatch = sourceRegex.exec(videoContent)) !== null) {
+          sources.push({
+            src: sourceMatch[1],
+            poster: poster,
+            title: title,
+            description: description,
+          })
+        }
+        
+        // Add video with src attribute
+        if (videoSrc) {
+          videos.push({
+            src: videoSrc,
+            poster: poster,
+            title: title,
+            description: description,
+            sources: [],
+          })
+        }
+
+        // Add sources with their respective posters
+        if (sources.length > 0) {
+          videos.push(...sources)
+        }
+      }
+    }
+
+    // Map videos to payload
+    if (videos.length > 0) {
+      payload.videos = videos.map(video => 
+        ({
+          content_loc: video.src,
+          thumbnail_loc: video.poster,
+          title: video.title,
+          description: video.description
+        }) as VideoEntry
+      );
+    }
+  }
+
 
   if (options?.lastmod) {
     // let's extract the lastmod from the html using the following tags:
