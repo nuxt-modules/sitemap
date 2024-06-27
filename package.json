@@ -43,7 +43,8 @@
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare .playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "test": "vitest"
+    "test": "vitest",
+    "postinstall": "pnpm dev:prepare"
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^1.3.6",
