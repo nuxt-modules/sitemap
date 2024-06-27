@@ -10,7 +10,7 @@ export default defineEventHandler(async (e) => {
   // we need to check if we're rendering multiple sitemaps from the index sitemap
   if ('index' in sitemaps) {
     // redirect to sitemap_index.xml (302 in dev to avoid caching issues)
-    return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), process.dev ? 302 : 301)
+    return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), import.meta.dev ? 302 : 301)
   }
 
   return createSitemap(e, Object.values(sitemaps)[0], runtimeConfig)

@@ -11,10 +11,10 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     const mainMatch = mainRegex.exec(html)
     if (mainMatch?.[1] && mainMatch[1].includes('<img')) {
       // Extract image src attributes using regex on the HTML, but ignore elements with invalid values such as data:, blob:, or file:
+      // eslint-disable-next-line regexp/no-useless-lazy
       const imgRegex = /<img\s+src=["']((?!data:|blob:|file:)[^"']+?)["'][^>]*>/gi
 
       let match
-      // eslint-disable-next-line no-cond-assign
       while ((match = imgRegex.exec(mainMatch[1])) !== null) {
         // This is necessary to avoid infinite loops with zero-width matches
         if (match.index === imgRegex.lastIndex)

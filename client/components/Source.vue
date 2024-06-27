@@ -24,9 +24,18 @@ function normaliseTip(tip: string) {
     <template #text>
       <div class="flex space-x-5">
         <h3 class="opacity-80 text-base mb-1 flex space-x-3 items-center">
-          <div v-if="source.fetch" class="flex space-x-2">
-            <NIcon icon="carbon:api-1" class="opacity-50 text-lg" />
-            <div v-if="source.timeTakenMs" class="opacity-60 text-sm">
+          <div
+            v-if="source.fetch"
+            class="flex space-x-2"
+          >
+            <NIcon
+              icon="carbon:api-1"
+              class="opacity-50 text-lg"
+            />
+            <div
+              v-if="source.timeTakenMs"
+              class="opacity-60 text-sm"
+            >
               {{ source.timeTakenMs }}ms
             </div>
           </div>
@@ -42,25 +51,47 @@ function normaliseTip(tip: string) {
     <template #description>
       <div class="flex items-center space-x-3">
         <div v-if="source.fetch">
-          <NLink :href="fetchUrl" target="_blank">
+          <NLink
+            :href="fetchUrl"
+            target="_blank"
+          >
             {{ source.fetch }}
           </NLink>
         </div>
-        <div v-if="source.context.description" class="text-xs mt-1 opacity-70">
+        <div
+          v-if="source.context.description"
+          class="text-xs mt-1 opacity-70"
+        >
           {{ source.context.description }}
         </div>
       </div>
     </template>
     <div v-if="source.error">
-      <NIcon icon="carbon:warning" class="text-red-500" /> {{ source.error }}
+      <NIcon
+        icon="carbon:warning"
+        class="text-red-500"
+      /> {{ source.error }}
     </div>
-    <OCodeBlock v-else class="max-h-[250px] overflow-y-auto" :code="JSON.stringify(source.urls, null, 2)" lang="json" />
-    <div v-if="source.context.tips?.length" class="px-3 py-3 mt-2 dark:bg-gray-900/50 bg-gray-50/50 opacity-70">
+    <OCodeBlock
+      v-else
+      class="max-h-[250px] overflow-y-auto"
+      :code="JSON.stringify(source.urls, null, 2)"
+      lang="json"
+    />
+    <div
+      v-if="source.context.tips?.length"
+      class="px-3 py-3 mt-2 dark:bg-gray-900/50 bg-gray-50/50 opacity-70"
+    >
       <h3 class="text-sm font-bold mb-1">
         Hints
       </h3>
       <ul class="list-disc ml-5">
-        <li v-for="(tip, key) in source.context.tips" :key="key" class="text-sm opacity-80 mb-1" v-html="normaliseTip(tip)" />
+        <li
+          v-for="(tip, key) in source.context.tips"
+          :key="key"
+          class="text-sm opacity-80 mb-1"
+          v-html="normaliseTip(tip)"
+        />
       </ul>
     </div>
   </OSectionBlock>
