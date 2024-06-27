@@ -32,7 +32,9 @@
     "dist"
   ],
   "scripts": {
-    "lint": "eslint . --fix",
+    "lint": "eslint .",
+    "lint:type": "tsc --noEmit",
+    "lint:fix": "eslint . --fix",
     "client:build": "nuxi generate client",
     "client:dev": "nuxi dev client --port 3300",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
@@ -41,7 +43,6 @@
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare .playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "typecheck": "tsc --noEmit ",
     "test": "vitest"
   },
   "dependencies": {

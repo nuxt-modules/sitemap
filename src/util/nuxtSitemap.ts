@@ -80,6 +80,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         if (stats?.mtime)
           p.lastmod = stats.mtime
       }
+      // eslint-disable-next-line no-empty
       catch (e) {}
     }
     if (p.page?.meta?.sitemap) {
