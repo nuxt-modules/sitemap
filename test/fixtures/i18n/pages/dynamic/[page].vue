@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import { useHead, useLocaleHead, useNuxtApp } from '#imports'
 
 const i18n = useNuxtApp().$i18n
