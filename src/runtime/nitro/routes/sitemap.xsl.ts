@@ -44,7 +44,7 @@ export default defineEventHandler(async (e) => {
 
   const tips = conditionalTips.map(t => `<li><p>${t}</p></li>`).join('\n')
 
-  const showTips = process.dev && xslTips !== false
+  const showTips = import.meta.dev && xslTips !== false
   let columns = [...xslColumns!]
   if (!columns.length) {
     columns = [

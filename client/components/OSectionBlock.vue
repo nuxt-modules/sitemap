@@ -27,16 +27,32 @@ function onToggle(e: any) {
 </script>
 
 <template>
-  <details :open="open" @toggle="onToggle">
-    <summary class="cursor-pointer select-none n-bg-active hover:bg-active p4 rounded transition-all" :class="collapse ? '' : 'pointer-events-none'">
-      <NIconTitle :icon="icon" :text="text" text-xl transition :class="[open ? 'op100' : 'op60', headerClass]">
+  <details
+    :open="open"
+    @toggle="onToggle"
+  >
+    <summary
+      class="cursor-pointer select-none n-bg-active hover:bg-active p4 rounded transition-all"
+      :class="collapse ? '' : 'pointer-events-none'"
+    >
+      <NIconTitle
+        :icon="icon"
+        :text="text"
+        text-xl
+        transition
+        :class="[open ? 'op100' : 'op60', headerClass]"
+      >
         <div>
           <div text-base>
             <slot name="text">
               {{ text }}
             </slot>
           </div>
-          <div v-if="description || $slots.description" text-sm op50>
+          <div
+            v-if="description || $slots.description"
+            text-sm
+            op50
+          >
             <slot name="description">
               {{ description }}
             </slot>
@@ -48,7 +64,12 @@ function onToggle(e: any) {
           v-if="collapse"
           icon="carbon-chevron-down"
           class="chevron"
-          cursor-pointer place-self-start text-base op75 transition duration-500
+          cursor-pointer
+          place-self-start
+          text-base
+          op75
+          transition
+          duration-500
         />
       </NIconTitle>
     </summary>
@@ -57,7 +78,10 @@ function onToggle(e: any) {
       :class="typeof padding === 'string' ? padding : padding ? 'px4' : ''"
     >
       <slot name="details" />
-      <div :class="containerClass" class="mt1">
+      <div
+        :class="containerClass"
+        class="mt1"
+      >
         <slot />
       </div>
       <slot name="footer" />

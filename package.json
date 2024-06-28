@@ -35,7 +35,9 @@
     "dist"
   ],
   "scripts": {
-    "lint": "eslint . --fix",
+    "lint": "eslint .",
+    "lint:type": "tsc --noEmit",
+    "lint:fix": "eslint . --fix",
     "client:build": "nuxi generate client",
     "client:dev": "nuxi dev client --port 3300",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
@@ -44,8 +46,8 @@
     "dev:build": "nuxi build .playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare .playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "typecheck": "tsc --noEmit ",
-    "test": "vitest"
+    "test": "vitest",
+    "postinstall": "pnpm dev:prepare"
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^1.3.6",
@@ -69,16 +71,16 @@
     "ufo": "^1.5.3"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.21.1",
     "@nuxt/content": "^2.13.0",
+    "@nuxt/eslint-config": "^0.3.13",
     "@nuxt/kit": "^3.12.2",
     "@nuxt/module-builder": "0.8.0",
     "@nuxt/test-utils": "^3.13.1",
     "@nuxt/ui": "^2.17.0",
-    "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/i18n": "8.3.1",
     "bumpp": "^9.4.1",
     "eslint": "9.5.0",
+    "eslint-plugin-n": "^17.9.0",
     "execa": "^9.3.0",
     "nuxt": "^3.12.2",
     "nuxt-icon": "^0.6.10",

@@ -14,7 +14,7 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
     fixSlashes: (path: string) => fixSlashes(siteConfig.trailingSlash, path),
     // we need these as they depend on the nitro event
     canonicalUrlResolver: createSitePathResolver(e, {
-      canonical: isShowingCanonical || !process.dev,
+      canonical: isShowingCanonical || !import.meta.dev,
       absolute: true,
       withBase: true,
     }),

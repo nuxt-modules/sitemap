@@ -57,10 +57,21 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
 <template>
   <div class="relative n-bg-base flex flex-col">
     <header class="sticky top-0 z-2 px-4 pt-4">
-      <div class="flex justify-between items-start" mb2>
+      <div
+        class="flex justify-between items-start"
+        mb2
+      >
         <div class="flex space-x-5">
-          <h1 text-xl flex items-center gap-2>
-            <NIcon icon="carbon:load-balancer-application" class="text-blue-300" />
+          <h1
+            text-xl
+            flex
+            items-center
+            gap-2
+          >
+            <NIcon
+              icon="carbon:load-balancer-application"
+              class="text-blue-300"
+            />
             Sitemap <NBadge class="text-sm">
               {{ data?.runtimeConfig?.version }}
             </NBadge>
@@ -79,10 +90,17 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                 value === tab ? 'n-bg-active' : '',
               ]"
             >
-              <div v-if="value === 'sitemaps'" :class="[value === tab ? '' : 'op35']">
+              <div
+                v-if="value === 'sitemaps'"
+                :class="[value === tab ? '' : 'op35']"
+              >
                 <VTooltip>
                   <div class="px-5 py-2">
-                    <h2 text-lg flex items-center>
+                    <h2
+                      text-lg
+                      flex
+                      items-center
+                    >
                       <NIcon icon="carbon:load-balancer-application opacity-50" />
                       <NBadge class="text-sm">
                         {{ Object.keys(data?.sitemaps || {}).length || 0 }}
@@ -94,10 +112,17 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   </template>
                 </VTooltip>
               </div>
-              <div v-if="value === 'user-sources'" :class="[value === tab ? '' : 'op35']">
+              <div
+                v-if="value === 'user-sources'"
+                :class="[value === tab ? '' : 'op35']"
+              >
                 <VTooltip>
                   <div class="px-5 py-2">
-                    <h2 text-lg flex items-center>
+                    <h2
+                      text-lg
+                      flex
+                      items-center
+                    >
                       <NIcon icon="carbon:group-account opacity-50" />
                       <NBadge class="text-sm">
                         {{ userSources.length }}
@@ -109,10 +134,17 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   </template>
                 </VTooltip>
               </div>
-              <div v-if="value === 'app-sources'" :class="[value === tab ? '' : 'op35']">
+              <div
+                v-if="value === 'app-sources'"
+                :class="[value === tab ? '' : 'op35']"
+              >
                 <VTooltip>
                   <div class="px-5 py-2">
-                    <h2 text-lg flex items-center>
+                    <h2
+                      text-lg
+                      flex
+                      items-center
+                    >
                       <NIcon icon="carbon:bot opacity-50" />
                       <NBadge class="text-sm">
                         {{ appSources.length }}
@@ -124,10 +156,17 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   </template>
                 </VTooltip>
               </div>
-              <div v-else-if="value === 'debug'" :class="[value === tab ? '' : 'op35']">
+              <div
+                v-else-if="value === 'debug'"
+                :class="[value === tab ? '' : 'op35']"
+              >
                 <VTooltip>
                   <div class="px-5 py-2">
-                    <h2 text-lg flex items-center>
+                    <h2
+                      text-lg
+                      flex
+                      items-center
+                    >
                       <NIcon icon="carbon:debug opacity-50" />
                     </h2>
                   </div>
@@ -136,10 +175,17 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                   </template>
                 </VTooltip>
               </div>
-              <div v-else-if="value === 'docs'" :class="[value === tab ? '' : 'op35']">
+              <div
+                v-else-if="value === 'docs'"
+                :class="[value === tab ? '' : 'op35']"
+              >
                 <VTooltip>
                   <div class="px-5 py-2">
-                    <h2 text-lg flex items-center>
+                    <h2
+                      text-lg
+                      flex
+                      items-center
+                    >
                       <NIcon icon="carbon:book opacity-50" />
                     </h2>
                   </div>
@@ -158,8 +204,16 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
             </label>
           </fieldset>
           <VTooltip>
-            <button text-lg="" type="button" class="n-icon-button n-button n-transition n-disabled:n-disabled" @click="refresh">
-              <NIcon icon="carbon:reset" class="group-hover:text-green-500" />
+            <button
+              text-lg=""
+              type="button"
+              class="n-icon-button n-button n-transition n-disabled:n-disabled"
+              @click="refresh"
+            >
+              <NIcon
+                icon="carbon:reset"
+                class="group-hover:text-green-500"
+              />
             </button>
             <template #popper>
               Refresh
@@ -168,45 +222,80 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
         </div>
         <div class="items-center space-x-3 hidden lg:flex">
           <div class="opacity-80 text-sm">
-            <NLink href="https://github.com/sponsors/harlan-zw" target="_blank">
-              <NIcon icon="carbon:favorite" class="mr-[2px]" />
+            <NLink
+              href="https://github.com/sponsors/harlan-zw"
+              target="_blank"
+            >
+              <NIcon
+                icon="carbon:favorite"
+                class="mr-[2px]"
+              />
               Sponsor
             </NLink>
           </div>
           <div class="opacity-80 text-sm">
-            <NLink href="https://github.com/nuxt-modules/sitemap" target="_blank">
-              <NIcon icon="logos:github-icon" class="mr-[2px]" />
+            <NLink
+              href="https://github.com/nuxt-modules/sitemap"
+              target="_blank"
+            >
+              <NIcon
+                icon="logos:github-icon"
+                class="mr-[2px]"
+              />
               Submit an issue
             </NLink>
           </div>
-          <a href="https://nuxtseo.com" target="_blank" class="flex items-end gap-1.5 font-semibold text-xl dark:text-white font-title">
+          <a
+            href="https://nuxtseo.com"
+            target="_blank"
+            class="flex items-end gap-1.5 font-semibold text-xl dark:text-white font-title"
+          >
             <NuxtSeoLogo />
           </a>
         </div>
       </div>
     </header>
-    <div class="flex-row flex p4 h-full" style="min-height: calc(100vh - 64px);">
+    <div
+      class="flex-row flex p4 h-full"
+      style="min-height: calc(100vh - 64px);"
+    >
       <main class="mx-auto flex flex-col w-full bg-white dark:bg-black dark:bg-dark-700 bg-light-200 ">
         <NLoading v-if="!data?.globalSources || loading" />
         <template v-else>
-          <div v-if="tab === 'sitemaps'" class="space-y-5">
+          <div
+            v-if="tab === 'sitemaps'"
+            class="space-y-5"
+          >
             <div>
               <h2 class="text-lg mb-1">
                 Sitemaps
               </h2>
-              <p text-xs op60>
+              <p
+                text-xs
+                op60
+              >
                 The sitemaps generated from your site.
               </p>
             </div>
-            <OSectionBlock v-for="(sitemap, key) in data.sitemaps" :key="key">
+            <OSectionBlock
+              v-for="(sitemap, key) in data.sitemaps"
+              :key="key"
+            >
               <template #text>
                 <h3 class="opacity-80 text-base mb-1">
                   {{ sitemap.sitemapName }}
-                  <NIcon v-if="(sitemap.sources || []).some(s => !!s.error)" icon="carbon:warning" class="text-red-500" />
+                  <NIcon
+                    v-if="(sitemap.sources || []).some(s => !!s.error)"
+                    icon="carbon:warning"
+                    class="text-red-500"
+                  />
                 </h3>
               </template>
               <template #description>
-                <NLink target="_blank" :href="resolveSitemapUrl(sitemap.sitemapName)">
+                <NLink
+                  target="_blank"
+                  :href="resolveSitemapUrl(sitemap.sitemapName)"
+                >
                   {{ resolveSitemapUrl(sitemap.sitemapName) }}
                 </NLink>
               </template>
@@ -217,14 +306,21 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       This is a special sitemap file that links to your other sitemaps.
                     </div>
                     <div class="text-sm opacity-70">
-                      You can learn about this on the <NLink underline target="_blank" href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps">
+                      You can learn about this on the <NLink
+                        underline
+                        target="_blank"
+                        href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
+                      >
                         Google Search Central
                       </NLink>.
                     </div>
                   </div>
                 </template>
                 <template v-else>
-                  <div v-if="sitemap.sources && sitemap.sources.length" class="flex space-x-5">
+                  <div
+                    v-if="sitemap.sources && sitemap.sources.length"
+                    class="flex space-x-5"
+                  >
                     <div class="w-40">
                       <div class="font-bold text-sm mb-1">
                         Sources
@@ -234,7 +330,11 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       </div>
                     </div>
                     <div class="flex-grow">
-                      <Source v-for="(source, k) in sitemap.sources" :key="k" :source="source" />
+                      <Source
+                        v-for="(source, k) in sitemap.sources"
+                        :key="k"
+                        :source="source"
+                      />
                     </div>
                   </div>
                   <div class="flex space-x-5">
@@ -247,16 +347,32 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       </div>
                     </div>
                     <div class="flex-grow flex flex-col justify-center">
-                      <div v-if="sitemap.includeAppSources && appSourcesExcluded !== true" class="opacity-70">
-                        <NIcon icon="carbon:checkmark" class="text-green-500 text-lg" />
+                      <div
+                        v-if="sitemap.includeAppSources && appSourcesExcluded !== true"
+                        class="opacity-70"
+                      >
+                        <NIcon
+                          icon="carbon:checkmark"
+                          class="text-green-500 text-lg"
+                        />
                         Enabled
                       </div>
-                      <div v-else class="opacity-70">
-                        <NIcon icon="carbon:close" class="text-red-500 text-lg" />
+                      <div
+                        v-else
+                        class="opacity-70"
+                      >
+                        <NIcon
+                          icon="carbon:close"
+                          class="text-red-500 text-lg"
+                        />
                         Disabled
                       </div>
                       <div class="opacity-50 text-xs mt-2">
-                        Switch to <NLink underline class="cursor-pointer" @click="tab = 'app-sources'">
+                        Switch to <NLink
+                          underline
+                          class="cursor-pointer"
+                          @click="tab = 'app-sources'"
+                        >
                           App sources
                         </NLink> to learn more.
                       </div>
@@ -272,50 +388,93 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                       </div>
                     </div>
                     <div class="n-bg-base/20 flex-grow">
-                      <OCodeBlock class="max-h-[350px] min-h-full overflow-y-auto" :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)" lang="json" />
+                      <OCodeBlock
+                        class="max-h-[350px] min-h-full overflow-y-auto"
+                        :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)"
+                        lang="json"
+                      />
                     </div>
                   </div>
                 </template>
               </div>
             </OSectionBlock>
           </div>
-          <div v-else-if="tab === 'app-sources'" class="space-y-5">
+          <div
+            v-else-if="tab === 'app-sources'"
+            class="space-y-5"
+          >
             <div>
               <h2 class="text-lg mb-1">
                 App Sources
               </h2>
-              <p text-xs op60>
+              <p
+                text-xs
+                op60
+              >
                 Automatic global sources generated from your application.
               </p>
             </div>
-            <Source v-for="(source, key) in appSources" :key="key" :source="source" />
+            <Source
+              v-for="(source, key) in appSources"
+              :key="key"
+              :source="source"
+            />
           </div>
-          <div v-else-if="tab === 'user-sources'" class="space-y-5">
+          <div
+            v-else-if="tab === 'user-sources'"
+            class="space-y-5"
+          >
             <div>
               <h2 class="text-lg mb-1">
                 User Sources
               </h2>
-              <p text-xs op60>
+              <p
+                text-xs
+                op60
+              >
                 Manually provided global sources provided by you.
               </p>
             </div>
-            <Source v-for="(source, key) in userSources" :key="key" :source="source" />
+            <Source
+              v-for="(source, key) in userSources"
+              :key="key"
+              :source="source"
+            />
           </div>
-          <div v-else-if="tab === 'debug'" class="h-full max-h-full overflow-hidden">
+          <div
+            v-else-if="tab === 'debug'"
+            class="h-full max-h-full overflow-hidden"
+          >
             <OSectionBlock>
               <template #text>
                 <h3 class="opacity-80 text-base mb-1">
-                  <NIcon icon="carbon:settings" class="mr-1" />
+                  <NIcon
+                    icon="carbon:settings"
+                    class="mr-1"
+                  />
                   Runtime Config
                 </h3>
               </template>
               <div class="px-3 py-2 space-y-5">
-                <pre of-auto h-full text-sm style="white-space: break-spaces;" v-html="renderCodeHighlight(JSON.stringify(data?.runtimeConfig, null, 2), 'json').value" />
+                <pre
+                  of-auto
+                  h-full
+                  text-sm
+                  style="white-space: break-spaces;"
+                  v-html="renderCodeHighlight(JSON.stringify(data?.runtimeConfig, null, 2), 'json').value"
+                />
               </div>
             </OSectionBlock>
           </div>
-          <div v-else-if="tab === 'docs'" class="h-full max-h-full overflow-hidden">
-            <iframe src="https://nuxtseo.com/sitemap" class="w-full h-full border-none" style="min-height: calc(100vh - 100px);" />
+          <div
+            v-else-if="tab === 'docs'"
+            class="h-full max-h-full overflow-hidden"
+          >
+            <iframe
+              src="https://nuxtseo.com/sitemap"
+              class="w-full h-full border-none"
+              style="min-height: calc(100vh - 100px);"
+            />
           </div>
         </template>
       </main>
