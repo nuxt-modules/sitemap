@@ -1,4 +1,5 @@
-import { type H3Event, getQuery, setHeader } from 'h3'
+import { getQuery, setHeader } from 'h3'
+import type { H3Event } from 'h3'
 import { fixSlashes } from 'site-config-stack/urls'
 import type { ModuleRuntimeConfig, NitroUrlResolvers, SitemapDefinition } from '../../types'
 import { buildSitemap } from './builder/sitemap'
