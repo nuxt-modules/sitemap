@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>nuxt/renovate-config-nuxt"],
+  "packageRules": [
+    {
+      "groupName": "linter",
+      "groupSlug": "linter",
+      "matchPackageNames": ["@nuxt/eslint-config"],
+      "matchPackagePrefixes": ["eslint"]
+    }
+  ]
+}
