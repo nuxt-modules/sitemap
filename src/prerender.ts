@@ -77,6 +77,7 @@ export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt =
       }
       route._sitemap = defu(extractSitemapMetaFromHtml(html, {
         images: options.discoverImages,
+        videos: options.discoverVideos,
         // TODO configurable?
         lastmod: true,
         alternatives: true,
