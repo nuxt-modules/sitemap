@@ -84,6 +84,17 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       return p
     })
 
+  if (config.strategy === 'prefix_and_default') {
+    // filter out any pages started with the default locale
+    flattenedPages = flattenedPages.filter((p) => {
+      if (p.page?.name) {
+        const [, locale] = p.page.name.split(routesNameSeparator)
+        return locale !== config.defaultLocale || p.page.name.endsWith('__default')
+      }
+      return true
+    })
+  }
+
   const pagesWithMeta = flattenedPages.map((p) => {
     if (config.autoLastmod && p.page!.file) {
       try {
