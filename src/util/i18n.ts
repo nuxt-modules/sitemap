@@ -1,7 +1,7 @@
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import type { Strategies } from 'vue-i18n-routing'
-import { joinURL } from 'ufo'
-import type { AutoI18nConfig, FilterInput } from '../runtime/types'
+import { joinURL, withBase, withHttps } from 'ufo'
+import type { AutoI18nConfig, FilterInput, NormalisedLocales } from '../runtime/types'
 import { splitForLocales } from '../runtime/utils-pure'
 
 export interface StrategyProps {
@@ -9,6 +9,7 @@ export interface StrategyProps {
   pageLocales: string
   nuxtI18nConfig: NuxtI18nOptions
   forcedStrategy?: Strategies
+  normalisedLocales: NormalisedLocales
 }
 
 export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nConfig) {
@@ -26,15 +27,18 @@ export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nCon
   ]
 }
 
-export function generatePathForI18nPages({ localeCode, pageLocales, nuxtI18nConfig, forcedStrategy }: StrategyProps): string {
+export function generatePathForI18nPages(ctx: StrategyProps): string {
+  const { localeCode, pageLocales, nuxtI18nConfig, forcedStrategy, normalisedLocales } = ctx
+  const locale = normalisedLocales.find(l => l.code === localeCode)
+  let path = pageLocales
   switch (forcedStrategy ?? nuxtI18nConfig.strategy) {
     case 'prefix_except_default':
     case 'prefix_and_default':
-      return localeCode === nuxtI18nConfig.defaultLocale ? pageLocales : joinURL(localeCode, pageLocales)
+      path = localeCode === nuxtI18nConfig.defaultLocale ? pageLocales : joinURL(localeCode, pageLocales)
+      break
     case 'prefix':
-      return joinURL(localeCode, pageLocales)
-    case 'no_prefix':
-    default:
-      return pageLocales
+      path = joinURL(localeCode, pageLocales)
+      break
   }
+  return locale?.domain ? withHttps(withBase(path, locale.domain)) : path
 }

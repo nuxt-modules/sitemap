@@ -5,7 +5,8 @@ import { useNuxt } from '@nuxt/kit'
 import { extname } from 'pathe'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
-import type { SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+import { withBase, withHttps } from 'ufo'
+import type { NormalisedLocales, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
 
@@ -27,7 +28,7 @@ export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx
 }
 
 export interface NuxtPagesToSitemapEntriesOptions {
-  normalisedLocales: { code: string, iso?: string }[]
+  normalisedLocales: NormalisedLocales
   routesNameSeparator?: string
   autoLastmod: boolean
   defaultLocale: string
@@ -148,20 +149,24 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     }
     return entries.map((entry) => {
       const alternatives = entries.map((entry) => {
+        const locale = config.normalisedLocales.find(l => l.code === entry.locale)
         // check if the locale has a iso code
-        const hreflang = config.normalisedLocales.find(l => l.code === entry.locale)?.iso || entry.locale
+        const hreflang = locale?.iso || entry.locale
         if (!pathFilter(entry.loc))
           return false
+        const href = locale?.domain ? withHttps(withBase(entry.loc, locale?.domain)) : entry.loc
         return {
           hreflang,
-          href: entry.loc,
+          href,
         }
       }).filter(Boolean)
       const xDefault = entries.find(a => a.locale === config.defaultLocale)
       if (xDefault && alternatives.length && pathFilter(xDefault.loc)) {
+        const locale = config.normalisedLocales.find(l => l.code === xDefault.locale)
+        const href = locale?.domain ? withHttps(withBase(xDefault.loc, locale?.domain)) : xDefault.loc
         alternatives.push({
           hreflang: 'x-default',
-          href: xDefault.loc,
+          href,
         })
       }
       const e = { ...entry }
