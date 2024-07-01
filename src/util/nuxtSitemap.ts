@@ -147,7 +147,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         }
       }).filter(Boolean)
       const xDefault = entries.find(a => a.locale === config.defaultLocale)
-      if (xDefault && alternatives.length) {
+      if (xDefault && alternatives.length && pathFilter(xDefault.loc)) {
         alternatives.push({
           hreflang: 'x-default',
           href: xDefault.loc,
