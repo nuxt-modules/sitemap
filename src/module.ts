@@ -551,7 +551,7 @@ declare module 'vue-router' {
               name: 'sitemap:urls',
               description: 'Set with the `sitemap.urls` config.',
             },
-            urls: await resolveUrls(config.urls),
+            urls: await resolveUrls(config.urls, { path: 'sitemap:urls', logger }),
           })
           // we want to avoid adding duplicates as well as hitting api endpoints multiple times
           resolvedConfigUrls = true
@@ -625,7 +625,7 @@ declare module 'vue-router' {
                 name: `sitemaps:${sitemapName}:urls`,
                 description: 'Set with the `sitemap.urls` config.',
               },
-              urls: await resolveUrls(definition.urls),
+              urls: await resolveUrls(definition.urls, { path: `sitemaps:${sitemapName}:urls`, logger }),
             })
             definition!.dynamicUrlsApiEndpoint && sitemapSources[sitemapName].push({
               context: {
