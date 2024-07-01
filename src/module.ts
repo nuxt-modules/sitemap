@@ -105,6 +105,20 @@ export default defineNuxtModule<ModuleOptions>({
       config.defaults.lastmod = normaliseDate(new Date())
     }
 
+    // warn about bad config
+    if (!nuxt.options._prepare && Object.keys(config.sitemaps || {}).length) {
+      // if the user is doing multi-sitempas using the sitemaps config, we warn when root keys are used as they won't do anything
+      const invalidRootKeys = [
+        'includeAppSources',
+        'sources',
+      ]
+      for (const key of invalidRootKeys) {
+        if (Object.keys(config).includes(key))
+          logger.warn(`You are using multiple-sitemaps but have provided \`sitemap.${key}\` in your Nuxt config. This will be ignored, please move it to the child sitemap config.`)
+          logger.warn('Learn more at: https://nuxtseo.com/sitemap/guides/multi-sitemaps')
+      }
+    }
+
     // for trailing slashes / canonical absolute urls
     await installNuxtSiteConfig()
     const userGlobalSources: SitemapSourceInput[] = [
