@@ -38,27 +38,27 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     if (mainMatch?.[1] && mainMatch[1].includes('<video')) {
       // Extract video src & child source attributes using regex on the HTML
       const videoRegex = /<video[^>]*>([\s\S]*?)<\/video>/g
-      const videoAttrRegex = /<video[^>]*\s+src="([^"]+)"(?:[^>]*\s+poster="([^"]+)")?/
-      const videoPosterRegex = /<video[^>]*\s+poster="([^"]+)"/
-      const videoTitleRegex = /<video[^>]*\s+data-title="([^"]+)"/
-      const videoDescriptionRegex = /<video[^>]*\s+data-description="([^"]+)"/
-      const sourceRegex = /<source[^>]*\s+src="([^"]+)"/g
+      const videoAttrRegex = /<video[^>]*\ssrc="([^"]+)"(?:[^>]*\sposter="([^"]+)")?/
+      const videoPosterRegex = /<video[^>]*\sposter="([^"]+)"/
+      const videoTitleRegex = /<video[^>]*\sdata-title="([^"]+)"/
+      const videoDescriptionRegex = /<video[^>]*\sdata-description="([^"]+)"/
+      const sourceRegex = /<source[^>]*\ssrc="([^"]+)"/g
 
-      let videoMatch;
+      let videoMatch
       while ((videoMatch = videoRegex.exec(mainMatch[1])) !== null) {
         const videoContent = videoMatch[1]
         const videoTag = videoMatch[0]
 
         // Extract src and poster attributes from the <video> tag
-        const videoAttrMatch = videoAttrRegex.exec(videoTag);
+        const videoAttrMatch = videoAttrRegex.exec(videoTag)
         const videoSrc = videoAttrMatch ? videoAttrMatch[1] : ''
         const poster = (videoPosterRegex.exec(videoTag) || [])[1] || ''
         const title = (videoTitleRegex.exec(videoTag) || [])[1] || ''
         const description = (videoDescriptionRegex.exec(videoTag) || [])[1] || ''
 
         // Extract src attributes from child <source> elements
-        const sources = [];
-        let sourceMatch;
+        const sources = []
+        let sourceMatch
         while ((sourceMatch = sourceRegex.exec(videoContent)) !== null) {
           sources.push({
             src: sourceMatch[1],
@@ -67,7 +67,7 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
             description: description,
           })
         }
-        
+
         // Add video with src attribute
         if (videoSrc) {
           videos.push({
@@ -88,17 +88,16 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
 
     // Map videos to payload
     if (videos.length > 0) {
-      payload.videos = videos.map(video => 
+      payload.videos = videos.map(video =>
         ({
           content_loc: video.src,
           thumbnail_loc: video.poster,
           title: video.title,
-          description: video.description
-        }) as VideoEntry
-      );
+          description: video.description,
+        }) as VideoEntry,
+      )
     }
   }
-
 
   if (options?.lastmod) {
     // let's extract the lastmod from the html using the following tags:

@@ -214,11 +214,11 @@ describe('extractSitemapMetaFromHtml', () => {
           },
         ],
       }
-    `);
+    `)
 
     // Test case 4 - Multiple discoverable video sources
-    const html4 = `${mainTag}${discoverableVideoSourcesWithPosterHTML}${mainClosingTag}`;
-    const testcase4 = extractSitemapMetaFromHtml(html4);
+    const html4 = `${mainTag}${discoverableVideoSourcesWithPosterHTML}${mainClosingTag}`
+    const testcase4 = extractSitemapMetaFromHtml(html4)
 
     expect(testcase4).toMatchInlineSnapshot(`
       {

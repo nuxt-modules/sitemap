@@ -30,11 +30,11 @@
       <source
         src="https://archive.org/download/DuckAndCover_185/CivilDefenseFilm-DuckAndCoverColdWarNuclearPropaganda_512kb.mp4"
         type="video/mp4"
-      />
+      >
       <source
         src="https://archive.org/download/DuckAndCover_185/CivilDefenseFilm-DuckAndCoverColdWarNuclearPropaganda.avi"
         type="video/x-msvideo"
-      />
+      >
       Sorry, your browser doesn't support embedded videos, but don't worry, you
       can
       <a href="https://archive.org/details/DuckAndCover_185">download it</a>
