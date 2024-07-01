@@ -12,6 +12,7 @@ import { defu } from 'defu'
 import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { splitForLocales } from './runtime/utils-pure'
+import { resolveNitroPreset } from './util/kit'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -36,7 +37,10 @@ export function includesSitemapRoot(sitemapName: string, routes: string[]) {
 }
 
 export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
-  return nuxt.options._generate || nuxt.options.nitro.static || nuxt.options.nitro.preset === 'static'
+  return nuxt.options._generate || [
+    'static',
+    'github-pages',
+  ].includes(resolveNitroPreset())
 }
 
 export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt = useNuxt()) {
