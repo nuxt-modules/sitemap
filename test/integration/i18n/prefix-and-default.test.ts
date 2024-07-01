@@ -29,7 +29,7 @@ await setup({
     },
   },
 })
-describe('i18n prefix except default', () => {
+describe('i18n prefix and default', () => {
   it('basic', async () => {
     const posts = await $fetch('/sitemap.xml')
 
@@ -38,13 +38,6 @@ describe('i18n prefix except default', () => {
       <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <url>
               <loc>https://nuxtseo.com/</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/en</loc>
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es" />
               <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr" />
@@ -88,13 +81,6 @@ describe('i18n prefix except default', () => {
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/en/test</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/test" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/test" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/test" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/test" />
           </url>
           <url>
               <loc>https://nuxtseo.com/es/extra</loc>
