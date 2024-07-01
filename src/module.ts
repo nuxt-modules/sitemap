@@ -545,6 +545,9 @@ declare module 'vue-router' {
             exclude: normalizeFilters(config.exclude),
           },
         })
+        if (!pageSource.length) {
+          pageSource.push(nuxt.options.app.baseURL || '/')
+        }
         if (!resolvedConfigUrls) {
           config.urls && userGlobalSources.push({
             context: {
