@@ -39,7 +39,7 @@ describe('i18n domains', () => {
 
     expect(index).toMatchInlineSnapshot(`
       "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
-      <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <sitemapindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <sitemap>
               <loc>https://nuxtseo.com/en-US-sitemap.xml</loc>
           </sitemap>
