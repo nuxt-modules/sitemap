@@ -83,7 +83,7 @@
     "execa": "^9.3.0",
     "nuxt": "^3.12.3",
     "nuxt-icon": "1.0.0-beta.7",
-    "nuxt-simple-robots": "4.0.0-rc.20",
+    "@nuxtjs/robots": "4.0.0-rc.22",
     "typescript": "5.4.5",
     "vitest": "^2.0.2"
   },

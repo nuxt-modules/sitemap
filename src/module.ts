@@ -237,11 +237,12 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     let needsRobotsPolyfill = true
-    if (hasNuxtModule('nuxt-simple-robots')) {
-      const robotsVersion = await getNuxtModuleVersion('nuxt-simple-robots')
+    const robotsModuleName = hasNuxtModule('nuxt-simple-robots') ? 'nuxt-simple-robots' : hasNuxtModule('@nuxtjs/robots') ? '@nuxtjs/robots' : false
+    if (robotsModuleName) {
+      const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
       // we want to keep versions in sync
-      if (!await hasNuxtModuleCompatibility('nuxt-simple-robots', '>=4'))
-        logger.warn(`You are using nuxt-simple-robots v${robotsVersion}. For the best compatibility, please upgrade to nuxt-simple-robots v4.0.0 or higher.`)
+      if (!await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
+        logger.warn(`You are using ${robotsModuleName} v${robotsVersion}. For the best compatibility, please upgrade to ${robotsModuleName} v4.0.0 or higher.`)
       else
         needsRobotsPolyfill = false
       // @ts-expect-error untyped
@@ -249,7 +250,7 @@ export default defineNuxtModule<ModuleOptions>({
         robotsConfig.sitemap.push(usingMultiSitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
       })
     }
-    // this is added in v4 of Nuxt Simple Robots
+    // this is added in v4 of Nuxt Robots
     if (needsRobotsPolyfill) {
       addServerImports([{
         name: 'getPathRobotConfigPolyfill',

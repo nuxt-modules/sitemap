@@ -2,12 +2,12 @@ import { resolve } from 'node:path'
 import { defineNuxtConfig } from 'nuxt/config'
 import { defineNuxtModule } from '@nuxt/kit'
 import { startSubprocess } from '@nuxt/devtools-kit'
-import NuxtSimpleSitemap from '../src/module'
+import NuxtSitemap from '../src/module'
 
 export default defineNuxtConfig({
   modules: [
-    NuxtSimpleSitemap,
-    'nuxt-simple-robots',
+    NuxtSitemap,
+    '@nuxtjs/robots',
     '@nuxtjs/i18n',
     '@nuxt/content',
     '@nuxt/ui',
