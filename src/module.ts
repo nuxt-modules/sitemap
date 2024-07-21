@@ -11,7 +11,7 @@ import {
   hasNuxtModuleCompatibility,
   useLogger,
 } from '@nuxt/kit'
-import { withBase, withoutLeadingSlash } from 'ufo'
+import { withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import { defu } from 'defu'
@@ -27,7 +27,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
-  ModuleOptions as _ModuleOptions,
+  ModuleOptions as _ModuleOptions, FilterInput,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
@@ -151,13 +151,14 @@ export default defineNuxtModule<ModuleOptions>({
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: NormalisedLocales = []
+    let usingI18nPages = false
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
       normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
-      const usingI18nPages = Object.keys(nuxtI18nConfig.pages || {}).length
+      usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
         const i18nPagesSources: SitemapSourceBase = {
           context: {
@@ -448,6 +449,35 @@ declare module 'vue-router' {
 
     // for each sitemap, we need to transform the include and exclude
     // if the include or exclude has a URL without a locale prefix, then we insert all locale prefixes
+    if (resolvedAutoI18n && usingI18nPages && !hasDisabledAutoI18n) {
+      const pages = nuxtI18nConfig?.pages || {} as Record<string, Record<string, string>>
+      for (const sitemapName in sitemaps) {
+        if (['index', 'chunks'].includes(sitemapName))
+          continue
+        const sitemap = sitemaps[sitemapName]
+        function mapToI18nPages(path: FilterInput): FilterInput[] {
+          if (typeof path !== 'string')
+            return [path]
+          const withoutSlashes = withoutTrailingSlash(withoutLeadingSlash(path)).replace('/index', '')
+          if (withoutSlashes in pages) {
+            const pageLocales = pages[withoutSlashes]
+            // @ts-expect-error untyped
+            return Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, normalisedLocales })))
+          }
+          let match = [path]
+          // alternatively see if the path matches the default locale within
+          Object.values(pages).forEach((pageLocales) => {
+            // @ts-expect-error untyped
+            if (nuxtI18nConfig.defaultLocale in pageLocales && pageLocales[nuxtI18nConfig.defaultLocale] === path)
+              // @ts-expect-error untyped
+              match = Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, normalisedLocales })))
+          })
+          return match
+        }
+        sitemap.include = (sitemap.include || []).flatMap(path => mapToI18nPages(path))
+        sitemap.exclude = (sitemap.exclude || []).flatMap(path => mapToI18nPages(path))
+      }
+    }
     if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
       const i18n = resolvedAutoI18n
       for (const sitemapName in sitemaps) {
