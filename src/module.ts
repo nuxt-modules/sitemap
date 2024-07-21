@@ -319,7 +319,7 @@ declare module 'vue-router' {
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps)
-          nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = routeRules
+          nuxt.options.nitro.routeRules[`/sitemap/${k}.xml`] = routeRules
       }
       else {
         // TODO we should support the chunked generated sitemap names
@@ -393,6 +393,14 @@ declare module 'vue-router' {
       addServerHandler({
         route: '/sitemap_index.xml',
         handler: resolve('./runtime/nitro/routes/sitemap_index.xml'),
+        lazy: true,
+        middleware: false,
+      })
+      addServerHandler({
+        route: `/sitemaps/:$1`,
+        handler: resolve('./runtime/nitro/routes/sitemaps/[sitemap].xml'),
+        lazy: true,
+        middleware: false,
       })
       sitemaps.index = {
         sitemapName: 'index',
@@ -404,15 +412,11 @@ declare module 'vue-router' {
         for (const sitemapName in config.sitemaps) {
           if (sitemapName === 'index')
             continue
-          addServerHandler({
-            route: `/${sitemapName}-sitemap.xml`,
-            handler: resolve('./runtime/nitro/middleware/[sitemap]-sitemap.xml'),
-          })
           const definition = config.sitemaps[sitemapName] as MultiSitemapEntry[string]
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
               sitemapName,
-              _route: withBase(`${sitemapName}-sitemap.xml`, nuxt.options.app.baseURL || '/'),
+              _route: withBase(`sitemaps/${sitemapName}.xml`, nuxt.options.app.baseURL || '/'),
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
@@ -421,10 +425,7 @@ declare module 'vue-router' {
         }
       }
       else {
-        // we have to registrer it as a middleware we can't match the URL pattern
-        addServerHandler({
-          handler: resolve('./runtime/nitro/middleware/[sitemap]-sitemap.xml'),
-        })
+        // we have to register it as a middleware we can't match the URL pattern
         sitemaps.chunks = {
           sitemapName: 'chunks',
           defaults: config.defaults,

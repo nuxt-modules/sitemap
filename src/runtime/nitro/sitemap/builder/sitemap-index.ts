@@ -64,7 +64,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     const sitemap = chunks[name]
     const entry: SitemapIndexEntry = {
       _sitemapName: name,
-      sitemap: resolvers.canonicalUrlResolver(`${name}-sitemap.xml`),
+      sitemap: resolvers.canonicalUrlResolver(`sitemaps/${name}.xml`),
     }
     let lastmod = sitemap.urls
       .filter(a => !!a?.lastmod)
