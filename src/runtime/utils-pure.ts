@@ -1,7 +1,14 @@
 import { createDefu } from 'defu'
 import { parseURL, withLeadingSlash } from 'ufo'
 import { createRouter, toRouteMatcher } from 'radix3'
+import { createConsola } from 'consola'
 import type { FilterInput } from './types'
+
+export const logger = createConsola({
+  defaults: {
+    tag: '@nuxt/sitemap',
+  },
+})
 
 const merger = createDefu((obj, key, value) => {
   // merge arrays using a set
@@ -21,7 +28,7 @@ export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K) {
   return Object.values(res)
 }
 
-export function splitForLocales(path: string, locales: string[]) {
+export function splitForLocales(path: string, locales: string[]): [string | null, string] {
   // we only want to use the first path segment otherwise we can end up turning "/ending" into "/en/ding"
   const prefix = withLeadingSlash(path).split('/')[1]
   // make sure prefix is a valid locale

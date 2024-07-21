@@ -1,5 +1,6 @@
 import type { FetchOptions } from 'ofetch'
 import type { H3Event } from 'h3'
+import type { ParsedURL } from 'ufo'
 
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause
@@ -211,12 +212,29 @@ export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'cacheMaxAgeSec
 export interface SitemapIndexEntry {
   sitemap: string
   lastmod?: string
+  /**
+   * @internal
+   */
+  _sitemapName?: string
 }
 
 export type FilterInput = (string | RegExp | {
   regex: string
 })
-export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<SitemapUrl, 'loc'>>
+export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<SitemapUrl, 'loc'>> & {
+  /**
+   * @internal
+   */
+  _key: string
+  /**
+   * @internal
+   */
+  _path: ParsedURL
+  /**
+   * @internal
+   */
+  _abs: boolean
+}
 
 export interface SitemapDefinition {
   /**

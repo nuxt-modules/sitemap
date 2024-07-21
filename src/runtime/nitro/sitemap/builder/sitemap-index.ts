@@ -1,5 +1,4 @@
 import { defu } from 'defu'
-import { appendHeader } from 'h3'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -7,13 +6,11 @@ import type {
   SitemapIndexEntry,
   SitemapUrl,
 } from '../../../types'
-import { normaliseDate, normaliseSitemapUrls } from '../urlset/normalise'
+import { normaliseDate } from '../urlset/normalise'
 import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
-import { applyI18nEnhancements } from '../urlset/i18n'
-import { filterSitemapUrls } from '../urlset/filter'
 import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
-import { useNitroApp } from '#imports'
+import { resolveSitemapEntries } from './sitemap'
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const {
@@ -25,10 +22,6 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     autoI18n,
     isI18nMapped,
     sortEntries,
-    // xls
-    version,
-    xsl,
-    credits,
   } = runtimeConfig
 
   if (!sitemaps)
@@ -42,22 +35,13 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
   const chunks: Record<string | number, { urls: SitemapUrl[] }> = {}
   if (isChunking) {
     const sitemap = sitemaps.chunks
-    // TODO
     // we need to figure out how many entries we're dealing with
     const sources = await resolveSitemapSources(await globalSitemapSources())
-    // we need to generate multiple sitemaps with dynamically generated names
-    const normalisedUrls = normaliseSitemapUrls(sources.map(e => e.urls).flat(), resolvers)
+    const normalisedUrls = resolveSitemapEntries(sitemap, sources, { autoI18n, isI18nMapped })
     // 2. enhance
-    let enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
+    const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
-    // TODO enable
-    if (autoI18n?.locales)
-      enhancedUrls = applyI18nEnhancements(enhancedUrls, { isI18nMapped, autoI18n, sitemapName: sitemap.sitemapName })
-    // 3. filtered urls
-    // TODO make sure include and exclude start with baseURL?
-    const filteredUrls = filterSitemapUrls(enhancedUrls, { ...sitemap, autoI18n, isMultiSitemap: true })
-    // 4. sort
-    const sortedUrls = maybeSort(filteredUrls)
+    const sortedUrls = maybeSort(enhancedUrls)
     // split into the max size which should be 1000
     sortedUrls.forEach((url, i) => {
       const chunkIndex = Math.floor(i / (defaultSitemapsChunkSize as number))
@@ -74,21 +58,12 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     }
   }
 
-  // tell the prerender to render the other sitemaps (if we prerender this one)
-  // this solves the dynamic chunking sitemap issue
-  if (import.meta.prerender) {
-    appendHeader(
-      resolvers.event,
-      'x-nitro-prerender',
-      Object.keys(chunks).map(name => encodeURIComponent(`/${name}-sitemap.xml`)).join(', '),
-    )
-  }
-
   const entries: SitemapIndexEntry[] = []
   // normalise
   for (const name in chunks) {
     const sitemap = chunks[name]
     const entry: SitemapIndexEntry = {
+      _sitemapName: name,
       sitemap: resolvers.canonicalUrlResolver(`${name}-sitemap.xml`),
     }
     let lastmod = sitemap.urls
@@ -110,11 +85,11 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     }))
   }
 
-  const ctx = { sitemaps: entries }
-  const nitro = useNitroApp()
-  await nitro.hooks.callHook('sitemap:index-resolved', ctx)
+  return entries
+}
 
-  const sitemapXml = ctx.sitemaps.map(e => [
+export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits'>) {
+  const sitemapXml = sitemaps.map(e => [
     '    <sitemap>',
     `        <loc>${escapeValueForXml(e.sitemap)}</loc>`,
     // lastmod is optional
