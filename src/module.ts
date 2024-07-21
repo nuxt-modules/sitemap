@@ -318,8 +318,10 @@ declare module 'vue-router' {
       nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: '/sitemap_index.xml' }
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
-        for (const k in config.sitemaps)
+        for (const k in config.sitemaps) {
           nuxt.options.nitro.routeRules[`/sitemap/${k}.xml`] = routeRules
+          nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = { redirect: `/sitemap/${k}.xml` }
+        }
       }
       else {
         // TODO we should support the chunked generated sitemap names
