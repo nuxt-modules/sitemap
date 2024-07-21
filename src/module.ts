@@ -534,8 +534,13 @@ declare module 'vue-router' {
           ...prerenderUrls,
           ...((await nitroPromise)._prerenderedRoutes || [])
             .filter((r) => {
-              const isExplicitFile = r.route.split('/').pop()!.includes('.')
-              return r.contentType?.includes('text/html') && !isExplicitFile
+              const lastSegment = r.route.split('/').pop()
+              // check for file in lastSegment using regex
+              const isExplicitFile = !!(lastSegment?.match(/\.[0-9a-z]+$/i)?.[0])
+              // avoid adding fallback pages to sitemap
+              if (r.error || ['/200.html', '/404.html', '/index.html'].includes(r.route))
+                return false
+              return (r.contentType?.includes('text/html') || !isExplicitFile)
             })
             .map(r => r._sitemap),
         ]
