@@ -1,10 +1,20 @@
 import { getQuery, setHeader } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'site-config-stack/urls'
-import type { ModuleRuntimeConfig, NitroUrlResolvers, SitemapDefinition } from '../../types'
-import { buildSitemap } from './builder/sitemap'
-import { buildSitemapIndex } from './builder/sitemap-index'
-import { createSitePathResolver, useNitroApp, useSiteConfig } from '#imports'
+import { defu } from 'defu'
+import type {
+  ModuleRuntimeConfig,
+  NitroUrlResolvers,
+  ResolvedSitemapUrl,
+  SitemapDefinition,
+  SitemapRenderCtx,
+} from '../../types'
+import { mergeOnKey, splitForLocales } from '../../utils-pure'
+import { createNitroRouteRuleMatcher } from '../kit'
+import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
+import { normaliseEntry } from './urlset/normalise'
+import { sortSitemapUrls } from './urlset/sort'
+import { createSitePathResolver, getPathRobotConfig, useNitroApp, useSiteConfig } from '#imports'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
@@ -26,14 +36,53 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
 export async function createSitemap(e: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp()
-  let sitemap = await (
-    definition.sitemapName === 'index'
-      ? buildSitemapIndex(useNitroUrlResolvers(e), runtimeConfig)
-      : buildSitemap(definition, useNitroUrlResolvers(e), runtimeConfig)
-  )
+  const resolvers = useNitroUrlResolvers(e)
+  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig)
+
+  const routeRuleMatcher = createNitroRouteRuleMatcher()
+  const { autoI18n } = runtimeConfig
+  sitemapUrls = sitemapUrls.map((e) => {
+    // blocked by nuxt-simple-robots (this is a polyfill if not installed)
+    if (!getPathRobotConfig(e, { path: e._path.pathname, skipSiteIndexable: true }).indexable)
+      return false
+    const path = e._path.pathname
+    let routeRules = routeRuleMatcher(path)
+    // apply top-level path without prefix, users can still target the localed path
+    if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
+      // remove the locale path from the prefix, if it exists, need to use regex
+      const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
+      const pathWithoutPrefix = match[1]
+      if (pathWithoutPrefix && pathWithoutPrefix !== path)
+        routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
+    }
+
+    if (routeRules.sitemap === false)
+      return false
+    if (typeof routeRules.index !== 'undefined' && !routeRules.index)
+      return false
+    const hasRobotsDisabled = Object.entries(routeRules.headers || {})
+      .some(([name, value]) => name.toLowerCase() === 'x-robots-tag' && value.toLowerCase().includes('noindex'))
+    // check for redirects and headers which aren't indexable
+    if (routeRules.redirect || hasRobotsDisabled)
+      return false
+
+    return routeRules.sitemap ? defu(e, routeRules.sitemap) as ResolvedSitemapUrl : e
+  }).filter(Boolean)
+
+  // 6. nitro hooks
+  const resolvedCtx: SitemapRenderCtx = {
+    urls: sitemapUrls,
+    sitemapName: sitemapName,
+  }
+  await nitro.hooks.callHook('sitemap:resolved', resolvedCtx)
+
+  const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortSitemapUrls(urls) : urls
+  // final urls
+  const urls = maybeSort(mergeOnKey(resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers)), '_key'))
+  const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
+
   const ctx = { sitemap, sitemapName }
   await nitro.hooks.callHook('sitemap:output', ctx)
-  sitemap = ctx.sitemap
   // need to clone the config object to make it writable
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
   if (runtimeConfig.cacheMaxAgeSeconds)
@@ -41,5 +90,5 @@ export async function createSitemap(e: H3Event, definition: SitemapDefinition, r
   else
     setHeader(e, 'Cache-Control', `no-cache, no-store`)
   e.context._isSitemap = true
-  return sitemap
+  return ctx.sitemap
 }

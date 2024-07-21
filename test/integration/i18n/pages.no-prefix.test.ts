@@ -77,6 +77,10 @@ describe('i18n pages with no prefix strategy', () => {
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/services" />
           </url>
           <url>
+              <loc>https://nuxtseo.com/__sitemap/url</loc>
+              <changefreq>weekly</changefreq>
+          </url>
+          <url>
               <loc>https://nuxtseo.com/offres/developement</loc>
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/services/development" />
               <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/offres/developement" />
@@ -99,30 +103,6 @@ describe('i18n pages with no prefix strategy', () => {
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/services/development" />
               <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/offres/developement" />
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/services/development" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/en/__sitemap/url</loc>
-              <changefreq>weekly</changefreq>
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/es/__sitemap/url</loc>
-              <changefreq>weekly</changefreq>
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/fr/__sitemap/url</loc>
-              <changefreq>weekly</changefreq>
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/" />
           </url>
           <url>
               <loc>https://nuxtseo.com/offres/developement/app</loc>
