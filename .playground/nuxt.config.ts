@@ -11,7 +11,6 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxt/content',
     '@nuxt/ui',
-    'nuxt-icon',
     /**
      * Start a sub Nuxt Server for developing the client
      *

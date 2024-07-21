@@ -30,8 +30,8 @@ const siteConfig = useSiteConfig({
             to="/"
             class="flex items-end gap-1.5 font-bold text-xl text-gray-900 dark:text-white"
           >
-            <Icon
-              name="logos:nuxt-icon"
+            <UIcon
+              name="i-logos-nuxt-icon"
               class="w-8 h-8"
             />
             Nuxt
