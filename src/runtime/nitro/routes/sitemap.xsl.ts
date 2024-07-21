@@ -19,7 +19,8 @@ export default defineEventHandler(async (e) => {
   const { name: siteName, url: siteUrl } = useSiteConfig(e)
 
   const referrer = getHeader(e, 'Referer')! || '/'
-  const isNotIndexButHasIndex = referrer !== fixPath('/sitemap.xml') && parseURL(referrer).pathname.endsWith('-sitemap.xml')
+  const referrerPath = parseURL(referrer).pathname
+  const isNotIndexButHasIndex = referrerPath !== '/sitemap.xml' && referrerPath !== '/sitemap_index.xml' && referrerPath.endsWith('.xml')
   const sitemapName = parseURL(referrer).pathname.split('/').pop()?.split('-sitemap')[0] || fallbackSitemapName
   const title = `${siteName}${sitemapName !== 'sitemap.xml' ? ` - ${sitemapName === 'sitemap_index.xml' ? 'index' : sitemapName}` : ''}`.replace(/&/g, '&amp;')
 

@@ -25,7 +25,7 @@ await setup({
 })
 describe('multi endpoints', () => {
   it('basic', async () => {
-    let sitemap = await $fetch('/foo-sitemap.xml')
+    let sitemap = await $fetch('/sitemap/foo.xml')
     // remove lastmods before tresting
     sitemap = sitemap.replace(/lastmod>(.*?)</g, 'lastmod><')
     // basic test to make sure we get a valid response

@@ -33,19 +33,19 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   }
 }
 
-export async function createSitemap(e: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
+export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp()
-  const resolvers = useNitroUrlResolvers(e)
+  const resolvers = useNitroUrlResolvers(event)
   let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
-  sitemapUrls = sitemapUrls.map((e) => {
-    // blocked by nuxt-simple-robots (this is a polyfill if not installed)
-    if (!getPathRobotConfig(e, { path: e._path.pathname, skipSiteIndexable: true }).indexable)
+  sitemapUrls = sitemapUrls.map((u) => {
+    const path = u._path?.pathname || u.loc
+    // blocked by @nuxtjs/robots (this is a polyfill if not installed)
+    if (!getPathRobotConfig(event, { path, skipSiteIndexable: true }).indexable)
       return false
-    const path = e._path.pathname
     let routeRules = routeRuleMatcher(path)
     // apply top-level path without prefix, users can still target the localed path
     if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
@@ -70,7 +70,7 @@ export async function createSitemap(e: H3Event, definition: SitemapDefinition, r
     if (routeRules.redirect || hasRobotsDisabled)
       return false
 
-    return routeRules.sitemap ? defu(e, routeRules.sitemap) as ResolvedSitemapUrl : e
+    return routeRules.sitemap ? defu(u, routeRules.sitemap) as ResolvedSitemapUrl : u
   }).filter(Boolean)
 
   // 6. nitro hooks
@@ -88,11 +88,11 @@ export async function createSitemap(e: H3Event, definition: SitemapDefinition, r
   const ctx = { sitemap, sitemapName }
   await nitro.hooks.callHook('sitemap:output', ctx)
   // need to clone the config object to make it writable
-  setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
+  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
   if (runtimeConfig.cacheMaxAgeSeconds)
-    setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, must-revalidate`)
+    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, must-revalidate`)
   else
-    setHeader(e, 'Cache-Control', `no-cache, no-store`)
-  e.context._isSitemap = true
+    setHeader(event, 'Cache-Control', `no-cache, no-store`)
+  event.context._isSitemap = true
   return ctx.sitemap
 }
