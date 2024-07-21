@@ -125,17 +125,19 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
               _key: `${_sitemap || ''}${loc}`,
               _locale: l,
               loc,
-              alternatives: [{code: 'x-default'}, ...autoI18n.locales].map((locale) => {
+              alternatives: [{ code: 'x-default' }, ...autoI18n.locales].map((locale) => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
                 let href = ''
                 if (autoI18n.strategy === 'prefix') {
                   href = joinURL('/', code, e._pathWithoutPrefix)
-                } else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
+                }
+                else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
                   if (isDefault) {
                     // no prefix
                     href = e._pathWithoutPrefix
-                  } else {
+                  }
+                  else {
                     href = joinURL('/', code, e._pathWithoutPrefix)
                   }
                 }
@@ -153,7 +155,8 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
               _urls[e._index] = newEntry
               // avoid getting re-replaced
               e._index = undefined
-            } else {
+            }
+            else {
               _urls.push(newEntry)
             }
           }
