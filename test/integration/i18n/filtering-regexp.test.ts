@@ -21,7 +21,7 @@ await setup({
 })
 describe('i18n filtering with regexp', () => {
   it('basic', async () => {
-    let sitemap = await $fetch('/en-US-sitemap.xml')
+    let sitemap = await $fetch('/sitemap/en-US.xml')
 
     // strip lastmod
     sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')

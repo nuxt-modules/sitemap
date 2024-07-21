@@ -2,7 +2,7 @@ import { appendHeader, defineEventHandler, setHeader } from 'h3'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { buildSitemapIndex, urlsToIndexXml } from '../sitemap/builder/sitemap-index'
 import type { SitemapOutputHookCtx } from '../../types'
-import { useNitroUrlResolvers } from '..//sitemap/nitro'
+import { useNitroUrlResolvers } from '../sitemap/nitro'
 import { useNitroApp } from '#imports'
 
 export default defineEventHandler(async (e) => {
@@ -18,7 +18,7 @@ export default defineEventHandler(async (e) => {
       e,
       'x-nitro-prerender',
       sitemaps.filter(entry => !!entry._sitemapName)
-        .map(entry => encodeURIComponent(`/${entry._sitemapName}-sitemap.xml`)).join(', '),
+        .map(entry => encodeURIComponent(`/sitemap/${entry._sitemapName}.xml`)).join(', '),
     )
   }
 

@@ -27,13 +27,13 @@ describe('generate', () => {
       "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
       <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <sitemap>
-              <loc>https://nuxtseo.com/en-US-sitemap.xml</loc>
+              <loc>https://nuxtseo.com/sitemap/en-US.xml</loc>
           </sitemap>
           <sitemap>
-              <loc>https://nuxtseo.com/es-ES-sitemap.xml</loc>
+              <loc>https://nuxtseo.com/sitemap/es-ES.xml</loc>
           </sitemap>
           <sitemap>
-              <loc>https://nuxtseo.com/fr-FR-sitemap.xml</loc>
+              <loc>https://nuxtseo.com/sitemap/fr-FR.xml</loc>
           </sitemap>
       </sitemapindex>"
     `)
