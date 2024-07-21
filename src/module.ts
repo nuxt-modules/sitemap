@@ -397,8 +397,8 @@ declare module 'vue-router' {
         middleware: false,
       })
       addServerHandler({
-        route: `/sitemaps/:$1`,
-        handler: resolve('./runtime/nitro/routes/sitemaps/[sitemap].xml'),
+        route: `/sitemap/:sitemap`,
+        handler: resolve('./runtime/nitro/routes/sitemap/[sitemap].xml'),
         lazy: true,
         middleware: false,
       })
@@ -416,7 +416,7 @@ declare module 'vue-router' {
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
               sitemapName,
-              _route: withBase(`sitemaps/${sitemapName}.xml`, nuxt.options.app.baseURL || '/'),
+              _route: withBase(`sitemap/${sitemapName}.xml`, nuxt.options.app.baseURL || '/'),
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
