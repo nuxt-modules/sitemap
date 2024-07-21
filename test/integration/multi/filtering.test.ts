@@ -36,7 +36,7 @@ await setup({
 })
 describe('multi filtering', () => {
   it('basic', async () => {
-    let sitemap = await $fetch('/foo-sitemap.xml')
+    let sitemap = await $fetch('/sitemap/foo.xml')
 
     // strip lastmod
     sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')
