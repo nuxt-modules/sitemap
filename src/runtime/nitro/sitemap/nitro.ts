@@ -58,8 +58,12 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
 
     if (routeRules.sitemap === false)
       return false
-    if (typeof routeRules.index !== 'undefined' && !routeRules.index)
+    if ((typeof routeRules.index !== 'undefined' && !routeRules.index)
+      // @ts-expect-error runtime types
+      || (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
+    ) {
       return false
+    }
     const hasRobotsDisabled = Object.entries(routeRules.headers || {})
       .some(([name, value]) => name.toLowerCase() === 'x-robots-tag' && value.toLowerCase().includes('noindex'))
     // check for redirects and headers which aren't indexable
