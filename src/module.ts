@@ -397,7 +397,7 @@ declare module 'vue-router' {
         middleware: false,
       })
       addServerHandler({
-        route: `/sitemap/:sitemap`,
+        route: `/sitemap/**:sitemap`,
         handler: resolve('./runtime/nitro/routes/sitemap/[sitemap].xml'),
         lazy: true,
         middleware: false,
