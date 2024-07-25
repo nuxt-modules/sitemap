@@ -45,6 +45,12 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   sitemaps?: boolean | MultiSitemapsInput
   /**
+   * The path prefix for the sitemaps.
+   *
+   * @default /__sitemap__/
+   */
+  sitemapsPathPrefix: string
+  /**
    * Sitemaps to append to the sitemap index.
    *
    * This will only do anything when using multiple sitemaps.
@@ -200,7 +206,7 @@ export interface AutoI18nConfig {
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' > {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' > {
   version: string
   isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
