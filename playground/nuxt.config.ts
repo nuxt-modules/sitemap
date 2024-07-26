@@ -138,7 +138,7 @@ export default defineNuxtConfig({
         ],
       },
       index: [
-        { sitemap: 'https://www.odysseytraveller.com/sitemap-pages.xml' },
+        { sitemap: 'https://www.example.com/sitemap-pages.xml' },
       ],
     },
   },
