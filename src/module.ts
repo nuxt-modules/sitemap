@@ -722,6 +722,6 @@ declare module 'vue-router' {
       handler: resolve('./runtime/nitro/routes/sitemap.xml'),
     })
 
-    setupPrerenderHandler(runtimeConfig)
+    setupPrerenderHandler({ runtimeConfig, logger })
   },
 })

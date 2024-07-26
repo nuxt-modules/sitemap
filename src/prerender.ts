@@ -9,6 +9,7 @@ import chalk from 'chalk'
 import { dirname } from 'pathe'
 import { build } from 'nitropack'
 import { defu } from 'defu'
+import type { ConsolaInstance } from 'consola'
 import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { splitForLocales } from './runtime/utils-pure'
@@ -43,9 +44,14 @@ export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
   ].includes(resolveNitroPreset())
 }
 
-export function setupPrerenderHandler(options: ModuleRuntimeConfig, nuxt: Nuxt = useNuxt()) {
+export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance }, nuxt: Nuxt = useNuxt()) {
+  const { runtimeConfig: options, logger } = _options
   const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-  const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
+  let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
+  if (resolveNitroPreset() === 'vercel-edge') {
+    logger.warn('Runtime sitemaps are not supported on Vercel Edge, falling back to prerendering sitemaps.')
+    prerenderSitemap = true
+  }
   // need to filter it out of the config as we render it after all other routes
   if (nuxt.options.nitro.prerender?.routes)
     nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
