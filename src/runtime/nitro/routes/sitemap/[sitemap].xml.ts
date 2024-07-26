@@ -1,4 +1,5 @@
 import { createError, defineEventHandler, getRouterParam } from 'h3'
+import { withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useSimpleSitemapRuntimeConfig } from '../../utils'
 import { createSitemap } from '../../sitemap/nitro'
 
@@ -6,8 +7,8 @@ export default defineEventHandler(async (e) => {
   const runtimeConfig = useSimpleSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
-  const sitemapName = (getRouterParam(e, 'sitemap') || e.path)?.replace('.xml', '')
-    .replace('/sitemap/', '')
+  const sitemapName = withoutLeadingSlash(withoutTrailingSlash((getRouterParam(e, 'sitemap') || e.path)?.replace('.xml', '')
+    .replace(runtimeConfig.sitemapsPathPrefix, '')))
   // check if sitemapName can be cast to a number safely
   const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
   if (!sitemapName || (!(sitemapName in sitemaps) && !isChunking)) {

@@ -11,7 +11,7 @@ import {
   hasNuxtModuleCompatibility,
   useLogger,
 } from '@nuxt/kit'
-import { withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import { defu } from 'defu'
@@ -63,6 +63,7 @@ export default defineNuxtModule<ModuleOptions>({
     dynamicUrlsApiEndpoint: '/api/_sitemap-urls',
     urls: [],
     sortEntries: true,
+    sitemapsPathPrefix: '/__sitemap__/',
     xsl: '/__sitemap__/style.xsl',
     xslTips: true,
     strictNuxtContentPaths: false,
@@ -320,8 +321,8 @@ declare module 'vue-router' {
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
-          nuxt.options.nitro.routeRules[`/sitemap/${k}.xml`] = routeRules
-          nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = { redirect: `/sitemap/${k}.xml` }
+          nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix, `/${k}.xml`)] = routeRules
+          nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = { redirect: joinURL(config.sitemapsPathPrefix, `${k}.xml`) }
         }
       }
       else {
@@ -400,7 +401,7 @@ declare module 'vue-router' {
         middleware: false,
       })
       addServerHandler({
-        route: `/sitemap/**:sitemap`,
+        route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
         handler: resolve('./runtime/nitro/routes/sitemap/[sitemap].xml'),
         lazy: true,
         middleware: false,
@@ -514,6 +515,7 @@ declare module 'vue-router' {
       // needed for nuxt/content integration and prerendering
       discoverImages: config.discoverImages,
       discoverVideos: config.discoverVideos,
+      sitemapsPathPrefix: config.sitemapsPathPrefix,
 
       /* @nuxt/content */
       isNuxtContentDocumentDriven,

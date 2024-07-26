@@ -1,4 +1,5 @@
 import { defu } from 'defu'
+import { joinURL } from 'ufo'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -22,6 +23,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     autoI18n,
     isI18nMapped,
     sortEntries,
+    sitemapsPathPrefix,
   } = runtimeConfig
 
   if (!sitemaps)
@@ -64,7 +66,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     const sitemap = chunks[name]
     const entry: SitemapIndexEntry = {
       _sitemapName: name,
-      sitemap: resolvers.canonicalUrlResolver(`sitemap/${name}.xml`),
+      sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix, `/${name}.xml`)),
     }
     let lastmod = sitemap.urls
       .filter(a => !!a?.lastmod)
