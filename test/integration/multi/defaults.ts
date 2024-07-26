@@ -36,7 +36,7 @@ await setup({
 })
 describe('mutli defaults', () => {
   it('basic', async () => {
-    let sitemap = await $fetch('/sitemap/foo.xml')
+    let sitemap = await $fetch('/__sitemap__/foo.xml')
     // remove lastmods before tresting
     sitemap = sitemap.replace(/lastmod>(.*?)</g, 'lastmod><')
     // basic test to make sure we get a valid response

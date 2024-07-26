@@ -24,7 +24,7 @@ await setup({
 })
 describe('i18n dynamic urls', () => {
   it('basic', async () => {
-    let sitemap = await $fetch('/sitemap/en-US.xml')
+    let sitemap = await $fetch('/__sitemap__/en-US.xml')
 
     // strip lastmod
     sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')

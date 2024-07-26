@@ -19,7 +19,7 @@ await setup({
 })
 describe('i18n filtering with include', () => {
   it('basic', async () => {
-    const sitemap = await $fetch('/sitemap/main.xml')
+    const sitemap = await $fetch('/__sitemap__/main.xml')
 
     expect(sitemap).toMatchInlineSnapshot(`
       "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
