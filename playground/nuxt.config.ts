@@ -73,7 +73,7 @@ export default defineNuxtConfig({
     documentDriven: true,
   },
   site: {
-    url: 'https://nuxtseo.com',
+    url: 'https://sitemap-edge-demo.vercel.app/',
   },
 
   // app: {
