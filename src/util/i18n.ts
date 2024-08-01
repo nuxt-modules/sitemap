@@ -27,6 +27,13 @@ export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nCon
   ]
 }
 
+export function getExcludedLocalesFromI18nConfig(nuxtI18nConfig: NuxtI18nOptions) {
+  const onlyLocales = nuxtI18nConfig?.bundle?.onlyLocales
+  if (!onlyLocales) return []
+  const excludedLocales = typeof onlyLocales === 'string' ? [onlyLocales] : onlyLocales
+  return excludedLocales
+}
+
 export function generatePathForI18nPages(ctx: StrategyProps): string {
   const { localeCode, pageLocales, nuxtI18nConfig, forcedStrategy, normalisedLocales } = ctx
   const locale = normalisedLocales.find(l => l.code === localeCode)
