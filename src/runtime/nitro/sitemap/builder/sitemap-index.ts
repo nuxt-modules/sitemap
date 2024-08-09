@@ -90,7 +90,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
   return entries
 }
 
-export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits'>) {
+export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>) {
   const sitemapXml = sitemaps.map(e => [
     '    <sitemap>',
     `        <loc>${escapeValueForXml(e.sitemap)}</loc>`,
@@ -103,5 +103,5 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     sitemapXml,
     '</sitemapindex>',
-  ], resolvers, { version, xsl, credits })
+  ], resolvers, { version, xsl, credits, minify })
 }
