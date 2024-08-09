@@ -240,7 +240,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   return maybeSlice(sortedUrls)
 }
 
-export function urlsToXml(urls: ResolvedSitemapUrl[], resolvers: NitroUrlResolvers, { version, xsl, credits }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits'>) {
+export function urlsToXml(urls: ResolvedSitemapUrl[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>) {
   const urlset = urls.map((e) => {
     const keys = Object.keys(e).filter(k => !k.startsWith('_'))
     return [
@@ -253,5 +253,5 @@ export function urlsToXml(urls: ResolvedSitemapUrl[], resolvers: NitroUrlResolve
     '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     urlset.join('\n'),
     '</urlset>',
-  ], resolvers, { version, xsl, credits })
+  ], resolvers, { version, xsl, credits, minify })
 }

@@ -19,6 +19,12 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   debug: boolean
   /**
+   * Minify the sitemap xml
+   *
+   * @default false
+   */
+  minify: boolean
+  /**
    * Should lastmod be automatically added to the sitemap.
    *
    * Warning: This may not be following best practices for sitemaps.
@@ -206,7 +212,7 @@ export interface AutoI18nConfig {
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' > {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify'> {
   version: string
   isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
