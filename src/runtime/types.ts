@@ -204,7 +204,9 @@ export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rul
 
 export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 
-export type NormalisedLocales = { code: string, iso?: string, domain?: string }[]
+export interface NormalisedLocale { code: string, iso?: string, domain?: string }
+
+export type NormalisedLocales = NormalisedLocale[]
 export interface AutoI18nConfig {
   differentDomains?: boolean
   locales: NormalisedLocales
