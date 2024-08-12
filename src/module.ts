@@ -55,6 +55,7 @@ export default defineNuxtModule<ModuleOptions>({
     enabled: true,
     credits: true,
     cacheMaxAgeSeconds: 60 * 10, // cache for 10 minutes
+    minify: false,
     debug: false,
     defaultSitemapsChunkSize: 1000,
     autoLastmod: false,
@@ -513,6 +514,7 @@ declare module 'vue-router' {
       autoLastmod: config.autoLastmod,
       defaultSitemapsChunkSize: config.defaultSitemapsChunkSize,
 
+      minify: config.minify,
       sortEntries: config.sortEntries,
       debug: config.debug,
       // needed for nuxt/content integration and prerendering
