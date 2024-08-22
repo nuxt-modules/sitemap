@@ -137,11 +137,11 @@ export function normaliseDate(d: Date | string) {
   const z = (n: number) => (`0${n}`).slice(-2)
   // need to normalise for google sitemap spec
   const date = `${d.getUTCFullYear()
-    }-${
-      z(d.getUTCMonth() + 1)
-    }-${
-      z(d.getUTCDate())
-    }`
+  }-${
+    z(d.getUTCMonth() + 1)
+  }-${
+    z(d.getUTCDate())
+  }`
   // check if we have a time set
   if (d.getUTCHours() > 0 || d.getUTCMinutes() > 0 || d.getUTCSeconds() > 0) {
     return (
