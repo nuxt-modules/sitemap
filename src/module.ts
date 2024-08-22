@@ -36,7 +36,7 @@ import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './pr
 import { mergeOnKey } from './runtime/utils-pure'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/nitro/sitemap/urlset/normalise'
-import { generatePathForI18nPages, getExcludedLocalesFromI18nConfig, splitPathForI18nLocales } from './util/i18n'
+import { generatePathForI18nPages, getOnlyLocalesFromI18nConfig, splitPathForI18nLocales } from './util/i18n'
 import { normalizeFilters } from './util/filter'
 
 export interface ModuleOptions extends _ModuleOptions {}
@@ -163,8 +163,11 @@ export default defineNuxtModule<ModuleOptions>({
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
-      const excludedLocales = getExcludedLocalesFromI18nConfig(nuxtI18nConfig)
-      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code').filter((locale: NormalisedLocale) => !excludedLocales.includes(locale.code))
+      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
+      const onlyLocales = getOnlyLocalesFromI18nConfig(nuxtI18nConfig)
+      if (onlyLocales.length) {
+        normalisedLocales = normalisedLocales.filter((locale: NormalisedLocale) => onlyLocales.includes(locale.code))
+      }
       usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
         const i18nPagesSources: SitemapSourceBase = {
