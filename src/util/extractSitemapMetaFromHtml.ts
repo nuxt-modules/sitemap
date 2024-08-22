@@ -1,5 +1,6 @@
 import { withSiteUrl } from 'nuxt-site-config-kit/urls'
 import { parseURL } from 'ufo'
+import { tryUseNuxt } from '@nuxt/kit'
 import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/types'
 
 export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean }) {
@@ -12,7 +13,7 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     if (mainMatch?.[1] && mainMatch[1].includes('<img')) {
       // Extract image src attributes using regex on the HTML, but ignore elements with invalid values such as data:, blob:, or file:
       // eslint-disable-next-line regexp/no-useless-lazy
-      const imgRegex = /<img\s+src=["']((?!data:|blob:|file:)[^"']+?)["'][^>]*>/gi
+      const imgRegex = /<img\s+(?:[^>]*?\s)?src=["']((?!data:|blob:|file:)[^"']+?)["'][^>]*>/gi
 
       let match
       while ((match = imgRegex.exec(mainMatch[1])) !== null) {
@@ -22,7 +23,7 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
         let url = match[1]
         // if the match is relative
         if (url.startsWith('/'))
-          url = withSiteUrl(url)
+          url = tryUseNuxt() ? withSiteUrl(url) : url
         images.add(url)
       }
     }

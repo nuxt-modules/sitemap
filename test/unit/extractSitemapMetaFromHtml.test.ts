@@ -82,6 +82,18 @@ describe('extractSitemapMetaFromHtml', () => {
         ],
       }
     `)
+
+    const html3 = `<div id="__nuxt"><div><main><div class="document-driven-page"><!--[--><div><h1 id="index"><!--[-->index<!--]--></h1><ul><!--[--><li><!--[--><a href="/bar" class=""><!--[-->/bar<!--]--></a><!--]--></li><li><!--[--><a href="/foo" class=""><!--[-->/foo<!--]--></a><!--]--></li><!--]--></ul><img onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="Test image" data-nuxt-img srcset="/_ipx/_/logo.svg 1x, /_ipx/_/logo.svg 2x" src="/_ipx/_/logo.svg" class="test"><p><!--[--><a href="/sitemap.xml" class=""><!--[-->/sitemap.xml<!--]--></a><!--]--></p></div><!--]--></div></main></div></div><div id="teleports"></div>`
+    const testcase3 = extractSitemapMetaFromHtml(html3)
+    expect(testcase3).toMatchInlineSnapshot(`
+      {
+        "images": [
+          {
+            "loc": "/_ipx/_/logo.svg",
+          },
+        ],
+      }
+    `)
   })
 
   it('extracts videos from HTML', async () => {
