@@ -1,6 +1,6 @@
 import type { NuxtModule, NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { addTemplate, createResolver, extendPages, loadNuxtModuleInstance, useNuxt } from '@nuxt/kit'
+import { addTemplate, createResolver, extendPages, loadNuxtModuleInstance, useNuxt, tryUseNuxt } from '@nuxt/kit'
 import { relative } from 'pathe'
 import type { Nitro } from 'nitropack'
 import { env, provider } from 'std-env'
@@ -104,6 +104,7 @@ export function detectTarget(options: { static?: boolean } = {}) {
 }
 
 export function resolveNitroPreset(nitroConfig?: NitroConfig): string {
+  nitroConfig = nitroConfig || tryUseNuxt()?.options?.nitro
   if (provider === 'stackblitz')
     return 'stackblitz'
   let preset
