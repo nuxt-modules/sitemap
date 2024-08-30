@@ -80,9 +80,9 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
         // if it's missing a locale then we put it in the default locale sitemap
         const locale = match[0] || options.autoI18n.defaultLocale
         if (options.isI18nMapped) {
-          const { code, iso } = options.autoI18n.locales.find(l => l.code === locale) || { code: locale, iso: locale }
+          const { _sitemap } = options.autoI18n.locales.find(l => l.code === locale) || { _sitemap: locale }
           // this will filter the results to only the sitemap that matches the locale
-          route._sitemap._sitemap = iso || code
+          route._sitemap._sitemap = _sitemap
         }
       }
       route._sitemap = defu(extractSitemapMetaFromHtml(html, {

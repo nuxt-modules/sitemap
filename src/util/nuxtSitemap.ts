@@ -6,7 +6,7 @@ import { extname } from 'pathe'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
 import { withBase, withHttps } from 'ufo'
-import type { NormalisedLocales, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+import type { AutoI18nConfig, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
 
@@ -28,7 +28,7 @@ export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx
 }
 
 export interface NuxtPagesToSitemapEntriesOptions {
-  normalisedLocales: NormalisedLocales
+  normalisedLocales: AutoI18nConfig['locales']
   routesNameSeparator?: string
   autoLastmod: boolean
   defaultLocale: string
@@ -118,8 +118,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       const [name, locale] = e.page!.name.split(routesNameSeparator)
       if (!acc[name])
         acc[name] = []
-      const { iso, code } = config.normalisedLocales.find(l => l.code === locale) || { iso: locale, code: locale }
-      acc[name].push({ ...e, _sitemap: config.isI18nMapped ? (iso || code) : undefined, locale })
+      const { _sitemap } = config.normalisedLocales.find(l => l.code === locale) || { _sitemap: locale }
+      acc[name].push({ ...e, _sitemap: config.isI18nMapped ? _sitemap : undefined, locale })
     }
     else {
       acc.default = acc.default || []
@@ -141,7 +141,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
           return false
         const defaultLocale = config.normalisedLocales.find(l => l.code === config.defaultLocale)
         if (defaultLocale && config.isI18nMapped)
-          e._sitemap = defaultLocale.iso || defaultLocale.code
+          e._sitemap = defaultLocale._sitemap
         delete e.page
         delete e.locale
         return { ...e }
@@ -151,12 +151,11 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       const alternatives = entries.map((entry) => {
         const locale = config.normalisedLocales.find(l => l.code === entry.locale)
         // check if the locale has a iso code
-        const hreflang = locale?.iso || entry.locale
         if (!pathFilter(entry.loc))
           return false
         const href = locale?.domain ? withHttps(withBase(entry.loc, locale?.domain)) : entry.loc
         return {
-          hreflang,
+          hreflang: locale?._hreflang,
           href,
         }
       }).filter(Boolean)
@@ -171,8 +170,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       }
       const e = { ...entry }
       if (config.isI18nMapped) {
-        const { iso, code } = config.normalisedLocales.find(l => l.code === entry.locale) || { iso: locale, code: locale }
-        e._sitemap = iso || code
+        const { _sitemap } = config.normalisedLocales.find(l => l.code === entry.locale) || { _sitemap: locale }
+        e._sitemap = _sitemap
       }
       delete e.page
       delete e.locale

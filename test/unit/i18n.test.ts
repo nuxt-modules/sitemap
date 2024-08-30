@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { splitPathForI18nLocales } from '../../src/util/i18n'
+import { normalizeLocales, splitPathForI18nLocales } from '../../src/util/i18n'
 import type { AutoI18nConfig } from '../../src/runtime/types'
 import { resolveSitemapEntries } from '../../src/runtime/nitro/sitemap/builder/sitemap'
 
@@ -396,6 +396,57 @@ describe('i18n', () => {
             },
           ],
           "loc": "/fr/endless-dungeon",
+        },
+      ]
+    `)
+  })
+  it('normalizes locales', () => {
+    const locales = [{
+      code: 'en',
+      iso: 'en-US',
+    }, {
+      code: 'fr',
+      iso: 'fr-FR',
+    }, {
+      code: 'es',
+    },
+    'br',
+    {
+      code: 'xx',
+      language: 'xx-XX',
+    }]
+    const data = normalizeLocales({ locales })
+    expect(data).toMatchInlineSnapshot(`
+      [
+        {
+          "_hreflang": "en-US",
+          "_sitemap": "en-US",
+          "code": "en",
+          "iso": "en-US",
+          "language": "en-US",
+        },
+        {
+          "_hreflang": "fr-FR",
+          "_sitemap": "fr-FR",
+          "code": "fr",
+          "iso": "fr-FR",
+          "language": "fr-FR",
+        },
+        {
+          "_hreflang": "es",
+          "_sitemap": "es",
+          "code": "es",
+        },
+        {
+          "_hreflang": "br",
+          "_sitemap": "br",
+          "code": "br",
+        },
+        {
+          "_hreflang": "xx-XX",
+          "_sitemap": "xx-XX",
+          "code": "xx",
+          "language": "xx-XX",
         },
       ]
     `)
