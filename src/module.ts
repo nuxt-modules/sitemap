@@ -39,9 +39,8 @@ import { normaliseDate } from './runtime/nitro/sitemap/urlset/normalise'
 import { generatePathForI18nPages, getOnlyLocalesFromI18nConfig, splitPathForI18nLocales } from './util/i18n'
 import { normalizeFilters } from './util/filter'
 
+// eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
-
-export interface ModuleHooks {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {

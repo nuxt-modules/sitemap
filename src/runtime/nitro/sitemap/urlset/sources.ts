@@ -70,7 +70,9 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     }
   }
   finally {
-    abortRequestTimeout && clearTimeout(abortRequestTimeout)
+    if (abortRequestTimeout) {
+      clearTimeout(abortRequestTimeout)
+    }
   }
 }
 
