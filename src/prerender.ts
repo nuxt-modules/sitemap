@@ -69,8 +69,6 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
 
-      console.log('generating route', route.route, route._sitemap)
-
       // maybe the user already provided a _sitemap on the route
       route._sitemap = defu(route._sitemap, {
         loc: route.route,
@@ -94,8 +92,6 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
         lastmod: true,
         alternatives: true,
       }), route._sitemap) as SitemapUrl
-
-      console.log('final', route._sitemap)
     })
     nitro.hooks.hook('prerender:done', async () => {
       // force templates to be rebuilt
