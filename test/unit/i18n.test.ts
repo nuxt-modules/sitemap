@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { splitPathForI18nLocales } from '../../src/util/i18n'
+import { normalizeLocales, splitPathForI18nLocales } from '../../src/util/i18n'
 import type { AutoI18nConfig } from '../../src/runtime/types'
 import { resolveSitemapEntries } from '../../src/runtime/nitro/sitemap/builder/sitemap'
 
 const EnFrAutoI18n = {
-  locales: [{
+  locales: normalizeLocales({ locales: [{
     code: 'en',
     iso: 'en-US',
   }, {
     code: 'fr',
     iso: 'fr-FR',
-  }],
+  }] }),
   defaultLocale: 'en',
   strategy: 'prefix_except_default',
 } as AutoI18nConfig
@@ -69,13 +69,7 @@ describe('i18n', () => {
       },
       sourceType: 'user',
     }], {
-      locales: [{
-        code: 'en',
-        iso: 'en-US',
-      }, {
-        code: 'fr',
-        iso: 'fr-FR',
-      }],
+      locales: EnFrAutoI18n.locales,
       defaultLocale: 'en',
       strategy: 'no_prefix',
       isI18nMapped: true,
@@ -114,13 +108,7 @@ describe('i18n', () => {
       sourceType: 'user',
     }], {
       autoI18n: {
-        locales: [{
-          code: 'en',
-          iso: 'en-US',
-        }, {
-          code: 'fr',
-          iso: 'fr-FR',
-        }],
+        locales: EnFrAutoI18n.locales,
         defaultLocale: 'en',
         strategy: 'prefix_except_default',
       },
@@ -133,8 +121,11 @@ describe('i18n', () => {
           "_index": undefined,
           "_key": "en-US/__sitemap/url",
           "_locale": {
+            "_hreflang": "en-US",
+            "_sitemap": "en-US",
             "code": "en",
             "iso": "en-US",
+            "language": "en-US",
           },
           "_path": {
             "hash": "",
@@ -165,8 +156,11 @@ describe('i18n', () => {
           "_index": undefined,
           "_key": "fr-FR/fr/__sitemap/url",
           "_locale": {
+            "_hreflang": "fr-FR",
+            "_sitemap": "fr-FR",
             "code": "fr",
             "iso": "fr-FR",
+            "language": "fr-FR",
           },
           "_path": {
             "hash": "",
@@ -237,8 +231,11 @@ describe('i18n', () => {
           "_index": 0,
           "_key": "/en/dynamic/foo",
           "_locale": {
+            "_hreflang": "en-US",
+            "_sitemap": "en-US",
             "code": "en",
             "iso": "en-US",
+            "language": "en-US",
           },
           "_path": {
             "hash": "",
@@ -254,11 +251,11 @@ describe('i18n', () => {
             },
             {
               "href": "/en/dynamic/foo",
-              "hreflang": "en",
+              "hreflang": "en-US",
             },
             {
               "href": "/fr/dynamic/foo",
-              "hreflang": "fr",
+              "hreflang": "fr-FR",
             },
           ],
           "loc": "/en/dynamic/foo",
@@ -268,8 +265,11 @@ describe('i18n', () => {
           "_index": 1,
           "_key": "/fr/dynamic/foo",
           "_locale": {
+            "_hreflang": "fr-FR",
+            "_sitemap": "fr-FR",
             "code": "fr",
             "iso": "fr-FR",
+            "language": "fr-FR",
           },
           "_path": {
             "hash": "",
@@ -285,11 +285,11 @@ describe('i18n', () => {
             },
             {
               "href": "/en/dynamic/foo",
-              "hreflang": "en",
+              "hreflang": "en-US",
             },
             {
               "href": "/fr/dynamic/foo",
-              "hreflang": "fr",
+              "hreflang": "fr-FR",
             },
           ],
           "loc": "/fr/dynamic/foo",
@@ -299,8 +299,11 @@ describe('i18n', () => {
           "_index": undefined,
           "_key": "en-USendless-dungeon",
           "_locale": {
+            "_hreflang": "en-US",
+            "_sitemap": "en-US",
             "code": "en",
             "iso": "en-US",
+            "language": "en-US",
           },
           "_path": {
             "hash": "",
@@ -330,8 +333,11 @@ describe('i18n', () => {
           "_index": 3,
           "_key": "english-url",
           "_locale": {
+            "_hreflang": "en-US",
+            "_sitemap": "en-US",
             "code": "en",
             "iso": "en-US",
+            "language": "en-US",
           },
           "_path": {
             "hash": "",
@@ -347,7 +353,7 @@ describe('i18n', () => {
             },
             {
               "href": "english-url",
-              "hreflang": "en",
+              "hreflang": "en-US",
             },
           ],
           "loc": "english-url",
@@ -371,8 +377,11 @@ describe('i18n', () => {
           "_index": undefined,
           "_key": "fr-FR/fr/endless-dungeon",
           "_locale": {
+            "_hreflang": "fr-FR",
+            "_sitemap": "fr-FR",
             "code": "fr",
             "iso": "fr-FR",
+            "language": "fr-FR",
           },
           "_path": {
             "hash": "",
@@ -396,6 +405,57 @@ describe('i18n', () => {
             },
           ],
           "loc": "/fr/endless-dungeon",
+        },
+      ]
+    `)
+  })
+  it('normalizes locales', () => {
+    const locales = [{
+      code: 'en',
+      iso: 'en-US',
+    }, {
+      code: 'fr',
+      iso: 'fr-FR',
+    }, {
+      code: 'es',
+    },
+    'br',
+    {
+      code: 'xx',
+      language: 'xx-XX',
+    }]
+    const data = normalizeLocales({ locales })
+    expect(data).toMatchInlineSnapshot(`
+      [
+        {
+          "_hreflang": "en-US",
+          "_sitemap": "en-US",
+          "code": "en",
+          "iso": "en-US",
+          "language": "en-US",
+        },
+        {
+          "_hreflang": "fr-FR",
+          "_sitemap": "fr-FR",
+          "code": "fr",
+          "iso": "fr-FR",
+          "language": "fr-FR",
+        },
+        {
+          "_hreflang": "es",
+          "_sitemap": "es",
+          "code": "es",
+        },
+        {
+          "_hreflang": "br",
+          "_sitemap": "br",
+          "code": "br",
+        },
+        {
+          "_hreflang": "xx-XX",
+          "_sitemap": "xx-XX",
+          "code": "xx",
+          "language": "xx-XX",
         },
       ]
     `)

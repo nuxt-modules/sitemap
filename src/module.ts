@@ -22,21 +22,22 @@ import type {
   AutoI18nConfig,
   ModuleRuntimeConfig,
   MultiSitemapEntry,
-  NormalisedLocales,
   SitemapDefinition,
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
   ModuleOptions as _ModuleOptions, FilterInput,
-  NormalisedLocale,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
-import { mergeOnKey } from './runtime/utils-pure'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/nitro/sitemap/urlset/normalise'
-import { generatePathForI18nPages, getOnlyLocalesFromI18nConfig, splitPathForI18nLocales } from './util/i18n'
+import {
+  generatePathForI18nPages,
+  normalizeLocales,
+  splitPathForI18nLocales,
+} from './util/i18n'
 import { normalizeFilters } from './util/filter'
 
 // eslint-disable-next-line
@@ -155,18 +156,14 @@ export default defineNuxtModule<ModuleOptions>({
     let nuxtI18nConfig = {} as NuxtI18nOptions
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
-    let normalisedLocales: NormalisedLocales = []
+    let normalisedLocales: AutoI18nConfig['locales'] = []
     let usingI18nPages = false
     if (hasNuxtModule('@nuxtjs/i18n')) {
       const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
       if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
         logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
-      normalisedLocales = mergeOnKey((nuxtI18nConfig.locales || []).map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
-      const onlyLocales = getOnlyLocalesFromI18nConfig(nuxtI18nConfig)
-      if (onlyLocales.length) {
-        normalisedLocales = normalisedLocales.filter((locale: NormalisedLocale) => onlyLocales.includes(locale.code))
-      }
+      normalisedLocales = normalizeLocales(nuxtI18nConfig)
       usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
         const i18nPagesSources: SitemapSourceBase = {
@@ -189,20 +186,20 @@ export default defineNuxtModule<ModuleOptions>({
             // add to sitemap
             const alternatives = Object.keys(pageLocales)
               .map(l => ({
-                hreflang: normalisedLocales.find(nl => nl.code === l)?.iso || l,
+                hreflang: normalisedLocales.find(nl => nl.code === l)?._hreflang || l,
                 href: generatePathForI18nPages({ localeCode: l, pageLocales: pageLocales[l], nuxtI18nConfig, normalisedLocales }),
               }))
             if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
               alternatives.push({ hreflang: 'x-default', href: generatePathForI18nPages({ normalisedLocales, localeCode: nuxtI18nConfig.defaultLocale, pageLocales: pageLocales[nuxtI18nConfig.defaultLocale], nuxtI18nConfig }) })
             i18nPagesSources.urls!.push({
-              _sitemap: locale.iso || locale.code,
+              _sitemap: locale._sitemap,
               loc: generatePathForI18nPages({ normalisedLocales, localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig }),
               alternatives,
             })
             // add extra loc with the default locale code prefix on prefix and default strategy
             if (nuxtI18nConfig.strategy === 'prefix_and_default' && localeCode === nuxtI18nConfig.defaultLocale) {
               i18nPagesSources.urls!.push({
-                _sitemap: locale.iso || locale.code,
+                _sitemap: locale._sitemap,
                 loc: generatePathForI18nPages({ normalisedLocales, localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, forcedStrategy: 'prefix' }),
                 alternatives,
               })
@@ -240,7 +237,7 @@ export default defineNuxtModule<ModuleOptions>({
         config.sitemaps = { index: [...(config.sitemaps?.index || []), ...(config.appendSitemaps || [])] }
         for (const locale of resolvedAutoI18n.locales)
           // @ts-expect-error untyped
-          config.sitemaps[locale.iso || locale.code] = { includeAppSources: true }
+          config.sitemaps[locale._sitemap] = { includeAppSources: true }
         isI18nMapped = true
         usingMultiSitemaps = true
       }
@@ -603,7 +600,7 @@ declare module 'vue-router' {
         if (!pageSource.length) {
           pageSource.push(nuxt.options.app.baseURL || '/')
         }
-        if (!resolvedConfigUrls) {
+        if (!resolvedConfigUrls && config.urls) {
           config.urls && userGlobalSources.push({
             context: {
               name: 'sitemap:urls',

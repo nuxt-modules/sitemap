@@ -46,7 +46,7 @@ describe('i18n prefix', () => {
           <url>
               <loc>https://nuxtseo.com/extra</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/extra" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/extra" hreflang="en" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/extra" hreflang="en-US" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr</loc>
@@ -58,7 +58,7 @@ describe('i18n prefix', () => {
           <url>
               <loc>https://nuxtseo.com/no-i18n</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en-US" />
           </url>
           <url>
               <loc>https://nuxtseo.com/en/test</loc>

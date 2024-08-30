@@ -204,12 +204,33 @@ export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rul
 
 export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 
-export interface NormalisedLocale { code: string, iso?: string, domain?: string }
+// copied from @nuxtjs/i18n, types do not appear to be working
+interface LocaleObject extends Record<string, any> {
+  code: string
+  name?: string
+  dir?: 'ltr' | 'rtl' | 'auto'
+  domain?: string
+  domains?: string[]
+  defaultForDomains?: string[]
+  file?: string | {
+    path: string
+    cache?: boolean
+  }
+  files?: string[] | {
+    path: string
+    cache?: boolean
+  }[]
+  isCatchallLocale?: boolean
+  /**
+   * @deprecated in v9, use `language` instead
+   */
+  iso?: string
+  language?: string
+}
 
-export type NormalisedLocales = NormalisedLocale[]
 export interface AutoI18nConfig {
   differentDomains?: boolean
-  locales: NormalisedLocales
+  locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
   defaultLocale: string
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
 }

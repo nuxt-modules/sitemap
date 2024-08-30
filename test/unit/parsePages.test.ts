@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
 import { convertNuxtPagesToSitemapEntries } from '../../src/util/nuxtSitemap'
+import { normalizeLocales } from '../../src/util/i18n'
 
 const payload: NuxtPage[] = [
   {
@@ -196,7 +197,7 @@ describe('page parser', () => {
       isI18nMapped: true,
       autoLastmod: false,
       defaultLocale: 'en',
-      normalisedLocales: [{ code: 'en' }, { code: 'fr' }],
+      normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
       strategy: 'no_prefix',
     })).toMatchInlineSnapshot(`
       [

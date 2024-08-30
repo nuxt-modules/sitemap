@@ -79,7 +79,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
             }
             entries.push({
               href: u.loc,
-              hreflang: u._locale.code || autoI18n.defaultLocale,
+              hreflang: u._locale._hreflang || autoI18n.defaultLocale,
             })
             return entries
           })
@@ -98,7 +98,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
           e.alternatives = [
             {
               // apply default locale domain
-              ...autoI18n.locales.find(l => [l.code, l.iso].includes(autoI18n.defaultLocale)),
+              ...autoI18n.locales.find(l => [l.code, l.language].includes(autoI18n.defaultLocale)),
               code: 'x-default',
             },
             ...autoI18n.locales
@@ -106,7 +106,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
           ]
             .map((locale) => {
               return {
-                hreflang: locale.iso || locale.code,
+                hreflang: locale._hreflang,
                 href: joinURL(withHttps(locale.domain!), e._pathWithoutPrefix),
               }
             })
@@ -117,7 +117,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
             let loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
             if (autoI18n.differentDomains || (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
               loc = e._pathWithoutPrefix
-            const _sitemap = isI18nMapped ? (l.iso || l.code) : undefined
+            const _sitemap = isI18nMapped ? l._sitemap : undefined
             const newEntry: NormalizedI18n = preNormalizeEntry({
               _sitemap,
               ...e,
@@ -125,7 +125,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
               _key: `${_sitemap || ''}${loc}`,
               _locale: l,
               loc,
-              alternatives: [{ code: 'x-default' }, ...autoI18n.locales].map((locale) => {
+              alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
                 let href = ''
@@ -141,11 +141,10 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
                     href = joinURL('/', code, e._pathWithoutPrefix)
                   }
                 }
-                const hreflang = locale.iso || locale.code
                 if (!filterPath(href))
                   return false
                 return {
-                  hreflang,
+                  hreflang: locale._hreflang,
                   href,
                 }
               }).filter(Boolean),
@@ -163,7 +162,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
         }
       }
       if (isI18nMapped) {
-        e._sitemap = e._sitemap || e._locale.iso || e._locale.code
+        e._sitemap = e._sitemap || e._locale._sitemap
       }
       if (e._index)
         _urls[e._index] = e
@@ -207,7 +206,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     return urls
   }
   if (autoI18n?.differentDomains) {
-    const domain = autoI18n.locales.find(e => [e.iso, e.code].includes(sitemap.sitemapName))?.domain
+    const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain
     if (domain) {
       const _tester = resolvers.canonicalUrlResolver
       resolvers.canonicalUrlResolver = (path: string) => resolveSitePath(path, {

@@ -34,7 +34,7 @@ describe('i18n filtering', () => {
           <url>
               <loc>https://nuxtseo.com/no-i18n</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en-US" />
           </url>
           <url>
               <loc>https://nuxtseo.com/en/__sitemap/url</loc>
