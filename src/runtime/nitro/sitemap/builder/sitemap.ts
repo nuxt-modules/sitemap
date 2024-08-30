@@ -214,7 +214,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
         absolute: true,
         withBase: false,
         siteUrl: withHttps(domain),
-        trailingSlash: !_tester('/test/').endsWith('/'),
+        trailingSlash: _tester('/test/').endsWith('/'),
         base: '/',
       })
     }
