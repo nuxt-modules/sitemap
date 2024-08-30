@@ -67,7 +67,7 @@ describe('i18n prefix except default', () => {
           <url>
               <loc>https://nuxtseo.com/no-i18n</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/no-i18n" hreflang="en-US" />
           </url>
           <url>
               <loc>https://nuxtseo.com/test</loc>

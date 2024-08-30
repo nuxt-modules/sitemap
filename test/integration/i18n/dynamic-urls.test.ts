@@ -42,7 +42,7 @@ describe('i18n dynamic urls', () => {
           <url>
               <loc>https://nuxtseo.com/english-url</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/english-url" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/english-url" hreflang="en" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/english-url" hreflang="en-US" />
           </url>
           <url>
               <loc>https://nuxtseo.com/__sitemap/url</loc>
@@ -58,8 +58,8 @@ describe('i18n dynamic urls', () => {
           <url>
               <loc>https://nuxtseo.com/en/dynamic/foo</loc>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/en/dynamic/foo" hreflang="x-default" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/en/dynamic/foo" hreflang="en" />
-              <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/dynamic/foo" hreflang="fr" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/en/dynamic/foo" hreflang="en-US" />
+              <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/dynamic/foo" hreflang="fr-FR" />
           </url>
       </urlset>"
     `)

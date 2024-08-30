@@ -79,7 +79,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
             }
             entries.push({
               href: u.loc,
-              hreflang: u._locale.code || autoI18n.defaultLocale,
+              hreflang: u._locale._hreflang || autoI18n.defaultLocale,
             })
             return entries
           })
@@ -125,7 +125,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
               _key: `${_sitemap || ''}${loc}`,
               _locale: l,
               loc,
-              alternatives: [{ code: 'x-default' }, ...autoI18n.locales].map((locale) => {
+              alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
                 let href = ''
