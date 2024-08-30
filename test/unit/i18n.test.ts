@@ -229,7 +229,7 @@ describe('i18n', () => {
         {
           "_abs": false,
           "_index": 0,
-          "_key": "/en/dynamic/foo",
+          "_key": "en-US/en/dynamic/foo",
           "_locale": {
             "_hreflang": "en-US",
             "_sitemap": "en-US",
@@ -263,7 +263,7 @@ describe('i18n', () => {
         {
           "_abs": false,
           "_index": 1,
-          "_key": "/fr/dynamic/foo",
+          "_key": "fr-FR/fr/dynamic/foo",
           "_locale": {
             "_hreflang": "fr-FR",
             "_sitemap": "fr-FR",
@@ -331,7 +331,7 @@ describe('i18n', () => {
         {
           "_abs": false,
           "_index": 3,
-          "_key": "english-url",
+          "_key": "en-USenglish-url",
           "_locale": {
             "_hreflang": "en-US",
             "_sitemap": "en-US",

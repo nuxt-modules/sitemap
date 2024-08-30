@@ -34,7 +34,7 @@ declare module 'nitropack' {
 }
 
 export function includesSitemapRoot(sitemapName: string, routes: string[]) {
-  return routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
+  return routes.includes(`/__sitemap__/`) || routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
 }
 
 export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
@@ -66,7 +66,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
       // extract alternatives from the html
-      if (!route.fileName?.endsWith('.html') || !html)
+      if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
 
       // maybe the user already provided a _sitemap on the route
