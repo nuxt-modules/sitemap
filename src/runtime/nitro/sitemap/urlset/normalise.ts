@@ -33,8 +33,11 @@ export function preNormalizeEntry(_e: SitemapUrl | string): ResolvedSitemapUrl {
     e.loc = e.url
     delete e.url
   }
+  if (typeof e.loc !== 'string') {
+    e.loc = ''
+  }
   // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
-  e.loc = removeTrailingSlash(e.loc || '')
+  e.loc = removeTrailingSlash(e.loc)
   e._abs = hasProtocol(e.loc, { acceptRelative: false, strict: false })
   try {
     e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc)
