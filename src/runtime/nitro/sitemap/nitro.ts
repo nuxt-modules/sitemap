@@ -84,7 +84,6 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortSitemapUrls(urls) : urls
   // final urls
   const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers))
-  console.log(normalizedPreDedupe)
   const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
 
