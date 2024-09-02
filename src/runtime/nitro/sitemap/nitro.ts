@@ -1,4 +1,4 @@
-import { getQuery, setHeader } from 'h3'
+import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'site-config-stack/urls'
 import { defu } from 'defu'
@@ -10,7 +10,7 @@ import type {
   SitemapDefinition,
   SitemapRenderCtx,
 } from '../../types'
-import { mergeOnKey, splitForLocales } from '../../utils-pure'
+import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry } from './urlset/normalise'
@@ -37,6 +37,18 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
 export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp()
+  if (import.meta.prerender) {
+    const config = useSiteConfig(event)
+    if (!config.url && !nitro._sitemapWarned) {
+      nitro._sitemapWarned = true
+      logger.error('Sitemap Site URL missing!')
+      logger.info('To fix this please add `{ site: { url: \'site.com\' } }` to your Nuxt config or a `NUXT_PUBLIC_SITE_URL=site.com` to your .env. Learn more at https://nuxtseo.com/site-config/getting-started/how-it-works')
+      throw new createError({
+        statusMessage: 'You must provide a site URL to prerender a sitemap.',
+        statusCode: 500,
+      })
+    }
+  }
   const resolvers = useNitroUrlResolvers(event)
   let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig)
 

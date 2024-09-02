@@ -1,7 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { withBase } from 'ufo'
-import { assertSiteConfig } from 'nuxt-site-config-kit'
 import { useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro, PrerenderRoute } from 'nitropack'
@@ -59,9 +58,6 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     let prerenderer: Nitro
     nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
       prerenderer = _prerenderer
-      assertSiteConfig('@nuxtjs/sitemap', {
-        url: 'Required to generate absolute canonical URLs for your sitemap.',
-      }, { throwError: false })
     })
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
