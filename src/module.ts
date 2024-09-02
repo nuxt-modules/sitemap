@@ -601,13 +601,15 @@ declare module 'vue-router' {
           pageSource.push(nuxt.options.app.baseURL || '/')
         }
         if (!resolvedConfigUrls && config.urls) {
-          config.urls && userGlobalSources.push({
-            context: {
-              name: 'sitemap:urls',
-              description: 'Set with the `sitemap.urls` config.',
-            },
-            urls: await resolveUrls(config.urls, { path: 'sitemap:urls', logger }),
-          })
+          if (config.urls) {
+            userGlobalSources.push({
+              context: {
+                name: 'sitemap:urls',
+                description: 'Set with the `sitemap.urls` config.',
+              },
+              urls: await resolveUrls(config.urls, { path: 'sitemap:urls', logger }),
+            })
+          }
           // we want to avoid adding duplicates as well as hitting api endpoints multiple times
           resolvedConfigUrls = true
         }
@@ -675,23 +677,27 @@ declare module 'vue-router' {
           sitemapSources[sitemapName] = sitemapSources[sitemapName] || []
           const definition = (config.sitemaps as Record<string, SitemapDefinition>)[sitemapName] as SitemapDefinition
           if (!sitemapSources[sitemapName].length) {
-            definition.urls && sitemapSources[sitemapName].push({
-              context: {
-                name: `sitemaps:${sitemapName}:urls`,
-                description: 'Set with the `sitemap.urls` config.',
-              },
-              urls: await resolveUrls(definition.urls, { path: `sitemaps:${sitemapName}:urls`, logger }),
-            })
-            definition!.dynamicUrlsApiEndpoint && sitemapSources[sitemapName].push({
-              context: {
-                name: `${sitemapName}:dynamicUrlsApiEndpoint`,
-                description: `Generated from your ${sitemapName}:dynamicUrlsApiEndpoint config.`,
-                tips: [
-                  `You should switch to using the \`sitemaps.${sitemapName}.sources\` config which also supports fetch options.`,
-                ],
-              },
-              fetch: definition!.dynamicUrlsApiEndpoint,
-            })
+            if (definition.urls) {
+              sitemapSources[sitemapName].push({
+                context: {
+                  name: `sitemaps:${sitemapName}:urls`,
+                  description: 'Set with the `sitemap.urls` config.',
+                },
+                urls: await resolveUrls(definition.urls, { path: `sitemaps:${sitemapName}:urls`, logger }),
+              })
+            }
+            if (definition!.dynamicUrlsApiEndpoint) {
+              sitemapSources[sitemapName].push({
+                context: {
+                  name: `${sitemapName}:dynamicUrlsApiEndpoint`,
+                  description: `Generated from your ${sitemapName}:dynamicUrlsApiEndpoint config.`,
+                  tips: [
+                    `You should switch to using the \`sitemaps.${sitemapName}.sources\` config which also supports fetch options.`,
+                  ],
+                },
+                fetch: definition!.dynamicUrlsApiEndpoint,
+              })
+            }
             sitemapSources[sitemapName].push(...(definition.sources || [])
               .map((s) => {
                 if (typeof s === 'string' || Array.isArray(s)) {
