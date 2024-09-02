@@ -1,4 +1,13 @@
-import { hasProtocol, parsePath, parseURL } from 'ufo'
+import {
+  encodePath,
+  hasProtocol,
+  parsePath,
+  parseQuery,
+  parseURL,
+  stringifyParsedURL,
+  stringifyQuery,
+  withoutTrailingSlash,
+} from 'ufo'
 import { defu } from 'defu'
 import type {
   AlternativeEntry,
@@ -27,7 +36,7 @@ function removeTrailingSlash(s: string) {
   return s.replace(/\/(\?|#|$)/, '$1')
 }
 
-export function preNormalizeEntry(_e: SitemapUrl | string): ResolvedSitemapUrl {
+export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
   const e = (typeof _e === 'string' ? { loc: _e } : { ..._e }) as ResolvedSitemapUrl
   if (e.url && !e.loc) {
     e.loc = e.url
@@ -45,14 +54,24 @@ export function preNormalizeEntry(_e: SitemapUrl | string): ResolvedSitemapUrl {
   catch (e) {
     e._path = null
   }
-  if (e._path?.pathname === '')
-    e.loc = `${e.loc}/`
   if (e._path) {
-    e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path.search}`
+    const query = parseQuery(e._path.search)
+    const qs = stringifyQuery(query)
+    e._relativeLoc = `${encodePath(e._path?.pathname)}${qs.length ? `?${qs}` : ''}`
+    if (e._path.host) {
+      e.loc = stringifyParsedURL(e._path)
+    }
+    else {
+      e.loc = e._relativeLoc
+    }
   }
   else {
-    e._key = e.loc
+    e.loc = encodeURI(e.loc)
   }
+  if (e.loc === '')
+    e.loc = `/`
+  e.loc = resolve(e.loc, resolvers)
+  e._key = `${e._sitemap || ''}${withoutTrailingSlash(e.loc)}`
   return e as ResolvedSitemapUrl
 }
 

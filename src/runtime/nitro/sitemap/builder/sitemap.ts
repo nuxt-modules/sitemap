@@ -21,7 +21,7 @@ export interface NormalizedI18n extends ResolvedSitemapUrl {
   _index?: number
 }
 
-export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: SitemapSourceResolved[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>): ResolvedSitemapUrl[] {
+export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: SitemapSourceResolved[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
   const {
     autoI18n,
     isI18nMapped,
@@ -32,7 +32,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
   })
   // 1. normalise
   const _urls = sources.flatMap(e => e.urls).map((_e) => {
-    const e = preNormalizeEntry(_e)
+    const e = preNormalizeEntry(_e, resolvers)
     if (!e.loc || !filterPath(e.loc))
       return false
     return e
@@ -46,7 +46,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
     validI18nUrlsForTransform = _urls.map((_e, i) => {
       if (_e._abs)
         return false
-      const split = splitForLocales(_e.loc, localeCodes)
+      const split = splitForLocales(_e._relativeLoc, localeCodes)
       let localeCode = split[0]
       const pathWithoutPrefix = split[1]
       if (!localeCode)
@@ -149,7 +149,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
                   href,
                 }
               }).filter(Boolean),
-            })
+            }, resolvers)
             if (e._locale.code === newEntry._locale.code) {
               // replace
               _urls[e._index] = newEntry
@@ -226,7 +226,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   sources.push(...await childSitemapSources(sitemap))
   const resolvedSources = await resolveSitemapSources(sources, resolvers.event)
 
-  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedSources, { autoI18n, isI18nMapped })
+  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedSources, { autoI18n, isI18nMapped }, resolvers)
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {

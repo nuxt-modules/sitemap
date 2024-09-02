@@ -23,6 +23,6 @@ describe('query routes', () => {
 
     expect(sitemap).toContain('<loc>https://nuxtseo.com/query-no-slash?foo=bar</loc>')
     expect(sitemap).toContain('<loc>https://nuxtseo.com/query-slash?foo=bar</loc>')
-    expect(sitemap).toContain('<loc>https://nuxtseo.com/query-slash-hash?foo=bar#hash</loc>')
+    expect(sitemap).not.toContain('<loc>https://nuxtseo.com/query-slash-hash?foo=bar#hash</loc>')
   }, 60000)
 })

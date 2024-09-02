@@ -85,6 +85,7 @@ describe('i18n', () => {
             "pathname": "/__sitemap/url",
             "search": "",
           },
+          "_relativeLoc": "/__sitemap/url",
           "changefreq": "weekly",
           "loc": "/__sitemap/url",
         },
@@ -133,6 +134,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "/__sitemap/url",
+          "_relativeLoc": "/__sitemap/url",
           "_sitemap": "en-US",
           "alternatives": [
             {
@@ -168,6 +170,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "/__sitemap/url",
+          "_relativeLoc": "/fr/__sitemap/url",
           "_sitemap": "fr-FR",
           "alternatives": [
             {
@@ -243,6 +246,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "/dynamic/foo",
+          "_relativeLoc": "/en/dynamic/foo",
           "_sitemap": "en-US",
           "alternatives": [
             {
@@ -277,6 +281,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "/dynamic/foo",
+          "_relativeLoc": "/fr/dynamic/foo",
           "_sitemap": "fr-FR",
           "alternatives": [
             {
@@ -311,6 +316,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "endless-dungeon",
+          "_relativeLoc": "endless-dungeon",
           "_sitemap": "en-US",
           "alternatives": [
             {
@@ -345,6 +351,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "english-url",
+          "_relativeLoc": "english-url",
           "_sitemap": "en-US",
           "alternatives": [
             {
@@ -360,7 +367,7 @@ describe('i18n', () => {
         },
         {
           "_abs": true,
-          "_key": "/abc/def",
+          "_key": "https://www.somedomain.com/abc/def",
           "_path": {
             "auth": "",
             "hash": "",
@@ -370,6 +377,7 @@ describe('i18n', () => {
             "search": "",
             Symbol(ufo:protocolRelative): false,
           },
+          "_relativeLoc": "/abc/def",
           "loc": "https://www.somedomain.com/abc/def",
         },
         {
@@ -389,6 +397,7 @@ describe('i18n', () => {
             "search": "",
           },
           "_pathWithoutPrefix": "endless-dungeon",
+          "_relativeLoc": "/fr/endless-dungeon",
           "_sitemap": "fr-FR",
           "alternatives": [
             {

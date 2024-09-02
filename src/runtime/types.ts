@@ -268,6 +268,10 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
   /**
    * @internal
    */
+  _relativeLoc: string
+  /**
+   * @internal
+   */
   _abs: boolean
 }
 
