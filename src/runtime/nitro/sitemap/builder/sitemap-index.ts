@@ -39,7 +39,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
     const sources = await resolveSitemapSources(await globalSitemapSources())
-    const normalisedUrls = resolveSitemapEntries(sitemap, sources, { autoI18n, isI18nMapped })
+    const normalisedUrls = resolveSitemapEntries(sitemap, sources, { autoI18n, isI18nMapped }, resolvers)
     // 2. enhance
     const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
