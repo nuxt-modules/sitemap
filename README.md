@@ -17,7 +17,7 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt. Previously
 <tbody>
 <td align="center">
 <img width="800" height="0" /><br>
-<i>Status:</i> <a href="https://github.com/nuxt-modules/sitemap/releases/tag/v5.0.0">v5 Released 🎉</a></b> <br>
+<i>Status:</i> <a href="https://github.com/nuxt-modules/sitemap/releases/tag/v6.0.0">v6 Released 🎉</a></b> <br>
 <sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
 <img width="800" height="0" />
