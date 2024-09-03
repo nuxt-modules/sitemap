@@ -94,6 +94,7 @@ export default defineNuxtConfig({
       { label: 'Last Modified', select: 'sitemap:lastmod', width: '25%' },
       { label: 'Hreflangs', select: 'count(xhtml:link)', width: '25%' },
     ],
+    experimentalWarmUp: true,
     urls: [
       '/manual-url-test',
     ],

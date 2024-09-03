@@ -425,7 +425,7 @@ declare module 'vue-router' {
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
               sitemapName,
-              _route: withBase(`sitemap/${sitemapName}.xml`, nuxt.options.app.baseURL || '/'),
+              _route: withBase(joinURL(config.sitemapsPathPrefix, `${sitemapName}.xml`), nuxt.options.app.baseURL || '/'),
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length || !!definition.dynamicUrlsApiEndpoint,
             },
             { ...definition, urls: undefined, sources: undefined },
