@@ -244,7 +244,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     let needsRobotsPolyfill = true
-    const robotsModuleName = hasNuxtModule('nuxt-simple-robots') ? 'nuxt-simple-robots' : hasNuxtModule('@nuxtjs/robots') ? '@nuxtjs/robots' : false
+    const robotsModuleName = ['nuxt-simple-robots', '@nuxtjs/robots'].find(s => hasNuxtModule(s))
     if (robotsModuleName) {
       const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
       // we want to keep versions in sync
