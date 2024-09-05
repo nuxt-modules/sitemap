@@ -158,7 +158,7 @@ export default defineNuxtModule<ModuleOptions>({
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: AutoI18nConfig['locales'] = []
     let usingI18nPages = false
-    const i18nModule = ['@nuxtjs/i18n', 'nuxt-i18n-micro'].filter(s => hasNuxtModule(s))[0]
+    const i18nModule = ['@nuxtjs/i18n', 'nuxt-i18n-micro'].find(s => hasNuxtModule(s))
     if (i18nModule) {
       const i18nVersion = await getNuxtModuleVersion(i18nModule)
       if (i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
