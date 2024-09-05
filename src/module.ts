@@ -158,17 +158,18 @@ export default defineNuxtModule<ModuleOptions>({
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: AutoI18nConfig['locales'] = []
     let usingI18nPages = false
-    if (hasNuxtModule('@nuxtjs/i18n')) {
-      const i18nVersion = await getNuxtModuleVersion('@nuxtjs/i18n')
-      if (!await hasNuxtModuleCompatibility('@nuxtjs/i18n', '>=8'))
-        logger.warn(`You are using @nuxtjs/i18n v${i18nVersion}. For the best compatibility, please upgrade to @nuxtjs/i18n v8.0.0 or higher.`)
-      nuxtI18nConfig = (await getNuxtModuleOptions('@nuxtjs/i18n') || {}) as NuxtI18nOptions
+    const i18nModule = ['@nuxtjs/i18n', 'nuxt-i18n-micro'].filter(s => hasNuxtModule(s))[0]
+    if (i18nModule) {
+      const i18nVersion = await getNuxtModuleVersion(i18nModule)
+      if (i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
+        logger.warn(`You are using ${i18nModule} v${i18nVersion}. For the best compatibility, please upgrade to ${i18nModule} v8.0.0 or higher.`)
+      nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as NuxtI18nOptions
       normalisedLocales = normalizeLocales(nuxtI18nConfig)
       usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
         const i18nPagesSources: SitemapSourceBase = {
           context: {
-            name: '@nuxtjs/i18n:pages',
+            name: `${i18nModule}:pages`,
             description: 'Generated from your i18n.pages config.',
             tips: [
               'You can disable this with `autoI18n: false`.',
@@ -213,7 +214,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         if (!normalisedLocales.length)
-          logger.warn(`You are using @nuxtjs/i18n but have not configured any locales, this will cause issues with ${name}. Please configure \`locales\`.`)
+          logger.warn(`You are using ${i18nModule} but have not configured any locales, this will cause issues with ${name}. Please configure \`locales\`.`)
       }
       const hasSetAutoI18n = typeof config.autoI18n === 'object' && Object.keys(config.autoI18n).length
       const hasI18nConfigForAlternatives = nuxtI18nConfig.differentDomains || usingI18nPages || (nuxtI18nConfig.strategy !== 'no_prefix' && nuxtI18nConfig.locales)
