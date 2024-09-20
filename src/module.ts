@@ -13,7 +13,6 @@ import {
 } from '@nuxt/kit'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
-import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
 import { readPackageJSON } from 'pkg-types'
@@ -26,7 +25,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
-  ModuleOptions as _ModuleOptions, FilterInput,
+  ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
@@ -153,7 +152,7 @@ export default defineNuxtModule<ModuleOptions>({
     let usingMultiSitemaps = !!config.sitemaps
 
     let isI18nMapped = false
-    let nuxtI18nConfig = {} as NuxtI18nOptions
+    let nuxtI18nConfig = {} as I18nIntegrationOptions
     let resolvedAutoI18n: false | AutoI18nConfig = typeof config.autoI18n === 'boolean' ? false : config.autoI18n || false
     const hasDisabledAutoI18n = typeof config.autoI18n === 'boolean' && !config.autoI18n
     let normalisedLocales: AutoI18nConfig['locales'] = []
@@ -163,7 +162,7 @@ export default defineNuxtModule<ModuleOptions>({
       const i18nVersion = await getNuxtModuleVersion(i18nModule)
       if (i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
         logger.warn(`You are using ${i18nModule} v${i18nVersion}. For the best compatibility, please upgrade to ${i18nModule} v8.0.0 or higher.`)
-      nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as (NuxtI18nOptions & { includeDefaultLocaleRoute?: boolean })
+      nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as I18nIntegrationOptions
       if (typeof nuxtI18nConfig.includeDefaultLocaleRoute !== 'undefined') {
         nuxtI18nConfig.strategy = nuxtI18nConfig.includeDefaultLocaleRoute ? 'prefix' : 'prefix_except_default'
       }
