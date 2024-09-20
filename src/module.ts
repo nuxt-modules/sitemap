@@ -121,7 +121,7 @@ export default defineNuxtModule<ModuleOptions>({
         }
 
         switch (true) {
-          case config?.sources?.length !== 0:
+          case (config?.sources?.length || 0) > 0:
             warnForIgnoredKey('sources')
             break
           case config?.includeAppSources !== undefined:
