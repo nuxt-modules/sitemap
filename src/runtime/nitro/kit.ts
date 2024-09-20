@@ -1,6 +1,6 @@
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
-import { withoutBase, withoutTrailingSlash } from 'ufo'
+import { parseURL, withoutBase, withoutTrailingSlash } from 'ufo'
 import type { NitroRouteRules } from 'nitropack'
 import { useRuntimeConfig } from '#imports'
 
@@ -14,14 +14,16 @@ export function createNitroRouteRuleMatcher() {
     createRadixRouter({
       routes: Object.fromEntries(
         Object.entries(nitro?.routeRules || {})
-          .map(([path, rules]) => [withoutTrailingSlash(path), rules]),
+          .map(([path, rules]) => [path === '/' ? path : withoutTrailingSlash(path), rules]),
       ),
     }),
   )
-  return (path: string) => {
+  return (pathOrUrl: string) => {
+    const path = pathOrUrl[0] === '/' ? pathOrUrl : parseURL(pathOrUrl, app.baseURL).pathname
+    const pathWithoutQuery = withoutQuery(path)
     return defu({}, ..._routeRulesMatcher.matchAll(
       // radix3 does not support trailing slashes
-      withoutBase(withoutTrailingSlash(withoutQuery(path)), app.baseURL),
+      withoutBase(pathWithoutQuery === '/' ? pathWithoutQuery : withoutTrailingSlash(pathWithoutQuery), app.baseURL),
     ).reverse()) as NitroRouteRules
   }
 }
