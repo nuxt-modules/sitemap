@@ -1,6 +1,7 @@
 import type { FetchOptions } from 'ofetch'
 import type { H3Event } from 'h3'
 import type { ParsedURL } from 'ufo'
+import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause
@@ -446,3 +447,9 @@ export interface NitroUrlResolvers {
   relativeBaseUrlResolver: (path: string) => string
   fixSlashes: (path: string) => string
 }
+
+interface NuxtI18nMicro {
+  includeDefaultLocaleRoute?: boolean
+}
+
+export type I18nIntegrationOptions = NuxtI18nOptions & NuxtI18nMicro

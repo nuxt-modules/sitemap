@@ -77,6 +77,7 @@
     "eslint-plugin-n": "^17.10.3",
     "execa": "^9.4.0",
     "nuxt": "^3.13.2",
+    "nuxt-i18n-micro": "^1.16.1",
     "typescript": "5.6.2",
     "vitest": "^2.1.1"
   },
