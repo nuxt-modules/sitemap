@@ -88,3 +88,28 @@ export default defineNitroPlugin((nitroApp) => {
   })
 })
 ```
+
+### Modify Video Entries For Host
+
+Sometimes you'll want to include the videos from your markup automatically but exclude some of them based on the host.
+
+```ts
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:resolved', (ctx) => {
+    ctx.urls.map((url) => {
+      if (url.videos?.length) {
+        url.videos = url.videos.filter((video) => {
+          if (video.content_loc) {
+            const url = new URL(video.content_loc)
+            return url.host.startsWith('www.youtube.com')
+          }
+          return false
+        })
+      }
+      return url
+    })
+  })
+})
+```
