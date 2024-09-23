@@ -73,7 +73,7 @@
     "@nuxtjs/i18n": "9.0.0-alpha.1",
     "@nuxtjs/robots": "4.1.7",
     "bumpp": "^9.5.2",
-    "eslint": "9.10.0",
+    "eslint": "9.11.1",
     "eslint-plugin-n": "^17.10.3",
     "execa": "^9.4.0",
     "nuxt": "^3.13.2",
