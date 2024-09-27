@@ -23,7 +23,8 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
   let isHtmlResponse = false
   try {
-    const urls = await globalThis.$fetch(url, {
+    const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
+    const urls = await fetchContainer.$fetch(url, {
       ...options,
       responseType: 'json',
       signal: timeoutController.signal,
