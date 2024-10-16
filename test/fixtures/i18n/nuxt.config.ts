@@ -9,17 +9,13 @@ export default defineNuxtConfig({
   site: {
     url: 'https://nuxtseo.com',
   },
+
+  compatibilityDate: '2024-07-22',
   nitro: {
     prerender: {
       failOnError: false,
       ignore: ['/'],
     },
-  },
-  sitemap: {
-    dynamicUrlsApiEndpoint: '/__sitemap',
-    autoLastmod: false,
-    credits: false,
-    debug: true,
   },
   i18n: {
     baseUrl: 'https://nuxtseo.com',
@@ -41,6 +37,10 @@ export default defineNuxtConfig({
       },
     ],
   },
-
-  compatibilityDate: '2024-07-22',
+  sitemap: {
+    dynamicUrlsApiEndpoint: '/__sitemap',
+    autoLastmod: false,
+    credits: false,
+    debug: true,
+  },
 })

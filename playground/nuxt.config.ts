@@ -46,10 +46,50 @@ export default defineNuxtConfig({
       },
     }),
   ],
+  site: {
+    url: 'https://sitemap-edge-demo.vercel.app/',
+  },
+  content: {
+    documentDriven: true,
+  },
   ignorePrefix: 'ignore-',
-  i18n: {
-    locales: ['en', 'fr'],
-    defaultLocale: 'en',
+  routeRules: {
+    '/api/prerendered': {
+      prerender: true,
+    },
+    '/secret': {
+      index: false,
+    },
+    '/users-test/*': {
+      sitemap: {
+        lastmod: new Date(2023, 1, 21, 4, 50, 52),
+        changefreq: 'weekly',
+        priority: 0.3,
+        images: [],
+      },
+    },
+    '/should-not-be-in-sitemap/*': {},
+    '/about-redirect': {
+      redirect: '/about',
+    },
+    '/about': {
+      sitemap: {
+        lastmod: '2023-01-21',
+        changefreq: 'daily',
+        priority: 0.3,
+        images: [
+          {
+            loc: 'https://example.com/image.jpg',
+          },
+          {
+            loc: 'https://example.com/image2.jpg',
+          },
+        ],
+      },
+    },
+  },
+  experimental: {
+    inlineRouteRules: true,
   },
   nitro: {
     typescript: {
@@ -69,11 +109,9 @@ export default defineNuxtConfig({
       failOnError: false,
     },
   },
-  content: {
-    documentDriven: true,
-  },
-  site: {
-    url: 'https://sitemap-edge-demo.vercel.app/',
+  i18n: {
+    locales: ['en', 'fr'],
+    defaultLocale: 'en',
   },
 
   // app: {
@@ -143,43 +181,5 @@ export default defineNuxtConfig({
         { sitemap: 'https://www.example.com/sitemap-pages.xml' },
       ],
     },
-  },
-  routeRules: {
-    '/api/prerendered': {
-      prerender: true,
-    },
-    '/secret': {
-      index: false,
-    },
-    '/users-test/*': {
-      sitemap: {
-        lastmod: new Date(2023, 1, 21, 4, 50, 52),
-        changefreq: 'weekly',
-        priority: 0.3,
-        images: [],
-      },
-    },
-    '/should-not-be-in-sitemap/*': {},
-    '/about-redirect': {
-      redirect: '/about',
-    },
-    '/about': {
-      sitemap: {
-        lastmod: '2023-01-21',
-        changefreq: 'daily',
-        priority: 0.3,
-        images: [
-          {
-            loc: 'https://example.com/image.jpg',
-          },
-          {
-            loc: 'https://example.com/image2.jpg',
-          },
-        ],
-      },
-    },
-  },
-  experimental: {
-    inlineRouteRules: true,
   },
 })
