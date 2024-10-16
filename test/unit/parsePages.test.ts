@@ -194,11 +194,16 @@ const payload: NuxtPage[] = [
 describe('page parser', () => {
   it('is parsed', () => {
     expect(convertNuxtPagesToSitemapEntries(payload, {
+      filter: {
+        include: [],
+        exclude: [],
+      },
       isI18nMapped: true,
       autoLastmod: false,
       defaultLocale: 'en',
       normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
       strategy: 'no_prefix',
+      isI18nMicro: false,
     })).toMatchInlineSnapshot(`
       [
         {
@@ -633,6 +638,63 @@ describe('page parser', () => {
             },
           ],
           "loc": "/fr/secret",
+        },
+      ]
+    `)
+  })
+
+  it ('i18n micro', () => {
+    expect(convertNuxtPagesToSitemapEntries([
+      {
+        name: 'index',
+        path: '/:locale(de|ja)/page',
+        file: 'playground/pages/index.vue',
+        children: [],
+      },
+    ], {
+      filter: {
+        include: [],
+        exclude: [],
+      },
+      isI18nMapped: true,
+      autoLastmod: false,
+      defaultLocale: 'en',
+      normalisedLocales: normalizeLocales({ locales: [
+        { code: 'en', iso: 'en_EN' },
+        { code: 'de', iso: 'de_DE' },
+        { code: 'ru', iso: 'ru_RU' },
+      ] }),
+      strategy: 'prefix_except_default',
+      isI18nMicro: true,
+    })).toMatchInlineSnapshot(`
+      [
+        {
+          "_sitemap": "de_DE",
+          "alternatives": [
+            {
+              "href": "/de/page",
+              "hreflang": "de_DE",
+            },
+            {
+              "href": "/ja/page",
+              "hreflang": undefined,
+            },
+          ],
+          "loc": "/de/page",
+        },
+        {
+          "_sitemap": "index",
+          "alternatives": [
+            {
+              "href": "/de/page",
+              "hreflang": "de_DE",
+            },
+            {
+              "href": "/ja/page",
+              "hreflang": undefined,
+            },
+          ],
+          "loc": "/ja/page",
         },
       ]
     `)

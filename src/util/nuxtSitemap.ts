@@ -34,6 +34,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
   isI18nMapped: boolean
+  isI18nMicro: boolean
   filter: CreateFilterOptions
 }
 
@@ -46,18 +47,41 @@ interface PageEntry extends SitemapUrl {
 function deepForEachPage(
   pages: NuxtPage[],
   callback: (page: NuxtPage, fullpath: string, depth: number) => void,
+  opts: NuxtPagesToSitemapEntriesOptions,
   fullpath: string | undefined | null = null,
   depth: number = 0,
 ) {
-  pages.forEach((page: NuxtPage) => {
-    let currentPath: string | null
-    if (page.path.startsWith('/'))
+  pages.forEach((page) => {
+    let currentPath
+    if (page.path.startsWith('/')) {
       currentPath = page.path
-    else
+    }
+    else {
       currentPath = page.path === '' ? fullpath : `${fullpath!.replace(/\/$/, '')}/${page.path}`
-    callback(page, currentPath || '', depth)
-    if (page.children)
-      deepForEachPage(page.children, callback, currentPath, depth + 1)
+    }
+
+    let didCallback = false
+    if (opts.isI18nMicro) {
+      const localePattern = /\/:locale\(([^)]+)\)/
+      const match = localePattern.exec(currentPath || '')
+      if (match) {
+        const locales = match[1].split('|')
+        locales.forEach((locale) => {
+          const subPage = { ...page }
+          const localizedPath = (currentPath || '').replace(localePattern, `/${locale}`)
+          subPage.name += opts.routesNameSeparator + locale
+          subPage.path = localizedPath
+          callback(subPage, localizedPath || '', depth)
+          didCallback = true
+        })
+      }
+    }
+    if (!didCallback) {
+      callback(page, currentPath || '', depth)
+    }
+    if (page.children) {
+      deepForEachPage(page.children, callback, opts, currentPath, depth + 1)
+    }
   })
 }
 
@@ -69,6 +93,10 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     pages,
     (page, loc, depth) => {
       flattenedPages.push({ page, loc, depth })
+    },
+    {
+      ...config,
+      routesNameSeparator: config.routesNameSeparator || '___',
     },
   )
   flattenedPages = flattenedPages

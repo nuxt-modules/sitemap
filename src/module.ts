@@ -608,6 +608,7 @@ declare module 'vue-router' {
             include: normalizeFilters(config.include),
             exclude: normalizeFilters(config.exclude),
           },
+          isI18nMicro: i18nModule === 'nuxt-i18n-micro',
         })
         if (!pageSource.length) {
           pageSource.push(nuxt.options.app.baseURL || '/')
