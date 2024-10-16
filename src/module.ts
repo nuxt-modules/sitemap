@@ -246,28 +246,31 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
 
-    let needsRobotsPolyfill = true
-    const robotsModuleName = ['nuxt-simple-robots', '@nuxtjs/robots'].find(s => hasNuxtModule(s))
-    if (robotsModuleName) {
-      const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
-      // we want to keep versions in sync
-      if (!await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
-        logger.warn(`You are using ${robotsModuleName} v${robotsVersion}. For the best compatibility, please upgrade to ${robotsModuleName} v4.0.0 or higher.`)
-      else
-        needsRobotsPolyfill = false
-      // @ts-expect-error untyped
-      nuxt.hooks.hook('robots:config', (robotsConfig) => {
-        robotsConfig.sitemap.push(usingMultiSitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
-      })
-    }
-    // this is added in v4 of Nuxt Robots
-    if (needsRobotsPolyfill) {
-      addServerImports([{
-        name: 'getPathRobotConfigPolyfill',
-        as: 'getPathRobotConfig',
-        from: resolve('./runtime/nitro/composables/getPathRobotConfigPolyfill'),
-      }])
-    }
+    // @ts-expect-error untyped
+    nuxt.hooks.hook('robots:config', (robotsConfig) => {
+      robotsConfig.sitemap.push(usingMultiSitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
+    })
+    // avoid issues with module order
+    nuxt.hooks.hook('modules:done', async () => {
+      const robotsModuleName = ['nuxt-simple-robots', '@nuxtjs/robots'].find(s => hasNuxtModule(s))
+      let needsRobotsPolyfill = true
+      if (robotsModuleName) {
+        const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
+        // we want to keep versions in sync
+        if (!await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
+          logger.warn(`You are using ${robotsModuleName} v${robotsVersion}. For the best compatibility, please upgrade to ${robotsModuleName} v4.0.0 or higher.`)
+        else
+          needsRobotsPolyfill = false
+      }
+      // this is added in v4 of Nuxt Robots
+      if (needsRobotsPolyfill) {
+        addServerImports([{
+          name: 'getPathRobotConfigPolyfill',
+          as: 'getPathRobotConfig',
+          from: resolve('./runtime/nitro/composables/getPathRobotConfigPolyfill'),
+        }])
+      }
+    })
 
     extendTypes(name!, async ({ typesPath }) => {
       return `
