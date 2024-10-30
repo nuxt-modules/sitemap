@@ -8,6 +8,11 @@ export default defineNuxtConfig({
   site: {
     url: 'https://nuxtseo.com',
   },
+  routeRules: {
+    '/foo-redirect': {
+      redirect: '/foo',
+    },
+  },
   debug: process.env.NODE_ENV === 'test',
   sitemap: {
     autoLastmod: false,

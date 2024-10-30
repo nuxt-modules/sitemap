@@ -43,6 +43,8 @@ export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
   ].includes(resolveNitroPreset())
 }
 
+const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/
+
 export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance }, nuxt: Nuxt = useNuxt()) {
   const { runtimeConfig: options, logger } = _options
   const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
@@ -64,6 +66,10 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       // extract alternatives from the html
       if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
+      // ignore redirects
+      if (html.match(NuxtRedirectHtmlRegex)) {
+        return
+      }
 
       // maybe the user already provided a _sitemap on the route
       route._sitemap = defu(route._sitemap, {
