@@ -2,7 +2,6 @@ import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'site-config-stack/urls'
 import { defu } from 'defu'
-import { useNitroApp } from 'nitropack/runtime'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -15,7 +14,7 @@ import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry } from './urlset/normalise'
 import { sortSitemapUrls } from './urlset/sort'
-import { createSitePathResolver, getPathRobotConfig, useSiteConfig } from '#imports'
+import { useNitroApp, createSitePathResolver, getPathRobotConfig, useSiteConfig } from '#imports'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical

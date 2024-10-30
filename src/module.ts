@@ -89,9 +89,9 @@ export default defineNuxtModule<ModuleOptions>({
       logger.debug('The module is disabled, skipping setup.')
       return
     }
-    nuxt.options.alias['#sitemap'] = resolve('./runtime/types')
+    nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
-    nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime/types')
+    nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
     config.xslColumns = config.xslColumns || [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
@@ -275,6 +275,9 @@ export default defineNuxtModule<ModuleOptions>({
     extendTypes(name!, async ({ typesPath }) => {
       return `
 declare module 'nitropack' {
+  interface PrerenderRoute {
+    _sitemap?: import('${typesPath}').SitemapUrl
+  }
   interface NitroRouteRules {
     index?: boolean
     sitemap?: import('${typesPath}').SitemapItemDefaults
@@ -581,7 +584,7 @@ declare module 'vue-router' {
     const nitroPromise = createNitroPromise()
     let resolvedConfigUrls = false
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-      nitroConfig.virtual!['#sitemap/global-sources.mjs'] = async () => {
+      nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = async () => {
         const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
         const prerenderUrlsFinal = [
           ...prerenderUrls,
@@ -685,7 +688,7 @@ declare module 'vue-router' {
 
       const extraSitemapModules = typeof config.sitemaps == 'object' ? Object.keys(config.sitemaps).filter(n => n !== 'index') : []
       const sitemapSources: Record<string, SitemapSourceInput[]> = {}
-      nitroConfig.virtual![`#sitemap/child-sources.mjs`] = async () => {
+      nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
         for (const sitemapName of extraSitemapModules) {
           sitemapSources[sitemapName] = sitemapSources[sitemapName] || []
           const definition = (config.sitemaps as Record<string, SitemapDefinition>)[sitemapName] as SitemapDefinition

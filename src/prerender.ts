@@ -26,12 +26,6 @@ function formatPrerenderRoute(route: PrerenderRoute) {
   return chalk.gray(str)
 }
 
-declare module 'nitropack' {
-  interface PrerenderRoute {
-    _sitemap?: SitemapUrl
-  }
-}
-
 export function includesSitemapRoot(sitemapName: string, routes: string[]) {
   return routes.includes(`/__sitemap__/`) || routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
 }

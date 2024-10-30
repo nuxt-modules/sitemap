@@ -77,20 +77,18 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
 }
 
-export function globalSitemapSources(): Promise<(SitemapSourceBase | SitemapSourceResolved)[]> {
-  // @ts-expect-error untyped
-  return import('#sitemap/global-sources.mjs')
-    .then(m => m.sources) as (SitemapSourceBase | SitemapSourceResolved)[]
+export function globalSitemapSources() {
+  return import('#sitemap-virtual/global-sources.mjs')
+    .then(m => m.sources)
 }
 
-export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]): Promise<(SitemapSourceBase | SitemapSourceResolved)[]> {
+export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
   return (
     definition?._hasSourceChunk
-      // @ts-expect-error untyped
-      ? import(`#sitemap/child-sources.mjs`)
+      ? import(`#sitemap-virtual/child-sources.mjs`)
         .then(m => m.sources[definition.sitemapName] || [])
       : Promise.resolve([])
-  ) as Promise<(SitemapSourceBase | SitemapSourceResolved)[]>
+  )
 }
 
 export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {

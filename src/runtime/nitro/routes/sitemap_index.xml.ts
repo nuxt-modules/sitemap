@@ -1,10 +1,10 @@
 import { appendHeader, defineEventHandler, setHeader } from 'h3'
 import { joinURL } from 'ufo'
-import { useNitroApp } from 'nitropack/runtime'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { buildSitemapIndex, urlsToIndexXml } from '../sitemap/builder/sitemap-index'
 import type { SitemapOutputHookCtx } from '../../types'
 import { useNitroUrlResolvers } from '../sitemap/nitro'
+import { useNitroApp } from '#imports'
 
 export default defineEventHandler(async (e) => {
   const runtimeConfig = useSimpleSitemapRuntimeConfig()
