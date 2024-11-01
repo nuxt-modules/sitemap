@@ -5,14 +5,14 @@ description: Learn how to use Nitro Hooks to customize your sitemap entries.
 
 Nitro hooks can be added to modify the output of your sitemaps at runtime.
 
-## `sitemap:resolved`
+## `'sitemap:resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { urls: SitemapConfig; sitemapName: string }) => void | Promise<void>`
+**Type:** `async (ctx: { urls: SitemapConfig; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the XML is generated, provides the URLs as objects.
 
 ```ts [server/plugins/sitemap.ts]
-import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:resolved', async (ctx) => {
@@ -34,14 +34,14 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
-## `sitemap:index-resolved`
+## `'sitemap:index-resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`
+**Type:** `async (ctx: { sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the sitemap index is generated, provides the sitemaps as objects.
 
 ```ts [server/plugins/sitemap.ts]
-import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:index-resolved', async (ctx) => {
@@ -54,15 +54,15 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
-## `sitemap:output`
+## `'sitemap:output'`{lang="ts"}
 
-**Type:** `async (ctx: { sitemap: string; sitemapName: string }) => void | Promise<void>`
+**Type:** `async (ctx: { sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered before the sitemap is sent to the client.
 It provides the sitemap as a XML string.
 
 ```ts [server/plugins/sitemap.ts]
-import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:output', async (ctx) => {
@@ -80,7 +80,7 @@ For some search engines, you may need to add a custom `xmlns` attribute to the s
 search and replace in the `sitemap:output` hook.
 
 ```ts [server/plugins/sitemap.ts]
-import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:output', async (ctx) => {
