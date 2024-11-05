@@ -160,7 +160,7 @@ export default defineNuxtModule<ModuleOptions>({
     const i18nModule = ['@nuxtjs/i18n', 'nuxt-i18n-micro'].find(s => hasNuxtModule(s))
     if (i18nModule) {
       const i18nVersion = await getNuxtModuleVersion(i18nModule)
-      if (i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
+      if (i18nVersion && i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
         logger.warn(`You are using ${i18nModule} v${i18nVersion}. For the best compatibility, please upgrade to ${i18nModule} v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as I18nIntegrationOptions
       if (typeof nuxtI18nConfig.includeDefaultLocaleRoute !== 'undefined') {
@@ -257,7 +257,7 @@ export default defineNuxtModule<ModuleOptions>({
       if (robotsModuleName) {
         const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
         // we want to keep versions in sync
-        if (!await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
+        if (robotsVersion && !await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
           logger.warn(`You are using ${robotsModuleName} v${robotsVersion}. For the best compatibility, please upgrade to ${robotsModuleName} v4.0.0 or higher.`)
         else
           needsRobotsPolyfill = false
