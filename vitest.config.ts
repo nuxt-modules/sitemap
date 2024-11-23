@@ -1,10 +1,9 @@
 /// <reference types="vitest" />
 /// <reference types="vitest/globals" />
-
-import { defineConfig } from 'vite'
+import { defineVitestConfig } from '@nuxt/test-utils/config'
 import { isCI } from 'std-env'
 
-export default defineConfig({
+export default defineVitestConfig({
   test: {
     isolate: true,
     poolOptions: {
@@ -15,13 +14,6 @@ export default defineConfig({
     include: [
       'test/integration/**',
       'test/unit/**',
-    ],
-    watchExclude: [
-      'dist',
-      'playground',
-      'test/**/*',
-      '**/.nuxt/**/*',
-      '**/.output/**/*',
     ],
   },
 })
