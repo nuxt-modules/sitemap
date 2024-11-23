@@ -41,11 +41,11 @@ npx nuxi@latest module add sitemap
 
 💡 Need a complete SEO solution for Nuxt? Check out [Nuxt SEO](https://nuxtseo.com).
 
-# Documentation
+## Documentation
 
 [📖 Read the full documentation](https://nuxtseo.com/sitemap) for more information.
 
-### Demos
+## Demos
 
 - [Dynamic URLs](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
 - [i18n](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
