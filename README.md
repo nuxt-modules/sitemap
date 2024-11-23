@@ -1,26 +1,20 @@
-<h1 align='center'>@nuxtjs/sitemap</h1>
+<h1>@nuxtjs/sitemap</h1>
 
-<p align="center">
-<a href='https://github.com/nuxt-modules/sitemap/actions/workflows/test.yml'>
-</a>
-<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img src="https://img.shields.io/npm/v/@nuxtjs/sitemap?style=flat&colorA=002438&colorB=28CF8D" alt="NPM version"></a>
-<a href="https://www.npmjs.com/package/@nuxtjs/sitemap" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/@nuxtjs/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
-<a href="https://github.com/nuxt-modules/sitemap" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/nuxt-modules/sitemap?flat&colorA=002438&colorB=28CF8D"></a>
-</p>
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![License][license-src]][license-href]
+[![Nuxt][nuxt-src]][nuxt-href]
 
-<p align="center">
-Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt. Previously <i>nuxt-simple-sitemap</i>.
-</p>
+Nuxt Sitemap is a module for generating best-practice XML sitemaps that are consumed by the robots crawling your site.
+
+New to XML sitemaps or SEO? Check out the [Controlling Web Crawlers](https://nuxtseo.com/learn/controlling-crawlers) guide to learn more about why you might
+need these.
 
 <p align="center">
 <table>
 <tbody>
 <td align="center">
-<img width="800" height="0" /><br>
-<i>Status:</i> <a href="https://github.com/nuxt-modules/sitemap/releases/tag/v6.0.0">v6 Released 🎉</a></b> <br>
-<sup> Please report any issues 🐛</sup><br>
 <sub>Made possible by my <a href="https://github.com/sponsors/harlan-zw">Sponsor Program 💖</a><br> Follow me <a href="https://twitter.com/harlan_zw">@harlan_zw</a> 🐦 • Join <a href="https://discord.gg/275MBUBvgP">Discord</a> for help</sub><br>
-<img width="800" height="0" />
 </td>
 </tbody>
 </table>
@@ -37,8 +31,6 @@ Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt. Previously
 
 ## Installation
 
-💡 Need a complete SEO solution for Nuxt?  Check out [Nuxt SEO](https://nuxtseo.com).
-
 💡 Using Nuxt 2? Use the [nuxt-community/sitemap-module](https://github.com/nuxt-community/sitemap-module) docs.
 
 Install `@nuxtjs/sitemap` dependency to your project:
@@ -47,11 +39,13 @@ Install `@nuxtjs/sitemap` dependency to your project:
 npx nuxi@latest module add sitemap
 ```
 
+💡 Need a complete SEO solution for Nuxt? Check out [Nuxt SEO](https://nuxtseo.com).
+
 # Documentation
 
 [📖 Read the full documentation](https://nuxtseo.com/sitemap) for more information.
 
-### StackBlitz Demos / Reproductions
+### Demos
 
 - [Dynamic URLs](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
 - [i18n](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
@@ -68,4 +62,17 @@ npx nuxi@latest module add sitemap
 
 ## License
 
-MIT License © 2022-PRESENT [Harlan Wilton](https://github.com/harlan-zw)
+Licensed under the [MIT license](https://github.com/nuxt-modules/sitemap/blob/main/LICENSE.md).
+
+<!-- Badges -->
+[npm-version-src]: https://img.shields.io/npm/v/@nuxtjs/sitemap/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-version-href]: https://npmjs.com/package/@nuxtjs/sitemap
+
+[npm-downloads-src]: https://img.shields.io/npm/dm/@nuxtjs/sitemap.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-downloads-href]: https://npmjs.com/package/@nuxtjs/sitemap
+
+[license-src]: https://img.shields.io/github/license/nuxt-modules/sitemap.svg?style=flat&colorA=18181B&colorB=28CF8D
+[license-href]: https://github.com/nuxt-modules/sitemap/blob/main/LICENSE.md
+
+[nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
+[nuxt-href]: https://nuxt.com
