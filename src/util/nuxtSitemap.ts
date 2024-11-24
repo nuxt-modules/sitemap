@@ -221,7 +221,7 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
       // make sure key doesn't use a wildcard and its not for a file
       if (k.includes('*') || k.includes('.') || k.includes(':'))
         return false
-      if (typeof v.index === 'boolean' && !v.index)
+      if (typeof v.robots === 'boolean' && !v.robots)
         return false
       // make sure that we're not redirecting
       return !v.redirect

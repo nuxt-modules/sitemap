@@ -70,10 +70,8 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
 
     if (routeRules.sitemap === false)
       return false
-    if ((typeof routeRules.index !== 'undefined' && !routeRules.index)
-      // @ts-expect-error runtime types
-      || (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
-    ) {
+    // @ts-expect-error runtime types
+    if (typeof routeRules.robots !== 'undefined' && !routeRules.robots) {
       return false
     }
     const hasRobotsDisabled = Object.entries(routeRules.headers || {})
