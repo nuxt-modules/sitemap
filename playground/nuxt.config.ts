@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       prerender: true,
     },
     '/secret': {
-      index: false,
+      robots: false,
     },
     '/users-test/*': {
       sitemap: {
