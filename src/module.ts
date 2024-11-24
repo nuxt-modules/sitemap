@@ -493,7 +493,6 @@ declare module 'vue-router' {
           Object.values(pages).forEach((pageLocales) => {
             // @ts-expect-error untyped
             if (nuxtI18nConfig.defaultLocale in pageLocales && pageLocales[nuxtI18nConfig.defaultLocale] === path)
-              // @ts-expect-error untyped
               match = Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, normalisedLocales })))
           })
           return match
