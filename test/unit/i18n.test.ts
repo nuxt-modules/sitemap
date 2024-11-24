@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { normalizeLocales, splitPathForI18nLocales } from '../../src/util/i18n'
 import type { AutoI18nConfig } from '../../src/runtime/types'
-import { resolveSitemapEntries } from '../../src/runtime/nitro/sitemap/builder/sitemap'
+import { resolveSitemapEntries } from '../../src/runtime/server/sitemap/builder/sitemap'
 
 const EnFrAutoI18n = {
   locales: normalizeLocales({ locales: [{

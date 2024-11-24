@@ -31,7 +31,7 @@ import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, re
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { setupDevToolsUI } from './devtools'
-import { normaliseDate } from './runtime/nitro/sitemap/urlset/normalise'
+import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import {
   generatePathForI18nPages,
   normalizeLocales,
@@ -267,7 +267,7 @@ export default defineNuxtModule<ModuleOptions>({
         addServerImports([{
           name: 'getPathRobotConfigPolyfill',
           as: 'getPathRobotConfig',
-          from: resolve('./runtime/nitro/composables/getPathRobotConfigPolyfill'),
+          from: resolve('./runtime/server/composables/getPathRobotConfigPolyfill'),
         }])
       }
     })
@@ -349,17 +349,17 @@ declare module 'vue-router' {
     }
 
     if (config.experimentalWarmUp)
-      addServerPlugin(resolve('./runtime/nitro/plugins/warm-up'))
+      addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
     if (config.experimentalCompression)
-      addServerPlugin(resolve('./runtime/nitro/plugins/compression'))
+      addServerPlugin(resolve('./runtime/server/plugins/compression'))
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
     if (hasNuxtModule('@nuxt/content')) {
-      addServerPlugin(resolve('./runtime/nitro/plugins/nuxt-content'))
+      addServerPlugin(resolve('./runtime/server/plugins/nuxt-content'))
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/nitro/routes/__sitemap__/nuxt-content-urls'),
+        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls'),
       })
       const tips: string[] = []
       // @ts-expect-error untyped
@@ -410,13 +410,13 @@ declare module 'vue-router' {
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
-        handler: resolve('./runtime/nitro/routes/sitemap_index.xml'),
+        handler: resolve('./runtime/server/routes/sitemap_index.xml'),
         lazy: true,
         middleware: false,
       })
       addServerHandler({
         route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
-        handler: resolve('./runtime/nitro/routes/sitemap/[sitemap].xml'),
+        handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
         lazy: true,
         middleware: false,
       })
@@ -557,7 +557,7 @@ declare module 'vue-router' {
     if (config.debug || nuxt.options.dev) {
       addServerHandler({
         route: '/__sitemap__/debug.json',
-        handler: resolve('./runtime/nitro/routes/__sitemap__/debug'),
+        handler: resolve('./runtime/server/routes/__sitemap__/debug'),
       })
 
       setupDevToolsUI(config, resolve)
@@ -569,11 +569,11 @@ declare module 'vue-router' {
 
     const imports: typeof nuxt.options.imports.imports = [
       {
-        from: resolve('./runtime/nitro/composables/defineSitemapEventHandler'),
+        from: resolve('./runtime/server/composables/defineSitemapEventHandler'),
         name: 'defineSitemapEventHandler',
       },
       {
-        from: resolve('./runtime/nitro/composables/asSitemapUrl'),
+        from: resolve('./runtime/server/composables/asSitemapUrl'),
         name: 'asSitemapUrl',
       },
     ]
@@ -736,7 +736,7 @@ declare module 'vue-router' {
     if (config.xsl === '/__sitemap__/style.xsl') {
       addServerHandler({
         route: config.xsl,
-        handler: resolve('./runtime/nitro/routes/sitemap.xsl'),
+        handler: resolve('./runtime/server/routes/sitemap.xsl'),
       })
       config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
 
@@ -747,7 +747,7 @@ declare module 'vue-router' {
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
       route: `/${config.sitemapName}`,
-      handler: resolve('./runtime/nitro/routes/sitemap.xml'),
+      handler: resolve('./runtime/server/routes/sitemap.xml'),
     })
 
     setupPrerenderHandler({ runtimeConfig, logger })

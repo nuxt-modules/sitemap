@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sortSitemapUrls } from '../../src/runtime/nitro/sitemap/urlset/sort'
+import { sortSitemapUrls } from '../../src/runtime/server/sitemap/urlset/sort'
 
 describe('sorting', () => {
   it('default', async () => {

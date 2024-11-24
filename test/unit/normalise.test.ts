@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { preNormalizeEntry } from '../../src/runtime/nitro/sitemap/urlset/normalise'
+import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 
 describe('normalise', () => {
   it('query', async () => {

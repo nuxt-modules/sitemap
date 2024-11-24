@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { resolveSitemapEntries } from '../../src/runtime/nitro/sitemap/builder/sitemap'
+import { resolveSitemapEntries } from '../../src/runtime/server/sitemap/builder/sitemap'
 import type { SitemapSourceResolved } from '#sitemap'
 
 const sources: SitemapSourceResolved[] = [

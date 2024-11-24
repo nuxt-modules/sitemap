@@ -1,7 +1,7 @@
 import { bench, describe } from 'vitest'
-import { preNormalizeEntry } from '../../src/runtime/nitro/sitemap/urlset/normalise'
+import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 import type { SitemapSourceResolved } from '#sitemap'
-import { resolveSitemapEntries } from '~/src/runtime/nitro/sitemap/builder/sitemap'
+import { resolveSitemapEntries } from '~/src/runtime/server/sitemap/builder/sitemap'
 
 const sources: SitemapSourceResolved[] = [
   {

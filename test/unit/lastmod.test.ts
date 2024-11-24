@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isValidW3CDate, normaliseDate } from '../../src/runtime/nitro/sitemap/urlset/normalise'
+import { isValidW3CDate, normaliseDate } from '../../src/runtime/server/sitemap/urlset/normalise'
 
 describe('lastmod', () => {
   it('w3c validate', () => {
