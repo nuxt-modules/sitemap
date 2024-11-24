@@ -10,14 +10,14 @@ await setup({
     sitemap: {
       sitemaps: {
         foo: {
-          dynamicUrlsApiEndpoint: '/api/sitemap/foo',
+          sources: ['/api/sitemap/foo'],
           defaults: {
             changefreq: 'weekly',
             priority: 0.7,
           },
         },
         bar: {
-          dynamicUrlsApiEndpoint: '/api/sitemap/bar',
+          sources: ['/api/sitemap/bar'],
         },
       },
     },

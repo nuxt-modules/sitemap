@@ -13,8 +13,7 @@ await setup({
       'b/:name': { swr: 500 },
     },
     sitemap: {
-      inferStaticPagesAsRoutes: false,
-      dynamicUrlsApiEndpoint: '/__sitemap',
+      sources: ['/__sitemap'],
     },
   },
 })

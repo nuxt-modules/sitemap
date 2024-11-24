@@ -35,13 +35,6 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   autoLastmod: boolean
   /**
-   * Should pages be automatically added to the sitemap.
-   *
-   * @default true
-   * @deprecated If set to false, use `excludeAppSources: ['pages', 'route-rules', 'prerender']` instead. Otherwise, remove this.
-   */
-  inferStaticPagesAsRoutes: boolean
-  /**
    * Sources to exclude from the sitemap.
    */
   excludeAppSources: true | (AppSourceContext[])
@@ -134,14 +127,6 @@ export interface ModuleOptions extends SitemapDefinition {
    * @default true
    */
   credits: boolean
-  /**
-   * How long, in milliseconds, should the sitemap be cached for.
-   *
-   * @default 1 hour
-   *
-   * @deprecated use cacheMaxAgeSeconds
-   */
-  cacheTtl?: number | false
   /**
    * How long, in seconds, should the sitemap be cached for.
    *
@@ -313,12 +298,6 @@ export interface SitemapDefinition {
    */
   sources?: SitemapSourceInput[]
   /**
-   * The endpoint to fetch dynamic URLs from.
-   *
-   * @deprecated use `sources`
-   */
-  dynamicUrlsApiEndpoint?: string | false
-  /**
    * @internal
    */
   _route?: string
@@ -358,10 +337,6 @@ export interface SitemapUrl {
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
   _sitemap?: string
-  /**
-   * @deprecated use `loc`
-   */
-  url?: string
 }
 
 export interface AlternativeEntry {

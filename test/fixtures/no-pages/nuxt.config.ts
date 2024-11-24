@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     url: 'https://nuxtseo.com',
   },
   sitemap: {
-    dynamicUrlsApiEndpoint: '/__sitemap',
+    sources: ['/__sitemap'],
     autoLastmod: false,
     credits: false,
     debug: true,

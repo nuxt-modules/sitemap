@@ -124,7 +124,6 @@ export default defineNuxtConfig({
   sitemap: {
     debug: true,
     // sitemapName: 'test.xml',
-    // dynamicUrlsApiEndpoint: '/__sitemap',
     minify: false,
     cacheMaxAgeSeconds: 10,
     xslColumns: [
