@@ -38,7 +38,7 @@ export default defineNuxtConfig({
     ],
   },
   sitemap: {
-    dynamicUrlsApiEndpoint: '/__sitemap',
+    sources: ['/__sitemap'],
     autoLastmod: false,
     credits: false,
     debug: true,

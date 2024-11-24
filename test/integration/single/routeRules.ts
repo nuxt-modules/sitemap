@@ -22,7 +22,7 @@ await setup({
         redirect: '/defaults',
       },
       '/hidden': {
-        index: false,
+        robots: false,
       },
       '/defaults': {
         sitemap: {
@@ -37,7 +37,7 @@ await setup({
         },
       },
       '/wildcard/hidden/**': {
-        index: false,
+        robots: false,
       },
     },
   },

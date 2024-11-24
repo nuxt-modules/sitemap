@@ -13,7 +13,7 @@ await setup({
     },
     sitemap: {
       // test from endpoint as well
-      dynamicUrlsApiEndpoint: '/__sitemap',
+      sources: ['/__sitemap'],
     },
   },
 })

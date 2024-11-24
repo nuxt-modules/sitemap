@@ -8,7 +8,7 @@ await setup({
   rootDir: resolve('../../fixtures/basic'),
   nuxtConfig: {
     sitemap: {
-      dynamicUrlsApiEndpoint: '/__sitemap',
+      sources: ['/__sitemap'],
     },
   },
 })

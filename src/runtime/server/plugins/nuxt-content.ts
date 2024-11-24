@@ -10,7 +10,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   // @ts-expect-error untyped
   nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
     const validExtensions = ['md', 'mdx']
-    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension) || content._partial || content.indexable === false || content.index === false)
+    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension) || content._partial || content.robots === false)
       return
 
     // add any top level images
