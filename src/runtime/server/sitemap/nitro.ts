@@ -1,6 +1,6 @@
 import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
-import { fixSlashes } from 'site-config-stack/urls'
+import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
 import type {
   ModuleRuntimeConfig,

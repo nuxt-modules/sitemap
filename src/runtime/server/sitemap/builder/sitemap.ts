@@ -1,4 +1,4 @@
-import { resolveSitePath } from 'site-config-stack/urls'
+import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
 import type {
   AlternativeEntry, AutoI18nConfig,

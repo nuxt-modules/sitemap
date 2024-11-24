@@ -12,7 +12,7 @@ import {
   useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
-import { installNuxtSiteConfig } from 'nuxt-site-config-kit'
+import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
 import { readPackageJSON } from 'pkg-types'
