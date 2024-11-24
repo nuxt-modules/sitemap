@@ -336,9 +336,6 @@ declare module 'vue-router' {
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
           nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix, `/${k}.xml`)] = routeRules
-          if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/') {
-            nuxt.options.nitro.routeRules[`/${k}-sitemap.xml`] = { redirect: joinURL(config.sitemapsPathPrefix, `${k}.xml`) }
-          }
         }
       }
       else {
