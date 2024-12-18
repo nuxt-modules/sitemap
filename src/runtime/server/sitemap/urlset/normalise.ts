@@ -65,7 +65,7 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
       e.loc = e._relativeLoc
     }
   }
-  else {
+  else if (!isEncoded(e.loc)) {
     e.loc = encodeURI(e.loc)
   }
   if (e.loc === '')
@@ -73,6 +73,16 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
   e.loc = resolve(e.loc, resolvers)
   e._key = `${e._sitemap || ''}${withoutTrailingSlash(e.loc)}`
   return e as ResolvedSitemapUrl
+}
+
+export function isEncoded(url: string) {
+  // checks, if an url is already decoded
+  try {
+    return url !== decodeURIComponent(url)
+  }
+  catch {
+    return false
+  }
 }
 
 export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
