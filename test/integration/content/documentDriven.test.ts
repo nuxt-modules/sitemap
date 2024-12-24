@@ -16,11 +16,11 @@ describe('nuxt/content documentDriven', () => {
     expect(nuxtContentUrls).toMatchInlineSnapshot(`
       [
         {
-          "lastmod": "2021-10-20T00:00:00.000Z",
+          "lastmod": "2021-10-20",
           "loc": "/blog/posts/bar",
         },
         {
-          "lastmod": "2021-10-20T00:00:00.000Z",
+          "lastmod": "2021-10-20",
           "loc": "/blog/posts/fallback",
         },
       ]
