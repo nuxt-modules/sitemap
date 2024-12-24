@@ -86,7 +86,7 @@ export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][
   return (
     definition?._hasSourceChunk
       ? import(`#sitemap-virtual/child-sources.mjs`)
-        .then(m => m.sources[definition.sitemapName] || [])
+          .then(m => m.sources[definition.sitemapName] || [])
       : Promise.resolve([])
   )
 }
