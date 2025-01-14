@@ -1,7 +1,7 @@
 {
   "name": "@nuxtjs/sitemap",
   "type": "module",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "packageManager": "pnpm@9.15.4",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
