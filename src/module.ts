@@ -352,28 +352,33 @@ declare module 'vue-router' {
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
     if (hasNuxtModule('@nuxt/content')) {
-      addServerPlugin(resolve('./runtime/server/plugins/nuxt-content'))
-      addServerHandler({
-        route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls'),
-      })
-      const tips: string[] = []
-      // @ts-expect-error untyped
-      if (nuxt.options.content?.documentDriven)
-        tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
-      else if (config.strictNuxtContentPaths)
-        tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
-      else
-        tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
+      if (await hasNuxtModuleCompatibility('@nuxt/content', '^3')) {
+        logger.warn('Nuxt Sitemap does not work with Nuxt Content v3 yet, the integration will be disabled.')
+      }
+      else {
+        addServerPlugin(resolve('./runtime/server/plugins/nuxt-content'))
+        addServerHandler({
+          route: '/__sitemap__/nuxt-content-urls.json',
+          handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls'),
+        })
+        const tips: string[] = []
+        // @ts-expect-error untyped
+        if (nuxt.options.content?.documentDriven)
+          tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
+        else if (config.strictNuxtContentPaths)
+          tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
+        else
+          tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
 
-      appGlobalSources.push({
-        context: {
-          name: '@nuxt/content:urls',
-          description: 'Generated from your markdown files.',
-          tips,
-        },
-        fetch: '/__sitemap__/nuxt-content-urls.json',
-      })
+        appGlobalSources.push({
+          context: {
+            name: '@nuxt/content:urls',
+            description: 'Generated from your markdown files.',
+            tips,
+          },
+          fetch: '/__sitemap__/nuxt-content-urls.json',
+        })
+      }
     }
 
     // config -> sitemaps
