@@ -10,7 +10,7 @@ export default defineEventHandler(async (e) => {
   const runtimeConfig = useSimpleSitemapRuntimeConfig()
   const nitro = useNitroApp()
   const resolvers = useNitroUrlResolvers(e)
-  const sitemaps = (await buildSitemapIndex(resolvers, runtimeConfig))
+  const sitemaps = await buildSitemapIndex(resolvers, runtimeConfig, nitro)
 
   // tell the prerender to render the other sitemaps (if we prerender this one)
   // this solves the dynamic chunking sitemap issue

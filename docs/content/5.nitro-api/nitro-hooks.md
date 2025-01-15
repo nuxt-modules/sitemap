@@ -5,11 +5,38 @@ description: Learn how to use Nitro Hooks to customize your sitemap entries.
 
 Nitro hooks can be added to modify the output of your sitemaps at runtime.
 
+## `'sitemap:input'`{lang="ts"}
+
+**Type:** `async (ctx: { urls: SitemapUrlInput[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+
+Triggers once the raw list of URLs is collected from sources.
+
+This hook is best used for inserting new URLs into the sitemap.
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:resolved', async (ctx) => {
+    // SitemapUrlInput is either a string 
+    ctx.urls.push('/foo')
+    // or an object with loc, changefreq, and priority
+    ctx.urls.push({
+      loc: '/bar',
+      changefreq: 'daily',
+      priority: 0.8,
+    })
+  })
+})
+```
+
 ## `'sitemap:resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { urls: SitemapConfig; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { urls: ResolvedSitemapUrl[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the XML is generated, provides the URLs as objects.
+
+For new URLs it's recommended to use `sitemap:input` instead. Use this hook for modifying entries or removing them.
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'

@@ -1,7 +1,6 @@
 import { bench, describe } from 'vitest'
 import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 import type { SitemapSourceResolved } from '#sitemap'
-import { resolveSitemapEntries } from '~/src/runtime/server/sitemap/builder/sitemap'
 
 const sources: SitemapSourceResolved[] = [
   {
@@ -17,7 +16,6 @@ const sources: SitemapSourceResolved[] = [
 
 describe('normalize', () => {
   bench('preNormalizeEntry', () => {
-    resolveSitemapEntries(sources)
     const urls = sources.flatMap(s => s.urls)
     urls.map(u => preNormalizeEntry(u))
   }, {

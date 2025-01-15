@@ -12,7 +12,7 @@ import type {
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
-import { normaliseEntry } from './urlset/normalise'
+import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortSitemapUrls } from './urlset/sort'
 import { useNitroApp, createSitePathResolver, getPathRobotConfig, useSiteConfig } from '#imports'
 
@@ -49,7 +49,7 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
     }
   }
   const resolvers = useNitroUrlResolvers(event)
-  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig)
+  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
@@ -84,11 +84,17 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   }).filter(Boolean)
 
   // 6. nitro hooks
+  const locSize = sitemapUrls.length
   const resolvedCtx: SitemapRenderCtx = {
     urls: sitemapUrls,
     sitemapName: sitemapName,
   }
   await nitro.hooks.callHook('sitemap:resolved', resolvedCtx)
+  // we need to normalize any new urls otherwise they won't appear in the final sitemap
+  // Note this is risky and users should be using the sitemap:input hook for additions
+  if (resolvedCtx.urls.length !== locSize) {
+    resolvedCtx.urls = resolvedCtx.urls.map(e => preNormalizeEntry(e, resolvers))
+  }
 
   const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortSitemapUrls(urls) : urls
   // final urls

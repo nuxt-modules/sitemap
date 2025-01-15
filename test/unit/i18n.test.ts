@@ -56,19 +56,13 @@ describe('i18n', () => {
   it('_i18nTransform without prefix', () => {
     const urls = resolveSitemapEntries({
       sitemapName: 'sitemap.xml',
-    }, [{
-      urls: [
-        {
-          loc: '/__sitemap/url',
-          changefreq: 'weekly',
-          _i18nTransform: true,
-        },
-      ],
-      context: {
-        name: 'foo',
+    }, [
+      {
+        loc: '/__sitemap/url',
+        changefreq: 'weekly',
+        _i18nTransform: true,
       },
-      sourceType: 'user',
-    }], {
+    ], {
       locales: EnFrAutoI18n.locales,
       defaultLocale: 'en',
       strategy: 'no_prefix',
@@ -95,19 +89,13 @@ describe('i18n', () => {
   it('_i18nTransform prefix_except_default', () => {
     const urls = resolveSitemapEntries({
       sitemapName: 'sitemap.xml',
-    }, [{
-      urls: [
-        {
-          loc: '/__sitemap/url',
-          changefreq: 'weekly',
-          _i18nTransform: true,
-        },
-      ],
-      context: {
-        name: 'foo',
+    }, [
+      {
+        loc: '/__sitemap/url',
+        changefreq: 'weekly',
+        _i18nTransform: true,
       },
-      sourceType: 'user',
-    }], {
+    ], {
       autoI18n: {
         locales: EnFrAutoI18n.locales,
         defaultLocale: 'en',
@@ -195,35 +183,23 @@ describe('i18n', () => {
   it('applies alternative links', () => {
     const urls = resolveSitemapEntries({
       sitemapName: 'sitemap.xml',
-    }, [{
-      urls: [],
-      context: {
-        name: 'foo',
+    }, [
+      {
+        loc: '/en/dynamic/foo',
       },
-      sourceType: 'user',
-    }, {
-      urls: [
-        {
-          loc: '/en/dynamic/foo',
-        },
-        {
-          loc: '/fr/dynamic/foo',
-        },
-        {
-          loc: 'endless-dungeon', // issue with en being picked up as the locale
-          _i18nTransform: true,
-        },
-        {
-          loc: 'english-url', // issue with en being picked up as the locale
-        },
-        // absolute URL issue
-        { loc: 'https://www.somedomain.com/abc/def' },
-      ],
-      context: {
-        name: 'foo',
+      {
+        loc: '/fr/dynamic/foo',
       },
-      sourceType: 'user',
-    }], {
+      {
+        loc: 'endless-dungeon', // issue with en being picked up as the locale
+        _i18nTransform: true,
+      },
+      {
+        loc: 'english-url', // issue with en being picked up as the locale
+      },
+      // absolute URL issue
+      { loc: 'https://www.somedomain.com/abc/def' },
+    ], {
       autoI18n: EnFrAutoI18n,
       isI18nMapped: true,
     })

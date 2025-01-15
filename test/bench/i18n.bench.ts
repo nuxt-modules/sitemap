@@ -18,7 +18,7 @@ describe('i18n', () => {
   bench('normaliseI18nSources', () => {
     resolveSitemapEntries({
       sitemapName: 'sitemap.xml',
-    }, sources, {
+    }, sources.flatMap(s => s.urls), {
       autoI18n: {
         locales: [
           { code: 'en', iso: 'en' },
