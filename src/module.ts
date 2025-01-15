@@ -285,6 +285,7 @@ declare module 'nitropack' {
   }
   interface NitroRuntimeHooks {
     'sitemap:index-resolved': (ctx: import('${typesPath}').SitemapIndexRenderCtx) => void | Promise<void>
+    'sitemap:input': (ctx: import('${typesPath}').SitemapInputCtx) => void | Promise<void>
     'sitemap:resolved': (ctx: import('${typesPath}').SitemapRenderCtx) => void | Promise<void>
     'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
   }

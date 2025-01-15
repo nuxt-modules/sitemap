@@ -312,6 +312,11 @@ export interface SitemapRenderCtx {
   urls: ResolvedSitemapUrl[]
 }
 
+export interface SitemapInputCtx {
+  sitemapName: string
+  urls: SitemapUrlInput[]
+}
+
 export interface SitemapOutputHookCtx {
   sitemapName: string
   sitemap: string

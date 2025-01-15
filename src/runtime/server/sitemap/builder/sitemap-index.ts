@@ -1,10 +1,11 @@
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
+import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapIndexEntry,
+  SitemapIndexEntry, SitemapInputCtx,
   SitemapUrl,
 } from '../../../types'
 import { normaliseDate } from '../urlset/normalise'
@@ -13,7 +14,7 @@ import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
 import { resolveSitemapEntries } from './sitemap'
 
-export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
   const {
     sitemaps,
     // enhancing
@@ -39,7 +40,12 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
     const sources = await resolveSitemapSources(await globalSitemapSources())
-    const normalisedUrls = resolveSitemapEntries(sitemap, sources, { autoI18n, isI18nMapped }, resolvers)
+    const resolvedCtx: SitemapInputCtx = {
+      urls: sources.flatMap(s => s.urls),
+      sitemapName: sitemap.sitemapName,
+    }
+    await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
+    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
     // 2. enhance
     const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
