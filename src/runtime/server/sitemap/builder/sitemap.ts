@@ -1,12 +1,12 @@
 import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
+import type { NitroApp } from 'nitropack/types'
 import type {
   AlternativeEntry, AutoI18nConfig,
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapDefinition,
-  SitemapSourceResolved,
+  SitemapDefinition, SitemapInputCtx,
   SitemapUrlInput,
 } from '../../../types'
 import { preNormalizeEntry } from '../urlset/normalise'
@@ -21,7 +21,7 @@ export interface NormalizedI18n extends ResolvedSitemapUrl {
   _index?: number
 }
 
-export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: SitemapSourceResolved[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
+export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
   const {
     autoI18n,
     isI18nMapped,
@@ -31,7 +31,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
     exclude: sitemap.exclude,
   })
   // 1. normalise
-  const _urls = sources.flatMap(e => e.urls).map((_e) => {
+  const _urls = urls.map((_e) => {
     const e = preNormalizeEntry(_e, resolvers)
     if (!e.loc || !filterPath(e.loc))
       return false
@@ -176,7 +176,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, sources: Sitem
   return _urls
 }
 
-export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -222,11 +222,15 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
   // 0. resolve sources
   // always fetch all sitemap data for the primary sitemap
-  const sources = sitemap.includeAppSources ? await globalSitemapSources() : []
-  sources.push(...await childSitemapSources(sitemap))
-  const resolvedSources = await resolveSitemapSources(sources, resolvers.event)
-
-  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedSources, { autoI18n, isI18nMapped }, resolvers)
+  const sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
+  sourcesInput.push(...await childSitemapSources(sitemap))
+  const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+  const resolvedCtx: SitemapInputCtx = {
+    urls: sources.flatMap(s => s.urls),
+    sitemapName: sitemap.sitemapName,
+  }
+  await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
+  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
