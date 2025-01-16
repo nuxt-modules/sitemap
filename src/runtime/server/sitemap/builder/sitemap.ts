@@ -224,7 +224,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   // always fetch all sitemap data for the primary sitemap
   const sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
   sourcesInput.push(...await childSitemapSources(sitemap))
-  const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+  const sources = await resolveSitemapSources(sourcesInput)
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
     sitemapName: sitemap.sitemapName,

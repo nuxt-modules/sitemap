@@ -1,7 +1,4 @@
-import { getRequestHost } from 'h3'
-import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
-import { defu } from 'defu'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
@@ -9,7 +6,7 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 
-export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
+export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
   context.tips = context.tips || []
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
@@ -23,14 +20,16 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
   let isHtmlResponse = false
   try {
-    const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
-    const urls = await fetchContainer.$fetch(url, {
+    const urls = await globalThis.$fetch(url, {
       ...options,
       responseType: 'json',
       signal: timeoutController.signal,
-      headers: defu(options?.headers, {
-        Accept: 'application/json',
-      }, event ? { Host: getRequestHost(event, { xForwardedHost: true }) } : {}),
+      headers: {
+        ...(options?.headers || {}),
+        ...{
+          Accept: 'application/json',
+        },
+      },
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
@@ -86,12 +85,12 @@ export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][
   return (
     definition?._hasSourceChunk
       ? import(`#sitemap-virtual/child-sources.mjs`)
-          .then(m => m.sources[definition.sitemapName] || [])
+        .then(m => m.sources[definition.sitemapName] || [])
       : Promise.resolve([])
   )
 }
 
-export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {
+export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[]) {
   return (await Promise.all(
     sources.map((source) => {
       if (typeof source === 'object' && 'urls' in source) {
@@ -102,7 +101,7 @@ export async function resolveSitemapSources(sources: (SitemapSourceBase | Sitema
         }
       }
       if (source.fetch)
-        return fetchDataSource(source, event)
+        return fetchDataSource(source)
 
       return <SitemapSourceResolved> {
         ...source,
