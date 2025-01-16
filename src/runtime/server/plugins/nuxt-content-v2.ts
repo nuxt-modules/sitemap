@@ -1,6 +1,6 @@
 import { defu } from 'defu'
 import type { ParsedContent } from '@nuxt/content'
-import type { NitroApp } from 'nitropack'
+import type { NitroApp } from 'nitropack/types'
 import type { SitemapUrl } from '../../types'
 import { useSimpleSitemapRuntimeConfig } from '../utils'
 import { defineNitroPlugin } from '#imports'

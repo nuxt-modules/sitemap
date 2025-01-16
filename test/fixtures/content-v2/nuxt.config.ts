@@ -9,6 +9,9 @@ export default defineNuxtConfig({
   site: {
     url: 'https://nuxtseo.com',
   },
+  alias: {
+    '@nuxt/content': '@nuxt/content-v2',
+  },
   debug: process.env.NODE_ENV === 'test',
   sitemap: {
     autoLastmod: false,
