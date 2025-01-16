@@ -90,7 +90,8 @@
       "h3",
       "std-env",
       "nitropack",
-      "consola"
+      "consola",
+      "@nuxt/content"
     ]
   }
 }
