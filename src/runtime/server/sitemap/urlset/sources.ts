@@ -2,12 +2,14 @@ import { getRequestHost } from 'h3'
 import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
 import { defu } from 'defu'
+import { parseURL } from 'ufo'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
+import { extractSitemapXML } from '#sitemap/server/sitemap/utils/extractSitemapXML'
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
@@ -21,12 +23,13 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   const timeoutController = new AbortController()
   const abortRequestTimeout = setTimeout(() => timeoutController.abort(), timeout)
 
-  let isHtmlResponse = false
+  let isMaybeErrorResponse = false
+  const isXmlRequest = parseURL(url).pathname.endsWith('.xml')
+  const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
   try {
-    const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
-    const urls = await fetchContainer.$fetch(url, {
+    const res = await fetchContainer.$fetch(url, {
       ...options,
-      responseType: 'json',
+      responseType: isXmlRequest ? 'json' : 'text',
       signal: timeoutController.signal,
       headers: defu(options?.headers, {
         Accept: 'application/json',
@@ -34,11 +37,11 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
-          isHtmlResponse = true
+          isMaybeErrorResponse = true
       },
     })
     const timeTakenMs = Date.now() - start
-    if (isHtmlResponse) {
+    if (isMaybeErrorResponse) {
       context.tips.push('This is usually because the URL isn\'t correct or is throwing an error. Please check the URL')
       return {
         ...input,
@@ -47,6 +50,14 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
         timeTakenMs,
         error: 'Received HTML response instead of JSON',
       }
+    }
+    let urls = []
+    if (typeof res === 'object') {
+      urls = res.urls || res
+    }
+    else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
+      // fast pass XML extract all loc data, let's use
+      urls = extractSitemapXML(res)
     }
     return {
       ...input,
