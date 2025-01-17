@@ -5,23 +5,41 @@ import { $fetch, setup } from '@nuxt/test-utils'
 const { resolve } = createResolver(import.meta.url)
 
 await setup({
-  rootDir: resolve('../../fixtures/content'),
-  content: {
-    documentDriven: true,
-  },
+  rootDir: resolve('../../fixtures/content-v3'),
 })
-describe('nuxt/content documentDriven', () => {
+describe('nuxt/content v3 default', () => {
   it('basic', async () => {
     const nuxtContentUrls = await $fetch('/__sitemap__/nuxt-content-urls.json')
     expect(nuxtContentUrls).toMatchInlineSnapshot(`
       [
         {
+          "loc": "/_partial",
+        },
+        {
+          "changefreq": "daily",
+          "images": [
+            {
+              "loc": "https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg",
+            },
+          ],
           "lastmod": "2021-10-20",
-          "loc": "/blog/posts/bar",
+          "loc": "/bar",
+          "priority": 0.5,
+        },
+        {
+          "loc": "/foo",
+          "priority": 0.5,
         },
         {
           "lastmod": "2021-10-20",
-          "loc": "/blog/posts/fallback",
+          "loc": "/posts/bar",
+        },
+        {
+          "lastmod": "2021-10-20",
+          "loc": "/posts/fallback",
+        },
+        {
+          "loc": "/posts/foo",
         },
       ]
     `)
@@ -34,12 +52,31 @@ describe('nuxt/content documentDriven', () => {
               <loc>https://nuxtseo.com/</loc>
           </url>
           <url>
-              <loc>https://nuxtseo.com/blog/posts/bar</loc>
+              <loc>https://nuxtseo.com/_partial</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/bar</loc>
+              <image:image>
+                  <image:loc>https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg</image:loc>
+              </image:image>
+              <lastmod>2021-10-20</lastmod>
+              <priority>0.5</priority>
+              <changefreq>daily</changefreq>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/foo</loc>
+              <priority>0.5</priority>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/posts/bar</loc>
               <lastmod>2021-10-20</lastmod>
           </url>
           <url>
-              <loc>https://nuxtseo.com/blog/posts/fallback</loc>
+              <loc>https://nuxtseo.com/posts/fallback</loc>
               <lastmod>2021-10-20</lastmod>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/posts/foo</loc>
           </url>
       </urlset>"
     `)

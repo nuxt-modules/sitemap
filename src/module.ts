@@ -7,7 +7,7 @@ import {
   defineNuxtModule,
   getNuxtModuleVersion,
   hasNuxtModule,
-  hasNuxtModuleCompatibility,
+  hasNuxtModuleCompatibility, resolveModule,
   useLogger,
 } from '@nuxt/kit'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
@@ -15,6 +15,9 @@ import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
 import { readPackageJSON } from 'pkg-types'
+import { dirname } from 'pathe'
+import type { FileAfterParseHook } from '@nuxt/content'
+import type { UseSeoMetaInput } from '@unhead/schema'
 import type {
   AppSourceContext,
   AutoI18nConfig,
@@ -24,7 +27,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
-  ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions,
+  ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions, SitemapUrl,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
 import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
@@ -40,6 +43,8 @@ import { normalizeFilters } from './util/filter'
 
 // eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
+
+export * from './content'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -352,34 +357,112 @@ declare module 'vue-router' {
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
-    if (hasNuxtModule('@nuxt/content')) {
-      if (await hasNuxtModuleCompatibility('@nuxt/content', '^3')) {
-        logger.warn('Nuxt Sitemap does not work with Nuxt Content v3 yet, the integration will be disabled.')
-      }
-      else {
-        addServerPlugin(resolve('./runtime/server/plugins/nuxt-content'))
-        addServerHandler({
-          route: '/__sitemap__/nuxt-content-urls.json',
-          handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls'),
-        })
-        const tips: string[] = []
-        // @ts-expect-error untyped
-        if (nuxt.options.content?.documentDriven)
-          tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
-        else if (config.strictNuxtContentPaths)
-          tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
-        else
-          tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
+    const usingNuxtContent = hasNuxtModule('@nuxt/content')
+    const isNuxtContentV3 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^3')
+    const nuxtV3Collections = new Set<string>()
+    const isNuxtContentV2 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^2')
+    if (isNuxtContentV3) {
+      // TODO this is a hack until content gives us an alias
+      nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
+      // @ts-expect-error runtime type
+      nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
+        const content = ctx.content as {
+          body: { value: [string, Record<string, any>][] }
+          sitemap?: Partial<SitemapUrl>
+          path: string
+          seo: UseSeoMetaInput
+          updatedAt?: string
+        }
+        nuxtV3Collections.add(ctx.collection.name)
+        if (!('sitemap' in ctx.collection.fields)) {
+          return
+        }
+        // add any top level images
+        const images: SitemapUrl['images'] = []
+        if (config.discoverImages) {
+          images.push(...(content.body.value
+            ?.filter(c =>
+              ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
+            )
+            .map(c => ({ loc: c[1].src })) || []),
+          )
+        }
 
-        appGlobalSources.push({
-          context: {
-            name: '@nuxt/content:urls',
-            description: 'Generated from your markdown files.',
-            tips,
-          },
-          fetch: '/__sitemap__/nuxt-content-urls.json',
-        })
+        // add any top level videos
+        const videos: SitemapUrl['videos'] = []
+        if (config.discoverVideos) {
+          // TODO
+          // videos.push(...(content.body.value
+          //     .filter(c => c[0] === 'video' && c[1]?.src)
+          //   .map(c => ({
+          //     content_loc: c[1].src
+          //   })) || []),
+          // )
+        }
+
+        const sitemapConfig = typeof content.sitemap === 'object' ? content.sitemap : {}
+        const lastmod = content.seo?.articleModifiedTime || content.updatedAt
+        const defaults: Partial<SitemapUrl> = {
+          loc: content.path,
+        }
+        if (images.length > 0)
+          defaults.images = images
+        if (videos.length > 0)
+          defaults.videos = videos
+        if (lastmod)
+          defaults.lastmod = lastmod
+        const definition = defu(sitemapConfig, defaults) as Partial<SitemapUrl>
+        if (!definition.loc) {
+          // user hasn't provided a loc... lets fallback to a relative path
+          if (content.path && content.path && content.path.startsWith('/'))
+            definition.loc = content.path
+        }
+        content.sitemap = definition
+        // loc is required
+        if (!definition.loc)
+          delete content.sitemap
+        ctx.content = content
+      })
+
+      addServerHandler({
+        route: '/__sitemap__/nuxt-content-urls.json',
+        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),
+      })
+      if (config.strictNuxtContentPaths) {
+        logger.warn('You have set `strictNuxtContentPaths: true` but are using @nuxt/content v3. This is not required, please remove it.')
       }
+      appGlobalSources.push({
+        context: {
+          name: '@nuxt/content@v3:urls',
+          description: 'Generated from your markdown files.',
+          tips: [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`],
+        },
+        fetch: '/__sitemap__/nuxt-content-urls.json',
+      })
+    }
+    else if (isNuxtContentV2) {
+      addServerPlugin(resolve('./runtime/server/plugins/nuxt-content-v2'))
+      addServerHandler({
+        route: '/__sitemap__/nuxt-content-urls.json',
+        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v2'),
+      })
+      const tips: string[] = []
+      // @ts-expect-error untyped
+      if (nuxt.options.content?.documentDriven)
+        tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
+      else if (config.strictNuxtContentPaths)
+        tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
+      else
+        tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
+
+      appGlobalSources.push({
+        context: {
+          name: '@nuxt/content@v2:urls',
+          description: 'Generated from your markdown files.',
+          tips,
+        },
+        fetch: '/__sitemap__/nuxt-content-urls.json',
+      })
     }
 
     // config -> sitemaps
@@ -567,9 +650,9 @@ declare module 'vue-router' {
               // check for file in lastSegment using regex
               const isExplicitFile = !!(lastSegment?.match(/\.[0-9a-z]+$/i)?.[0])
               // avoid adding fallback pages to sitemap
-              if (r.error || ['/200.html', '/404.html', '/index.html'].includes(r.route))
+              if (isExplicitFile || r.error || ['/200.html', '/404.html', '/index.html'].includes(r.route))
                 return false
-              return (r.contentType?.includes('text/html') || !isExplicitFile)
+              return r.contentType?.includes('text/html')
             })
             .map(r => r._sitemap),
         ]

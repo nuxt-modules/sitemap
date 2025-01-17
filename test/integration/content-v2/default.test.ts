@@ -5,7 +5,7 @@ import { $fetch, setup } from '@nuxt/test-utils'
 const { resolve } = createResolver(import.meta.url)
 
 await setup({
-  rootDir: resolve('../../fixtures/content'),
+  rootDir: resolve('../../fixtures/content-v2'),
 })
 describe('nuxt/content default', () => {
   it('basic', async () => {
