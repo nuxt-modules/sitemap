@@ -9,7 +9,7 @@ import type {
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
-import { extractSitemapXML } from '#sitemap/server/sitemap/utils/extractSitemapXML'
+import { extractSitemapXML } from '../utils/extractSitemapXML'
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
@@ -29,10 +29,10 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   try {
     const res = await fetchContainer.$fetch(url, {
       ...options,
-      responseType: isXmlRequest ? 'json' : 'text',
+      responseType: isXmlRequest ? 'text' : 'json',
       signal: timeoutController.signal,
       headers: defu(options?.headers, {
-        Accept: 'application/json',
+        Accept: isXmlRequest ? 'text/xml' : 'application/json',
       }, event ? { Host: getRequestHost(event, { xForwardedHost: true }) } : {}),
       // @ts-expect-error untyped
       onResponse({ response }) {
