@@ -49,7 +49,7 @@ export interface ModuleOptions extends SitemapDefinition {
    *
    * @default /__sitemap__/
    */
-  sitemapsPathPrefix: string
+  sitemapsPathPrefix: string | false
   /**
    * Sitemaps to append to the sitemap index.
    *

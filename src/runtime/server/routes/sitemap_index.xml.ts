@@ -19,7 +19,7 @@ export default defineEventHandler(async (e) => {
       e,
       'x-nitro-prerender',
       sitemaps.filter(entry => !!entry._sitemapName)
-        .map(entry => encodeURIComponent(joinURL(runtimeConfig.sitemapsPathPrefix, `/${entry._sitemapName}.xml`))).join(', '),
+        .map(entry => encodeURIComponent(joinURL(runtimeConfig.sitemapsPathPrefix || '', `/${entry._sitemapName}.xml`))).join(', '),
     )
   }
 

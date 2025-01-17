@@ -8,7 +8,7 @@ export default defineEventHandler(async (e) => {
   const { sitemaps } = runtimeConfig
 
   const sitemapName = withoutLeadingSlash(withoutTrailingSlash((getRouterParam(e, 'sitemap') || e.path)?.replace('.xml', '')
-    .replace(runtimeConfig.sitemapsPathPrefix, '')))
+    .replace(runtimeConfig.sitemapsPathPrefix || '', '')))
   // check if sitemapName can be cast to a number safely
   const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
   if (!sitemapName || (!(sitemapName in sitemaps) && !isChunking)) {

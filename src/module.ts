@@ -338,7 +338,7 @@ declare module 'vue-router' {
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
-          nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix, `/${k}.xml`)] = routeRules
+          nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}.xml`)] = routeRules
         }
       }
       else {
@@ -475,12 +475,25 @@ declare module 'vue-router' {
         lazy: true,
         middleware: false,
       })
-      addServerHandler({
-        route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
-        handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
-        lazy: true,
-        middleware: false,
-      })
+      if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/') {
+        addServerHandler({
+          route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
+          handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+          lazy: true,
+          middleware: false,
+        })
+      }
+      else {
+        // register each key as a route
+        for (const sitemapName of Object.keys(config.sitemaps || {})) {
+          addServerHandler({
+            route: withLeadingSlash(`${sitemapName}.xml`),
+            handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+            lazy: true,
+            middleware: false,
+          })
+        }
+      }
       sitemaps.index = {
         sitemapName: 'index',
         _route: withBase('sitemap_index.xml', nuxt.options.app.baseURL || '/'),
@@ -495,7 +508,7 @@ declare module 'vue-router' {
           sitemaps[sitemapName as keyof typeof sitemaps] = defu(
             {
               sitemapName,
-              _route: withBase(joinURL(config.sitemapsPathPrefix, `${sitemapName}.xml`), nuxt.options.app.baseURL || '/'),
+              _route: withBase(joinURL(config.sitemapsPathPrefix || '', `${sitemapName}.xml`), nuxt.options.app.baseURL || '/'),
               _hasSourceChunk: typeof definition.urls !== 'undefined' || definition.sources?.length,
             },
             { ...definition, urls: undefined, sources: undefined },
