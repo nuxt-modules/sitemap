@@ -48,7 +48,5 @@ export function asSitemapCollection(collection: any) {
       sitemap,
     })
   }
-  collection._integrations = collection._integrations || []
-  collection._integrations.push('sitemap')
   return collection
 }
