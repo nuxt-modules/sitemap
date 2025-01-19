@@ -384,21 +384,11 @@ declare module 'vue-router' {
             ?.filter(c =>
               ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
             )
+            .filter(c => c[1]?.src)
             .map(c => ({ loc: c[1].src })) || []),
           )
         }
-
-        // add any top level videos
-        const videos: SitemapUrl['videos'] = []
-        if (config.discoverVideos) {
-          // TODO
-          // videos.push(...(content.body.value
-          //     .filter(c => c[0] === 'video' && c[1]?.src)
-          //   .map(c => ({
-          //     content_loc: c[1].src
-          //   })) || []),
-          // )
-        }
+        // Note: videos only supported through prerendering for simpler logic
 
         const sitemapConfig = typeof content.sitemap === 'object' ? content.sitemap : {}
         const lastmod = content.seo?.articleModifiedTime || content.updatedAt
@@ -407,8 +397,6 @@ declare module 'vue-router' {
         }
         if (images.length > 0)
           defaults.images = images
-        if (videos.length > 0)
-          defaults.videos = videos
         if (lastmod)
           defaults.lastmod = lastmod
         const definition = defu(sitemapConfig, defaults) as Partial<SitemapUrl>

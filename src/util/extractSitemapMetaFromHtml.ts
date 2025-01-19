@@ -3,6 +3,23 @@ import { parseURL } from 'ufo'
 import { tryUseNuxt } from '@nuxt/kit'
 import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/types'
 
+const videoRegex = /<video[^>]*>([\s\S]*?)<\/video>/g
+const videoSrcRegex = /<video[^>]*\ssrc="([^"]+)"/
+const videoPosterRegex = /<video[^>]*\sposter="([^"]+)"/
+const videoTitleRegex = /<video[^>]*\sdata-title="([^"]+)"/
+const videoDescriptionRegex = /<video[^>]*\sdata-description="([^"]+)"/
+const videoPlayerLocRegex = /<video[^>]*\sdata-player-loc="([^"]+)"/
+const videoDurationRegex = /<video[^>]*\sdata-duration="([^"]+)"/
+const videoExpirationDateRegex = /<video[^>]*\sdata-expiration-date="([^"]+)"/
+const videoRatingRegex = /<video[^>]*\sdata-rating="([^"]+)"/
+const videoViewCountRegex = /<video[^>]*\sdata-view-count="([^"]+)"/
+const videoPublicationDateRegex = /<video[^>]*\sdata-publication-date="([^"]+)"/
+const videoFamilyFriendlyRegex = /<video[^>]*\sdata-family-friendly="([^"]+)"/
+const videoRequiresSubscriptionRegex = /<video[^>]*\sdata-requires-subscription="([^"]+)"/
+const videoLiveRegex = /<video[^>]*\sdata-live="([^"]+)"/
+const videoTagRegex = /<video[^>]*\sdata-tag="([^"]+)"/
+const sourceRegex = /<source[^>]*\ssrc="([^"]+)"/g
+
 export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean }) {
   options = options || { images: true, videos: true, lastmod: true, alternatives: true }
   const payload: Partial<SitemapUrl> = {}
@@ -12,7 +29,7 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     const mainMatch = mainRegex.exec(html)
     if (mainMatch?.[1] && mainMatch[1].includes('<img')) {
       // Extract image src attributes using regex on the HTML, but ignore elements with invalid values such as data:, blob:, or file:
-      // eslint-disable-next-line regexp/no-useless-lazy
+      // eslint-disable-next-line regexp/no-useless-lazy,regexp/no-super-linear-backtracking
       const imgRegex = /<img\s+(?:[^>]*?\s)?src=["']((?!data:|blob:|file:)[^"']+?)["'][^>]*>/gi
 
       let match
@@ -37,66 +54,81 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
     const mainMatch = mainRegex.exec(html)
 
     if (mainMatch?.[1] && mainMatch[1].includes('<video')) {
-      // Extract video src & child source attributes using regex on the HTML
-      const videoRegex = /<video[^>]*>([\s\S]*?)<\/video>/g
-      const videoAttrRegex = /<video[^>]*\ssrc="([^"]+)"(?:[^>]*\sposter="([^"]+)")?/
-      const videoPosterRegex = /<video[^>]*\sposter="([^"]+)"/
-      const videoTitleRegex = /<video[^>]*\sdata-title="([^"]+)"/
-      const videoDescriptionRegex = /<video[^>]*\sdata-description="([^"]+)"/
-      const sourceRegex = /<source[^>]*\ssrc="([^"]+)"/g
-
       let videoMatch
       while ((videoMatch = videoRegex.exec(mainMatch[1])) !== null) {
         const videoContent = videoMatch[1]
         const videoTag = videoMatch[0]
 
-        // Extract src and poster attributes from the <video> tag
-        const videoAttrMatch = videoAttrRegex.exec(videoTag)
-        const videoSrc = videoAttrMatch ? videoAttrMatch[1] : ''
-        const poster = (videoPosterRegex.exec(videoTag) || [])[1] || ''
+        const content_loc = (videoSrcRegex.exec(videoTag) || [])[1] || ''
+        const thumbnail_loc = (videoPosterRegex.exec(videoTag) || [])[1] || ''
         const title = (videoTitleRegex.exec(videoTag) || [])[1] || ''
         const description = (videoDescriptionRegex.exec(videoTag) || [])[1] || ''
 
-        // Extract src attributes from child <source> elements
+        const videoObj: VideoEntry = {
+          content_loc,
+          thumbnail_loc,
+          title,
+          description,
+        }
+
+        const player_loc = (videoPlayerLocRegex.exec(videoTag) || [])[1]
+        if (player_loc) videoObj.player_loc = player_loc
+
+        const duration = (videoDurationRegex.exec(videoTag) || [])[1]
+        if (duration) videoObj.duration = Number.parseInt(duration, 10)
+
+        const expiration_date = (videoExpirationDateRegex.exec(videoTag) || [])[1]
+        if (expiration_date) videoObj.expiration_date = expiration_date
+
+        const rating = (videoRatingRegex.exec(videoTag) || [])[1]
+        if (rating) videoObj.rating = Number.parseFloat(rating)
+
+        const view_count = (videoViewCountRegex.exec(videoTag) || [])[1]
+        if (view_count) videoObj.view_count = Number.parseInt(view_count, 10)
+
+        const publication_date = (videoPublicationDateRegex.exec(videoTag) || [])[1]
+        if (publication_date) videoObj.publication_date = publication_date
+
+        const family_friendly = (videoFamilyFriendlyRegex.exec(videoTag) || [])[1]
+        if (family_friendly) videoObj.family_friendly = family_friendly as VideoEntry['family_friendly']
+
+        const requires_subscription = (videoRequiresSubscriptionRegex.exec(videoTag) || [])[1]
+        if (requires_subscription) videoObj.requires_subscription = requires_subscription as VideoEntry['requires_subscription']
+
+        const live = (videoLiveRegex.exec(videoTag) || [])[1]
+        if (live) videoObj.live = live as VideoEntry['live']
+
+        const tag = (videoTagRegex.exec(videoTag) || [])[1]
+        if (tag) videoObj.tag = tag
+
         const sources = []
         let sourceMatch
         while ((sourceMatch = sourceRegex.exec(videoContent)) !== null) {
-          sources.push({
-            src: sourceMatch[1],
-            poster: poster,
-            title: title,
-            description: description,
-          })
+          sources.push(sourceMatch[1])
         }
 
-        // Add video with src attribute
-        if (videoSrc) {
-          videos.push({
-            src: videoSrc,
-            poster: poster,
-            title: title,
-            description: description,
-            sources: [],
-          })
-        }
-
-        // Add sources with their respective posters
         if (sources.length > 0) {
-          videos.push(...sources)
+          videos.push(...sources.map((source) => {
+            if (source.startsWith('/'))
+              source = tryUseNuxt() ? withSiteUrl(source) : source
+            return {
+              ...videoObj,
+              content_loc: source,
+            }
+          }))
+        }
+        else {
+          videos.push(videoObj)
         }
       }
     }
 
-    // Map videos to payload
-    if (videos.length > 0) {
-      payload.videos = videos.map(video =>
-        ({
-          content_loc: video.src,
-          thumbnail_loc: video.poster,
-          title: video.title,
-          description: video.description,
-        }) as VideoEntry,
-      )
+    // filter videos for being valid entries
+    const validVideos = videos.filter((v) => {
+      return v.content_loc && v.thumbnail_loc && v.title && v.description
+    })
+    if (validVideos.length > 0) {
+      payload.videos = validVideos as VideoEntry[]
     }
   }
 
