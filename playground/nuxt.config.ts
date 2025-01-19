@@ -46,13 +46,17 @@ export default defineNuxtConfig({
       },
     }),
   ],
+
   site: {
     url: 'https://sitemap-edge-demo.vercel.app/',
   },
+
   content: {
     documentDriven: true,
   },
+
   ignorePrefix: 'ignore-',
+
   routeRules: {
     '/api/prerendered': {
       prerender: true,
@@ -88,9 +92,13 @@ export default defineNuxtConfig({
       },
     },
   },
+
   experimental: {
     inlineRouteRules: true,
   },
+
+  compatibilityDate: '2025-01-17',
+
   nitro: {
     typescript: {
       internalPaths: true,
@@ -109,6 +117,7 @@ export default defineNuxtConfig({
       failOnError: false,
     },
   },
+
   i18n: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
@@ -121,6 +130,7 @@ export default defineNuxtConfig({
   robots: {
     indexable: true,
   },
+
   sitemap: {
     debug: true,
     // sitemapName: 'test.xml',
