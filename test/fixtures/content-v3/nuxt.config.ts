@@ -2,8 +2,8 @@ import NuxtRobots from '../../../src/module'
 
 export default defineNuxtConfig({
   modules: [
-    NuxtRobots,
     '@nuxt/content',
+    NuxtRobots,
   ],
 
   site: {

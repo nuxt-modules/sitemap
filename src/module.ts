@@ -360,6 +360,10 @@ declare module 'vue-router' {
     const nuxtV3Collections = new Set<string>()
     const isNuxtContentV2 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^2')
     if (isNuxtContentV3) {
+      // check if content was loaded first
+      if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {
+        logger.warn('You have loaded `@nuxt/content` before `@nuxtjs/sitemap`, this may cause issues with the integration. Please ensure `@nuxtjs/sitemap` is loaded first.')
+      }
       // TODO this is a hack until content gives us an alias
       nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
       // @ts-expect-error runtime type
@@ -388,7 +392,6 @@ declare module 'vue-router' {
         }
         // Note: videos only supported through prerendering for simpler logic
 
-        const sitemapConfig = typeof content.sitemap === 'object' ? content.sitemap : {}
         const lastmod = content.seo?.articleModifiedTime || content.updatedAt
         const defaults: Partial<SitemapUrl> = {
           loc: content.path,
@@ -397,8 +400,7 @@ declare module 'vue-router' {
           defaults.images = images
         if (lastmod)
           defaults.lastmod = lastmod
-        content.sitemap = defu(sitemapConfig, defaults) as Partial<SitemapUrl>
-        ctx.content = content
+        ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
       })
 
       addServerHandler({
