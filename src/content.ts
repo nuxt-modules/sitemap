@@ -1,6 +1,8 @@
-import { type DefinedCollection, z } from '@nuxt/content'
+import type { Collection } from '@nuxt/content'
+import { z } from '@nuxt/content'
+import type { TypeOf, ZodRawShape } from 'zod'
 
-const sitemap = z.object({
+export const schema = z.object({
   loc: z.string().optional(),
   lastmod: z.date().optional(),
   changefreq: z.union([z.literal('always'), z.literal('hourly'), z.literal('daily'), z.literal('weekly'), z.literal('monthly'), z.literal('yearly'), z.literal('never')]).optional(),
@@ -34,19 +36,12 @@ const sitemap = z.object({
   })).optional(),
 }).optional()
 
-export function asSitemapCollection<T extends DefinedCollection>(collection: T): T {
-  if (collection.type !== 'page') {
-    return collection
-  }
-  if (!collection.schema) {
-    collection.schema = z.object({
-      sitemap,
-    })
-  }
-  else {
-    collection.schema = collection.schema.extend({
-      sitemap,
-    })
+export type SitemapSchema = TypeOf<typeof schema>
+
+export function asSitemapCollection<T extends ZodRawShape>(collection: Collection<T>): Collection<T> {
+  if (collection.type === 'page') {
+    // @ts-expect-error untyped
+    collection.schema = collection.schema ? collection.schema.extend(schema) : schema
   }
   return collection
 }
