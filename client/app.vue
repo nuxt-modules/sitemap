@@ -456,12 +456,9 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                 </h3>
               </template>
               <div class="px-3 py-2 space-y-5">
-                <pre
-                  of-auto
-                  h-full
-                  text-sm
-                  style="white-space: break-spaces;"
-                  v-html="renderCodeHighlight(JSON.stringify(data?.runtimeConfig, null, 2), 'json').value"
+                <OCodeBlock
+                  :code="renderCodeHighlight(JSON.stringify(data?.runtimeConfig, null, 2), 'json').value"
+                  lang="json"
                 />
               </div>
             </OSectionBlock>
