@@ -1,4 +1,4 @@
-import { z } from '@nuxt/content'
+import { type DefinedCollection, z } from '@nuxt/content'
 
 const sitemap = z.object({
   loc: z.string().optional(),
@@ -34,9 +34,9 @@ const sitemap = z.object({
   })).optional(),
 }).optional()
 
-export function asSitemapCollection(collection: any) {
+export function asSitemapCollection<T extends DefinedCollection>(collection: T): T {
   if (collection.type !== 'page') {
-    return
+    return collection
   }
   if (!collection.schema) {
     collection.schema = z.object({

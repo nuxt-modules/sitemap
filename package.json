@@ -27,14 +27,27 @@
       "types": "./dist/types.d.ts",
       "import": "./dist/module.mjs",
       "require": "./dist/module.cjs"
+    },
+    "./content": {
+      "types": "./dist/content.d.ts",
+      "import": "./dist/content.mjs",
+      "require": "./dist/content.cjs"
     }
   },
   "main": "./dist/module.cjs",
   "types": "./dist/types.d.ts",
   "files": [
     "dist",
-    "virtual.d.ts"
+    "virtual.d.ts",
+    "content.d.ts"
   ],
+  "typesVersions": {
+    "*": {
+      "content": [
+        "dist/content"
+      ]
+    }
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:type": "tsc --noEmit",
@@ -83,14 +96,5 @@
   "resolutions": {
     "postcss": "8.4.47",
     "typescript": "5.6.3"
-  },
-  "build": {
-    "externals": [
-      "h3",
-      "std-env",
-      "nitropack",
-      "consola",
-      "@nuxt/content"
-    ]
   }
 }

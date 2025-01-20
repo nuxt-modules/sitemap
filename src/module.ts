@@ -44,8 +44,6 @@ import { normalizeFilters } from './util/filter'
 // eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
 
-export * from './content'
-
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/sitemap',
