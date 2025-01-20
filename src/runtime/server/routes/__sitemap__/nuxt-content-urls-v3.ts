@@ -15,10 +15,10 @@ export default defineEventHandler(async (e) => {
   // now we need to handle multiple queries here, we want to run the requests in parralel
   const contentList = []
   for (const collection of collections) {
-    contentList.push(queryCollectionWithEvent(e, collection).select('sitemap').where('sitemap', 'IS NOT NULL').all())
+    contentList.push(queryCollectionWithEvent(e, collection).select('path', 'sitemap').where('path', 'IS NOT NULL').all())
   }
   // we need to wait for all the queries to finish
   const results = await Promise.all(contentList)
   // we need to flatten the results
-  return results.flat().map(c => c.sitemap).filter(Boolean)
+  return results.flat().map(c => ({ loc: c.path, ...c.sitemap })).filter(Boolean)
 })
