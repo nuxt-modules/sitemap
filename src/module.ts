@@ -397,16 +397,7 @@ declare module 'vue-router' {
           defaults.images = images
         if (lastmod)
           defaults.lastmod = lastmod
-        const definition = defu(sitemapConfig, defaults) as Partial<SitemapUrl>
-        if (!definition.loc) {
-          // user hasn't provided a loc... lets fallback to a relative path
-          if (content.path && content.path && content.path.startsWith('/'))
-            definition.loc = content.path
-        }
-        content.sitemap = definition
-        // loc is required
-        if (!definition.loc)
-          delete content.sitemap
+        content.sitemap = defu(sitemapConfig, defaults) as Partial<SitemapUrl>
         ctx.content = content
       })
 
