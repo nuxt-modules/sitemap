@@ -20,7 +20,7 @@
     "url": "https://github.com/nuxt-modules/sitemap/issues"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.1"
   },
   "exports": {
     ".": {
