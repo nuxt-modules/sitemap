@@ -33,7 +33,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       signal: timeoutController.signal,
       headers: defu(options?.headers, {
         Accept: isXmlRequest ? 'text/xml' : 'application/json',
-      }, event ? { Host: getRequestHost(event, { xForwardedHost: true }) } : {}),
+      }, event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {}),
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
