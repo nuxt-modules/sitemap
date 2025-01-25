@@ -84,7 +84,7 @@
     "@nuxt/ui": "^2.21.0",
     "@nuxtjs/i18n": "^9.1.2",
     "@nuxtjs/robots": "^5.2.2",
-    "bumpp": "^9.10.1",
+    "bumpp": "^10.0.1",
     "eslint": "^9.18.0",
     "eslint-plugin-n": "^17.15.1",
     "execa": "^9.5.2",
