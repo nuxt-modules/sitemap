@@ -6,7 +6,6 @@ import type { Nuxt } from '@nuxt/schema'
 import type { Nitro, PrerenderRoute } from 'nitropack'
 import chalk from 'chalk'
 import { dirname } from 'pathe'
-import { build } from 'nitropack'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
 import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
@@ -90,8 +89,19 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       }), route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
+      const isNuxt4 = nuxt.options._majorVersion === 4
+      let nitroModule
+      if (isNuxt4) {
+        nitroModule = await import(String('nitro'))
+      }
+      else {
+        nitroModule = await import(String('nitropack'))
+      }
+      if (!nitroModule) {
+        return
+      }
       // force templates to be rebuilt
-      await build(prerenderer)
+      await nitroModule.build(prerenderer)
 
       const routes: string[] = []
       if (options.debug)
