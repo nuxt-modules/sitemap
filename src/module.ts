@@ -326,10 +326,12 @@ declare module 'vue-router' {
       if (typeof config.runtimeCacheStorage === 'object')
         routeRules.cache.base = 'sitemap'
     }
-    nuxt.options.nitro.routeRules['/sitemap.xsl'] = {
-      headers: {
-        'Content-Type': 'application/xslt+xml',
-      },
+    if (config.xsl) {
+      nuxt.options.nitro.routeRules[config.xsl] = {
+        headers: {
+          'Content-Type': 'application/xslt+xml',
+        },
+      }
     }
     if (usingMultiSitemaps) {
       nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: '/sitemap_index.xml' }
