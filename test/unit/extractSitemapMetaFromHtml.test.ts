@@ -309,4 +309,40 @@ describe('extractSitemapMetaFromHtml', () => {
       }
     `)
   })
+  it('extracts relative poster as absolute', async () => {
+    const testcase5 = extractSitemapMetaFromHtml(`
+<main>
+      <video
+        controls
+        src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
+        poster="/poster.jpg"
+        width="620"
+        data-title="Big Buck Bunny"
+        data-description="Big Buck Bunny in DivX 720p."
+      >
+              <source
+          src="https://archive.org/download/DuckAndCover_185/CivilDefenseFilm-DuckAndCoverColdWarNuclearPropaganda_512kb.mp4"
+          type="video/mp4"
+        />
+        </video>
+        </main>
+       `, {
+      videos: true,
+      resolveUrl(s) {
+        return s.startsWith('/') ? `https://example.com${s}` : s
+      },
+    })
+    expect(testcase5).toMatchInlineSnapshot(`
+      {
+        "videos": [
+          {
+            "content_loc": "https://archive.org/download/DuckAndCover_185/CivilDefenseFilm-DuckAndCoverColdWarNuclearPropaganda_512kb.mp4",
+            "description": "Big Buck Bunny in DivX 720p.",
+            "thumbnail_loc": "https://example.com/poster.jpg",
+            "title": "Big Buck Bunny",
+          },
+        ],
+      }
+    `)
+  })
 })

@@ -1,6 +1,4 @@
-import { withSiteUrl } from 'nuxt-site-config/kit'
 import { parseURL } from 'ufo'
-import { tryUseNuxt } from '@nuxt/kit'
 import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/types'
 
 const videoRegex = /<video[^>]*>([\s\S]*?)<\/video>/g
@@ -20,13 +18,14 @@ const videoLiveRegex = /<video[^>]*\sdata-live="([^"]+)"/
 const videoTagRegex = /<video[^>]*\sdata-tag="([^"]+)"/
 const sourceRegex = /<source[^>]*\ssrc="([^"]+)"/g
 
-export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean }) {
+export function extractSitemapMetaFromHtml(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean, resolveUrl?: (s: string) => string }) {
   options = options || { images: true, videos: true, lastmod: true, alternatives: true }
   const payload: Partial<SitemapUrl> = {}
+  const resolveUrl = options?.resolveUrl || ((s: string) => s)
+  const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
+  const mainMatch = mainRegex.exec(html)
   if (options?.images) {
     const images = new Set<string>()
-    const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
-    const mainMatch = mainRegex.exec(html)
     if (mainMatch?.[1] && mainMatch[1].includes('<img')) {
       // Extract image src attributes using regex on the HTML, but ignore elements with invalid values such as data:, blob:, or file:
       // eslint-disable-next-line regexp/no-useless-lazy,regexp/no-super-linear-backtracking
@@ -37,10 +36,7 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
         // This is necessary to avoid infinite loops with zero-width matches
         if (match.index === imgRegex.lastIndex)
           imgRegex.lastIndex++
-        let url = match[1]
-        // if the match is relative
-        if (url.startsWith('/'))
-          url = tryUseNuxt() ? withSiteUrl(url) : url
+        const url = resolveUrl(match[1])
         images.add(url)
       }
     }
@@ -50,9 +46,6 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
 
   if (options?.videos) {
     const videos = []
-    const mainRegex = /<main[^>]*>([\s\S]*?)<\/main>/
-    const mainMatch = mainRegex.exec(html)
-
     if (mainMatch?.[1] && mainMatch[1].includes('<video')) {
       let videoMatch
       while ((videoMatch = videoRegex.exec(mainMatch[1])) !== null) {
@@ -109,11 +102,12 @@ export function extractSitemapMetaFromHtml(html: string, options?: { images?: bo
 
         if (sources.length > 0) {
           videos.push(...sources.map((source) => {
-            if (source.startsWith('/'))
-              source = tryUseNuxt() ? withSiteUrl(source) : source
+            if (videoObj.thumbnail_loc) {
+              videoObj.thumbnail_loc = resolveUrl(String(videoObj.thumbnail_loc))
+            }
             return {
               ...videoObj,
-              content_loc: source,
+              content_loc: resolveUrl(source),
             }
           }))
         }

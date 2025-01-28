@@ -8,6 +8,7 @@ import chalk from 'chalk'
 import { dirname } from 'pathe'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
+import { withSiteUrl } from 'nuxt-site-config/kit'
 import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { splitForLocales } from './runtime/utils-pure'
@@ -80,12 +81,17 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
           route._sitemap._sitemap = _sitemap
         }
       }
+
       route._sitemap = defu(extractSitemapMetaFromHtml(html, {
         images: options.discoverImages,
         videos: options.discoverVideos,
         // TODO configurable?
         lastmod: true,
         alternatives: true,
+        resolveUrl(s) {
+          // if the match is relative
+          return s.startsWith('/') ? withSiteUrl(s) : s
+        },
       }), route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
