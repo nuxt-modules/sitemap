@@ -1,9 +1,9 @@
-import NuxtRobots from '../../../src/module'
+import NuxtSitemap from '../../../src/module'
 
 export default defineNuxtConfig({
   modules: [
+    NuxtSitemap,
     '@nuxt/content',
-    NuxtRobots,
   ],
 
   site: {
