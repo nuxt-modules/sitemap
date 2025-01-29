@@ -68,6 +68,9 @@ export {}
 }
 
 export function createPagesPromise(nuxt: Nuxt = useNuxt()) {
+  if (!nuxt.options.pages) {
+    return Promise.resolve([])
+  }
   return new Promise<NuxtPage[]>((resolve) => {
     nuxt.hooks.hook('modules:done', () => {
       extendPages(resolve)
