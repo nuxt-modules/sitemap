@@ -1,10 +1,10 @@
 import { createError, defineEventHandler, getRouterParam } from 'h3'
 import { withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
-import { useSimpleSitemapRuntimeConfig } from '../../utils'
+import { useSitemapRuntimeConfig } from '../../utils'
 import { createSitemap } from '../../sitemap/nitro'
 
 export default defineEventHandler(async (e) => {
-  const runtimeConfig = useSimpleSitemapRuntimeConfig(e)
+  const runtimeConfig = useSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
   const sitemapName = withoutLeadingSlash(withoutTrailingSlash((getRouterParam(e, 'sitemap') || e.path)?.replace('.xml', '')

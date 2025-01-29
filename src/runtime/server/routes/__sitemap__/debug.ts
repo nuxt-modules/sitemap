@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 import type { SitemapDefinition } from '../../../types'
-import { useSimpleSitemapRuntimeConfig } from '../../utils'
+import { useSitemapRuntimeConfig } from '../../utils'
 import {
   childSitemapSources,
   globalSitemapSources,
@@ -9,7 +9,7 @@ import {
 import { useNitroOrigin } from '#imports'
 
 export default defineEventHandler(async (e) => {
-  const _runtimeConfig = useSimpleSitemapRuntimeConfig()
+  const _runtimeConfig = useSitemapRuntimeConfig()
   const { sitemaps: _sitemaps } = _runtimeConfig
   const runtimeConfig = { ..._runtimeConfig }
   // @ts-expect-error hack

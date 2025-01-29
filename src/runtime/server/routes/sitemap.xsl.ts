@@ -1,12 +1,12 @@
 import { defineEventHandler, getHeader, setHeader } from 'h3'
 import { getQuery, parseURL, withQuery } from 'ufo'
-import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { useSitemapRuntimeConfig } from '../utils'
 import { createSitePathResolver, useSiteConfig } from '#imports'
 
 export default defineEventHandler(async (e) => {
   const fixPath = createSitePathResolver(e, { absolute: false, withBase: true })
 
-  const { sitemapName: fallbackSitemapName, cacheMaxAgeSeconds, version, xslColumns, xslTips } = useSimpleSitemapRuntimeConfig()
+  const { sitemapName: fallbackSitemapName, cacheMaxAgeSeconds, version, xslColumns, xslTips } = useSitemapRuntimeConfig()
   setHeader(e, 'Content-Type', 'application/xslt+xml')
   if (cacheMaxAgeSeconds)
     setHeader(e, 'Cache-Control', `public, max-age=${cacheMaxAgeSeconds}, must-revalidate`)

@@ -1,9 +1,9 @@
 import { withLeadingSlash } from 'ufo'
-import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { useSitemapRuntimeConfig } from '../utils'
 import { defineNitroPlugin } from '#imports'
 
 export default defineNitroPlugin((nitroApp) => {
-  const { sitemaps } = useSimpleSitemapRuntimeConfig()
+  const { sitemaps } = useSitemapRuntimeConfig()
   const queue: (() => Promise<Response>)[] = []
   const sitemapsWithRoutes = Object.entries(sitemaps)
     .filter(([, sitemap]) => sitemap._route)

@@ -5,7 +5,7 @@ import { useRuntimeConfig } from '#imports'
 
 export * from '../utils-pure'
 
-export function useSimpleSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
+export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   // we need to clone with this hack so that we can write to the config
   const clone = JSON.parse(JSON.stringify(useRuntimeConfig(e).sitemap)) as any as ModuleRuntimeConfig
   // normalize the filters for runtime

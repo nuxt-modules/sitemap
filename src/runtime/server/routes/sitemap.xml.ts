@@ -1,11 +1,11 @@
 import { defineEventHandler, sendRedirect } from 'h3'
 import { withBase } from 'ufo'
-import { useSimpleSitemapRuntimeConfig } from '../utils'
+import { useSitemapRuntimeConfig } from '../utils'
 import { createSitemap } from '../sitemap/nitro'
 import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async (e) => {
-  const runtimeConfig = useSimpleSitemapRuntimeConfig()
+  const runtimeConfig = useSitemapRuntimeConfig()
   const { sitemaps } = runtimeConfig
   // we need to check if we're rendering multiple sitemaps from the index sitemap
   if ('index' in sitemaps) {
