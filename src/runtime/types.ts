@@ -179,6 +179,10 @@ export interface SitemapSourceBase {
   fetch?: string | [string, FetchOptions]
   urls?: SitemapUrlInput[]
   sourceType?: 'app' | 'user'
+  /**
+   * @internal
+   */
+  _skip?: false | number
 }
 export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   urls: SitemapUrlInput[]

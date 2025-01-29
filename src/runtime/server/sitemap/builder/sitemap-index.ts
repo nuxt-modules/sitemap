@@ -1,6 +1,7 @@
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import type { NitroApp } from 'nitropack/types'
+import { useStorage } from 'nitropack/runtime'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -58,10 +59,16 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     })
   }
   else {
+    const host = new URL(resolvers.canonicalUrlResolver('/')).hostname
+    const cacheKey = `cache:sitemap:${host}:skip.json`
+    const currStats = ((await useStorage().get(cacheKey)) || {}) as Record<string, number>
     for (const sitemap in sitemaps) {
       if (sitemap !== 'index') {
-        // user provided sitemap config
-        chunks[sitemap] = chunks[sitemap] || { urls: [] }
+        // automatically hide sitemap if it's empty
+        if (!(sitemap in currStats) || !currStats[sitemap]) {
+          // user provided sitemap config
+          chunks[sitemap] = chunks[sitemap] || { urls: [] }
+        }
       }
     }
   }

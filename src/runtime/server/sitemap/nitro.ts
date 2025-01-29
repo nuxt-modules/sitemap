@@ -2,6 +2,7 @@ import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
+import { useStorage, cachedFunction } from 'nitropack/runtime'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -50,6 +51,17 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   }
   const resolvers = useNitroUrlResolvers(event)
   let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  if (typeof sitemapUrls === 'object' && sitemapUrls.skip) {
+    const host = new URL(resolvers.canonicalUrlResolver('/')).hostname
+    const cacheKey = `cache:sitemap:${host}:skip.json`
+    const currStats = ((await useStorage().get(cacheKey)) || {}) as Record<string, boolean>
+    currStats[sitemapName] = {
+
+    }
+    await useStorage().set(cacheKey, currStats)
+    // still render
+    sitemapUrls = []
+  }
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig

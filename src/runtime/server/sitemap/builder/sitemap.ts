@@ -176,7 +176,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   return _urls
 }
 
-export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ skip: number } | ResolvedSitemapUrl[]> {
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -225,6 +225,17 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   const sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
   sourcesInput.push(...await childSitemapSources(sitemap))
   const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+  let skipTime = 0
+  for (const source of sources) {
+    if (source._skip) {
+      skipTime = Math.max(skipTime, source._skip)
+    }
+  }
+  if (skipTime > 0) {
+    return {
+      skip: skipTime,
+    }
+  }
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
     sitemapName: sitemap.sitemapName,

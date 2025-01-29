@@ -51,9 +51,15 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
         error: 'Received HTML response instead of JSON',
       }
     }
+    let _skip: false | number = false
     let urls = []
     if (typeof res === 'object') {
-      urls = res.urls || res
+      if (res.skip) {
+        _skip = res.skip as number
+      }
+      else {
+        urls = res.urls || res
+      }
     }
     else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
       // fast pass XML extract all loc data, let's use
@@ -61,6 +67,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     }
     return {
       ...input,
+      _skip,
       context,
       timeTakenMs,
       urls: urls as SitemapUrlInput[],

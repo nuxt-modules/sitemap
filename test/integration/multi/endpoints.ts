@@ -19,6 +19,9 @@ await setup({
         bar: {
           sources: ['/api/sitemap/bar'],
         },
+        empty: {
+          sources: ['/api/sitemap/empty'],
+        },
       },
     },
   },

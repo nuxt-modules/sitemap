@@ -1,4 +1,5 @@
 import { defineEventHandler } from 'h3'
+import { useStorage } from 'nitropack/runtime'
 import type { SitemapDefinition } from '../../../types'
 import { useSitemapRuntimeConfig } from '../../utils'
 import {
@@ -24,7 +25,10 @@ export default defineEventHandler(async (e) => {
       sources: await resolveSitemapSources(await childSitemapSources(_sitemaps[s])),
     }
   }
+  const cacheKeys = await useStorage().keys('cache:sitemap')
+  const cacheFiles = await Promise.all(cacheKeys.map(async k => ({ key: k, val: await useStorage().get(k) })))
   return {
+    cache: cacheFiles,
     nitroOrigin,
     sitemaps,
     runtimeConfig,
