@@ -34,7 +34,7 @@ function resolveSitemapUrl(sitemapName: string) {
 }
 
 function resolveSitemapOptions(definition: SitemapDefinition) {
-  const options: Record< string, any> = {}
+  const options: Record<string, any> = {}
   // add all definition keys / values that have a defined value
   Object.entries(definition).forEach(([key, value]) => {
     if (value !== undefined && (!Array.isArray(value) || value.length > 0) && key !== 'includeAppSources')
