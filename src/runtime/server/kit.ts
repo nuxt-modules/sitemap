@@ -2,7 +2,7 @@ import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import { parseURL, withoutBase, withoutTrailingSlash } from 'ufo'
 import type { NitroRouteRules } from 'nitropack'
-import { useRuntimeConfig } from '#imports'
+import { useRuntimeConfig } from 'nitropack/runtime'
 
 export function withoutQuery(path: string) {
   return path.split('?')[0]

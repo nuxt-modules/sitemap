@@ -1,8 +1,8 @@
 import { defineEventHandler, sendRedirect } from 'h3'
 import { withBase } from 'ufo'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import { useSitemapRuntimeConfig } from '../utils'
 import { createSitemap } from '../sitemap/nitro'
-import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async (e) => {
   const runtimeConfig = useSitemapRuntimeConfig()

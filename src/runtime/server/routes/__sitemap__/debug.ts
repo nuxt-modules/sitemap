@@ -6,7 +6,7 @@ import {
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import { useNitroOrigin } from '#imports'
+import { useNitroOrigin } from '#site-config/server/composables/useNitroOrigin'
 
 export default defineEventHandler(async (e) => {
   const _runtimeConfig = useSitemapRuntimeConfig()

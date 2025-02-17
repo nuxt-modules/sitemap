@@ -1,9 +1,9 @@
 import { defu } from 'defu'
 import type { ParsedContent } from '@nuxt/content'
 import type { NitroApp } from 'nitropack/types'
+import { defineNitroPlugin } from 'nitropack/runtime'
 import type { SitemapUrl } from '../../types'
 import { useSitemapRuntimeConfig } from '../utils'
-import { defineNitroPlugin } from '#imports'
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSitemapRuntimeConfig()

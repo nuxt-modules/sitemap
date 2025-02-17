@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import type { ModuleRuntimeConfig } from '../types'
 import { normalizeRuntimeFilters } from '../utils-pure'
-import { useRuntimeConfig } from '#imports'
 
 export * from '../utils-pure'
 

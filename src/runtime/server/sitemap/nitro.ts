@@ -2,6 +2,7 @@ import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
+import { useNitroApp } from 'nitropack/runtime'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -14,7 +15,9 @@ import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortSitemapUrls } from './urlset/sort'
-import { useNitroApp, createSitePathResolver, getPathRobotConfig, useSiteConfig } from '#imports'
+import { getPathRobotConfig } from '#imports' // can't solve this
+import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
+import { createSitePathResolver } from '#site-config/server/composables/utils'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
