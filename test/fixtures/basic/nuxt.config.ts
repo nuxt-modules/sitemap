@@ -18,8 +18,6 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
-  debug: process.env.NODE_ENV === 'test',
-
   sitemap: {
     autoLastmod: false,
     credits: false,
