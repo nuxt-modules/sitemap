@@ -378,7 +378,7 @@ declare module 'vue-router' {
           updatedAt?: string
         }
         nuxtV3Collections.add(ctx.collection.name)
-        if (ctx.file.stem.endsWith('/.navigation')) {
+        if (ctx.file.path.endsWith('/.navigation')) {
           return
         }
         if (!('sitemap' in ctx.collection.fields)) {
