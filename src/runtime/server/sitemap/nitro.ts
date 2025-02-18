@@ -91,6 +91,7 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const resolvedCtx: SitemapRenderCtx = {
     urls: sitemapUrls,
     sitemapName: sitemapName,
+    event,
   }
   await nitro.hooks.callHook('sitemap:resolved', resolvedCtx)
   // we need to normalize any new urls otherwise they won't appear in the final sitemap
@@ -105,7 +106,7 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
 
-  const ctx = { sitemap, sitemapName }
+  const ctx = { sitemap, sitemapName, event }
   await nitro.hooks.callHook('sitemap:output', ctx)
   // need to clone the config object to make it writable
   setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')

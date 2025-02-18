@@ -228,6 +228,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
     sitemapName: sitemap.sitemapName,
+    event: resolvers.event,
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
   const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)

@@ -43,6 +43,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     const resolvedCtx: SitemapInputCtx = {
       urls: sources.flatMap(s => s.urls),
       sitemapName: sitemap.sitemapName,
+      event: resolvers.event,
     }
     await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
     const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)

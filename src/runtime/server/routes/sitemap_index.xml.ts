@@ -3,7 +3,7 @@ import { joinURL } from 'ufo'
 import { useNitroApp } from 'nitropack/runtime'
 import { useSitemapRuntimeConfig } from '../utils'
 import { buildSitemapIndex, urlsToIndexXml } from '../sitemap/builder/sitemap-index'
-import type { SitemapOutputHookCtx } from '../../types'
+import type { SitemapIndexRenderCtx, SitemapOutputHookCtx } from '../../types'
 import { useNitroUrlResolvers } from '../sitemap/nitro'
 
 export default defineEventHandler(async (e) => {
@@ -23,11 +23,11 @@ export default defineEventHandler(async (e) => {
     )
   }
 
-  const indexResolvedCtx = { sitemaps }
+  const indexResolvedCtx: SitemapIndexRenderCtx = { sitemaps, event: e }
   await nitro.hooks.callHook('sitemap:index-resolved', indexResolvedCtx)
 
   const output = urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig)
-  const ctx: SitemapOutputHookCtx = { sitemap: output, sitemapName: 'sitemap' }
+  const ctx: SitemapOutputHookCtx = { sitemap: output, sitemapName: 'sitemap', event: e }
   await nitro.hooks.callHook('sitemap:output', ctx)
 
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')

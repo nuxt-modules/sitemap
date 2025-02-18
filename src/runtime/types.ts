@@ -303,21 +303,25 @@ export interface SitemapDefinition {
   _route?: string
 }
 
-export interface SitemapIndexRenderCtx {
+interface NitroBaseHook {
+  event: H3Event
+}
+
+export interface SitemapIndexRenderCtx extends NitroBaseHook {
   sitemaps: SitemapIndexEntry[]
 }
 
-export interface SitemapRenderCtx {
+export interface SitemapRenderCtx extends NitroBaseHook {
   sitemapName: string
   urls: ResolvedSitemapUrl[]
 }
 
-export interface SitemapInputCtx {
+export interface SitemapInputCtx extends NitroBaseHook {
   sitemapName: string
   urls: SitemapUrlInput[]
 }
 
-export interface SitemapOutputHookCtx {
+export interface SitemapOutputHookCtx extends NitroBaseHook {
   sitemapName: string
   sitemap: string
 }
