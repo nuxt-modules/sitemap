@@ -367,14 +367,13 @@ declare module 'vue-router' {
       }
       // TODO this is a hack until content gives us an alias
       nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
-      // @ts-expect-error runtime type
       nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
         const content = ctx.content as {
           body: { value: [string, Record<string, any>][] }
           sitemap?: Partial<SitemapUrl>
           path: string
           updatedAt?: string
-        } & any
+        } & Record<string, any>
         nuxtV3Collections.add(ctx.collection.name)
         if (ctx.file.path.endsWith('/.navigation')) {
           return
