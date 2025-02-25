@@ -17,7 +17,6 @@ import type { NitroRouteConfig } from 'nitropack'
 import { readPackageJSON } from 'pkg-types'
 import { dirname } from 'pathe'
 import type { FileAfterParseHook } from '@nuxt/content'
-import type { UseSeoMetaInput } from '@unhead/schema'
 import type {
   AppSourceContext,
   AutoI18nConfig,
@@ -374,9 +373,8 @@ declare module 'vue-router' {
           body: { value: [string, Record<string, any>][] }
           sitemap?: Partial<SitemapUrl>
           path: string
-          seo: UseSeoMetaInput
           updatedAt?: string
-        }
+        } & any
         nuxtV3Collections.add(ctx.collection.name)
         if (ctx.file.path.endsWith('/.navigation')) {
           return
