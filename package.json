@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.2.6",
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "pnpm@10.5.2",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -89,13 +89,13 @@
     "eslint-plugin-n": "^17.15.1",
     "execa": "^9.5.2",
     "nuxt": "^3.15.4",
-    "nuxt-i18n-micro": "^1.75.0",
-    "typescript": "5.6.3",
+    "nuxt-i18n-micro": "^1.76.3",
+    "typescript": "5.7.3",
     "vitest": "^3.0.7"
   },
   "resolutions": {
-    "postcss": "8.4.47",
-    "typescript": "5.6.3"
+    "postcss": "8.5.3",
+    "typescript": "5.7.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
