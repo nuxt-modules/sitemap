@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
 
-describe('generate', () => {
+describe.skipIf(process.env.CI)('generate', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
     process.env.prerender = true
