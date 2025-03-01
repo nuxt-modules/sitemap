@@ -82,7 +82,7 @@
     "@nuxt/module-builder": "^0.8.4",
     "@nuxt/test-utils": "^3.17.0",
     "@nuxt/ui": "^2.21.0",
-    "@nuxtjs/i18n": "^9.2.1",
+    "@nuxtjs/i18n": "npm:@nuxtjs/i18n-edge@9.2.1-29013776.4a8d7d5",
     "@nuxtjs/robots": "^5.2.4",
     "bumpp": "^10.0.3",
     "eslint": "^9.21.0",
