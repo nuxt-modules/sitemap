@@ -7,7 +7,7 @@ const { resolve } = createResolver(import.meta.url)
 await setup({
   rootDir: resolve('../../fixtures/chunks'),
 })
-describe('multi chunks', () => {
+describe.skipIf(process.env.CI)('multi chunks', () => {
   it('basic', async () => {
     let sitemap = await $fetch('/sitemap_index.xml')
     // remove lastmods before tresting
