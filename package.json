@@ -24,7 +24,7 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/types.d.ts",
+      "types": "./dist/types.d.mts",
       "import": "./dist/module.mjs",
       "require": "./dist/module.cjs"
     },
@@ -58,7 +58,7 @@
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "test": "vitest && test:attw",
+    "test": "vitest && pnpm run test:attw",
     "test:attw": "attw --pack",
     "typecheck": "vue-tsc --noEmit"
   },
