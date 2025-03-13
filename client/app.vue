@@ -25,7 +25,6 @@ async function refresh() {
 const tab = useLocalStorage('@nuxtjs/sitemap:tab', 'sitemaps')
 
 function resolveSitemapUrl(sitemapName: string) {
-  console.log(data.value)
   if (!data.value)
     return ''
   if (sitemapName === 'sitemap' || sitemapName === 'sitemap.xml')
