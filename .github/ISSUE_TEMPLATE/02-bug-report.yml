@@ -14,7 +14,7 @@ body:
       required: true
     attributes:
       label: 🛠️ To reproduce
-      description: 'A reproduction of the bug. Check out the Stackblitz starters https://nuxtseo.com/sitemap/getting-started/stackblitz'
+      description: 'A reproduction of the bug. Check out the Stackblitz starters https://nuxtseo.com/docs/sitemap/getting-started/troubleshooting#submitting-an-issue'
       placeholder: https://stackblitz.com/[...]
   - type: textarea
     validations:

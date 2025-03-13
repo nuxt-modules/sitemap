@@ -5,6 +5,7 @@ import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
 describe('generate', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
+    // @ts-expect-error untyped
     process.env.prerender = true
     process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'
     const { resolve } = createResolver(import.meta.url)

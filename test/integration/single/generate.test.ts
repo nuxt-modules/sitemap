@@ -5,6 +5,7 @@ import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
 describe.skipIf(process.env.CI)('generate', () => {
   it('basic', async () => {
     process.env.NODE_ENV = 'production'
+    // @ts-expect-error untyped
     process.env.prerender = true
     process.env.NITRO_PRESET = 'static'
     process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'

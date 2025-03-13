@@ -63,6 +63,7 @@ describe('i18n', () => {
         _i18nTransform: true,
       },
     ], {
+      // @ts-expect-error untyped
       locales: EnFrAutoI18n.locales,
       defaultLocale: 'en',
       strategy: 'no_prefix',
@@ -409,6 +410,7 @@ describe('i18n', () => {
       code: 'xx',
       language: 'xx-XX',
     }]
+    // @ts-expect-error untyped
     const data = normalizeLocales({ locales })
     expect(data).toMatchInlineSnapshot(`
       [

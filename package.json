@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.2.7",
-  "packageManager": "pnpm@10.6.1",
+  "packageManager": "pnpm@10.6.2",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -29,7 +29,6 @@
       "require": "./dist/module.cjs"
     },
     "./content": {
-      "types": "./dist/content.d.ts",
       "import": "./dist/content.mjs",
       "require": "./dist/content.cjs"
     }
@@ -59,15 +58,17 @@
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "test": "vitest"
+    "test": "vitest && test:attw",
+    "test:attw": "attw --pack",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/devtools-kit": "^2.2.1",
+    "@nuxt/devtools-kit": "^2.3.0",
     "@nuxt/kit": "^3.16.0",
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "h3-compression": "^0.3.2",
-    "nuxt-site-config": "^3.1.4",
+    "nuxt-site-config": "^3.1.5",
     "ofetch": "^1.4.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.1.0",
@@ -77,21 +78,23 @@
     "ufo": "^1.5.4"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.17.4",
     "@nuxt/content": "^3.3.0",
-    "@nuxt/eslint-config": "^1.1.0",
+    "@nuxt/eslint-config": "^1.2.0",
     "@nuxt/module-builder": "^0.8.4",
-    "@nuxt/test-utils": "^3.17.1",
-    "@nuxt/ui": "^2.21.0",
-    "@nuxtjs/i18n": "npm:@nuxtjs/i18n-edge@9.2.1-29013776.4a8d7d5",
-    "@nuxtjs/robots": "^5.2.5",
-    "bumpp": "^10.0.3",
-    "eslint": "^9.21.0",
+    "@nuxt/test-utils": "^3.17.2",
+    "@nuxt/ui": "^3.0.0",
+    "@nuxtjs/i18n": "9.3.1",
+    "@nuxtjs/robots": "^5.2.7",
+    "bumpp": "^10.1.0",
+    "eslint": "^9.22.0",
     "eslint-plugin-n": "^17.16.2",
     "execa": "^9.5.2",
     "nuxt": "^3.16.0",
-    "nuxt-i18n-micro": "^1.77.0",
+    "nuxt-i18n-micro": "^1.79.0",
     "typescript": "5.8.2",
-    "vitest": "^3.0.8"
+    "vitest": "^3.0.8",
+    "vue-tsc": "^2.2.8"
   },
   "resolutions": {
     "postcss": "8.4.47",
@@ -101,7 +104,8 @@
     "onlyBuiltDependencies": [
       "@parcel/watcher",
       "better-sqlite3",
-      "esbuild"
+      "esbuild",
+      "vue-demi"
     ]
   }
 }

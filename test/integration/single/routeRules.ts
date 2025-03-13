@@ -22,6 +22,7 @@ await setup({
         redirect: '/defaults',
       },
       '/hidden': {
+        // @ts-expect-error untyped
         robots: false,
       },
       '/defaults': {
@@ -37,6 +38,7 @@ await setup({
         },
       },
       '/wildcard/hidden/**': {
+        // @ts-expect-error untyped
         robots: false,
       },
     },

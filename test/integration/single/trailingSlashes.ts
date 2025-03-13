@@ -21,7 +21,9 @@ describe('trailing slashes', () => {
   it('basic', async () => {
     const sitemap = await $fetch('/sitemap.xml')
     // extract the URLs from loc using regex
+    // @ts-expect-error untyped
     const sitemapUrls = sitemap.match(/<loc>(.*?)<\/loc>/g)!.map(url => url.replace(/<\/?loc>/g, ''))
+    // @ts-expect-error untyped
     sitemapUrls.forEach((url) => {
       expect(url.endsWith('/')).toBeTruthy()
     })

@@ -16,9 +16,11 @@ await setup({
     },
     routeRules: {
       '/hidden': {
+        // @ts-expect-error untyped
         robots: false,
       },
       '/hidden/': {
+        // @ts-expect-error untyped
         robots: false,
       },
       '/defaults': {
@@ -34,6 +36,7 @@ await setup({
         },
       },
       '/wildcard/hidden/**': {
+        // @ts-expect-error untyped
         robots: false,
       },
     },
