@@ -16,11 +16,11 @@ export default defineNuxtConfig({
     baseURL: '/__sitemap__/devtools',
   },
 
+  compatibilityDate: '2025-03-13',
+
   nitro: {
     output: {
       publicDir: resolve(__dirname, '../dist/client'),
     },
   },
-
-  compatibilityDate: '2025-03-13',
 })

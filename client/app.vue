@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
+import { joinURL } from 'ufo'
 import type { SitemapDefinition } from '../src/runtime/types'
 import { loadShiki, renderCodeHighlight } from './composables/shiki'
 import { colorMode } from './composables/rpc'
 import { data, refreshSources } from './composables/state'
 import { useHead } from '#imports'
 import 'floating-vue/dist/style.css'
-import { joinURL } from 'ufo'
 
 await loadShiki()
 
