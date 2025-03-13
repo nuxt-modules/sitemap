@@ -7,6 +7,7 @@ import { colorMode } from './composables/rpc'
 import { data, refreshSources } from './composables/state'
 import { useHead } from '#imports'
 import 'floating-vue/dist/style.css'
+import { joinURL } from 'ufo'
 
 await loadShiki()
 
@@ -24,13 +25,14 @@ async function refresh() {
 const tab = useLocalStorage('@nuxtjs/sitemap:tab', 'sitemaps')
 
 function resolveSitemapUrl(sitemapName: string) {
+  console.log(data.value)
   if (!data.value)
     return ''
   if (sitemapName === 'sitemap' || sitemapName === 'sitemap.xml')
     return `${data.value.nitroOrigin}sitemap.xml`
   if (sitemapName === 'index')
     return `${data.value.nitroOrigin}sitemap_index.xml`
-  return `${data.value.nitroOrigin}${sitemapName}-sitemap.xml`
+  return joinURL(data.value.nitroOrigin, data.value.runtimeConfig.sitemapsPathPrefix, `${sitemapName}-sitemap.xml`)
 }
 
 function resolveSitemapOptions(definition: SitemapDefinition) {
