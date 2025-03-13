@@ -70,7 +70,7 @@ export {}
 export function createPagesPromise(nuxt: Nuxt = useNuxt()) {
   return new Promise<NuxtPage[]>((resolve) => {
     nuxt.hooks.hook('modules:done', () => {
-      if (typeof nuxt.options.pages !== 'undefined' && nuxt.options.pages === false) {
+      if ((typeof nuxt.options.pages === 'boolean' && nuxt.options.pages === false) || (typeof nuxt.options.pages === 'object' && !nuxt.options.pages.enabled)) {
         return resolve([])
       }
       extendPages(resolve)
