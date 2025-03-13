@@ -1,4 +1,4 @@
-import { defineSitemapEventHandler } from '#sitemap/types'
+import { defineSitemapEventHandler } from '#sitemap/server/types'
 
 export default defineSitemapEventHandler(() => {
   return [
