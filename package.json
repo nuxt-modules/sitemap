@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^2.3.2",
-    "@nuxt/kit": "^3.16.0",
+    "@nuxt/kit": "^3.16.2",
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "h3-compression": "^0.3.2",
@@ -90,7 +90,7 @@
     "eslint": "^9.23.0",
     "eslint-plugin-n": "^17.17.0",
     "execa": "^9.5.2",
-    "nuxt": "^3.16.0",
+    "nuxt": "^3.16.2",
     "nuxt-i18n-micro": "^1.83.0",
     "typescript": "5.8.2",
     "vitest": "^3.0.9",
