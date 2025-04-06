@@ -543,7 +543,7 @@ declare module 'vue-router' {
           if (typeof path !== 'string')
             return [path]
           const withoutSlashes = withoutTrailingSlash(withoutLeadingSlash(path)).replace('/index', '')
-          if (withoutSlashes in pages) {
+          if (pages && withoutSlashes in pages) {
             const pageLocales = pages[withoutSlashes]
             if (pageLocales) {
               return Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({
@@ -558,7 +558,7 @@ declare module 'vue-router' {
           // alternatively see if the path matches the default locale within
           Object.values(pages).forEach((pageLocales) => {
             // @ts-expect-error untyped
-            if (nuxtI18nConfig.defaultLocale in pageLocales && pageLocales[nuxtI18nConfig.defaultLocale] === path)
+            if (pageLocales && nuxtI18nConfig.defaultLocale in pageLocales && pageLocales[nuxtI18nConfig.defaultLocale] === path)
               match = Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, normalisedLocales })))
           })
           return match
