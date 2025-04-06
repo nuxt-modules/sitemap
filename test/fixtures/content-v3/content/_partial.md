@@ -1,1 +1,5 @@
+---
+sitemap: false
+---
+
 # bar

@@ -372,7 +372,7 @@ declare module 'vue-router' {
       nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
         const content = ctx.content as {
           body: { value: [string, Record<string, any>][] }
-          sitemap?: Partial<SitemapUrl>
+          sitemap?: Partial<SitemapUrl> | false
           path: string
           updatedAt?: string
         } & Record<string, any>
@@ -381,6 +381,11 @@ declare module 'vue-router' {
           return
         }
         if (!('sitemap' in ctx.collection.fields)) {
+          return
+        }
+        // support sitemap: false
+        if (typeof content.sitemap !== 'undefined' && !content.sitemap) {
+          ctx.content.sitemap = null
           return
         }
         // add any top level images
