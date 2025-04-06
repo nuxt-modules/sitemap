@@ -10,7 +10,7 @@ import {
   hasNuxtModuleCompatibility, resolveModule,
   useLogger,
 } from '@nuxt/kit'
-import {joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash} from 'ufo'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
@@ -39,6 +39,8 @@ import {
   splitPathForI18nLocales,
 } from './util/i18n'
 import { normalizeFilters } from './util/filter'
+
+export * from './runtime/types'
 
 // eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
