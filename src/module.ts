@@ -10,7 +10,7 @@ import {
   hasNuxtModuleCompatibility, resolveModule,
   useLogger,
 } from '@nuxt/kit'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
+import {joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash} from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
 import type { NitroRouteConfig } from 'nitropack'
@@ -74,7 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaults: {},
     // index sitemap options filtering
     include: [],
-    exclude: ['/_nuxt/**', '/_**'],
+    exclude: ['/_**'],
     // sources
     sources: [],
     excludeAppSources: [],
@@ -88,6 +88,8 @@ export default defineNuxtModule<ModuleOptions>({
       logger.debug('The module is disabled, skipping setup.')
       return
     }
+    // /_nuxt/
+    config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
