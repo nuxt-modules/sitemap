@@ -23,5 +23,12 @@ export default defineEventHandler(async (e) => {
   // we need to wait for all the queries to finish
   const results = await Promise.all(contentList)
   // we need to flatten the results
-  return results.flatMap(c => (c && { loc: c.path, ...c.sitemap })).filter(Boolean)
+  return results.flatMap((c) => {
+    return c
+      .filter(c => c.sitemap !== false && c.path)
+      .flatMap(c => ({
+        loc: c.path,
+        ...(c.sitemap || {}),
+      }))
+  }).filter(Boolean)
 })

@@ -383,13 +383,16 @@ declare module 'vue-router' {
         nuxtV3Collections.add(ctx.collection.name)
         // ignore .dot files and paths
         if (String(ctx.content.path).includes('/.')) {
+          ctx.content.sitemap = null
           return
         }
         if (!('sitemap' in ctx.collection.fields)) {
+          ctx.content.sitemap = null
           return
         }
         // support sitemap: false
         if (typeof content.sitemap !== 'undefined' && !content.sitemap) {
+          ctx.content.sitemap = null
           return
         }
         // add any top level images
