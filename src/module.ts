@@ -371,8 +371,6 @@ declare module 'vue-router' {
       }
       // // exclude /__nuxt_content
       config.exclude!.push('/__nuxt_content/**')
-      // // ignore .navigation
-      config.exclude!.push('**/.navigation')
       // TODO this is a hack until content gives us an alias
       nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
       nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
@@ -383,7 +381,8 @@ declare module 'vue-router' {
           updatedAt?: string
         } & Record<string, any>
         nuxtV3Collections.add(ctx.collection.name)
-        if (ctx.file.path.endsWith('/.navigation')) {
+        // ignore .dot files and paths
+        if (String(ctx.content.path).includes('/.')) {
           return
         }
         if (!('sitemap' in ctx.collection.fields)) {
@@ -391,7 +390,6 @@ declare module 'vue-router' {
         }
         // support sitemap: false
         if (typeof content.sitemap !== 'undefined' && !content.sitemap) {
-          ctx.content.sitemap = null
           return
         }
         // add any top level images
