@@ -395,6 +395,10 @@ declare module 'vue-router' {
           ctx.content.sitemap = null
           return
         }
+        if (ctx.content.robots === false) {
+          ctx.content.sitemap = null
+          return
+        }
         // add any top level images
         const images: SitemapUrl['images'] = []
         if (config.discoverImages) {
