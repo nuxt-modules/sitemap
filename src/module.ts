@@ -40,7 +40,7 @@ import {
 } from './util/i18n'
 import { normalizeFilters } from './util/filter'
 
-export * from './runtime/types'
+export type * from './runtime/types'
 
 // eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
