@@ -367,6 +367,10 @@ declare module 'vue-router' {
       if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {
         logger.warn('You have loaded `@nuxt/content` before `@nuxtjs/sitemap`, this may cause issues with the integration. Please ensure `@nuxtjs/sitemap` is loaded first.')
       }
+      // // exclude /__nuxt_content
+      config.exclude!.push('/__nuxt_content/**')
+      // // ignore .navigation
+      config.exclude!.push('**/.navigation')
       // TODO this is a hack until content gives us an alias
       nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
       nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
