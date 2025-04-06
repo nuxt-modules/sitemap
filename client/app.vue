@@ -458,7 +458,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
               </template>
               <div class="px-3 py-2 space-y-5">
                 <OCodeBlock
-                  :code="renderCodeHighlight(JSON.stringify(data?.runtimeConfig, null, 2), 'json').value"
+                  :code="JSON.stringify(data?.runtimeConfig, null, 2)"
                   lang="json"
                 />
               </div>
@@ -526,14 +526,6 @@ html.dark {
 }
 .prose hr {
   --uno: border-solid border-1 border-b border-base h-1px w-full block my-2 op50;
-}
-
-.dark .shiki {
-  background: var(--shiki-dark-bg, inherit) !important;
-}
-
-.dark .shiki span {
-  color: var(--shiki-dark, inherit) !important;
 }
 
 /* JSON Editor */

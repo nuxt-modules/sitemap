@@ -15,7 +15,7 @@ const props = withDefaults(
   },
 )
 const rendered = computed(() => {
-  const code = renderCodeHighlight(props.code, props.lang)
+  const code = renderCodeHighlight(props.code, 'json')
   return props.transformRendered ? props.transformRendered(code.value || '') : code.value
 })
 </script>
