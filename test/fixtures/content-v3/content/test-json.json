@@ -1,0 +1,10 @@
+{
+  "title": "Test JSON Content",
+  "description": "This is a test JSON file for sitemap",
+  "sitemap": {
+    "lastmod": "2025-05-14",
+    "changefreq": "weekly",
+    "priority": 0.9
+  },
+  "content": "This is some JSON content"
+}

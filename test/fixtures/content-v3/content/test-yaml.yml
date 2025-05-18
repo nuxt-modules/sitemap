@@ -1,0 +1,7 @@
+title: Test YAML Content
+description: This is a test YAML file for sitemap
+sitemap:
+  lastmod: 2025-05-13
+  changefreq: monthly
+  priority: 0.8
+content: This is some YAML content
