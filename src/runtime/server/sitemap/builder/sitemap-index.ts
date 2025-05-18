@@ -9,7 +9,7 @@ import type {
   SitemapUrl,
 } from '../../../types'
 import { normaliseDate } from '../urlset/normalise'
-import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
+import { resolveSitemapSources } from '../urlset/sources'
 import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
 import { resolveSitemapEntries } from './sitemap'
@@ -39,7 +39,7 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
   if (isChunking) {
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
-    const sources = await resolveSitemapSources(await globalSitemapSources())
+    const sources = await resolveSitemapSources(await import('#sitemap-virtual/global-sources.mjs').then(m => m.sources))
     const resolvedCtx: SitemapInputCtx = {
       urls: sources.flatMap(s => s.urls),
       sitemapName: sitemap.sitemapName,

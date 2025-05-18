@@ -52,7 +52,15 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
     }
   }
   const resolvers = useNitroUrlResolvers(event)
-  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  const sourcesInput = definition.includeAppSources
+    ? await import('#sitemap-virtual/global-sources.mjs')
+      .then(m => m.sources)
+    : []
+  sourcesInput.push(...await (definition?._hasSourceChunk
+    ? import(`#sitemap-virtual/child-sources.mjs`)
+        .then(m => m.sources[definition.sitemapName] || [])
+    : Promise.resolve([])))
+  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro, sourcesInput)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
@@ -103,7 +111,7 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortSitemapUrls(urls) : urls
   // final urls
   const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers))
-  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))
+  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key'))
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
 
   const ctx = { sitemap, sitemapName, event }

@@ -15,7 +15,7 @@ import type {
   ResolvedSitemapUrl,
   SitemapUrl,
 } from '../../../types'
-import { mergeOnKey } from '../../../utils-pure'
+import { pathCache } from '../cache/path-cache'
 
 function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
 function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | undefined {
@@ -23,11 +23,24 @@ function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): st
     return s
   // convert url to string
   s = typeof s === 'string' ? s : s.toString()
-  // avoid transforming remote urls and urls already resolved
-  if (hasProtocol(s, { acceptRelative: true, strict: false }))
-    return resolvers.fixSlashes(s)
 
-  return resolvers.canonicalUrlResolver(s)
+  // Check cache first
+  const cacheKey = `${s}::${resolvers.event.path}`
+  const cached = pathCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  // avoid transforming remote urls and urls already resolved
+  if (hasProtocol(s, { acceptRelative: true, strict: false })) {
+    const result = resolvers.fixSlashes(s)
+    pathCache.set(cacheKey, result)
+    return result
+  }
+
+  const resolved = resolvers.canonicalUrlResolver(s)
+  pathCache.set(cacheKey, resolved)
+  return resolved
 }
 
 function removeTrailingSlash(s: string) {
@@ -86,6 +99,19 @@ export function isEncoded(url: string) {
 }
 
 export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
+  // Early exit for already normalized entries
+  if (_e._normalized === true) {
+    return _e
+  }
+
+  // Fast path for simple entries
+  if (!_e.lastmod && !_e.alternatives && !_e.images && !_e.videos && !Object.keys(defaults).length) {
+    const simple = { ..._e }
+    simple.loc = resolve(simple.loc, resolvers)
+    simple._normalized = true
+    return simple as ResolvedSitemapUrl
+  }
+
   const e = defu(_e, defaults) as ResolvedSitemapUrl
   if (e.lastmod) {
     const date = normaliseDate(e.lastmod)
@@ -103,7 +129,8 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   // correct alternative hrefs
   if (e.alternatives) {
-    e.alternatives = mergeOnKey(e.alternatives.map((e) => {
+    // Map alternatives without merging for better performance
+    e.alternatives = e.alternatives.map((e) => {
       const a: AlternativeEntry & { key?: string } = { ...e }
       // string
       if (typeof a.href === 'string')
@@ -112,15 +139,16 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
       else if (typeof a.href === 'object' && a.href)
         a.href = resolve(a.href.href, resolvers)
       return a
-    }), 'hreflang')
+    })
   }
 
   if (e.images) {
-    e.images = mergeOnKey(e.images.map((i) => {
+    // Map images without merging for better performance
+    e.images = e.images.map((i) => {
       i = { ...i }
       i.loc = resolve(i.loc, resolvers)
       return i
-    }), 'loc')
+    })
   }
 
   if (e.videos) {
@@ -131,6 +159,9 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
       return v
     })
   }
+
+  // Mark as normalized to avoid re-processing
+  e._normalized = true
   return e
 }
 

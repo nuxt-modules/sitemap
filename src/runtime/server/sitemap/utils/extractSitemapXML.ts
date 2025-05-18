@@ -1,6 +1,13 @@
 import type { SitemapUrlInput } from '../../../types'
+import { extractSitemapXMLFast } from './fast-xml-parser'
 
 export function extractSitemapXML(xml: string): SitemapUrlInput[] {
+  // Use fast parser for large XML files
+  if (xml.length > 50000) {
+    return extractSitemapXMLFast(xml)
+  }
+
+  // Use regex parser for smaller files (more compatible)
   const urls = xml.match(/<url>[\s\S]*?<\/url>/g) || []
   return urls.map((url) => {
     const loc = url.match(/<loc>([^<]+)<\/loc>/)?.[1]

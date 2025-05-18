@@ -88,37 +88,41 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
 }
 
-export function globalSitemapSources() {
-  return import('#sitemap-virtual/global-sources.mjs')
-    .then(m => m.sources)
-}
-
-export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
-  return (
-    definition?._hasSourceChunk
-      ? import(`#sitemap-virtual/child-sources.mjs`)
-          .then(m => m.sources[definition.sitemapName] || [])
-      : Promise.resolve([])
-  )
-}
-
 export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {
-  return (await Promise.all(
-    sources.map((source) => {
-      if (typeof source === 'object' && 'urls' in source) {
-        return <SitemapSourceResolved> {
-          timeTakenMs: 0,
-          ...source,
-          urls: source.urls,
-        }
-      }
-      if (source.fetch)
-        return fetchDataSource(source, event)
+  // Process sources in parallel batches to avoid overwhelming the system
+  const BATCH_SIZE = 10
+  const results: SitemapSourceResolved[] = []
 
-      return <SitemapSourceResolved> {
+  // Process already-resolved sources immediately
+  const unresolved: SitemapSourceBase[] = []
+  for (const source of sources) {
+    if (typeof source === 'object' && 'urls' in source) {
+      results.push({
+        timeTakenMs: 0,
         ...source,
-        error: 'Invalid source',
-      }
-    }),
-  )).flat()
+        urls: source.urls,
+      })
+    }
+    else {
+      unresolved.push(source as SitemapSourceBase)
+    }
+  }
+
+  // Process unresolved sources in batches
+  for (let i = 0; i < unresolved.length; i += BATCH_SIZE) {
+    const batch = unresolved.slice(i, i + BATCH_SIZE)
+    const batchResults = await Promise.all(
+      batch.map((source) => {
+        if (source.fetch)
+          return fetchDataSource(source, event)
+        return <SitemapSourceResolved> {
+          ...source,
+          error: 'Invalid source',
+        }
+      }),
+    )
+    results.push(...batchResults)
+  }
+
+  return results
 }

@@ -10,10 +10,11 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { preNormalizeEntry } from '../urlset/normalise'
-import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
+import { resolveSitemapSources } from '../urlset/sources'
 import { sortSitemapUrls } from '../urlset/sort'
 import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
 import { handleEntry, wrapSitemapXml } from './xml'
+import { XmlStringBuilder } from './string-builder'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string
@@ -30,13 +31,14 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
     include: sitemap.include,
     exclude: sitemap.exclude,
   })
-  // 1. normalise
-  const _urls = urls.map((_e) => {
-    const e = preNormalizeEntry(_e, resolvers)
-    if (!e.loc || !filterPath(e.loc))
-      return false
-    return e
-  }).filter(Boolean) as ResolvedSitemapUrl[]
+  // 1. normalise - pre-allocate array and use single pass
+  const _urls: ResolvedSitemapUrl[] = []
+  for (let i = 0; i < urls.length; i++) {
+    const e = preNormalizeEntry(urls[i], resolvers)
+    if (e.loc && filterPath(e.loc)) {
+      _urls.push(e)
+    }
+  }
 
   let validI18nUrlsForTransform: NormalizedI18n[] = []
   let warnIncorrectI18nTransformUsage = false
@@ -176,7 +178,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   return _urls
 }
 
-export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp, sourcesInput: SitemapUrlInput[] = []) {
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -222,8 +224,6 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
   // 0. resolve sources
   // always fetch all sitemap data for the primary sitemap
-  const sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
-  sourcesInput.push(...await childSitemapSources(sitemap))
   const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
@@ -232,32 +232,37 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
   const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
-  // 3. filtered urls
+  // 3. filtered urls - combine filter and sort to avoid creating intermediate array
   // TODO make sure include and exclude start with baseURL?
-  const filteredUrls = enhancedUrls.filter((e) => {
-    if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
-      return e._sitemap === sitemap.sitemapName
-    return true
-  })
-  // 4. sort
-  const sortedUrls = maybeSort(filteredUrls)
+  const finalUrls = isMultiSitemap && sitemap.sitemapName
+    ? enhancedUrls.filter(e => !e._sitemap || e._sitemap === sitemap.sitemapName)
+    : enhancedUrls
+  // 4. sort and slice in one pass if needed
+  const sortedUrls = maybeSort(finalUrls)
   // 5. maybe slice for chunked
   // if we're rendering a partial sitemap, slice the entries
   return maybeSlice(sortedUrls)
 }
 
 export function urlsToXml(urls: ResolvedSitemapUrl[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>) {
-  const urlset = urls.map((e) => {
-    const keys = Object.keys(e).filter(k => !k.startsWith('_'))
-    return [
-      '    <url>',
-      keys.map(k => handleEntry(k, e)).filter(Boolean).join('\n'),
-      '    </url>',
-    ].join('\n')
-  })
-  return wrapSitemapXml([
-    '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    urlset.join('\n'),
-    '</urlset>',
-  ], resolvers, { version, xsl, credits, minify })
+  const builder = new XmlStringBuilder()
+
+  builder.append('<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+  // Build URLs efficiently
+  for (const url of urls) {
+    builder.appendLine().append('    <url>')
+    const keys = Object.keys(url).filter(k => !k.startsWith('_'))
+    for (const key of keys) {
+      const entry = handleEntry(key, url)
+      if (entry) {
+        builder.appendLine().append(entry)
+      }
+    }
+    builder.appendLine().append('    </url>')
+  }
+
+  builder.appendLine().append('</urlset>')
+
+  return wrapSitemapXml([builder.toString()], resolvers, { version, xsl, credits, minify })
 }

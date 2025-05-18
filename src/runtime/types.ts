@@ -259,6 +259,10 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
    * @internal
    */
   _abs: boolean
+  /**
+   * @internal
+   */
+  _normalized?: boolean
 }
 
 export interface SitemapDefinition {

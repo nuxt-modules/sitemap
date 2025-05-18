@@ -4,26 +4,32 @@ import type {
 } from '../../../types'
 
 export function sortSitemapUrls<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-  // sort based on logical string sorting of the loc, we need to properly account for numbers here
-  // so that urls: /route/1, /route/2 is displayed instead of /route/1, /route/10
-  return urls
-    .sort(
-      (a, b) => {
-        const aLoc = typeof a === 'string' ? a : a.loc
-        const bLoc = typeof b === 'string' ? b : b.loc
-        return aLoc.localeCompare(bLoc, undefined, { numeric: true })
-      },
-    )
-    .sort((a, b) => {
-      const aLoc = (typeof a === 'string' ? a : a.loc) || ''
-      const bLoc = (typeof b === 'string' ? b : b.loc) || ''
-      // we need to sort based on the path segments as well
-      const aSegments = aLoc.split('/').length
-      const bSegments = bLoc.split('/').length
-      if (aSegments > bSegments)
-        return 1
-      if (aSegments < bSegments)
-        return -1
-      return 0
-    }) as T
+  // Pre-compute sort keys for better performance
+  const items = urls.map((u, idx) => {
+    const loc = typeof u === 'string' ? u : u.loc || ''
+    const segments = loc.split('/')
+    return {
+      original: u,
+      idx,
+      loc,
+      segmentCount: segments.length,
+    }
+  })
+
+  // Single sort pass with combined comparisons
+  items.sort((a, b) => {
+    // First sort by segment count
+    if (a.segmentCount !== b.segmentCount) {
+      return a.segmentCount - b.segmentCount
+    }
+    // Then by locale compare with numeric handling
+    return a.loc.localeCompare(b.loc, undefined, { numeric: true })
+  })
+
+  // Extract sorted results
+  const result = Array.from({ length: urls.length })
+  for (let i = 0; i < items.length; i++) {
+    result[i] = items[i].original
+  }
+  return result as T
 }

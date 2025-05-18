@@ -92,12 +92,27 @@ export function wrapSitemapXml(input: string[], resolvers: NitroUrlResolvers, op
   return input.join('\n')
 }
 
+// Pre-compiled regex for better performance
+const XML_CHAR_REGEX = /[&<>"']/g
+const XML_CHAR_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&apos;',
+}
+
 export function escapeValueForXml(value: boolean | string | number) {
   if (value === true || value === false)
     return value ? 'yes' : 'no'
-  return String(value).replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+
+  const str = String(value)
+  // Fast path for strings without special characters
+  if (!XML_CHAR_REGEX.test(str)) {
+    return str
+  }
+
+  // Reset regex state for reuse
+  XML_CHAR_REGEX.lastIndex = 0
+  return str.replace(XML_CHAR_REGEX, char => XML_CHAR_MAP[char])
 }
