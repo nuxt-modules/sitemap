@@ -38,6 +38,18 @@ describe('nuxt/content v3 default', () => {
         {
           "loc": "/posts/foo",
         },
+        {
+          "changefreq": "weekly",
+          "lastmod": "2025-05-14",
+          "loc": "/test-json",
+          "priority": 0.9,
+        },
+        {
+          "changefreq": "monthly",
+          "lastmod": "2025-05-13",
+          "loc": "/test-yaml",
+          "priority": 0.8,
+        },
       ]
     `)
 
@@ -60,6 +72,18 @@ describe('nuxt/content v3 default', () => {
           <url>
               <loc>https://nuxtseo.com/foo</loc>
               <priority>0.5</priority>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/test-json</loc>
+              <lastmod>2025-05-14</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>0.9</priority>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/test-yaml</loc>
+              <lastmod>2025-05-13</lastmod>
+              <changefreq>monthly</changefreq>
+              <priority>0.8</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/posts/bar</loc>
