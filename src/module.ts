@@ -191,11 +191,12 @@ export default defineNuxtModule<ModuleOptions>({
 
             // add to sitemap
             const alternatives = Object.keys(pageLocales)
+              .filter(l => pageLocales[l] !== false) // filter out disabled routes
               .map(l => ({
                 hreflang: normalisedLocales.find(nl => nl.code === l)?._hreflang || l,
                 href: generatePathForI18nPages({ localeCode: l, pageLocales: pageLocales[l], nuxtI18nConfig, normalisedLocales }),
               }))
-            if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale])
+            if (alternatives.length && nuxtI18nConfig.defaultLocale && pageLocales[nuxtI18nConfig.defaultLocale] && pageLocales[nuxtI18nConfig.defaultLocale] !== false)
               alternatives.push({ hreflang: 'x-default', href: generatePathForI18nPages({ normalisedLocales, localeCode: nuxtI18nConfig.defaultLocale, pageLocales: pageLocales[nuxtI18nConfig.defaultLocale], nuxtI18nConfig }) })
             i18nPagesSources.urls!.push({
               _sitemap: locale._sitemap,
