@@ -87,6 +87,7 @@
     "eslint": "^9.27.0",
     "eslint-plugin-n": "^17.18.0",
     "execa": "^9.5.3",
+    "happy-dom": "^17.4.7",
     "nuxt": "^3.17.3",
     "nuxt-i18n-micro": "^1.87.0",
     "typescript": "^5.8.3",
