@@ -15,11 +15,14 @@ function generateUrls(count: number): string[] {
     // Mix of different URL patterns
     if (i % 10 === 0) {
       urls.push(`/category/subcategory/page-${i}`)
-    } else if (i % 5 === 0) {
+    }
+    else if (i % 5 === 0) {
       urls.push(`/products/item-${i}`)
-    } else if (i % 3 === 0) {
+    }
+    else if (i % 3 === 0) {
       urls.push(`/blog/post-${i}`)
-    } else {
+    }
+    else {
       urls.push(`/page-${i}`)
     }
   }
@@ -34,7 +37,7 @@ function generateSitemapEntries(count: number): any[] {
       loc: `/page-${i}`,
       _key: `/page-${i}`,
     }
-    
+
     // Add complexity to some entries
     if (i % 3 === 0) {
       entry.lastmod = new Date(now - i * 86400000).toISOString()
@@ -51,7 +54,7 @@ function generateSitemapEntries(count: number): any[] {
         { hreflang: 'fr', href: `/fr/page-${i}` },
       ]
     }
-    
+
     entries.push(entry)
   }
   return entries
@@ -78,10 +81,10 @@ function generateXml(count: number): string {
 
 describe('Sorting Performance', () => {
   const sizes = [100, 1000, 10000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     const urls = generateUrls(size)
-    
+
     bench(`sort ${size} URLs`, () => {
       sortSitemapUrls([...urls]) // Clone to avoid mutation
     })
@@ -90,26 +93,26 @@ describe('Sorting Performance', () => {
 
 describe('Normalization Performance', () => {
   const sizes = [100, 1000, 10000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     const entries = generateSitemapEntries(size)
     const defaults = { priority: 0.5, changefreq: 'daily' as const }
-    
+
     bench(`normalize ${size} entries`, () => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         normaliseEntry({ ...entry }, defaults)
       })
     })
-    
+
     bench(`normalize ${size} entries with cache (2nd pass)`, () => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         const normalized = { ...entry, _normalized: true }
         normaliseEntry(normalized, defaults)
       })
     })
-    
+
     bench(`pre-normalize ${size} entries`, () => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         preNormalizeEntry(entry)
       })
     })
@@ -118,12 +121,12 @@ describe('Normalization Performance', () => {
 
 describe('XML String Building Performance', () => {
   const sizes = [100, 1000, 10000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     bench(`build XML string with ${size} URLs`, () => {
       const builder = new XmlStringBuilder()
       builder.append('<urlset>')
-      
+
       for (let i = 0; i < size; i++) {
         builder.appendLine()
         builder.append(`  <url>`)
@@ -136,16 +139,16 @@ describe('XML String Building Performance', () => {
         builder.appendLine()
         builder.append(`  </url>`)
       }
-      
+
       builder.appendLine()
       builder.append('</urlset>')
       builder.toString()
     })
-    
+
     // Compare with traditional string concatenation
     bench(`concatenate XML string with ${size} URLs (baseline)`, () => {
       let xml = '<urlset>'
-      
+
       for (let i = 0; i < size; i++) {
         xml += '\n  <url>'
         xml += `\n    <loc>https://example.com/page-${i}</loc>`
@@ -154,7 +157,7 @@ describe('XML String Building Performance', () => {
         }
         xml += '\n  </url>'
       }
-      
+
       xml += '\n</urlset>'
     })
   })
@@ -168,10 +171,10 @@ describe('XML Escaping Performance', () => {
     'Text with "quotes" and \'apostrophes\'',
     'Text with all & < > " \' special chars',
   ]
-  
+
   const iterations = 100000
-  
-  testStrings.forEach(str => {
+
+  testStrings.forEach((str) => {
     bench(`escape "${str.slice(0, 30)}..." ${iterations} times`, () => {
       for (let i = 0; i < iterations; i++) {
         escapeValueForXml(str)
@@ -182,10 +185,10 @@ describe('XML Escaping Performance', () => {
 
 describe('XML Parsing Performance', () => {
   const sizes = [100, 1000, 10000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     const xml = generateXml(size)
-    
+
     bench(`parse ${size} URLs from XML`, () => {
       extractSitemapXML(xml)
     })
@@ -194,13 +197,13 @@ describe('XML Parsing Performance', () => {
 
 describe('Source Resolution Performance', () => {
   const sizes = [10, 50, 100]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     const sources = Array.from({ length: size }, (_, i) => ({
       context: { name: `source-${i}` },
       urls: generateUrls(10),
     }))
-    
+
     bench(`resolve ${size} sources`, async () => {
       await resolveSitemapSources(sources)
     })
@@ -209,15 +212,15 @@ describe('Source Resolution Performance', () => {
 
 describe('Path Cache Performance', () => {
   const sizes = [100, 1000, 10000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     bench(`cache ${size} paths`, () => {
       pathCache.clear()
       for (let i = 0; i < size; i++) {
         pathCache.set(`/path-${i}`, `https://example.com/path-${i}`)
       }
     })
-    
+
     bench(`retrieve ${size} cached paths`, () => {
       for (let i = 0; i < size; i++) {
         pathCache.get(`/path-${i}`)
@@ -228,20 +231,20 @@ describe('Path Cache Performance', () => {
 
 describe('Complete Sitemap Processing', () => {
   const sizes = [100, 1000, 5000]
-  
-  sizes.forEach(size => {
+
+  sizes.forEach((size) => {
     const sitemap = {
       include: ['/**'],
       exclude: ['/admin/**'],
       sitemapName: 'default',
     }
-    
+
     const urls = generateSitemapEntries(size)
     const runtimeConfig = {
       autoI18n: undefined,
       isI18nMapped: false,
     }
-    
+
     bench(`process ${size} URLs end-to-end`, () => {
       resolveSitemapEntries(sitemap, [...urls], runtimeConfig)
     })
@@ -261,16 +264,16 @@ describe('Memory Usage', () => {
       autoI18n: undefined,
       isI18nMapped: false,
     }
-    
+
     // Force garbage collection if available
     if (global.gc) {
       global.gc()
     }
-    
+
     const before = process.memoryUsage().heapUsed
     resolveSitemapEntries(sitemap, entries, runtimeConfig)
     const after = process.memoryUsage().heapUsed
-    
+
     // Log memory usage (won't affect benchmark timing)
     console.log(`Memory used: ${((after - before) / 1024 / 1024).toFixed(2)} MB`)
   })
