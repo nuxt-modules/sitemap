@@ -299,9 +299,48 @@ export interface SitemapDefinition {
    */
   sources?: SitemapSourceInput[]
   /**
+   * Whether to enable chunking for this sitemap.
+   *
+   * - `true`: Enable with default chunk size from `defaultSitemapsChunkSize`
+   * - `number`: Enable with specific chunk size (must be > 0)
+   * - `false` or `undefined`: Disable chunking
+   *
+   * Note: Chunking only applies to sitemaps with sources. URLs provided directly
+   * are not chunked.
+   *
+   * @default false
+   * @example true
+   * @example 5000
+   */
+  chunks?: boolean | number
+  /**
+   * The maximum number of URLs per chunk when chunking is enabled.
+   * Takes precedence over the `chunks` property when both are specified.
+   * Also overrides the global `defaultSitemapsChunkSize`.
+   *
+   * Must be a positive integer.
+   *
+   * @default 1000
+   * @example 500
+   * @example 10000
+   */
+  chunkSize?: number
+  /**
    * @internal
    */
   _route?: string
+  /**
+   * @internal
+   */
+  _isChunking?: boolean
+  /**
+   * @internal
+   */
+  _chunkSize?: number
+  /**
+   * @internal
+   */
+  _chunkCount?: number
 }
 
 interface NitroBaseHook {

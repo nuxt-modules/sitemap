@@ -10,7 +10,7 @@ import type {
   SitemapSourcesHookCtx,
 } from '../../../types'
 import { normaliseDate } from '../urlset/normalise'
-import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
+import { globalSitemapSources, childSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
 import { resolveSitemapEntries } from './sitemap'
@@ -73,16 +73,33 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     })
   }
   else {
-    for (const sitemap in sitemaps) {
-      if (sitemap !== 'index') {
-        // user provided sitemap config
-        chunks[sitemap] = chunks[sitemap] || { urls: [] }
+    // Process non-index sitemaps
+    for (const sitemapName in sitemaps) {
+      if (sitemapName !== 'index') {
+        const sitemapConfig = sitemaps[sitemapName]
+
+        // Check if this sitemap should be chunked
+        if (sitemapConfig.chunks) {
+          // Determine chunk size
+          const chunkSize = typeof sitemapConfig.chunks === 'number'
+            ? sitemapConfig.chunks
+            : (sitemapConfig.chunkSize || defaultSitemapsChunkSize || 1000)
+
+          // We'll populate these chunks later in buildSitemapUrls
+          // For now, just mark that this sitemap will be chunked
+          sitemapConfig._isChunking = true
+          sitemapConfig._chunkSize = chunkSize
+        }
+        else {
+          // Non-chunked sitemap
+          chunks[sitemapName] = chunks[sitemapName] || { urls: [] }
+        }
       }
     }
   }
 
   const entries: SitemapIndexEntry[] = []
-  // normalise
+  // Process regular chunks
   for (const name in chunks) {
     const sitemap = chunks[name]
     const entry: SitemapIndexEntry = {
@@ -99,6 +116,66 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     if (lastmod)
       entry.lastmod = normaliseDate(lastmod)
     entries.push(entry)
+  }
+
+  // Process chunked named sitemaps
+  for (const sitemapName in sitemaps) {
+    if (sitemapName !== 'index' && sitemaps[sitemapName]._isChunking) {
+      const sitemapConfig = sitemaps[sitemapName]
+      const chunkSize = sitemapConfig._chunkSize || defaultSitemapsChunkSize || 1000
+
+      // We need to determine how many chunks this sitemap will have
+      // This requires knowing the total count of URLs, which we'll get from sources
+      let sourcesInput = sitemapConfig.includeAppSources ? await globalSitemapSources() : []
+      sourcesInput.push(...await childSitemapSources(sitemapConfig))
+
+      // Allow hook to modify sources before resolution
+      if (nitro && resolvers.event) {
+        const ctx: SitemapSourcesHookCtx = {
+          event: resolvers.event,
+          sitemapName: sitemapConfig.sitemapName,
+          sources: sourcesInput,
+        }
+        await nitro.hooks.callHook('sitemap:sources', ctx)
+        sourcesInput = ctx.sources
+      }
+
+      const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+      const resolvedCtx: SitemapInputCtx = {
+        urls: sources.flatMap(s => s.urls),
+        sitemapName: sitemapConfig.sitemapName,
+        event: resolvers.event,
+      }
+      await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
+
+      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+      const totalUrls = normalisedUrls.length
+      const chunkCount = Math.ceil(totalUrls / chunkSize)
+
+      // Create entries for each chunk
+      for (let i = 0; i < chunkCount; i++) {
+        const chunkName = `${sitemapName}-${i}`
+        const entry: SitemapIndexEntry = {
+          _sitemapName: chunkName,
+          sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${chunkName}.xml`)),
+        }
+
+        // Get the URLs for this chunk to find lastmod
+        const chunkUrls = normalisedUrls.slice(i * chunkSize, (i + 1) * chunkSize)
+        let lastmod = chunkUrls
+          .filter(a => !!a?.lastmod)
+          .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
+          .sort((a?: Date, b?: Date) => (b?.getTime() || 0) - (a?.getTime() || 0))?.[0]
+
+        if (!lastmod && autoLastmod)
+          lastmod = new Date()
+
+        if (lastmod)
+          entry.lastmod = normaliseDate(lastmod)
+
+        entries.push(entry)
+      }
+    }
   }
 
   // allow extending the index sitemap

@@ -104,6 +104,24 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   // final urls
   const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers))
   const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))
+
+  // Check if this is a chunk request that would be empty
+  if (definition._isChunking && definition.sitemapName.includes('-')) {
+    const parts = definition.sitemapName.split('-')
+    const lastPart = parts.pop()
+    if (!Number.isNaN(Number(lastPart))) {
+      const chunkIndex = Number(lastPart)
+      const baseSitemapName = parts.join('-')
+      // If this is a chunk and we have no URLs, it means the chunk doesn't exist
+      if (urls.length === 0 && chunkIndex > 0) {
+        throw createError({
+          statusCode: 404,
+          message: `Sitemap chunk ${chunkIndex} for "${baseSitemapName}" does not exist.`,
+        })
+      }
+    }
+  }
+
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
 
   const ctx = { sitemap, sitemapName, event }
