@@ -28,7 +28,8 @@ describe.skipIf(process.env.CI)('generate', () => {
     const sitemap = (await readFile(resolve(rootDir, '.output/public/sitemap_index.xml'), 'utf-8')).replace(/lastmod>(.*?)</g, 'lastmod><')
     // ignore lastmod entries
     expect(sitemap).toMatchInlineSnapshot(`
-      "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
+      "<?xml version="1.0" encoding="UTF-8"?>
+      <?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
       <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <sitemap>
               <loc>https://nuxtseo.com/__sitemap__/0.xml</loc>

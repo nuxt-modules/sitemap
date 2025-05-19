@@ -14,7 +14,7 @@ import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
-import { sortSitemapUrls } from './urlset/sort'
+import { sortInPlace } from './urlset/sort'
 import { getPathRobotConfig } from '#imports' // can't solve this
 import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
@@ -52,39 +52,50 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
       })
     }
   }
-  let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  const sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
-  sitemapUrls = sitemapUrls.map((u) => {
+
+  // Process in place to avoid creating intermediate arrays
+  let validCount = 0
+  for (let i = 0; i < sitemapUrls.length; i++) {
+    const u = sitemapUrls[i]
     const path = u._path?.pathname || u.loc
-    // blocked by @nuxtjs/robots (this is a polyfill if not installed)
+
+    // Early continue for robots blocked paths
     if (!getPathRobotConfig(event, { path, skipSiteIndexable: true }).indexable)
-      return false
+      continue
+
     let routeRules = routeRuleMatcher(path)
-    // apply top-level path without prefix, users can still target the localed path
+
+    // Apply top-level path without prefix
     if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
-      // remove the locale path from the prefix, if it exists, need to use regex
       const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
       const pathWithoutPrefix = match[1]
       if (pathWithoutPrefix && pathWithoutPrefix !== path)
         routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
     }
 
+    // Skip invalid entries
     if (routeRules.sitemap === false)
-      return false
+      continue
     // @ts-expect-error runtime types
-    if (typeof routeRules.robots !== 'undefined' && !routeRules.robots) {
-      return false
-    }
+    if (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
+      continue
+
     const hasRobotsDisabled = Object.entries(routeRules.headers || {})
       .some(([name, value]) => name.toLowerCase() === 'x-robots-tag' && value.toLowerCase().includes('noindex'))
-    // check for redirects and headers which aren't indexable
-    if (routeRules.redirect || hasRobotsDisabled)
-      return false
 
-    return routeRules.sitemap ? defu(u, routeRules.sitemap) as ResolvedSitemapUrl : u
-  }).filter(Boolean)
+    if (routeRules.redirect || hasRobotsDisabled)
+      continue
+
+    // Move valid entries to the front of the array
+    sitemapUrls[validCount++] = routeRules.sitemap ? defu(u, routeRules.sitemap) as ResolvedSitemapUrl : u
+  }
+
+  // Truncate array to valid entries only
+  sitemapUrls.length = validCount
 
   // 6. nitro hooks
   const locSize = sitemapUrls.length
@@ -100,7 +111,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
     resolvedCtx.urls = resolvedCtx.urls.map(e => preNormalizeEntry(e, resolvers))
   }
 
-  const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortSitemapUrls(urls) : urls
+  const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortInPlace(urls) : urls
   // final urls
   const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers))
   const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))

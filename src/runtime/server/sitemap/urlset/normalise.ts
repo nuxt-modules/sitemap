@@ -10,7 +10,6 @@ import {
 } from 'ufo'
 import { defu } from 'defu'
 import type {
-  AlternativeEntry,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapUrl,
@@ -103,33 +102,38 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   // correct alternative hrefs
   if (e.alternatives) {
-    e.alternatives = mergeOnKey(e.alternatives.map((e) => {
-      const a: AlternativeEntry & { key?: string } = { ...e }
-      // string
-      if (typeof a.href === 'string')
-        a.href = resolve(a.href, resolvers)
-      // URL object
-      else if (typeof a.href === 'object' && a.href)
-        a.href = resolve(a.href.href, resolvers)
-      return a
-    }), 'hreflang')
+    // Process alternatives in place to avoid extra array allocation
+    const alternatives = e.alternatives
+    for (let i = 0; i < alternatives.length; i++) {
+      const alt = alternatives[i]
+      // Modify in place
+      if (typeof alt.href === 'string') {
+        alt.href = resolve(alt.href, resolvers)
+      }
+      else if (typeof alt.href === 'object' && alt.href) {
+        alt.href = resolve(alt.href.href, resolvers)
+      }
+    }
+    e.alternatives = mergeOnKey(alternatives, 'hreflang')
   }
 
   if (e.images) {
-    e.images = mergeOnKey(e.images.map((i) => {
-      i = { ...i }
-      i.loc = resolve(i.loc, resolvers)
-      return i
-    }), 'loc')
+    // Process images in place
+    const images = e.images
+    for (let i = 0; i < images.length; i++) {
+      images[i].loc = resolve(images[i].loc, resolvers)
+    }
+    e.images = mergeOnKey(images, 'loc')
   }
 
   if (e.videos) {
-    e.videos = e.videos.map((v) => {
-      v = { ...v }
-      if (v.content_loc)
-        v.content_loc = resolve(v.content_loc, resolvers)
-      return v
-    })
+    // Process videos in place
+    const videos = e.videos
+    for (let i = 0; i < videos.length; i++) {
+      if (videos[i].content_loc) {
+        videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
+      }
+    }
   }
   return e
 }

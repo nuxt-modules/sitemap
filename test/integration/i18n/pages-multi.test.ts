@@ -60,7 +60,8 @@ describe('i18n pages multi', () => {
   it('basic', async () => {
     const index = await $fetch('/sitemap_index.xml')
     expect(index).toMatchInlineSnapshot(`
-      "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
+      "<?xml version="1.0" encoding="UTF-8"?>
+      <?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
       <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <sitemap>
               <loc>https://nuxtseo.com/__sitemap__/en-US.xml</loc>

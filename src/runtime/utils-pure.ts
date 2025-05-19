@@ -20,7 +20,10 @@ const merger = createDefu((obj, key, value) => {
 
 export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K): T[] {
   const seen = new Map<string, number>()
-  const result: T[] = []
+
+  // Pre-allocate result array to avoid resizing
+  let resultLength = 0
+  const result: T[] = Array.from({ length: arr.length })
 
   for (const item of arr) {
     const k = item[key] as string
@@ -30,12 +33,13 @@ export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K): T[] {
       result[existingIndex] = merger(item, result[existingIndex])
     }
     else {
-      seen.set(k, result.length)
-      result.push(item)
+      seen.set(k, resultLength)
+      result[resultLength++] = item
     }
   }
 
-  return result
+  // Return only the used portion of the array
+  return result.slice(0, resultLength)
 }
 
 export function splitForLocales(path: string, locales: string[]): [string | null, string] {

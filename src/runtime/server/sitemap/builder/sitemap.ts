@@ -12,7 +12,7 @@ import type {
 } from '../../../types'
 import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
-import { sortSitemapUrls } from '../urlset/sort'
+import { sortInPlace } from '../urlset/sort'
 import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
@@ -249,7 +249,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize)
 
   function maybeSort(urls: ResolvedSitemapUrl[]) {
-    return sortEntries ? sortSitemapUrls(urls) : urls
+    return sortEntries ? sortInPlace(urls) : urls
   }
 
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
@@ -315,4 +315,4 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   return maybeSlice(sortedUrls)
 }
 
-export { urlsToXml } from './xml-optimized'
+export { urlsToXml } from './xml'

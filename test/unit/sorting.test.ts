@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { sortSitemapUrls } from '../../src/runtime/server/sitemap/urlset/sort'
+import { sortInPlace } from '../../src/runtime/server/sitemap/urlset/sort'
 
 describe('sorting', () => {
   it('default', async () => {
-    const data = sortSitemapUrls([
+    const data = sortInPlace([
       { loc: '/a' },
       { loc: '/b' },
       { loc: '/c' },
