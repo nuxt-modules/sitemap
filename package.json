@@ -65,7 +65,7 @@
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "h3-compression": "^0.3.2",
-    "nuxt-site-config": "^3.1.9",
+    "nuxt-site-config": "^3.2.0",
     "ofetch": "^1.4.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.1.0",
