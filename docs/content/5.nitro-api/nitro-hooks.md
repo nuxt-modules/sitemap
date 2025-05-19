@@ -99,6 +99,53 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
+## `'sitemap:sources'`{lang="ts"}
+
+**Type:** `async (ctx: { event: H3Event; sitemapName: string; sources: (SitemapSourceBase | SitemapSourceResolved)[] }) => void | Promise<void>`{lang="ts"}
+
+Triggered before resolving sitemap sources. This hook allows you to:
+- Add new sources dynamically
+- Remove sources
+- Modify source configurations including fetch options and headers
+
+This hook runs before sources are resolved, providing full control over the source list.
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:sources', async (ctx) => {
+    // Add a new source
+    ctx.sources.push('/api/dynamic-urls')
+    
+    // Modify existing sources to add headers
+    ctx.sources = ctx.sources.map(source => {
+      if (typeof source === 'object' && source.fetch) {
+        const [url, options = {}] = Array.isArray(source.fetch) ? source.fetch : [source.fetch, {}]
+        
+        // Add headers from original request
+        const authHeader = ctx.event.node.req.headers.authorization
+        if (authHeader) {
+          options.headers = options.headers || {}
+          options.headers['Authorization'] = authHeader
+        }
+        
+        source.fetch = [url, options]
+      }
+      return source
+    })
+    
+    // Filter out sources
+    ctx.sources = ctx.sources.filter(source => {
+      if (typeof source === 'string') {
+        return !source.includes('skip-this')
+      }
+      return true
+    })
+  })
+})
+```
+
 ## Recipes
 
 ### Modify Sitemap `xmlns` attribute

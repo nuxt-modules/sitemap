@@ -295,6 +295,7 @@ declare module 'nitropack' {
     'sitemap:input': (ctx: import('${typesPath}').SitemapInputCtx) => void | Promise<void>
     'sitemap:resolved': (ctx: import('${typesPath}').SitemapRenderCtx) => void | Promise<void>
     'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
+    'sitemap:sources': (ctx: import('${typesPath}').SitemapSourcesHookCtx) => void | Promise<void>
   }
 }
 declare module 'vue-router' {

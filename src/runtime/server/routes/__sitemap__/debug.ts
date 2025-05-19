@@ -21,13 +21,13 @@ export default defineEventHandler(async (e) => {
     // resolve the sources
     sitemaps[s] = {
       ..._sitemaps[s],
-      sources: await resolveSitemapSources(await childSitemapSources(_sitemaps[s])),
+      sources: await resolveSitemapSources(await childSitemapSources(_sitemaps[s]), e),
     }
   }
   return {
     nitroOrigin,
     sitemaps,
     runtimeConfig,
-    globalSources: await resolveSitemapSources(globalSources),
+    globalSources: await resolveSitemapSources(globalSources, e),
   }
 })
