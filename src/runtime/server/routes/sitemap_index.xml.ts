@@ -31,9 +31,24 @@ export default defineEventHandler(async (e) => {
   await nitro.hooks.callHook('sitemap:output', ctx)
 
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (runtimeConfig.cacheMaxAgeSeconds)
-    setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, must-revalidate`)
-  else
+  if (runtimeConfig.cacheMaxAgeSeconds) {
+    setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
+
+    // Add debug headers when caching is enabled
+    const now = new Date()
+    setHeader(e, 'X-Sitemap-Generated', now.toISOString())
+    setHeader(e, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
+
+    // Calculate expiry time
+    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
+    setHeader(e, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
+
+    // Calculate remaining time
+    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
+    setHeader(e, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
+  }
+  else {
     setHeader(e, 'Cache-Control', `no-cache, no-store`)
+  }
   return ctx.sitemap
 })

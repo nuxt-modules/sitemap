@@ -29,7 +29,7 @@ import type {
   ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions, SitemapUrl,
 } from './runtime/types'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
-import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions, resolveNitroPreset } from './util/kit'
+import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
@@ -307,7 +307,6 @@ declare module 'vue-router' {
 }
 `
     })
-    const nitroPreset = resolveNitroPreset()
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
@@ -320,18 +319,6 @@ declare module 'vue-router' {
         'Cache-Control': config.cacheMaxAgeSeconds ? `public, max-age=${config.cacheMaxAgeSeconds}, must-revalidate` : 'no-cache, no-store',
         'X-Sitemap-Prerendered': new Date().toISOString(),
       }
-    }
-    if (!nuxt.options.dev && !isNuxtGenerate() && config.cacheMaxAgeSeconds && config.runtimeCacheStorage !== false) {
-      routeRules[nitroPreset.includes('vercel') ? 'isr' : 'swr'] = config.cacheMaxAgeSeconds
-      routeRules.cache = {
-        // handle multi-tenancy
-        swr: true,
-        maxAge: config.cacheMaxAgeSeconds,
-        varies: ['X-Forwarded-Host', 'X-Forwarded-Proto', 'Host'],
-      }
-      // use different cache base if configured
-      if (typeof config.runtimeCacheStorage === 'object')
-        routeRules.cache.base = 'sitemap'
     }
     if (config.xsl) {
       nuxt.options.nitro.routeRules[config.xsl] = {

@@ -1,8 +1,8 @@
-import { getQuery, setHeader, createError } from 'h3'
+import { getQuery, setHeader, createError, getHeader } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
-import { useNitroApp } from 'nitropack/runtime'
+import { useNitroApp, defineCachedFunction } from 'nitropack/runtime'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -36,7 +36,8 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   }
 }
 
-export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
+// Shared sitemap building logic
+async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp()
   if (import.meta.prerender) {
@@ -51,7 +52,6 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
       })
     }
   }
-  const resolvers = useNitroUrlResolvers(event)
   let sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
@@ -126,12 +126,58 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
 
   const ctx = { sitemap, sitemapName, event }
   await nitro.hooks.callHook('sitemap:output', ctx)
-  // need to clone the config object to make it writable
-  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (runtimeConfig.cacheMaxAgeSeconds)
-    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, must-revalidate`)
-  else
-    setHeader(event, 'Cache-Control', `no-cache, no-store`)
-  event.context._isSitemap = true
   return ctx.sitemap
+}
+
+// Create cached function for building sitemap XML
+const buildSitemapXmlCached = defineCachedFunction(
+  buildSitemapXml,
+  {
+    name: 'sitemap:xml',
+    group: 'sitemap',
+    maxAge: 60 * 10, // Default 10 minutes
+    base: 'sitemap', // Use the sitemap storage
+    getKey: (event: H3Event, definition: SitemapDefinition) => {
+      // Include headers that could affect the output in the cache key
+      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
+      const sitemapName = definition.sitemapName || 'default'
+      return `${sitemapName}-${proto}-${host}`
+    },
+    swr: true, // Enable stale-while-revalidate
+  },
+)
+
+export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
+  const resolvers = useNitroUrlResolvers(event)
+
+  // Choose between cached or direct generation
+  const shouldCache = !import.meta.dev && runtimeConfig.cacheMaxAgeSeconds > 0
+  const xml = shouldCache
+    ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig)
+    : await buildSitemapXml(event, definition, resolvers, runtimeConfig)
+
+  // Set headers
+  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
+  if (runtimeConfig.cacheMaxAgeSeconds) {
+    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
+
+    // Add debug headers when caching is enabled
+    const now = new Date()
+    setHeader(event, 'X-Sitemap-Generated', now.toISOString())
+    setHeader(event, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
+
+    // Calculate expiry time
+    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
+    setHeader(event, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
+
+    // Calculate remaining time
+    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
+    setHeader(event, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
+  }
+  else {
+    setHeader(event, 'Cache-Control', `no-cache, no-store`)
+  }
+  event.context._isSitemap = true
+  return xml
 }

@@ -1,6 +1,9 @@
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
+import { defineCachedFunction } from 'nitropack/runtime'
 import type { NitroApp } from 'nitropack/types'
+import type { H3Event } from 'h3'
+import { getHeader } from 'h3'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -15,7 +18,27 @@ import { sortSitemapUrls } from '../urlset/sort'
 import { escapeValueForXml, wrapSitemapXml } from './xml'
 import { resolveSitemapEntries } from './sitemap'
 
-export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+// Create cached wrapper for sitemap index building
+const buildSitemapIndexCached = defineCachedFunction(
+  async (event: H3Event, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) => {
+    return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
+  },
+  {
+    name: 'sitemap:index',
+    group: 'sitemap',
+    maxAge: 60 * 10, // 10 minutes default
+    base: 'sitemap', // Use the sitemap storage
+    getKey: (event: H3Event) => {
+      // Include headers that could affect the output in the cache key
+      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
+      return `sitemap-index-${proto}-${host}`
+    },
+    swr: true, // Enable stale-while-revalidate
+  },
+)
+
+async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
   const {
     sitemaps,
     // enhancing
@@ -201,4 +224,12 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
     sitemapXml,
     '</sitemapindex>',
   ], resolvers, { version, xsl, credits, minify })
+}
+
+export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+  // Check if should use cached version
+  if (!import.meta.dev && !!runtimeConfig.cacheMaxAgeSeconds && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
+    return buildSitemapIndexCached(resolvers.event, resolvers, runtimeConfig, nitro)
+  }
+  return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
 }
