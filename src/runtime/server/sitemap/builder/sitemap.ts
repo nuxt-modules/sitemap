@@ -14,6 +14,7 @@ import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortSitemapUrls } from '../urlset/sort'
 import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
+import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 import { handleEntry, wrapSitemapXml } from './xml'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -244,16 +245,16 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     // chunking
     defaultSitemapsChunkSize,
   } = runtimeConfig
-  const isChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))
+
+  // Parse chunk information from the sitemap name
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize)
+
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls
   }
+
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    if (isChunking && defaultSitemapsChunkSize) {
-      const chunk = Number(sitemap.sitemapName)
-      return urls.slice(chunk * defaultSitemapsChunkSize, (chunk + 1) * defaultSitemapsChunkSize) as T
-    }
-    return urls
+    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize) as T
   }
   if (autoI18n?.differentDomains) {
     const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain
@@ -269,15 +270,24 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     }
   }
   // 0. resolve sources
+  // For chunked sitemaps, we need to use the base sitemap's sources
+  let effectiveSitemap = sitemap
+  const baseSitemapName = chunkInfo.baseSitemapName
+
+  // If this is a chunked sitemap, use the base sitemap config for sources
+  if (chunkInfo.isChunked && baseSitemapName !== sitemap.sitemapName && sitemaps[baseSitemapName]) {
+    effectiveSitemap = sitemaps[baseSitemapName]
+  }
+
   // always fetch all sitemap data for the primary sitemap
-  let sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
-  sourcesInput.push(...await childSitemapSources(sitemap))
+  let sourcesInput = effectiveSitemap.includeAppSources ? await globalSitemapSources() : []
+  sourcesInput.push(...await childSitemapSources(effectiveSitemap))
 
   // Allow hook to modify sources before resolution
   if (nitro && resolvers.event) {
     const ctx: SitemapSourcesHookCtx = {
       event: resolvers.event,
-      sitemapName: sitemap.sitemapName,
+      sitemapName: baseSitemapName,
       sources: sourcesInput,
     }
     await nitro.hooks.callHook('sitemap:sources', ctx)

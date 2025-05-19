@@ -345,12 +345,22 @@ declare module 'vue-router' {
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
+          if (k === 'index')
+            continue
+          // Apply route rules to the base sitemap
           nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}.xml`)] = routeRules
+
+          // Apply route rules to chunked sitemaps if enabled
+          const sitemapConfig = config.sitemaps[k]
+          if (sitemapConfig.chunks) {
+            // Support chunked sitemap names (e.g., posts-0.xml, posts-1.xml, etc.)
+            nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}-*.xml`)] = routeRules
+          }
         }
       }
       else {
-        // TODO we should support the chunked generated sitemap names
-        nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
+        // Auto-chunking: support the chunked generated sitemap names (0.xml, 1.xml, etc.)
+        nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/[0-9]+.xml`)] = routeRules
       }
     }
     else {
@@ -487,14 +497,31 @@ declare module 'vue-router' {
         })
       }
       else {
-        // register each key as a route
-        for (const sitemapName of Object.keys(config.sitemaps || {})) {
+        // Register individual sitemap routes to support chunking
+        const sitemapNames = Object.keys(config.sitemaps || {})
+        for (const sitemapName of sitemapNames) {
+          if (sitemapName === 'index')
+            continue
+          const sitemapConfig = config.sitemaps[sitemapName]
+
+          // Register the base sitemap route
           addServerHandler({
             route: withLeadingSlash(`${sitemapName}.xml`),
             handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
             lazy: true,
             middleware: false,
           })
+
+          // For chunked sitemaps, we need to add a pattern-matching handler
+          if (sitemapConfig.chunks) {
+            // Register a wildcard route for chunks instead of individual routes
+            addServerHandler({
+              route: `/${sitemapName}-*.xml`,
+              handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+              lazy: true,
+              middleware: false,
+            })
+          }
         }
       }
       sitemaps.index = {
@@ -508,7 +535,7 @@ declare module 'vue-router' {
           if (sitemapName === 'index')
             continue
           const definition = config.sitemaps[sitemapName] as MultiSitemapEntry[string]
-          sitemaps[sitemapName as keyof typeof sitemaps] = defu(
+          const sitemapConfig = defu(
             {
               sitemapName,
               _route: withBase(joinURL(config.sitemapsPathPrefix || '', `${sitemapName}.xml`), nuxt.options.app.baseURL || '/'),
@@ -517,6 +544,37 @@ declare module 'vue-router' {
             { ...definition, urls: undefined, sources: undefined },
             { include: config.include, exclude: config.exclude },
           ) as ModuleRuntimeConfig['sitemaps'][string]
+
+          // Set up chunking if enabled
+          if (definition.chunks) {
+            // Validate chunk configuration
+            let chunkSize = config.defaultSitemapsChunkSize || 1000
+
+            if (typeof definition.chunks === 'number') {
+              if (definition.chunks <= 0) {
+                logger.warn(`Invalid chunks value (${definition.chunks}) for sitemap "${sitemapName}". Using default.`)
+              }
+              else {
+                chunkSize = definition.chunks
+              }
+            }
+
+            if (definition.chunkSize !== undefined) {
+              if (typeof definition.chunkSize !== 'number' || definition.chunkSize <= 0) {
+                logger.warn(`Invalid chunkSize value (${definition.chunkSize}) for sitemap "${sitemapName}". Using default.`)
+              }
+              else {
+                chunkSize = definition.chunkSize // chunkSize takes precedence
+              }
+            }
+
+            sitemapConfig._isChunking = true
+            sitemapConfig._chunkSize = chunkSize
+            sitemapConfig.chunks = definition.chunks
+            sitemapConfig.chunkSize = definition.chunkSize
+          }
+
+          sitemaps[sitemapName as keyof typeof sitemaps] = sitemapConfig
         }
       }
       else {
@@ -635,6 +693,16 @@ declare module 'vue-router' {
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
       })
+
+      // Register handlers for all sitemaps in dev/debug mode
+      if (usingMultiSitemaps) {
+        addServerHandler({
+          route: '/__sitemap__/**:sitemap',
+          handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+          lazy: true,
+          middleware: true,
+        })
+      }
 
       setupDevToolsUI(config, resolve)
     }
