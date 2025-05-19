@@ -35,9 +35,30 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
     return sortEntries ? sortSitemapUrls(urls) : urls
   }
 
-  const isChunking = typeof sitemaps.chunks !== 'undefined'
   const chunks: Record<string | number, { urls: SitemapUrl[] }> = {}
-  if (isChunking) {
+
+  // Process all sitemaps to determine chunks
+  for (const sitemapName in sitemaps) {
+    if (sitemapName === 'index' || sitemapName === 'chunks') continue
+
+    const sitemapConfig = sitemaps[sitemapName]
+
+    // Check if this sitemap should be chunked
+    if (sitemapConfig.chunks || sitemapConfig._isChunking) {
+      // Mark as chunking for later processing
+      sitemapConfig._isChunking = true
+      sitemapConfig._chunkSize = typeof sitemapConfig.chunks === 'number'
+        ? sitemapConfig.chunks
+        : (sitemapConfig.chunkSize || defaultSitemapsChunkSize || 1000)
+    }
+    else {
+      // Non-chunked sitemap
+      chunks[sitemapName] = chunks[sitemapName] || { urls: [] }
+    }
+  }
+
+  // Handle auto-chunking if enabled
+  if (typeof sitemaps.chunks !== 'undefined') {
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
     let sourcesInput = await globalSitemapSources()
@@ -71,31 +92,6 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
       chunks[chunkIndex] = chunks[chunkIndex] || { urls: [] }
       chunks[chunkIndex].urls.push(url)
     })
-  }
-  else {
-    // Process non-index sitemaps
-    for (const sitemapName in sitemaps) {
-      if (sitemapName !== 'index') {
-        const sitemapConfig = sitemaps[sitemapName]
-
-        // Check if this sitemap should be chunked
-        if (sitemapConfig.chunks) {
-          // Determine chunk size
-          const chunkSize = typeof sitemapConfig.chunks === 'number'
-            ? sitemapConfig.chunks
-            : (sitemapConfig.chunkSize || defaultSitemapsChunkSize || 1000)
-
-          // We'll populate these chunks later in buildSitemapUrls
-          // For now, just mark that this sitemap will be chunked
-          sitemapConfig._isChunking = true
-          sitemapConfig._chunkSize = chunkSize
-        }
-        else {
-          // Non-chunked sitemap
-          chunks[sitemapName] = chunks[sitemapName] || { urls: [] }
-        }
-      }
-    }
   }
 
   const entries: SitemapIndexEntry[] = []
@@ -151,6 +147,9 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
       const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
       const totalUrls = normalisedUrls.length
       const chunkCount = Math.ceil(totalUrls / chunkSize)
+
+      // Store chunk count for validation in route handler
+      sitemapConfig._chunkCount = chunkCount
 
       // Create entries for each chunk
       for (let i = 0; i < chunkCount; i++) {

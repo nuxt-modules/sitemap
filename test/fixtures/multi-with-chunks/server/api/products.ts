@@ -1,3 +1,5 @@
+import { defineEventHandler } from 'h3'
+
 export default defineEventHandler(() => {
   // Generate 25 products to test chunking with chunkSize: 10 (should create 3 chunks)
   return Array.from({ length: 25 }, (_, i) => ({

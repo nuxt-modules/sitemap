@@ -1,3 +1,5 @@
+import { defineEventHandler } from 'h3'
+
 export default defineEventHandler(() => {
   // Generate 12 posts to test chunking with chunkSize: 3 (should create 4 chunks)
   return Array.from({ length: 12 }, (_, i) => ({

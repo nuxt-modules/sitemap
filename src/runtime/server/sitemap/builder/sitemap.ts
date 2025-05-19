@@ -14,6 +14,7 @@ import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortSitemapUrls } from '../urlset/sort'
 import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
+import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 import { handleEntry, wrapSitemapXml } from './xml'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -244,60 +245,16 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     // chunking
     defaultSitemapsChunkSize,
   } = runtimeConfig
-  // Check if this is a chunked sitemap
-  let isChunking = false
-  let chunkSitemapName = sitemap.sitemapName
 
-  // Auto-chunked sitemap (numeric name)
-  if (typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))) {
-    isChunking = true
-  }
+  // Parse chunk information from the sitemap name
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize)
 
-  // Named sitemap with chunking (format: name-number)
-  if (sitemap.sitemapName.includes('-')) {
-    const parts = sitemap.sitemapName.split('-')
-    const lastPart = parts.pop()
-    if (!Number.isNaN(Number(lastPart))) {
-      const baseSitemapName = parts.join('-')
-      // Check if the base sitemap has chunking enabled
-      if (sitemaps[baseSitemapName]?._isChunking || sitemaps[baseSitemapName]?.chunks) {
-        isChunking = true
-        chunkSitemapName = baseSitemapName
-      }
-    }
-  }
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortSitemapUrls(urls) : urls
   }
+
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    if (isChunking) {
-      let chunkSize: number = defaultSitemapsChunkSize || 1000
-      let chunkIndex: number = 0
-
-      // Auto-chunked sitemap (numeric name)
-      if (typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemap.sitemapName))) {
-        chunkIndex = Number(sitemap.sitemapName)
-      }
-      // Named sitemap with chunking (format: name-number)
-      else if (sitemap.sitemapName.includes('-')) {
-        const parts = sitemap.sitemapName.split('-')
-        const lastPart = parts.pop()
-        if (!Number.isNaN(Number(lastPart))) {
-          chunkIndex = Number(lastPart)
-          const baseSitemapName = parts.join('-')
-          const baseSitemap = sitemaps[baseSitemapName]
-          if (baseSitemap) {
-            // Use the chunk size from the base sitemap config
-            chunkSize = baseSitemap._chunkSize
-              || (typeof baseSitemap.chunks === 'number' ? baseSitemap.chunks : baseSitemap.chunkSize)
-              || defaultSitemapsChunkSize || 1000
-          }
-        }
-      }
-
-      return urls.slice(chunkIndex * chunkSize, (chunkIndex + 1) * chunkSize) as T
-    }
-    return urls
+    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize) as T
   }
   if (autoI18n?.differentDomains) {
     const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain
@@ -315,17 +272,11 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   // 0. resolve sources
   // For chunked sitemaps, we need to use the base sitemap's sources
   let effectiveSitemap = sitemap
-  let baseSitemapName = sitemap.sitemapName
-  if (sitemap.sitemapName.includes('-')) {
-    const parts = sitemap.sitemapName.split('-')
-    const lastPart = parts.pop()
-    if (!Number.isNaN(Number(lastPart))) {
-      baseSitemapName = parts.join('-')
-      // Check if this is a chunk of an existing sitemap
-      if (sitemaps[baseSitemapName]) {
-        effectiveSitemap = sitemaps[baseSitemapName]
-      }
-    }
+  const baseSitemapName = chunkInfo.baseSitemapName
+
+  // If this is a chunked sitemap, use the base sitemap config for sources
+  if (chunkInfo.isChunked && baseSitemapName !== sitemap.sitemapName && sitemaps[baseSitemapName]) {
+    effectiveSitemap = sitemaps[baseSitemapName]
   }
 
   // always fetch all sitemap data for the primary sitemap

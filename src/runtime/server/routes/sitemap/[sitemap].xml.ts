@@ -2,6 +2,7 @@ import { createError, defineEventHandler, getRouterParam } from 'h3'
 import { withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../../utils'
 import { createSitemap } from '../../sitemap/nitro'
+import { parseChunkInfo, getSitemapConfig } from '../../sitemap/utils/chunk'
 
 export default defineEventHandler(async (e) => {
   const runtimeConfig = useSitemapRuntimeConfig(e)
@@ -31,79 +32,41 @@ export default defineEventHandler(async (e) => {
     .replace('__sitemap__/', '')
     .replace(runtimeConfig.sitemapsPathPrefix || '', '')))
 
-  // Check if this is an auto-chunked sitemap (numeric name)
-  const isAutoChunking = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
+  // Parse chunk information and get appropriate config
+  const chunkInfo = parseChunkInfo(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize)
 
-  // Check if this is a chunked named sitemap (format: name-number)
-  let isNamedChunking = false
-  let baseSitemapName = sitemapName
-  let chunkIndex: number | undefined
+  // Validate that the sitemap or its base exists
+  const isAutoChunked = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
+  const sitemapExists = sitemapName in sitemaps || chunkInfo.baseSitemapName in sitemaps || isAutoChunked
 
-  if (sitemapName.includes('-')) {
-    const parts = sitemapName.split('-')
-    const lastPart = parts.pop()
-    if (!Number.isNaN(Number(lastPart))) {
-      baseSitemapName = parts.join('-')
-      chunkIndex = Number(lastPart)
-      // Check if the base sitemap has chunking enabled
-      const baseSitemapConfig = sitemaps[baseSitemapName]
-      if (baseSitemapConfig && (baseSitemapConfig.chunks || baseSitemapConfig._isChunking)) {
-        isNamedChunking = true
-      }
-      // If trying to access chunk of non-chunked sitemap, return 404
-      else if (baseSitemapConfig && !(baseSitemapConfig.chunks || baseSitemapConfig._isChunking)) {
-        return createError({
-          statusCode: 404,
-          message: `Sitemap "${baseSitemapName}" does not support chunking.`,
-        })
-      }
-    }
-  }
-
-  // Check if sitemap exists
-  if (!sitemapName || (!(sitemapName in sitemaps) && !(baseSitemapName in sitemaps) && !isAutoChunking)) {
+  if (!sitemapExists) {
     return createError({
       statusCode: 404,
       message: `Sitemap "${sitemapName}" not found.`,
     })
   }
 
-  let sitemapConfig
-  if (isAutoChunking) {
-    // Auto-chunked sitemap
-    sitemapConfig = {
-      ...sitemaps.chunks,
-      sitemapName,
-    }
-  }
-  else if (isNamedChunking) {
-    // Chunked named sitemap
-    const baseSitemap = sitemaps[baseSitemapName]
-    const chunkSize = typeof baseSitemap.chunks === 'number'
-      ? baseSitemap.chunks
-      : (baseSitemap.chunkSize || runtimeConfig.defaultSitemapsChunkSize || 1000)
-
-    // Early validation of chunk index
-    if (chunkIndex !== undefined && baseSitemap._chunkCount !== undefined) {
-      if (chunkIndex >= baseSitemap._chunkCount) {
-        return createError({
-          statusCode: 404,
-          message: `Chunk ${chunkIndex} does not exist for sitemap "${baseSitemapName}".`,
-        })
-      }
+  // If trying to access a chunk of a non-chunked sitemap, return 404
+  if (chunkInfo.isChunked && chunkInfo.chunkIndex !== undefined) {
+    const baseSitemap = sitemaps[chunkInfo.baseSitemapName]
+    if (baseSitemap && !baseSitemap.chunks && !baseSitemap._isChunking) {
+      return createError({
+        statusCode: 404,
+        message: `Sitemap "${chunkInfo.baseSitemapName}" does not support chunking.`,
+      })
     }
 
-    sitemapConfig = {
-      ...baseSitemap,
-      sitemapName, // Use the full name with chunk index
-      _isChunking: true,
-      _chunkSize: chunkSize,
+    // Validate chunk index if count is available
+    if (baseSitemap?._chunkCount !== undefined && chunkInfo.chunkIndex >= baseSitemap._chunkCount) {
+      return createError({
+        statusCode: 404,
+        message: `Chunk ${chunkInfo.chunkIndex} does not exist for sitemap "${chunkInfo.baseSitemapName}".`,
+      })
     }
   }
-  else {
-    // Regular sitemap
-    sitemapConfig = sitemaps[sitemapName]
-  }
+
+  // Get the appropriate sitemap configuration
+  const sitemapConfig = getSitemapConfig(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize)
 
   return createSitemap(e, sitemapConfig, runtimeConfig)
 })
