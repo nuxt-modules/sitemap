@@ -15,7 +15,6 @@ import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from
 import { sortSitemapUrls } from '../urlset/sort'
 import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
-import { handleEntry, wrapSitemapXml } from './xml'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string
