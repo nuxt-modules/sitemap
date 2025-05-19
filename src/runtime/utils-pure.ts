@@ -18,14 +18,24 @@ const merger = createDefu((obj, key, value) => {
   return obj[key]
 })
 
-export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K) {
-  const res: Record<string, T> = {}
-  arr.forEach((item) => {
+export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K): T[] {
+  const seen = new Map<string, number>()
+  const result: T[] = []
+
+  for (const item of arr) {
     const k = item[key] as string
-    // @ts-expect-error untyped
-    res[k] = merger(item, res[k] || {})
-  })
-  return Object.values(res)
+    if (seen.has(k)) {
+      const existingIndex = seen.get(k)!
+      // @ts-expect-error untyped
+      result[existingIndex] = merger(item, result[existingIndex])
+    }
+    else {
+      seen.set(k, result.length)
+      result.push(item)
+    }
+  }
+
+  return result
 }
 
 export function splitForLocales(path: string, locales: string[]): [string | null, string] {

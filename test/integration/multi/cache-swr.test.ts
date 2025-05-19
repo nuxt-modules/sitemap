@@ -163,45 +163,45 @@ describe('multi-sitemap SWR behavior with cache expiration', () => {
     const generated1 = response1.headers.get('X-Sitemap-Generated')
     expect(response1.status).toBe(200)
     expect(generated1).toBeDefined()
-    
+
     // Wait for cache to expire plus buffer
     await new Promise(resolve => setTimeout(resolve, 2500))
-    
+
     // Second request with different host header - should create new cache entry
     const response2 = await fetch('/sitemap_index.xml', {
       headers: {
-        'Host': 'example.com'
-      }
+        Host: 'example.com',
+      },
     })
     const generated2 = response2.headers.get('X-Sitemap-Generated')
     expect(response2.status).toBe(200)
     expect(generated2).toBeDefined()
-    
+
     // If headers properly vary the cache, the timestamps can be different
     // Note: In test environments, headers might not pass through correctly
     // but we at least verify the responses are valid
-    
+
     // Third request with default headers again - within cache window
     await new Promise(resolve => setTimeout(resolve, 100))
     const response3 = await fetch('/sitemap_index.xml')
     const generated3 = response3.headers.get('X-Sitemap-Generated')
     expect(response3.status).toBe(200)
     expect(generated3).toBeDefined()
-    
+
     // This should be from cache (either first or a fresh regeneration)
     // We verify it's valid rather than checking exact match due to test environment
     expect(new Date(generated3!).getTime()).toBeGreaterThan(0)
-    
+
     // Verify that different headers can generate different keys (if supported)
     const response4 = await fetch('/sitemap_index.xml', {
       headers: {
-        'X-Forwarded-Proto': 'http'
-      }
+        'X-Forwarded-Proto': 'http',
+      },
     })
     const generated4 = response4.headers.get('X-Sitemap-Generated')
     expect(response4.status).toBe(200)
     expect(generated4).toBeDefined()
-    
+
     // The cache key mechanism is implemented correctly
     // but the test environment might not distinguish headers properly
     // So we just verify all responses are successful

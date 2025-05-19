@@ -62,12 +62,12 @@ describe('nuxt/content v3 default', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/bar</loc>
+              <lastmod>2021-10-20</lastmod>
+              <changefreq>daily</changefreq>
+              <priority>0.5</priority>
               <image:image>
                   <image:loc>https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg</image:loc>
               </image:image>
-              <lastmod>2021-10-20</lastmod>
-              <priority>0.5</priority>
-              <changefreq>daily</changefreq>
           </url>
           <url>
               <loc>https://nuxtseo.com/foo</loc>
