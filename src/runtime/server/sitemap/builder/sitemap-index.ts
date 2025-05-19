@@ -7,6 +7,7 @@ import type {
   ResolvedSitemapUrl,
   SitemapIndexEntry, SitemapInputCtx,
   SitemapUrl,
+  SitemapSourcesHookCtx,
 } from '../../../types'
 import { normaliseDate } from '../urlset/normalise'
 import { globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
@@ -39,7 +40,20 @@ export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeCon
   if (isChunking) {
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
-    const sources = await resolveSitemapSources(await globalSitemapSources())
+    let sourcesInput = await globalSitemapSources()
+
+    // Allow hook to modify sources before resolution
+    if (nitro && resolvers.event) {
+      const ctx: SitemapSourcesHookCtx = {
+        event: resolvers.event,
+        sitemapName: sitemap.sitemapName,
+        sources: sourcesInput,
+      }
+      await nitro.hooks.callHook('sitemap:sources', ctx)
+      sourcesInput = ctx.sources
+    }
+
+    const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
     const resolvedCtx: SitemapInputCtx = {
       urls: sources.flatMap(s => s.urls),
       sitemapName: sitemap.sitemapName,

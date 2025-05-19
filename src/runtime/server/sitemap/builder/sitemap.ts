@@ -8,6 +8,7 @@ import type {
   ResolvedSitemapUrl,
   SitemapDefinition, SitemapInputCtx,
   SitemapUrlInput,
+  SitemapSourcesHookCtx,
 } from '../../../types'
 import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
@@ -222,8 +223,20 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
   // 0. resolve sources
   // always fetch all sitemap data for the primary sitemap
-  const sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
+  let sourcesInput = sitemap.includeAppSources ? await globalSitemapSources() : []
   sourcesInput.push(...await childSitemapSources(sitemap))
+
+  // Allow hook to modify sources before resolution
+  if (nitro && resolvers.event) {
+    const ctx: SitemapSourcesHookCtx = {
+      event: resolvers.event,
+      sitemapName: sitemap.sitemapName,
+      sources: sourcesInput,
+    }
+    await nitro.hooks.callHook('sitemap:sources', ctx)
+    sourcesInput = ctx.sources
+  }
+
   const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),

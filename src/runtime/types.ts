@@ -326,6 +326,11 @@ export interface SitemapOutputHookCtx extends NitroBaseHook {
   sitemap: string
 }
 
+export interface SitemapSourcesHookCtx extends NitroBaseHook {
+  sitemapName: string
+  sources: (SitemapSourceBase | SitemapSourceResolved)[]
+}
+
 export type Changefreq =
   | 'always'
   | 'hourly'
