@@ -219,6 +219,7 @@ export interface AutoI18nConfig {
   locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
   defaultLocale: string
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
+  pages?: Record<string, Record<string, string | false>>
 }
 
 export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify'> {

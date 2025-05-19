@@ -230,6 +230,8 @@ export default defineNuxtModule<ModuleOptions>({
           defaultLocale: nuxtI18nConfig.defaultLocale!,
           locales: normalisedLocales,
           strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
+          // @ts-expect-error untyped
+          pages: nuxtI18nConfig.pages,
         }
       }
       let canI18nMap = config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'

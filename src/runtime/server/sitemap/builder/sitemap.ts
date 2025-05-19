@@ -116,9 +116,34 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         else {
           // need to add urls for all other locales
           for (const l of autoI18n.locales) {
-            let loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
-            if (autoI18n.differentDomains || (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
-              loc = e._pathWithoutPrefix
+            let loc = e._pathWithoutPrefix
+
+            // Check if there's a custom mapping in i18n pages config
+            if (autoI18n.pages) {
+              // Remove leading slash and /index suffix for page key lookup
+              const pageKey = e._pathWithoutPrefix.replace(/^\//, '').replace(/\/index$/, '') || 'index'
+              const pageMappings = autoI18n.pages[pageKey]
+
+              if (pageMappings && pageMappings[l.code] !== undefined) {
+                const customPath = pageMappings[l.code]
+                // If customPath is false, skip this locale
+                if (customPath === false)
+                  continue
+                // If customPath is a string, use it
+                if (typeof customPath === 'string')
+                  loc = customPath.startsWith('/') ? customPath : `/${customPath}`
+              }
+              else if (!autoI18n.differentDomains && !(['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale)) {
+                // No custom mapping found, use default behavior
+                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
+              }
+            }
+            else {
+              // No pages config, use original behavior
+              if (!autoI18n.differentDomains && !(['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
+                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
+            }
+
             const _sitemap = isI18nMapped ? l._sitemap : undefined
             const newEntry: NormalizedI18n = preNormalizeEntry({
               _sitemap,
@@ -130,19 +155,41 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
               alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
-                let href = ''
-                if (autoI18n.strategy === 'prefix') {
-                  href = joinURL('/', code, e._pathWithoutPrefix)
-                }
-                else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
-                  if (isDefault) {
-                    // no prefix
-                    href = e._pathWithoutPrefix
+                let href = e._pathWithoutPrefix
+
+                // Check for custom path mapping
+                if (autoI18n.pages) {
+                  const pageKey = e._pathWithoutPrefix.replace(/^\//, '').replace(/\/index$/, '') || 'index'
+                  const pageMappings = autoI18n.pages[pageKey]
+
+                  if (pageMappings && pageMappings[code] !== undefined) {
+                    const customPath = pageMappings[code]
+                    if (customPath === false)
+                      return false
+                    if (typeof customPath === 'string')
+                      href = customPath.startsWith('/') ? customPath : `/${customPath}`
                   }
-                  else {
+                  else if (autoI18n.strategy === 'prefix') {
                     href = joinURL('/', code, e._pathWithoutPrefix)
                   }
+                  else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
+                    if (!isDefault) {
+                      href = joinURL('/', code, e._pathWithoutPrefix)
+                    }
+                  }
                 }
+                else {
+                  // Original behavior without pages config
+                  if (autoI18n.strategy === 'prefix') {
+                    href = joinURL('/', code, e._pathWithoutPrefix)
+                  }
+                  else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
+                    if (!isDefault) {
+                      href = joinURL('/', code, e._pathWithoutPrefix)
+                    }
+                  }
+                }
+
                 if (!filterPath(href))
                   return false
                 return {
