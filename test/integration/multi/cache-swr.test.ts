@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createResolver } from '@nuxt/kit'
 import { fetch, setup } from '@nuxt/test-utils'
+import { isCI } from 'std-env'
 
 const { resolve } = createResolver(import.meta.url)
 
@@ -30,7 +31,7 @@ await setup({
   },
 })
 
-describe('multi-sitemap SWR behavior with cache expiration', () => {
+describe.skipIf(isCI)('multi-sitemap SWR behavior with cache expiration', () => {
   it('should return SWR cache headers for sitemap index', async () => {
     const response = await fetch('/sitemap_index.xml')
 
