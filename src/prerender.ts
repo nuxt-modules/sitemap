@@ -95,9 +95,9 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       }), route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
-      const isNuxt4 = nuxt.options._majorVersion === 4
+      const isNuxt5 = nuxt.options._majorVersion === 5
       let nitroModule
-      if (isNuxt4) {
+      if (isNuxt5) {
         nitroModule = await import(String('nitro'))
       }
       else {
