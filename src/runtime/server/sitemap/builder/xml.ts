@@ -1,16 +1,13 @@
+import { withQuery } from 'ufo'
 import type { ModuleRuntimeConfig, NitroUrlResolvers, ResolvedSitemapUrl } from '../../../types'
+import { xmlEscape } from '../../utils'
 
 // Optimized XML escaping using string replace (faster than character loop)
 export function escapeValueForXml(value: boolean | string | number): string {
   if (value === true || value === false)
     return value ? 'yes' : 'no'
 
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+  return xmlEscape(String(value))
 }
 
 // Cache constant strings to avoid repeated concatenation
@@ -203,17 +200,27 @@ export function urlsToXml(
   urls: ResolvedSitemapUrl[],
   resolvers: NitroUrlResolvers,
   { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>,
+  errorInfo?: { messages: string[], urls: string[] },
 ): string {
   // Pre-calculate size for better memory allocation
   const estimatedSize = urls.length + 5
   const xmlParts: string[] = Array.from({ length: estimatedSize })
   let partIndex = 0
 
-  const xslHref = xsl ? resolvers.relativeBaseUrlResolver(xsl) : false
+  let xslHref = xsl ? resolvers.relativeBaseUrlResolver(xsl) : false
+
+  // Add error information to XSL URL if available
+  if (xslHref && errorInfo && errorInfo.messages.length > 0) {
+    xslHref = withQuery(xslHref, {
+      errors: 'true',
+      error_messages: errorInfo.messages,
+      error_urls: errorInfo.urls,
+    })
+  }
 
   // XML declaration and stylesheet
   if (xslHref) {
-    xmlParts[partIndex++] = `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="${xslHref}"?>`
+    xmlParts[partIndex++] = `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="${escapeValueForXml(xslHref)}"?>`
   }
   else {
     xmlParts[partIndex++] = '<?xml version="1.0" encoding="UTF-8"?>'

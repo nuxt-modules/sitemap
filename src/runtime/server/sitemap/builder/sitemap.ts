@@ -224,7 +224,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   return _urls
 }
 
-export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ urls: ResolvedSitemapUrl[], failedSources: Array<{ url: string, error: string }> }> {
   // 0. resolve sources
   // 1. normalise
   // 2. filter
@@ -294,6 +294,15 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
 
   const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+
+  // Extract failed sources for display
+  const failedSources = sources
+    .filter(source => source.error && source._isFailure)
+    .map(source => ({
+      url: typeof source.fetch === 'string' ? source.fetch : (source.fetch?.[0] || 'unknown'),
+      error: source.error || 'Unknown error',
+    }))
+
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
     sitemapName: sitemap.sitemapName,
@@ -312,7 +321,8 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   const sortedUrls = maybeSort(filteredUrls)
   // 5. maybe slice for chunked
   // if we're rendering a partial sitemap, slice the entries
-  return maybeSlice(sortedUrls)
+  const urls = maybeSlice(sortedUrls)
+  return { urls, failedSources }
 }
 
 export { urlsToXml } from './xml'

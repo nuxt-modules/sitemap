@@ -10,7 +10,7 @@ export default defineEventHandler(async (e) => {
   const runtimeConfig = useSitemapRuntimeConfig()
   const nitro = useNitroApp()
   const resolvers = useNitroUrlResolvers(e)
-  const sitemaps = await buildSitemapIndex(resolvers, runtimeConfig, nitro)
+  const { entries: sitemaps, failedSources } = await buildSitemapIndex(resolvers, runtimeConfig, nitro)
 
   // tell the prerender to render the other sitemaps (if we prerender this one)
   // this solves the dynamic chunking sitemap issue
@@ -26,7 +26,15 @@ export default defineEventHandler(async (e) => {
   const indexResolvedCtx: SitemapIndexRenderCtx = { sitemaps, event: e }
   await nitro.hooks.callHook('sitemap:index-resolved', indexResolvedCtx)
 
-  const output = urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig)
+  // Prepare error information for XSL if there are failed sources
+  const errorInfo = failedSources.length > 0
+    ? {
+        messages: failedSources.map(f => f.error),
+        urls: failedSources.map(f => f.url),
+      }
+    : undefined
+
+  const output = urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo)
   const ctx: SitemapOutputHookCtx = { sitemap: output, sitemapName: 'sitemap', event: e }
   await nitro.hooks.callHook('sitemap:output', ctx)
 

@@ -1,6 +1,6 @@
-import { defineEventHandler, getHeader, setHeader } from 'h3'
+import { defineEventHandler, getHeader, setHeader, getQuery as h3GetQuery } from 'h3'
 import { getQuery, parseURL, withQuery } from 'ufo'
-import { useSitemapRuntimeConfig } from '../utils'
+import { useSitemapRuntimeConfig, xmlEscape } from '../utils'
 import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 
@@ -32,21 +32,55 @@ export default defineEventHandler(async (e) => {
 
   const conditionalTips = [
     'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #398465" target="_blank">XML stylesheet</a>. Read the <a href="https://nuxtseo.com/sitemap/guides/customising-ui" style="color: #398465" target="_blank">docs</a> to learn how to customize it. View the page source to see the raw XML.',
-    `URLs missing? Check Nuxt Devtools Sitemap tab (or the <a href="${withQuery('/__sitemap__/debug.json', { sitemap: sitemapName })}" style="color: #398465" target="_blank">debug endpoint</a>).`,
+    `URLs missing? Check Nuxt Devtools Sitemap tab (or the <a href="${xmlEscape(withQuery('/__sitemap__/debug.json', { sitemap: sitemapName }))}" style="color: #398465" target="_blank">debug endpoint</a>).`,
   ]
+
+  // Add fetch error information if available via query params
+  const fetchErrors: string[] = []
+  const xslQuery = h3GetQuery(e)
+  if (xslQuery.error_messages) {
+    const errorMessages = xslQuery.error_messages
+    const errorUrls = xslQuery.error_urls
+
+    if (errorMessages) {
+      const messages = Array.isArray(errorMessages) ? errorMessages : [errorMessages]
+      const urls = Array.isArray(errorUrls) ? errorUrls : (errorUrls ? [errorUrls] : [])
+
+      messages.forEach((msg, i) => {
+        const errorParts = [xmlEscape(msg)]
+        if (urls[i]) {
+          errorParts.push(xmlEscape(urls[i]))
+        }
+        fetchErrors.push(`<strong style="color: #dc2626;">Error ${i + 1}:</strong> ${errorParts.join(' - ')}`)
+      })
+    }
+
+    if (fetchErrors.length === 0) {
+      conditionalTips.push('Add <code>?debug</code> or <code>?errors</code> to the sitemap URL to see detailed error information when external sources fail.')
+    }
+  }
   if (!isShowingCanonical) {
     const canonicalPreviewUrl = withQuery(referrer, { canonical: '' })
-    conditionalTips.push(`Your canonical site URL is <strong>${siteUrl}</strong>.`)
-    conditionalTips.push(`You can preview your canonical sitemap by visiting <a href="${canonicalPreviewUrl}" style="color: #398465; white-space: nowrap;">${fixPath(canonicalPreviewUrl)}?canonical</a>`)
+    conditionalTips.push(`Your canonical site URL is <strong>${xmlEscape(siteUrl)}</strong>.`)
+    conditionalTips.push(`You can preview your canonical sitemap by visiting <a href="${xmlEscape(canonicalPreviewUrl)}" style="color: #398465; white-space: nowrap;">${xmlEscape(fixPath(canonicalPreviewUrl))}?canonical</a>`)
   }
   else {
     // avoid text wrap
-    conditionalTips.push(`You are viewing the canonical sitemap. You can switch to using the request origin: <a href="${fixPath(referrer)}" style="color: #398465; white-space: nowrap ">${fixPath(referrer)}</a>`)
+    conditionalTips.push(`You are viewing the canonical sitemap. You can switch to using the request origin: <a href="${xmlEscape(fixPath(referrer))}" style="color: #398465; white-space: nowrap ">${xmlEscape(fixPath(referrer))}</a>`)
   }
 
-  const tips = conditionalTips.map(t => `<li><p>${t}</p></li>`).join('\n')
+  // Separate development tips from production runtime errors
+  const hasRuntimeErrors = fetchErrors.length > 0
+  const showDevTips = import.meta.dev && xslTips !== false
+  const showSidebar = showDevTips || hasRuntimeErrors
 
-  const showTips = import.meta.dev && xslTips !== false
+  // Build development tips section
+  const devTips = showDevTips ? conditionalTips.map(t => `<li><p>${t}</p></li>`).join('\n') : ''
+
+  // Build runtime errors section
+  const runtimeErrors = hasRuntimeErrors
+    ? fetchErrors.map(t => `<li><p>${t}</p></li>`).join('\n')
+    : ''
   let columns = [...xslColumns!]
   if (!columns.length) {
     columns = [
@@ -111,12 +145,12 @@ export default defineEventHandler(async (e) => {
           }
 
           .expl a {
-            color: #398465
+            color: #398465;
             font-weight: 600;
           }
 
           .expl a:visited {
-            color: #398465
+            color: #398465;
           }
 
           a {
@@ -167,8 +201,8 @@ export default defineEventHandler(async (e) => {
             <div>
              <div id="content">
           <h1 class="text-2xl mb-3">XML Sitemap</h1>
-          <h2>${title}</h2>
-          ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${fixPath('/sitemap_index.xml')}">${fixPath('/sitemap_index.xml')}</a></p>` : ''}
+          <h2>${xmlEscape(title)}</h2>
+          ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${xmlEscape(fixPath('/sitemap_index.xml'))}">${xmlEscape(fixPath('/sitemap_index.xml'))}</a></p>` : ''}
           <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &gt; 0">
             <p class="expl" style="margin-bottom: 1rem;">
               This XML Sitemap Index file contains
@@ -233,7 +267,13 @@ export default defineEventHandler(async (e) => {
           </xsl:if>
         </div>
         </div>
-                    ${showTips ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;"><p><strong>Sitemap Tips (development only)</strong></p><ul style="margin: 1rem; padding: 0;">${tips}</ul><p style="margin-top: 1rem;">${creditName}</p></div>` : ''}
+                    ${showSidebar
+                      ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;">
+                      ${showDevTips ? `<div><p><strong>Development Tips</strong></p><ul style="margin: 1rem 0; padding: 0;">${devTips}</ul></div>` : ''}
+                      ${hasRuntimeErrors ? `<div${showDevTips ? ' style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;"' : ''}><p><strong style="color: #dc2626;">Runtime Errors</strong></p><ul style="margin: 1rem 0; padding: 0;">${runtimeErrors}</ul></div>` : ''}
+                      ${showDevTips ? `<p style="margin-top: 1rem;">${creditName}</p>` : ''}
+                    </div>`
+                      : ''}
         </div>
       </body>
     </html>
