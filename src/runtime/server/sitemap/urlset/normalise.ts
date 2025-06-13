@@ -103,7 +103,7 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
   // correct alternative hrefs
   if (e.alternatives) {
     // Process alternatives in place to avoid extra array allocation
-    const alternatives = e.alternatives
+    const alternatives = e.alternatives.map(a => ({ ...a }))
     for (let i = 0; i < alternatives.length; i++) {
       const alt = alternatives[i]
       // Modify in place
@@ -119,7 +119,7 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   if (e.images) {
     // Process images in place
-    const images = e.images
+    const images = e.images.map(i => ({ ...i }))
     for (let i = 0; i < images.length; i++) {
       images[i].loc = resolve(images[i].loc, resolvers)
     }
@@ -128,12 +128,13 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   if (e.videos) {
     // Process videos in place
-    const videos = e.videos
+    const videos = e.videos.map(v => ({ ...v }))
     for (let i = 0; i < videos.length; i++) {
       if (videos[i].content_loc) {
         videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
       }
     }
+    e.videos = mergeOnKey(videos, 'content_loc')
   }
   return e
 }
