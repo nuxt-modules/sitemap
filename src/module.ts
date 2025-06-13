@@ -372,8 +372,11 @@ declare module 'vue-router' {
       }
       // // exclude /__nuxt_content
       config.exclude!.push('/__nuxt_content/**')
-      // TODO this is a hack until content gives us an alias
-      nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
+      const needsCustomAlias = await hasNuxtModuleCompatibility('@nuxt/content', '<3.6.0')
+      if (needsCustomAlias) {
+        nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
+        nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
+      }
       nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
         const content = ctx.content as {
           body: { value: [string, Record<string, any>][] }
