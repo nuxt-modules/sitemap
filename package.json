@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.3.1",
-  "packageManager": "pnpm@10.11.1",
+  "packageManager": "pnpm@10.12.1",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -60,8 +60,8 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/devtools-kit": "^2.4.1",
-    "@nuxt/kit": "^3.17.4",
+    "@nuxt/devtools-kit": "^2.5.0",
+    "@nuxt/kit": "^3.17.5",
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "h3-compression": "^0.3.2",
@@ -75,7 +75,7 @@
     "ufo": "^1.6.1"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.1",
+    "@arethetypeswrong/cli": "^0.18.2",
     "@nuxt/content": "^3.6.0",
     "@nuxt/eslint-config": "^1.4.1",
     "@nuxt/module-builder": "^1.0.1",
@@ -85,13 +85,13 @@
     "@nuxtjs/robots": "^5.2.10",
     "bumpp": "^10.1.1",
     "eslint": "^9.28.0",
-    "eslint-plugin-n": "^17.19.0",
+    "eslint-plugin-n": "^17.20.0",
     "execa": "^9.6.0",
-    "happy-dom": "^17.6.1",
-    "nuxt": "^3.17.4",
+    "happy-dom": "^18.0.1",
+    "nuxt": "^3.17.5",
     "nuxt-i18n-micro": "^1.87.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.0",
+    "vitest": "^3.2.3",
     "vue-tsc": "^2.2.10"
   },
   "pnpm": {
