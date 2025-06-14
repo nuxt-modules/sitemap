@@ -10,39 +10,88 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { extractSitemapXML } from '../utils/extractSitemapXML'
+import { logger } from '../../../utils-pure'
+
+async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
+  const isExternalUrl = !url.startsWith('/')
+  // For external URLs, try different fetch strategies
+  if (isExternalUrl) {
+    const strategies = [
+      // Strategy 1: Use globalThis.$fetch (original approach)
+      () => globalThis.$fetch(url, options),
+      // Strategy 2: If event is available, try using event context even for external URLs
+      event ? () => event.$fetch(url, options) : null,
+      // Strategy 3: Use native fetch as last resort
+      () => $fetch(url, options),
+    ].filter(Boolean)
+
+    let lastError: Error | null = null
+    for (const strategy of strategies) {
+      try {
+        return await strategy!()
+      }
+      catch (error) {
+        lastError = error as Error
+        continue
+      }
+    }
+    throw lastError
+  }
+
+  // For internal URLs, use the original logic
+  const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
+  return await fetchContainer.$fetch(url, options)
+}
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
-  context.tips = context.tips || []
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
   const options = typeof input.fetch === 'string' ? {} : input.fetch![1]
   const start = Date.now()
 
-  // 5 seconds default to respond
-  const timeout = options.timeout || 5000
+  // Get external source configuration
+  const isExternalUrl = !url.startsWith('/')
+
+  // Use external source timeout if it's an external URL, otherwise use original timeout
+  const timeout = isExternalUrl ? 10000 : (options.timeout || 5000)
+
   const timeoutController = new AbortController()
   const abortRequestTimeout = setTimeout(() => timeoutController.abort(), timeout)
 
-  let isMaybeErrorResponse = false
-  const isXmlRequest = parseURL(url).pathname.endsWith('.xml')
-  const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
   try {
-    const res = await fetchContainer.$fetch(url, {
+    let isMaybeErrorResponse = false
+    const isXmlRequest = parseURL(url).pathname.endsWith('.xml')
+
+    // Merge external source headers with request headers
+    const mergedHeaders = defu(
+      options?.headers,
+      {
+        Accept: isXmlRequest ? 'text/xml' : 'application/json',
+      },
+      event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
+    )
+
+    const fetchOptions = {
       ...options,
       responseType: isXmlRequest ? 'text' : 'json',
       signal: timeoutController.signal,
-      headers: defu(options?.headers, {
-        Accept: isXmlRequest ? 'text/xml' : 'application/json',
-      }, event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {}),
+      headers: mergedHeaders,
+      // Use ofetch's built-in retry for external sources
+      ...(isExternalUrl && {
+        retry: 2,
+        retryDelay: 200,
+      }),
       // @ts-expect-error untyped
       onResponse({ response }) {
         if (typeof response._data === 'string' && response._data.startsWith('<!DOCTYPE html>'))
           isMaybeErrorResponse = true
       },
-    })
+    }
+
+    const res = await tryFetchWithFallback(url, fetchOptions, event)
+
     const timeTakenMs = Date.now() - start
     if (isMaybeErrorResponse) {
-      context.tips.push('This is usually because the URL isn\'t correct or is throwing an error. Please check the URL')
       return {
         ...input,
         context,
@@ -56,7 +105,6 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       urls = res.urls || res
     }
     else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
-      // fast pass XML extract all loc data, let's use
       urls = extractSitemapXML(res)
     }
     return {
@@ -68,17 +116,30 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
   catch (_err) {
     const error = _err as FetchError
-    if (error.message.includes('This operation was aborted'))
-      context.tips.push('The request has taken too long. Make sure app sources respond within 5 seconds or adjust the timeout fetch option.')
-    else
-      context.tips.push(`Response returned a status of ${error.response?.status || 'unknown'}.`)
 
-    console.error('[@nuxtjs/sitemap] Failed to fetch source.', { url, error })
+    // Enhanced error logging for external sources
+    if (isExternalUrl) {
+      const errorInfo = {
+        url,
+        timeout,
+        error: error.message,
+        statusCode: error.response?.status,
+        statusText: error.response?.statusText,
+        method: options?.method || 'GET',
+      }
+
+      logger.error('Failed to fetch external source.', errorInfo)
+    }
+    else {
+      logger.error('Failed to fetch source.', { url, error: error.message })
+    }
+
     return {
       ...input,
       context,
       urls: [],
       error: error.message,
+      _isFailure: true, // Mark as failure to prevent caching
     }
   }
   finally {

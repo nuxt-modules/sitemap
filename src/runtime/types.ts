@@ -184,6 +184,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   urls: SitemapUrlInput[]
   error?: any
   timeTakenMs?: number
+  _isFailure?: boolean
 }
 
 export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'

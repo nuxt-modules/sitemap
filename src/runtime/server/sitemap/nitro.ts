@@ -52,7 +52,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
       })
     }
   }
-  const sitemapUrls = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  const { urls: sitemapUrls, failedSources } = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
@@ -133,7 +133,14 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
     }
   }
 
-  const sitemap = urlsToXml(urls, resolvers, runtimeConfig)
+  // Prepare error information for XSL if there are failed sources
+  const errorInfo = failedSources.length > 0
+    ? {
+        messages: failedSources.map(f => f.error),
+        urls: failedSources.map(f => f.url),
+      }
+    : undefined
+  const sitemap = urlsToXml(urls, resolvers, runtimeConfig, errorInfo)
 
   const ctx = { sitemap, sitemapName, event }
   await nitro.hooks.callHook('sitemap:output', ctx)
@@ -163,7 +170,7 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const resolvers = useNitroUrlResolvers(event)
 
   // Choose between cached or direct generation
-  const shouldCache = !import.meta.dev && runtimeConfig.cacheMaxAgeSeconds > 0
+  const shouldCache = !import.meta.dev && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
   const xml = shouldCache
     ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig)
     : await buildSitemapXml(event, definition, resolvers, runtimeConfig)

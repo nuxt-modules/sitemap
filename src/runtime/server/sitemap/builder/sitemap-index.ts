@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { joinURL } from 'ufo'
+import { joinURL, withQuery } from 'ufo'
 import { defineCachedFunction } from 'nitropack/runtime'
 import type { NitroApp } from 'nitropack/types'
 import type { H3Event } from 'h3'
@@ -38,7 +38,7 @@ const buildSitemapIndexCached = defineCachedFunction(
   },
 )
 
-async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
+async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ entries: SitemapIndexEntry[], failedSources: Array<{ url: string, error: string }> }> {
   const {
     sitemaps,
     // enhancing
@@ -59,6 +59,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   }
 
   const chunks: Record<string | number, { urls: SitemapUrl[] }> = {}
+  const allFailedSources: Array<{ url: string, error: string }> = []
 
   // Process all sitemaps to determine chunks
   for (const sitemapName in sitemaps) {
@@ -98,6 +99,16 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
     }
 
     const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+
+    // Collect failed sources
+    const failedSources = sources
+      .filter(source => source.error && source._isFailure)
+      .map(source => ({
+        url: typeof source.fetch === 'string' ? source.fetch : (source.fetch?.[0] || 'unknown'),
+        error: source.error || 'Unknown error',
+      }))
+    allFailedSources.push(...failedSources)
+
     const resolvedCtx: SitemapInputCtx = {
       urls: sources.flatMap(s => s.urls),
       sitemapName: sitemap.sitemapName,
@@ -160,6 +171,16 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       }
 
       const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
+
+      // Collect failed sources
+      const failedSources = sources
+        .filter(source => source.error && source._isFailure)
+        .map(source => ({
+          url: typeof source.fetch === 'string' ? source.fetch : (source.fetch?.[0] || 'unknown'),
+          error: source.error || 'Unknown error',
+        }))
+      allFailedSources.push(...failedSources)
+
       const resolvedCtx: SitemapInputCtx = {
         urls: sources.flatMap(s => s.urls),
         sitemapName: sitemapConfig.sitemapName,
@@ -207,10 +228,10 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
     }))
   }
 
-  return entries
+  return { entries, failedSources: allFailedSources }
 }
 
-export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>) {
+export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>, errorInfo?: { messages: string[], urls: string[] }) {
   const sitemapXml = sitemaps.map(e => [
     '    <sitemap>',
     `        <loc>${escapeValueForXml(e.sitemap)}</loc>`,
@@ -225,7 +246,17 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
 
   // Add XSL if enabled
   if (xsl) {
-    const relativeBaseUrl = resolvers.relativeBaseUrlResolver?.(xsl) ?? xsl
+    let relativeBaseUrl = resolvers.relativeBaseUrlResolver?.(xsl) ?? xsl
+
+    // Add error information to XSL URL if available
+    if (errorInfo && errorInfo.messages.length > 0) {
+      relativeBaseUrl = withQuery(relativeBaseUrl, {
+        errors: 'true',
+        error_messages: errorInfo.messages,
+        error_urls: errorInfo.urls,
+      })
+    }
+
     xmlParts.push(`<?xml-stylesheet type="text/xsl" href="${escapeValueForXml(relativeBaseUrl)}"?>`)
   }
 
@@ -249,7 +280,7 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
   // Check if should use cached version
-  if (!import.meta.dev && !!runtimeConfig.cacheMaxAgeSeconds && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
+  if (!import.meta.dev && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
     return buildSitemapIndexCached(resolvers.event, resolvers, runtimeConfig, nitro)
   }
   return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
