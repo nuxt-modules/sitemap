@@ -11,16 +11,23 @@ import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
-  if (typeof urls === 'function')
-    urls = urls()
-  // resolve promise
-  urls = await urls
+  try {
+    if (typeof urls === 'function')
+      urls = urls()
+    // resolve promise
+    urls = await urls
+  }
+  catch (e) {
+    ctx.logger.error(`Failed to resolve ${typeof urls} urls.`)
+    ctx.logger.error(e)
+    return []
+  }
   // we need to validate that the urls can be serialised properly for example to avoid circular references
   try {
     urls = JSON.parse(JSON.stringify(urls))
   }
   catch (e) {
-    ctx.logger.warn(`Failed to serialize ${typeof urls} \`${ctx.path}\`, please make sure that the urls resolve as a valid array without circular dependencies.`)
+    ctx.logger.error(`Failed to serialize ${typeof urls} \`${ctx.path}\`, please make sure that the urls resolve as a valid array without circular dependencies.`)
     ctx.logger.error(e)
     return []
   }
