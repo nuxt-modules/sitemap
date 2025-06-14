@@ -54,10 +54,6 @@ export default defineEventHandler(async (e) => {
         fetchErrors.push(`<strong style="color: #dc2626;">Error ${i + 1}:</strong> ${errorParts.join(' - ')}`)
       })
     }
-
-    if (fetchErrors.length === 0) {
-      conditionalTips.push('Add <code>?debug</code> or <code>?errors</code> to the sitemap URL to see detailed error information when external sources fail.')
-    }
   }
   if (!isShowingCanonical) {
     const canonicalPreviewUrl = withQuery(referrer, { canonical: '' })
