@@ -47,9 +47,18 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     logger.warn('Runtime sitemaps are not supported on Vercel Edge, falling back to prerendering sitemaps.')
     prerenderSitemap = true
   }
+  nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
+  nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
+  const shouldHookIntoPrerender = prerenderSitemap || (nuxt.options.nitro.prerender.routes.length && nuxt.options.nitro.prerender.crawlLinks)
+  if (isNuxtGenerate() && options.debug) {
+    nuxt.options.nitro.prerender.routes.push('/__sitemap__/debug.json')
+    logger.info('Adding debug route for sitemap generation:', chalk.cyan('/__sitemap__/debug.json'))
+  }
   // need to filter it out of the config as we render it after all other routes
-  if (nuxt.options.nitro.prerender?.routes)
-    nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
+  if (!shouldHookIntoPrerender) {
+    return
+  }
+  nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
   nuxt.hooks.hook('nitro:init', async (nitro) => {
     let prerenderer: Nitro
     nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
@@ -108,19 +117,9 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       }
       // force templates to be rebuilt
       await nitroModule.build(prerenderer)
-
-      const routes: string[] = []
-      if (options.debug)
-        routes.push('/__sitemap__/debug.json')
-      if (prerenderSitemap) {
-        routes.push(
-          options.isMultiSitemap
-            ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
-            : `/${Object.keys(options.sitemaps)[0]}`,
-        )
-      }
-      for (const route of routes)
-        await prerenderRoute(nitro, route)
+      await prerenderRoute(nitro, options.isMultiSitemap
+        ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
+        : `/${Object.keys(options.sitemaps)[0]}`)
     })
   })
 }
