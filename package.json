@@ -65,7 +65,7 @@
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "h3-compression": "^0.3.2",
-    "nuxt-site-config": "^3.2.0",
+    "nuxt-site-config": "^3.2.1",
     "ofetch": "^1.4.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.1.0",
@@ -84,7 +84,7 @@
     "@nuxtjs/i18n": "^9.5.5",
     "@nuxtjs/robots": "^5.2.10",
     "better-sqlite3": "^11.10.0",
-    "bumpp": "^10.1.1",
+    "bumpp": "^10.2.0",
     "eslint": "^9.29.0",
     "eslint-plugin-n": "^17.20.0",
     "execa": "^9.6.0",
@@ -92,7 +92,7 @@
     "nuxt": "^3.17.5",
     "nuxt-i18n-micro": "^1.87.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.3",
+    "vitest": "^3.2.4",
     "vue-tsc": "^2.2.10"
   },
   "pnpm": {
