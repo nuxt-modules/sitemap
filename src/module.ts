@@ -28,8 +28,8 @@ import type {
   SitemapSourceResolved,
   ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions, SitemapUrl,
 } from './runtime/types'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './util/nuxtSitemap'
-import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './util/kit'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
+import { createNitroPromise, createPagesPromise, extendTypes, getNuxtModuleOptions } from './utils-internal/kit'
 import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { setupDevToolsUI } from './devtools'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
@@ -37,8 +37,8 @@ import {
   generatePathForI18nPages,
   normalizeLocales,
   splitPathForI18nLocales,
-} from './util/i18n'
-import { normalizeFilters } from './util/filter'
+} from './utils-internal/i18n'
+import { normalizeFilters } from './utils-internal/filter'
 
 export type * from './runtime/types'
 

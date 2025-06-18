@@ -9,7 +9,6 @@ import type {
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
-import { extractSitemapXML } from '../utils/extractSitemapXML'
 import { logger } from '../../../utils-pure'
 
 async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
@@ -105,7 +104,9 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       urls = res.urls || res
     }
     else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
-      urls = extractSitemapXML(res)
+      const { parseSitemapXml } = await import('@nuxtjs/sitemap/utils')
+      const result = parseSitemapXml(res)
+      urls = result.urls
     }
     return {
       ...input,

@@ -394,6 +394,8 @@ export interface SitemapUrl {
   _sitemap?: string
 }
 
+export type SitemapStrict = Required<SitemapUrl>
+
 export interface AlternativeEntry {
   hreflang: string
   href: string | URL

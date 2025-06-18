@@ -1,19 +1,35 @@
-/// <reference types="vitest" />
-/// <reference types="vitest/globals" />
-import { defineVitestConfig } from '@nuxt/test-utils/config'
-import { isCI } from 'std-env'
+import { defineConfig, defineProject } from 'vitest/config'
+import { defineVitestProject } from '@nuxt/test-utils/config'
 
-export default defineVitestConfig({
+export default defineConfig({
   test: {
-    isolate: true,
-    poolOptions: {
-      threads: {
-        singleThread: !isCI,
-      },
-    },
-    include: [
-      'test/integration/**',
-      'test/unit/**',
+    projects: [
+      // utils folders as *.test.ts in either test/unit or in src/**/*.test.ts
+      defineProject({
+        test: {
+          name: 'unit',
+          environment: 'node',
+          include: [
+            './test/unit/**/*.test.ts',
+            './src/**/*.test.ts',
+          ],
+          exclude: [
+            '**/node_modules/**',
+          ],
+        },
+      }),
+      // e2e tests in test/e2e
+      defineVitestProject({
+        test: {
+          name: 'e2e',
+          include: [
+            './test/e2e/**/*.test.ts',
+          ],
+          exclude: [
+            '**/node_modules/**',
+          ],
+        },
+      }),
     ],
   },
 })

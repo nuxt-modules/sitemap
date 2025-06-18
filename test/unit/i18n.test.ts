@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeLocales, splitPathForI18nLocales } from '../../src/util/i18n'
+import { normalizeLocales, splitPathForI18nLocales } from '../../src/utils-internal/i18n'
 import type { AutoI18nConfig } from '../../src/runtime/types'
 
 const EnFrAutoI18n = {

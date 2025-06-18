@@ -27,7 +27,8 @@
       "types": "./dist/types.d.mts",
       "import": "./dist/module.mjs"
     },
-    "./content": "./dist/content.mjs"
+    "./content": "./dist/content.mjs",
+    "./utils": "./dist/utils.mjs"
   },
   "main": "./dist/module.mjs",
   "files": [
@@ -41,6 +42,9 @@
       ],
       "content": [
         "./dist/content.d.mts"
+      ],
+      "utils": [
+        "./dist/utils.d.mts"
       ]
     }
   },
@@ -55,7 +59,8 @@
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
     "release": "pnpm build && bumpp && pnpm -r publish",
-    "test": "vitest && pnpm run test:attw",
+    "test": "vitest run && pnpm run test:attw",
+    "test:unit": "vitest --project=unit",
     "test:attw": "attw --pack",
     "typecheck": "vue-tsc --noEmit"
   },
@@ -64,6 +69,7 @@
     "@nuxt/kit": "^3.17.5",
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
+    "fast-xml-parser": "^5.2.5",
     "h3-compression": "^0.3.2",
     "nuxt-site-config": "^3.2.1",
     "ofetch": "^1.4.1",
@@ -72,7 +78,9 @@
     "radix3": "^1.1.2",
     "semver": "^7.7.2",
     "sirv": "^3.0.1",
-    "ufo": "^1.6.1"
+    "std-env": "^3.9.0",
+    "ufo": "^1.6.1",
+    "ultrahtml": "^1.6.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",

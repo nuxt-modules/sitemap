@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
-import { convertNuxtPagesToSitemapEntries } from '../../src/util/nuxtSitemap'
-import { normalizeLocales } from '../../src/util/i18n'
+import { convertNuxtPagesToSitemapEntries } from '../../src/utils-internal/nuxtSitemap'
+import { normalizeLocales } from '../../src/utils-internal/i18n'
 
 const payload: NuxtPage[] = [
   {

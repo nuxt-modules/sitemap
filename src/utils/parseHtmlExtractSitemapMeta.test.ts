@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { extractSitemapMetaFromHtml } from '../../src/util/extractSitemapMetaFromHtml'
+import { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
 
-describe('extractSitemapMetaFromHtml', () => {
+describe('parseHtmlExtractSitemapMeta', () => {
   it('lastmod', async () => {
     // test article meta
-    const output = extractSitemapMetaFromHtml(`
+    const output = parseHtmlExtractSitemapMeta(`
     <head>
       <meta property="article:published_time" content="2021-04-01T00:00:00Z">
       <meta property="article:modified_time" content="2021-04-02T00:00:00Z">
@@ -16,7 +16,7 @@ describe('extractSitemapMetaFromHtml', () => {
       }
     `)
     // test article meta
-    const output2 = extractSitemapMetaFromHtml(`
+    const output2 = parseHtmlExtractSitemapMeta(`
     <head>
       <meta content="2021-04-01T00:00:00Z" property="article:published_time"/>
       <meta content="2021-04-02T00:00:00Z" property="article:modified_time"/>
@@ -57,7 +57,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 1 - Single discoverable image
     const html1 = `${mainTag}${discoverableImageHTML}${mainClosingTag}`
-    const testcase1 = extractSitemapMetaFromHtml(html1)
+    const testcase1 = parseHtmlExtractSitemapMeta(html1)
 
     expect(testcase1).toMatchInlineSnapshot(`
       {
@@ -71,7 +71,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 2 - Single discoverable image with excluded image values
     const html2 = `${mainTag}${discoverableImageHTML}${excludeImageDataHTML}${excludeImageBlobHTML}${excludeImageFileHTML}${mainClosingTag}`
-    const testcase2 = extractSitemapMetaFromHtml(html2)
+    const testcase2 = parseHtmlExtractSitemapMeta(html2)
 
     expect(testcase2).toMatchInlineSnapshot(`
       {
@@ -84,7 +84,7 @@ describe('extractSitemapMetaFromHtml', () => {
     `)
 
     const html3 = `<div id="__nuxt"><div><main><div class="document-driven-page"><!--[--><div><h1 id="index"><!--[-->index<!--]--></h1><ul><!--[--><li><!--[--><a href="/bar" class=""><!--[-->/bar<!--]--></a><!--]--></li><li><!--[--><a href="/foo" class=""><!--[-->/foo<!--]--></a><!--]--></li><!--]--></ul><img onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="Test image" data-nuxt-img srcset="/_ipx/_/logo.svg 1x, /_ipx/_/logo.svg 2x" src="/_ipx/_/logo.svg" class="test"><p><!--[--><a href="/sitemap.xml" class=""><!--[-->/sitemap.xml<!--]--></a><!--]--></p></div><!--]--></div></main></div></div><div id="teleports"></div>`
-    const testcase3 = extractSitemapMetaFromHtml(html3)
+    const testcase3 = parseHtmlExtractSitemapMeta(html3)
     expect(testcase3).toMatchInlineSnapshot(`
       {
         "images": [
@@ -114,7 +114,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 1 - Single discoverable video src element
     const html1 = `${mainTag}${discoverableVideoSrcHTML}${mainClosingTag}`
-    const testcase1 = extractSitemapMetaFromHtml(html1)
+    const testcase1 = parseHtmlExtractSitemapMeta(html1)
 
     expect(testcase1).toMatchInlineSnapshot(`{}`)
   })
@@ -140,7 +140,7 @@ describe('extractSitemapMetaFromHtml', () => {
     `
     // Test case 2 - Single discoverable video src element with poster
     const html2 = `${mainTag}${discoverableVideoWithPosterSrcHTML}${mainClosingTag}`
-    const testcase2 = extractSitemapMetaFromHtml(html2)
+    const testcase2 = parseHtmlExtractSitemapMeta(html2)
 
     expect(testcase2).toMatchInlineSnapshot(`
       {
@@ -182,7 +182,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 3 - Multiple discoverable video sources
     const html3 = `${mainTag}${discoverableVideoSourcesHTML}${mainClosingTag}`
-    const testcase3 = extractSitemapMetaFromHtml(html3)
+    const testcase3 = parseHtmlExtractSitemapMeta(html3)
 
     expect(testcase3).toMatchInlineSnapshot(`{}`)
   })
@@ -216,7 +216,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 4 - Multiple discoverable video sources
     const html4 = `${mainTag}${discoverableVideoSourcesWithPosterHTML}${mainClosingTag}`
-    const testcase4 = extractSitemapMetaFromHtml(html4)
+    const testcase4 = parseHtmlExtractSitemapMeta(html4)
 
     expect(testcase4).toMatchInlineSnapshot(`
       {
@@ -282,7 +282,7 @@ describe('extractSitemapMetaFromHtml', () => {
 
     // Test case 4 - Mixture of single video src and multiple discoverable video sources
     const html5 = `${mainTag}${discoverableVideoWithPosterSrcHTML}${discoverableVideoSourcesWithPosterHTML}${mainClosingTag}`
-    const testcase5 = extractSitemapMetaFromHtml(html5)
+    const testcase5 = parseHtmlExtractSitemapMeta(html5)
 
     expect(testcase5).toMatchInlineSnapshot(`
       {
@@ -310,7 +310,7 @@ describe('extractSitemapMetaFromHtml', () => {
     `)
   })
   it('extracts relative poster as absolute', async () => {
-    const testcase5 = extractSitemapMetaFromHtml(`
+    const testcase5 = parseHtmlExtractSitemapMeta(`
 <main>
       <video
         controls

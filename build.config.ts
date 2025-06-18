@@ -2,17 +2,12 @@ import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,
-  rollup: {
-    emitCJS: true,
-  },
   entries: [
     { input: 'src/content', name: 'content' },
+    { input: 'src/utils', name: 'utils' },
   ],
   externals: [
-    'h3',
-    'std-env',
-    'nitropack',
-    'consola',
+    // needed for content subpath export
     '@nuxt/content',
     'zod',
   ],

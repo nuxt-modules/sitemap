@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { generatePathForI18nPages } from '../../src/util/i18n'
+import { generatePathForI18nPages } from '../../src/utils-internal/i18n'
 
 it('should handle string paths for generatePathForI18nPages', () => {
   const result = generatePathForI18nPages({

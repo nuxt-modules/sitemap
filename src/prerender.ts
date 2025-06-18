@@ -9,10 +9,10 @@ import { dirname } from 'pathe'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
 import { withSiteUrl } from 'nuxt-site-config/kit'
-import { extractSitemapMetaFromHtml } from './util/extractSitemapMetaFromHtml'
+import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { splitForLocales } from './runtime/utils-pure'
-import { resolveNitroPreset } from './util/kit'
+import { resolveNitroPreset } from './utils-internal/kit'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -91,7 +91,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
         }
       }
 
-      route._sitemap = defu(extractSitemapMetaFromHtml(html, {
+      route._sitemap = defu(parseHtmlExtractSitemapMeta(html, {
         images: options.discoverImages,
         videos: options.discoverVideos,
         // TODO configurable?
