@@ -8,7 +8,6 @@ export default defineNuxtConfig({
   site: {
     url: 'https://nuxtseo.com',
   },
-  debug: process.env.NODE_ENV === 'test',
   sitemap: {
     autoLastmod: false,
     credits: false,
