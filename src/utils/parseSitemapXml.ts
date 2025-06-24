@@ -1,4 +1,3 @@
-import { XMLParser } from 'fast-xml-parser'
 import type { SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
 
 interface ParsedUrl {
@@ -89,16 +88,6 @@ export interface SitemapParseResult {
   urls: SitemapUrlInput[]
   warnings: SitemapWarning[]
 }
-
-const parser = new XMLParser({
-  isArray: (tagName: string): boolean =>
-    ['url', 'image', 'video', 'link', 'tag', 'price'].includes(tagName),
-  removeNSPrefix: true,
-  parseAttributeValue: false,
-  ignoreAttributes: false,
-  attributeNamePrefix: '',
-  trimValues: true,
-})
 
 function isValidString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -507,14 +496,25 @@ function extractUrlFromParsedElement(
   return filteredUrlObj as SitemapUrlInput
 }
 
-export function parseSitemapXml(xml: string): SitemapParseResult {
+export async function parseSitemapXml(xml: string): Promise<SitemapParseResult> {
   const warnings: SitemapWarning[] = []
 
   if (!xml) {
     throw new Error('Empty XML input provided')
   }
+  const { XMLParser } = await import('fast-xml-parser')
+  const parser = new XMLParser({
+    isArray: (tagName: string): boolean =>
+      ['url', 'image', 'video', 'link', 'tag', 'price'].includes(tagName),
+    removeNSPrefix: true,
+    parseAttributeValue: false,
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    trimValues: true,
+  })
 
   try {
+
     const parsed = parser.parse(xml) as ParsedRoot
 
     if (!parsed?.urlset) {

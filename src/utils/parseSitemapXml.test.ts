@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { parseSitemapXml } from './parseSitemapXML'
+import { parseSitemapXml } from './parseSitemapXml'
 
 describe('parseSitemapXml', () => {
-  it('should extract loc, lastmod, changefreq, priority, images, videos, alternatives, and news from XML', () => {
+  it('should extract loc, lastmod, changefreq, priority, images, videos, alternatives, and news from XML', async () => {
     const xml = `
       <urlset>
         <url>
@@ -32,7 +32,7 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`
       [
         {
@@ -73,7 +73,7 @@ describe('parseSitemapXml', () => {
     `)
   })
 
-  it('should handle missing optional fields', () => {
+  it('should handle missing optional fields', async () => {
     const xml = `
       <urlset>
         <url>
@@ -83,7 +83,7 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`
       [
         {
@@ -95,7 +95,7 @@ describe('parseSitemapXml', () => {
     `)
   })
 
-  it('should handle multiple images and videos', () => {
+  it('should handle multiple images and videos', async () => {
     const xml = `
       <urlset>
         <url>
@@ -121,7 +121,7 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`
       [
         {
@@ -153,7 +153,7 @@ describe('parseSitemapXml', () => {
     `)
   })
 
-  it('should handle missing loc, lastmod, and changefreq', () => {
+  it('should handle missing loc, lastmod, and changefreq', async () => {
     const xml = `
       <urlset>
         <url>
@@ -163,16 +163,16 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`[]`)
   })
 
-  it('should throw error if no URLs are found', () => {
+  it('should throw error if no URLs are found', async () => {
     const xml = '<urlset></urlset>'
-    expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+    await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
   })
 
-  it('should handle malformed XML', () => {
+  it('should handle malformed XML', async () => {
     const xml = `
       <urlset>
         <url>
@@ -182,11 +182,11 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`[]`)
   })
 
-  it('should handle XML with unexpected tags', () => {
+  it('should handle XML with unexpected tags', async () => {
     const xml = `
       <urlset>
         <url>
@@ -195,7 +195,7 @@ describe('parseSitemapXml', () => {
         </url>
       </urlset>
     `
-    const result = parseSitemapXml(xml)
+    const result = await parseSitemapXml(xml)
     expect(result.urls).toMatchInlineSnapshot(`
       [
         {
@@ -206,27 +206,27 @@ describe('parseSitemapXml', () => {
   })
 
   describe('malformed XML and edge cases', () => {
-    it('should throw error for completely invalid XML', () => {
+    it('should throw error for completely invalid XML', async () => {
       const xml = 'not xml at all'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for XML with invalid structure', () => {
+    it('should throw error for XML with invalid structure', async () => {
       const xml = '<invalid><structure>'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for XML without urlset', () => {
+    it('should throw error for XML without urlset', async () => {
       const xml = '<root><other>content</other></root>'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for empty XML', () => {
+    it('should throw error for empty XML', async () => {
       const xml = ''
-      expect(() => parseSitemapXml(xml)).toThrow('Empty XML input provided')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('Empty XML input provided')
     })
 
-    it('should handle XML with unclosed tags', () => {
+    it('should handle XML with unclosed tags', async () => {
       const xml = `
         <urlset>
           <url>
@@ -235,11 +235,11 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toEqual([])
     })
 
-    it('should handle XML with CDATA sections', () => {
+    it('should handle XML with CDATA sections', async () => {
       const xml = `
         <urlset>
           <url>
@@ -248,7 +248,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toMatchInlineSnapshot(`
         [
           {
@@ -259,7 +259,7 @@ describe('parseSitemapXml', () => {
       `)
     })
 
-    it('should handle XML with HTML entities', () => {
+    it('should handle XML with HTML entities', async () => {
       const xml = `
         <urlset>
           <url>
@@ -268,7 +268,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toMatchInlineSnapshot(`
         [
           {
@@ -281,7 +281,7 @@ describe('parseSitemapXml', () => {
   })
 
   describe('XML namespace handling', () => {
-    it('should handle mixed namespace prefixes', () => {
+    it('should handle mixed namespace prefixes', async () => {
       const xml = `
         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                 xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
@@ -300,7 +300,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0]).toMatchObject({
         loc: 'http://example.com/',
         images: [{ loc: 'http://example.com/image.jpg' }],
@@ -313,7 +313,7 @@ describe('parseSitemapXml', () => {
       })
     })
 
-    it('should handle different namespace prefixes', () => {
+    it('should handle different namespace prefixes', async () => {
       const xml = `
         <sitemap:urlset xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9"
                         xmlns:img="http://www.google.com/schemas/sitemap-image/1.1">
@@ -325,7 +325,7 @@ describe('parseSitemapXml', () => {
           </sitemap:url>
         </sitemap:urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toMatchInlineSnapshot(`
         [
           {
@@ -342,7 +342,7 @@ describe('parseSitemapXml', () => {
   })
 
   describe('complex video attributes and nested elements', () => {
-    it('should handle video with all optional attributes', () => {
+    it('should handle video with all optional attributes', async () => {
       const xml = `
         <urlset>
           <url>
@@ -367,7 +367,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].videos[0]).toMatchObject({
         title: 'Complete Video',
         thumbnail_loc: 'http://example.com/thumb.jpg',
@@ -386,7 +386,7 @@ describe('parseSitemapXml', () => {
       })
     })
 
-    it('should handle video with restrictions and platform attributes', () => {
+    it('should handle video with restrictions and platform attributes', async () => {
       const xml = `
         <urlset>
           <url>
@@ -408,7 +408,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].videos[0]).toMatchObject({
         title: 'Restricted Video',
         restriction: {
@@ -422,7 +422,7 @@ describe('parseSitemapXml', () => {
       })
     })
 
-    it('should handle video with price information', () => {
+    it('should handle video with price information', async () => {
       const xml = `
         <urlset>
           <url>
@@ -446,14 +446,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].videos[0].price).toEqual([
         { price: '3.99', currency: 'USD', type: 'rent' },
         { price: '9.99', currency: 'USD', type: 'purchase' },
       ])
     })
 
-    it('should handle video with uploader information', () => {
+    it('should handle video with uploader information', async () => {
       const xml = `
         <urlset>
           <url>
@@ -471,14 +471,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].videos[0].uploader).toEqual({
         uploader: 'John Doe',
         info: 'http://example.com/user',
       })
     })
 
-    it('should filter out invalid videos missing required fields', () => {
+    it('should filter out invalid videos missing required fields', async () => {
       const xml = `
         <urlset>
           <url>
@@ -501,14 +501,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].videos).toHaveLength(1)
       expect(result.urls[0].videos[0].title).toBe('Complete Video')
     })
   })
 
   describe('empty and null values', () => {
-    it('should handle empty values gracefully', () => {
+    it('should handle empty values gracefully', async () => {
       const xml = `
         <urlset>
           <url>
@@ -519,7 +519,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toMatchInlineSnapshot(`
         [
           {
@@ -529,7 +529,7 @@ describe('parseSitemapXml', () => {
       `)
     })
 
-    it('should handle whitespace-only values', () => {
+    it('should handle whitespace-only values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -539,13 +539,13 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].loc).toBe('http://example.com/') // trimValues is true so whitespace is trimmed
       expect(result.urls[0]).not.toHaveProperty('lastmod')
       expect(result.urls[0]).not.toHaveProperty('changefreq')
     })
 
-    it('should handle multiple URLs with mixed validity', () => {
+    it('should handle multiple URLs with mixed validity', async () => {
       const xml = `
         <urlset>
           <url>
@@ -566,13 +566,13 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(2)
       expect(result.urls[0].loc).toBe('http://example.com/1')
       expect(result.urls[1].loc).toBe('http://example.com/3')
     })
 
-    it('should handle special characters in URLs', () => {
+    it('should handle special characters in URLs', async () => {
       const xml = `
         <urlset>
           <url>
@@ -589,14 +589,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(3)
       expect(result.urls[0].loc).toBe('http://example.com/path with spaces')
       expect(result.urls[1].loc).toBe('http://example.com/中文路径')
       expect(result.urls[2].loc).toBe('http://example.com/émoji-🚀-path')
     })
 
-    it('should handle images without loc', () => {
+    it('should handle images without loc', async () => {
       const xml = `
         <urlset>
           <url>
@@ -613,12 +613,12 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].images).toHaveLength(1)
       expect(result.urls[0].images[0].loc).toBe('http://example.com/valid.jpg')
     })
 
-    it('should handle news with missing required fields', () => {
+    it('should handle news with missing required fields', async () => {
       const xml = `
         <urlset>
           <url>
@@ -641,14 +641,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0]).toHaveProperty('news')
       expect(result.urls[1]).not.toHaveProperty('news')
     })
   })
 
   describe('priority and changefreq edge cases', () => {
-    it('should handle various priority formats', () => {
+    it('should handle various priority formats', async () => {
       const xml = `
         <urlset>
           <url>
@@ -669,14 +669,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].priority).toBe(0.0)
       expect(result.urls[1].priority).toBe(1.0)
       expect(result.urls[2].priority).toBe(0.5)
       expect(result.urls[3]).not.toHaveProperty('priority') // Invalid priority is filtered out
     })
 
-    it('should handle all valid changefreq values', () => {
+    it('should handle all valid changefreq values', async () => {
       const frequencies = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']
       const xml = `
         <urlset>
@@ -688,7 +688,7 @@ describe('parseSitemapXml', () => {
           `).join('')}
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       frequencies.forEach((freq, i) => {
         expect(result.urls[i].changefreq).toBe(freq)
       })
@@ -696,7 +696,7 @@ describe('parseSitemapXml', () => {
   })
 
   describe('alternatives handling', () => {
-    it('should handle multiple alternatives with different hreflang values', () => {
+    it('should handle multiple alternatives with different hreflang values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -724,7 +724,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].alternatives).toHaveLength(4)
       expect(result.urls[0].alternatives).toEqual([
         { hreflang: 'en', href: 'http://example.com/en' },
@@ -734,7 +734,7 @@ describe('parseSitemapXml', () => {
       ])
     })
 
-    it('should filter out invalid alternative links', () => {
+    it('should filter out invalid alternative links', async () => {
       const xml = `
         <urlset>
           <url>
@@ -746,34 +746,34 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls[0].alternatives).toHaveLength(1)
       expect(result.urls[0].alternatives[0]).toEqual({ hreflang: 'en', href: 'http://example.com/en' })
     })
   })
 
   describe('parseSitemapXml with warnings', () => {
-    it('should throw error for invalid XML', () => {
+    it('should throw error for invalid XML', async () => {
       const xml = 'not xml at all'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for empty XML', () => {
+    it('should throw error for empty XML', async () => {
       const xml = ''
-      expect(() => parseSitemapXml(xml)).toThrow('Empty XML input provided')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('Empty XML input provided')
     })
 
-    it('should throw error for XML without urlset', () => {
+    it('should throw error for XML without urlset', async () => {
       const xml = '<root><other>content</other></root>'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for sitemap with no URL entries', () => {
+    it('should throw error for sitemap with no URL entries', async () => {
       const xml = '<urlset></urlset>'
-      expect(() => parseSitemapXml(xml)).toThrow('XML does not contain a valid urlset element')
+      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should return warnings for URLs missing loc', () => {
+    it('should return warnings for URLs missing loc', async () => {
       const xml = `
         <urlset>
           <url>
@@ -781,7 +781,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toEqual([])
       expect(result.warnings).toHaveLength(2)
       expect(result.warnings[0].type).toBe('validation')
@@ -789,7 +789,7 @@ describe('parseSitemapXml', () => {
       expect(result.warnings[1].message).toBe('No valid URLs found in sitemap after validation')
     })
 
-    it('should return warnings for invalid changefreq values', () => {
+    it('should return warnings for invalid changefreq values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -798,7 +798,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
       expect(result.warnings[0].type).toBe('validation')
@@ -806,7 +806,7 @@ describe('parseSitemapXml', () => {
       expect(result.warnings[0].context?.field).toBe('changefreq')
     })
 
-    it('should return warnings for out-of-range priority values', () => {
+    it('should return warnings for out-of-range priority values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -815,7 +815,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.urls[0].priority).toBe(1.0) // clamped
       expect(result.warnings).toHaveLength(1)
@@ -823,7 +823,7 @@ describe('parseSitemapXml', () => {
       expect(result.warnings[0].message).toBe('Priority value should be between 0.0 and 1.0, clamping to valid range')
     })
 
-    it('should return warnings for videos missing required fields', () => {
+    it('should return warnings for videos missing required fields', async () => {
       const xml = `
         <urlset>
           <url>
@@ -835,7 +835,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.urls[0]).not.toHaveProperty('videos')
       expect(result.warnings).toHaveLength(1)
@@ -843,7 +843,7 @@ describe('parseSitemapXml', () => {
       expect(result.warnings[0].message).toContain('Video missing required fields')
     })
 
-    it('should return warnings for invalid video rating values', () => {
+    it('should return warnings for invalid video rating values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -858,14 +858,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
       expect(result.warnings[0].type).toBe('validation')
       expect(result.warnings[0].message).toBe('Video rating should be between 0.0 and 5.0')
     })
 
-    it('should return warnings for invalid video family_friendly values', () => {
+    it('should return warnings for invalid video family_friendly values', async () => {
       const xml = `
         <urlset>
           <url>
@@ -880,14 +880,14 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
       expect(result.warnings[0].type).toBe('validation')
       expect(result.warnings[0].message).toBe('Invalid video family_friendly value, should be "yes" or "no"')
     })
 
-    it('should return warnings for news entries missing required fields', () => {
+    it('should return warnings for news entries missing required fields', async () => {
       const xml = `
         <urlset>
           <url>
@@ -899,7 +899,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(1)
       expect(result.urls[0]).not.toHaveProperty('news')
       expect(result.warnings).toHaveLength(1)
@@ -907,7 +907,7 @@ describe('parseSitemapXml', () => {
       expect(result.warnings[0].message).toContain('News entry missing required fields')
     })
 
-    it('should collect multiple warnings for different issues', () => {
+    it('should collect multiple warnings for different issues', async () => {
       const xml = `
         <urlset>
           <url>
@@ -928,7 +928,7 @@ describe('parseSitemapXml', () => {
           </url>
         </urlset>
       `
-      const result = parseSitemapXml(xml)
+      const result = await parseSitemapXml(xml)
       expect(result.urls).toHaveLength(2) // Only valid URLs
       expect(result.warnings.length).toBeGreaterThan(3) // Multiple warnings
 

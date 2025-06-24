@@ -10,6 +10,7 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { logger } from '../../../utils-pure'
+import { parseSitemapXml } from '@nuxtjs/sitemap/utils'
 
 async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
   const isExternalUrl = !url.startsWith('/')
@@ -104,8 +105,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       urls = res.urls || res
     }
     else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
-      const { parseSitemapXml } = await import('@nuxtjs/sitemap/utils')
-      const result = parseSitemapXml(res)
+      const result = await parseSitemapXml(res)
       urls = result.urls
     }
     return {
