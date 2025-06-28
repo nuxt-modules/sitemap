@@ -514,7 +514,6 @@ export async function parseSitemapXml(xml: string): Promise<SitemapParseResult> 
   })
 
   try {
-
     const parsed = parser.parse(xml) as ParsedRoot
 
     if (!parsed?.urlset) {
