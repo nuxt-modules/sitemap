@@ -270,10 +270,12 @@ export default defineNuxtModule<ModuleOptions>({
       }
       // this is added in v4 of Nuxt Robots
       if (needsRobotsPolyfill) {
+        nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
+        nuxt.options.nitro.alias['#internal/nuxt-robots'] = resolve('./runtime/server/robots-polyfill')
         addServerImports([{
-          name: 'getPathRobotConfigPolyfill',
+          name: 'getPathRobotConfig',
           as: 'getPathRobotConfig',
-          from: resolve('./runtime/server/composables/getPathRobotConfigPolyfill'),
+          from: resolve('./runtime/server/robots-polyfill/getPathRobotConfig'),
         }])
       }
     })

@@ -15,7 +15,8 @@ import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
-import { getPathRobotConfig } from '#imports' // can't solve this
+// @ts-expect-error virtual
+import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 
