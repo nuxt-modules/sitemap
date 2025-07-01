@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^2.5.0",
-    "@nuxt/kit": "^3.17.5",
+    "@nuxt/kit": "^3.17.6",
     "chalk": "^5.4.1",
     "defu": "^6.1.4",
     "fast-xml-parser": "^5.2.5",
@@ -97,7 +97,7 @@
     "eslint-plugin-n": "^17.20.0",
     "execa": "^9.6.0",
     "happy-dom": "^18.0.1",
-    "nuxt": "^3.17.5",
+    "nuxt": "^3.17.6",
     "nuxt-i18n-micro": "^1.87.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
