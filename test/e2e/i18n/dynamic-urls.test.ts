@@ -36,8 +36,8 @@ describe('i18n dynamic urls', () => {
               <loc>https://nuxtseo.com/endless-dungeon</loc>
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/endless-dungeon" />
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/endless-dungeon" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/endless-dungeon" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/endless-dungeon" />
+              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/endless-dungeon" />
           </url>
           <url>
               <loc>https://nuxtseo.com/english-url</loc>
@@ -49,8 +49,8 @@ describe('i18n dynamic urls', () => {
               <changefreq>weekly</changefreq>
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/__sitemap/url" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
+              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
           </url>
           <url>
               <loc>https://www.somedomain.com/abc/def</loc>

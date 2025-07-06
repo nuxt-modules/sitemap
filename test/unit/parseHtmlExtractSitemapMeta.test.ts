@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
+import { parseHtmlExtractSitemapMeta } from '../../src/utils/parseHtmlExtractSitemapMeta'
 
 describe('parseHtmlExtractSitemapMeta', () => {
   it('lastmod', async () => {

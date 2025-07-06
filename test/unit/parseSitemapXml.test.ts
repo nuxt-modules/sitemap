@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseSitemapXml } from './parseSitemapXml'
+import { parseSitemapXml } from '../../src/utils/parseSitemapXml'
 
 describe('parseSitemapXml', () => {
   it('should extract loc, lastmod, changefreq, priority, images, videos, alternatives, and news from XML', async () => {

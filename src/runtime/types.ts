@@ -372,14 +372,14 @@ export interface SitemapSourcesHookCtx extends NitroBaseHook {
   sources: (SitemapSourceBase | SitemapSourceResolved)[]
 }
 
-export type Changefreq =
-  | 'always'
-  | 'hourly'
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'yearly'
-  | 'never'
+export type Changefreq
+  = | 'always'
+    | 'hourly'
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'yearly'
+    | 'never'
 
 export interface SitemapUrl {
   loc: string

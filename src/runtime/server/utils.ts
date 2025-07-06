@@ -7,7 +7,7 @@ export * from '../utils-pure'
 
 // XML escape function for content inserted into XML/XSL
 export function xmlEscape(str: string): string {
-  return str
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

@@ -78,8 +78,8 @@ describe('i18n pages with prefix strategy', () => {
               <changefreq>weekly</changefreq>
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en/__sitemap/url" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
+              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
           </url>
           <url>
               <loc>https://nuxtseo.com/en/services/coaching</loc>
@@ -98,16 +98,16 @@ describe('i18n pages with prefix strategy', () => {
               <changefreq>weekly</changefreq>
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en/__sitemap/url" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
+              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr/__sitemap/url</loc>
               <changefreq>weekly</changefreq>
               <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en/__sitemap/url" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
               <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/__sitemap/url" />
+              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/__sitemap/url" />
           </url>
           <url>
               <loc>https://nuxtseo.com/fr/offres/developement</loc>
