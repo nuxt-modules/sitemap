@@ -9,6 +9,11 @@ overrides:
   '@nuxt/schema': npm:@nuxt/schema-nightly@4.0.0-29198818.0344123b
   nuxt: npm:nuxt-nightly@4.0.0-29198818.0344123b
 
+patchedDependencies:
+  '@nuxtjs/mdc':
+    hash: 695f0f7fc645a2f0a30dd99ae257a9438ad6c9338a903241860bdafc0cbd1a83
+    path: patches/@nuxtjs__mdc.patch
+
 importers:
 
   .:
@@ -86,6 +91,9 @@ importers:
       '@nuxtjs/robots':
         specifier: ^5.3.0
         version: 5.3.0(magicast@0.3.5)(vue@3.5.17(typescript@5.8.3))
+      '@nuxtjs/sitemap':
+        specifier: workspace:*
+        version: 'link:'
       better-sqlite3:
         specifier: ^12.2.0
         version: 12.2.0
@@ -831,8 +839,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nuxt/cli-nightly@3.26.0-20250707-215221-76dd3eb':
-    resolution: {integrity: sha512-TkuSFJttG9UiFcGATxUFSRu4t7vc81NiA9VMom2Wz1P11mHxr7h7DU6p1HK5K+h3PXUMCEHfo21spBW9g1sTUw==}
+  '@nuxt/cli-nightly@3.26.0-20250708-095704-048ad16':
+    resolution: {integrity: sha512-nza12OcEhenk5xr1lhfd+dtcI9rbBzQQiMzyNlduOkzMxCcJPdzsY7aEHpkminnplAKs2fv7n722BhxZxU9bRA==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -7792,7 +7800,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@nuxt/cli-nightly@3.26.0-20250707-215221-76dd3eb(magicast@0.3.5)':
+  '@nuxt/cli-nightly@3.26.0-20250708-095704-048ad16(magicast@0.3.5)':
     dependencies:
       c12: 3.0.4(magicast@0.3.5)
       citty: 0.1.6
@@ -7847,14 +7855,14 @@ snapshots:
       std-env: 3.9.0
       tinyexec: 1.0.1
       ufo: 1.6.1
-      youch: 4.1.0-beta.8
+      youch: 4.1.0-beta.10
     transitivePeerDependencies:
       - magicast
 
   '@nuxt/content@3.6.3(better-sqlite3@12.2.0)(magicast@0.3.5)(vue-component-type-helpers@2.2.10)':
     dependencies:
       '@nuxt/kit': '@nuxt/kit-nightly@4.0.0-29198818.0344123b(magicast@0.3.5)'
-      '@nuxtjs/mdc': 0.17.0(magicast@0.3.5)
+      '@nuxtjs/mdc': 0.17.0(patch_hash=695f0f7fc645a2f0a30dd99ae257a9438ad6c9338a903241860bdafc0cbd1a83)(magicast@0.3.5)
       '@shikijs/langs': 3.7.0
       '@sqlite.org/sqlite-wasm': 3.50.1-build1
       '@webcontainer/env': 1.1.1
@@ -8573,7 +8581,7 @@ snapshots:
       - supports-color
       - vue
 
-  '@nuxtjs/mdc@0.17.0(magicast@0.3.5)':
+  '@nuxtjs/mdc@0.17.0(patch_hash=695f0f7fc645a2f0a30dd99ae257a9438ad6c9338a903241860bdafc0cbd1a83)(magicast@0.3.5)':
     dependencies:
       '@nuxt/kit': '@nuxt/kit-nightly@4.0.0-29198818.0344123b(magicast@0.3.5)'
       '@shikijs/langs': 3.7.0
@@ -13109,7 +13117,7 @@ snapshots:
 
   nuxt-nightly@4.0.0-29198818.0344123b(@parcel/watcher@2.5.1)(@types/node@24.0.1)(@vue/compiler-sfc@3.5.17)(better-sqlite3@12.2.0)(db0@0.3.2(better-sqlite3@12.2.0))(eslint@9.30.1(jiti@2.4.2))(ioredis@5.6.1)(lightningcss@1.30.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.43.0)(terser@5.42.0)(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(yaml@2.8.0))(vue-tsc@3.0.1(typescript@5.8.3))(yaml@2.8.0):
     dependencies:
-      '@nuxt/cli': '@nuxt/cli-nightly@3.26.0-20250707-215221-76dd3eb(magicast@0.3.5)'
+      '@nuxt/cli': '@nuxt/cli-nightly@3.26.0-20250708-095704-048ad16(magicast@0.3.5)'
       '@nuxt/devalue': 2.0.2
       '@nuxt/devtools': 2.6.2(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(yaml@2.8.0))(vue@3.5.17(typescript@5.8.3))
       '@nuxt/kit': '@nuxt/kit-nightly@4.0.0-29198818.0344123b(magicast@0.3.5)'
@@ -13232,7 +13240,7 @@ snapshots:
 
   nuxt-nightly@4.0.0-29198818.0344123b(@parcel/watcher@2.5.1)(@types/node@24.0.1)(@vue/compiler-sfc@3.5.17)(better-sqlite3@12.2.0)(db0@0.3.2(better-sqlite3@12.2.0))(eslint@9.30.1(jiti@2.4.2))(ioredis@5.6.1)(lightningcss@1.30.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.44.2)(terser@5.42.0)(typescript@5.8.3)(vite@7.0.2(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(yaml@2.8.0))(vue-tsc@3.0.1(typescript@5.8.3))(yaml@2.8.0):
     dependencies:
-      '@nuxt/cli': '@nuxt/cli-nightly@3.26.0-20250707-215221-76dd3eb(magicast@0.3.5)'
+      '@nuxt/cli': '@nuxt/cli-nightly@3.26.0-20250708-095704-048ad16(magicast@0.3.5)'
       '@nuxt/devalue': 2.0.2
       '@nuxt/devtools': 2.6.2(vite@7.0.2(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(yaml@2.8.0))(vue@3.5.17(typescript@5.8.3))
       '@nuxt/kit': '@nuxt/kit-nightly@4.0.0-29198818.0344123b(magicast@0.3.5)'

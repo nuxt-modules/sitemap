@@ -28,6 +28,7 @@ export default defineConfig({
           exclude: [
             '**/node_modules/**',
           ],
+          globalSetup: './test/e2e/global-setup.ts',
         },
       }),
     ],
