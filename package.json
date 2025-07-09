@@ -117,6 +117,9 @@
       "esbuild",
       "unrs-resolver",
       "vue-demi"
-    ]
+    ],
+    "patchedDependencies": {
+      "@nuxtjs/mdc": "patches/@nuxtjs__mdc.patch"
+    }
   }
 }
