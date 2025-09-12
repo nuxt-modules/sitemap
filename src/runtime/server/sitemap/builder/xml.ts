@@ -36,9 +36,12 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
   }
 
   if (url.priority !== undefined) {
-    const priorityValue = Number.parseFloat(String(url.priority))
-    const formattedPriority = priorityValue % 1 === 0 ? String(priorityValue) : priorityValue.toFixed(1)
-    parts[partIndex++] = `        <priority>${formattedPriority}</priority>`
+    let priorityValue = Number.parseFloat(String(url.priority))
+    if (priorityValue >= 1) {
+      priorityValue = 1.0
+    }
+    // const formattedPriority = priorityValue % 1 === 0 ? String(priorityValue) : priorityValue.toFixed(1)
+    parts[partIndex++] = `        <priority>${priorityValue}</priority>`
   }
 
   // Process other properties
