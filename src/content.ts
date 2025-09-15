@@ -1,5 +1,5 @@
 import type { Collection } from '@nuxt/content'
-import type { TypeOf, ZodRawShape } from 'zod'
+import type { TypeOf } from 'zod'
 import { z } from '@nuxt/content'
 
 export const schema = z.object({
@@ -40,7 +40,7 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-export function asSitemapCollection<T extends ZodRawShape>(collection: Collection<T>): Collection<T> {
+export function asSitemapCollection<T>(collection: Collection<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
