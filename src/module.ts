@@ -71,7 +71,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     '@nuxtjs/robots': {
-      version: '>=4'
+      version: '>=4',
       optional: true,
     }
   },
