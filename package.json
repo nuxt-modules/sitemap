@@ -59,7 +59,7 @@
     "prepare:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/i18n && nuxi prepare test/fixtures/i18n-micro",
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
-    "release": "pnpm build && bumpp && pnpm -r publish",
+    "release": "pnpm build && bumpp -x \"npx changelogen --output=CHANGELOG.md\"",
     "test": "vitest run && pnpm run test:attw",
     "test:unit": "vitest --project=unit",
     "test:attw": "attw --pack",
