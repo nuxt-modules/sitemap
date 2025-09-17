@@ -65,7 +65,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   for (const sitemapName in sitemaps) {
     if (sitemapName === 'index' || sitemapName === 'chunks') continue
 
-    const sitemapConfig = sitemaps[sitemapName]
+    const sitemapConfig = sitemaps[sitemapName]!
 
     // Check if this sitemap should be chunked
     if (sitemapConfig.chunks || sitemapConfig._isChunking) {
@@ -131,7 +131,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   const entries: SitemapIndexEntry[] = []
   // Process regular chunks
   for (const name in chunks) {
-    const sitemap = chunks[name]
+    const sitemap = chunks[name]!
     const entry: SitemapIndexEntry = {
       _sitemapName: name,
       sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${name}.xml`)),
@@ -150,8 +150,8 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
   // Process chunked named sitemaps
   for (const sitemapName in sitemaps) {
-    if (sitemapName !== 'index' && sitemaps[sitemapName]._isChunking) {
-      const sitemapConfig = sitemaps[sitemapName]
+    const sitemapConfig = sitemaps[sitemapName]!
+    if (sitemapName !== 'index' && sitemapConfig._isChunking) {
       const chunkSize = sitemapConfig._chunkSize || defaultSitemapsChunkSize || 1000
 
       // We need to determine how many chunks this sitemap will have

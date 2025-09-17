@@ -2,6 +2,7 @@
 import { joinURL } from 'ufo'
 import type { SitemapSourceResolved } from '../../src/runtime/types'
 import { data } from '../composables/state'
+import { computed } from 'vue'
 
 const props = defineProps<{ source: SitemapSourceResolved, showContext?: boolean }>()
 

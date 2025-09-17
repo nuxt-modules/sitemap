@@ -31,7 +31,7 @@ function resolveSitemapUrl(sitemapName: string) {
     return `${data.value.nitroOrigin}sitemap.xml`
   if (sitemapName === 'index')
     return `${data.value.nitroOrigin}sitemap_index.xml`
-  return joinURL(data.value.nitroOrigin, data.value.runtimeConfig?.sitemapsPathPrefix, `${sitemapName}-sitemap.xml`)
+  return joinURL(data.value.nitroOrigin, data.value.runtimeConfig?.sitemapsPathPrefix || '', `${sitemapName}-sitemap.xml`)
 }
 
 function resolveSitemapOptions(definition: SitemapDefinition) {

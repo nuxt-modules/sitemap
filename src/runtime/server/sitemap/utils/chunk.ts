@@ -10,8 +10,9 @@ export interface ChunkInfo {
 export function parseChunkInfo(
   sitemapName: string,
   sitemaps: ModuleRuntimeConfig['sitemaps'],
-  defaultChunkSize: number = 1000,
+  defaultChunkSize?: number | false,
 ): ChunkInfo {
+  defaultChunkSize = defaultChunkSize || 1000
   // Check if this is an auto-chunked sitemap (numeric name)
   if (typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))) {
     return {

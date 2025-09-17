@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import type { ParsedContent } from '@nuxt/content'
+import type { ParsedContentv2 } from '@nuxt/content'
 import type { NitroApp } from 'nitropack/types'
 import { defineNitroPlugin } from 'nitropack/runtime'
 import type { SitemapUrl } from '../../types'
@@ -8,9 +8,9 @@ import { useSitemapRuntimeConfig } from '../utils'
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSitemapRuntimeConfig()
   // @ts-expect-error untyped
-  nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContent) => {
+  nitroApp.hooks.hook('content:file:afterParse', async (content: ParsedContentv2) => {
     const validExtensions = ['md', 'mdx']
-    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension) || content._partial || content.robots === false)
+    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension || '') || content._partial || content.robots === false)
       return
 
     // add any top level images
