@@ -53,6 +53,7 @@
     "lint:type": "tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "client:build": "nuxi generate client",
+    "prepack": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "client:dev": "nuxi dev client --port 3300",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "dev": "nuxi dev playground",
