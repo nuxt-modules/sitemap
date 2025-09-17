@@ -70,6 +70,10 @@ export default defineNuxtModule<ModuleOptions>({
       version: '>=2',
       optional: true,
     },
+    '@nuxtjs/robots': {
+      version: '>=4'
+      optional: true,
+    }
   },
   defaults: {
     enabled: true,
