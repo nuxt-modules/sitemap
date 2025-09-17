@@ -39,6 +39,7 @@ import {
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { normalizeFilters } from './utils-internal/filter'
+import { isPathFile } from 'nuxt-site-config/urls'
 
 export type * from './runtime/types'
 
@@ -755,11 +756,8 @@ export {}
           ...prerenderUrls,
           ...((await nitroPromise)._prerenderedRoutes || [])
             .filter((r) => {
-              const lastSegment = r.route.split('/').pop()
-              // check for file in lastSegment using regex
-              const isExplicitFile = !!(lastSegment?.match(/\.[0-9a-z]+$/i)?.[0])
               // avoid adding fallback pages to sitemap
-              if (isExplicitFile || r.error || ['/200.html', '/404.html', '/index.html'].includes(r.route))
+              if (['/200.html', '/404.html', '/index.html'].includes(r.route) || r.error || isPathFile(r.route))
                 return false
               return r.contentType?.includes('text/html')
             })
