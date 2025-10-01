@@ -1,4 +1,12 @@
-import type { SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
+import type {
+  SitemapUrlInput,
+  VideoEntry,
+  ImageEntry,
+  AlternativeEntry,
+  GoogleNewsEntry,
+  SitemapStrict,
+  VideoEntryPrice
+} from '../runtime/types'
 
 interface ParsedUrl {
   loc?: string
@@ -384,7 +392,7 @@ function extractUrlFromParsedElement(
               return {
                 price: String(priceValue),
                 currency: price.currency,
-                type: price.type as NonNullable<VideoEntry['price']>[number]['type'],
+                type: price.type as VideoEntryPrice['type'],
               }
             })
             .filter((p): p is NonNullable<typeof p> => p !== null)

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck this is for v2, consider it was stable and the types will not match when running type tests
 import { defu } from 'defu'
 import type { ParsedContentv2 } from '@nuxt/content'
 import type { NitroApp } from 'nitropack/types'

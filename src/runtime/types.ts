@@ -225,6 +225,8 @@ interface LocaleObject extends Record<string, any> {
     cache?: boolean
   }[]
   isCatchallLocale?: boolean
+  _sitemap?: string
+  _hreflang?: string
   /**
    * @deprecated in v9, use `language` instead
    */
@@ -234,7 +236,7 @@ interface LocaleObject extends Record<string, any> {
 
 export interface AutoI18nConfig {
   differentDomains?: boolean
-  locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
+  locales: LocaleObject[]
   defaultLocale: string
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
   pages?: Record<string, Record<string, string | false>>
@@ -245,7 +247,11 @@ export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPr
   isNuxtContentDocumentDriven: boolean
   sitemaps: {
     index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] }
-  } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
+  }
+  & Record<
+    string,
+      Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }
+  >
   autoI18n?: AutoI18nConfig
   isMultiSitemap: boolean
   isI18nMapped: boolean
@@ -411,12 +417,20 @@ export interface SitemapUrl {
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
   _sitemap?: string
+
+  /**
+   * Added these for sitemap.ts on or around line 199
+   * const newEntry: ResolvedSitemapUrl = preNormalizeEntry({})
+   */
+  _index?: number
+  _key?: string
+  _locale?: LocaleObject
 }
 
 export type SitemapStrict = Required<SitemapUrl>
 
 export interface AlternativeEntry {
-  hreflang: string
+  hreflang?: string
   href: string | URL
 }
 
@@ -455,6 +469,12 @@ export interface ImageEntry {
   license?: string | URL
 }
 
+export interface VideoEntryPrice {
+  price?: number | string
+  currency?: string
+  type?: 'rent' | 'purchase' | 'package' | 'subscription'
+}
+
 export interface VideoEntry {
   title: string
   thumbnail_loc: string | URL
@@ -469,11 +489,7 @@ export interface VideoEntry {
   family_friendly?: 'yes' | 'no' | boolean
   restriction?: Restriction
   platform?: Platform
-  price?: MaybeArray<{
-    price?: number | string
-    currency?: string
-    type?: 'rent' | 'purchase' | 'package' | 'subscription'
-  }>
+  price?: MaybeArray<VideoEntryPrice>
   requires_subscription?: 'yes' | 'no' | boolean
   uploader?: {
     uploader: string
