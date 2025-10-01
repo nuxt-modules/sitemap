@@ -6,16 +6,17 @@ import {
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import { useNitroOrigin } from '#site-config/server/composables/useNitroOrigin'
+import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
 
 export default defineEventHandler(async (e) => {
   const _runtimeConfig = useSitemapRuntimeConfig()
+  const siteConfig = getSiteConfig(e)
   const { sitemaps: _sitemaps } = _runtimeConfig
   const runtimeConfig = { ..._runtimeConfig }
   // @ts-expect-error hack
   delete runtimeConfig.sitemaps
   const globalSources = await globalSitemapSources()
-  const nitroOrigin = useNitroOrigin(e)
+  const nitroOrigin = getNitroOrigin(e)
   const sitemaps: Record<string, SitemapDefinition> = {}
   for (const s of Object.keys(_sitemaps)) {
     // resolve the sources
@@ -29,5 +30,6 @@ export default defineEventHandler(async (e) => {
     sitemaps,
     runtimeConfig,
     globalSources: await resolveSitemapSources(globalSources, e),
+    siteConfig: { ...siteConfig },
   }
 })
