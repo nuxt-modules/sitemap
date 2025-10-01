@@ -273,7 +273,7 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
     payload.lastmod = articleModifiedTime
   }
 
-  if (options?.alternatives && alternatives.length > 0 && (alternatives.length > 1 || alternatives[0].hreflang !== 'x-default')) {
+  if (options?.alternatives && alternatives.length > 0 && (alternatives.length > 1 || alternatives[0]?.hreflang !== 'x-default')) {
     payload.alternatives = alternatives
   }
 

@@ -3,6 +3,16 @@ import type { H3Event } from 'h3'
 import type { ParsedURL } from 'ufo'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 
+declare module 'nitropack/types' {
+  interface NitroApp {
+    _sitemapWarned?: boolean
+  }
+
+  interface NitroRouteConfig {
+    robots?: boolean
+  }
+}
+
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause
 // weird nitro issues
