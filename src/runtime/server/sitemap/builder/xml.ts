@@ -6,7 +6,7 @@ import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  VideoEntry
+  VideoEntry,
 } from '../../../types'
 import { xmlEscape } from '../../utils'
 
@@ -73,11 +73,11 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
         if (Array.isArray(value) && value.length > 0) {
           for (const img of value as ImageEntry[]) {
             parts[partIndex++] = '        <image:image>'
-            parts[partIndex++] = `            <image:loc>${escapeValueForXml(img.loc)}</image:loc>`
+            parts[partIndex++] = `            <image:loc>${escapeValueForXml(String(img.loc))}</image:loc>`
             if (img.title) parts[partIndex++] = `            <image:title>${escapeValueForXml(img.title)}</image:title>`
             if (img.caption) parts[partIndex++] = `            <image:caption>${escapeValueForXml(img.caption)}</image:caption>`
-            if (img.geo_location) parts[partIndex++] = `            <image:geo_location>${escapeValueForXml(img.geo_location)}</image:geo_location>`
-            if (img.license) parts[partIndex++] = `            <image:license>${escapeValueForXml(img.license)}</image:license>`
+            if (img.geoLocation) parts[partIndex++] = `            <image:geo_location>${escapeValueForXml(img.geoLocation)}</image:geo_location>`
+            if (img.license) parts[partIndex++] = `            <image:license>${escapeValueForXml(String(img.license))}</image:license>`
             parts[partIndex++] = '        </image:image>'
           }
         }
@@ -90,13 +90,14 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
             parts[partIndex++] = `            <video:title>${escapeValueForXml(video.title)}</video:title>`
 
             if (video.thumbnail_loc) {
-              parts[partIndex++] = `            <video:thumbnail_loc>${escapeValueForXml(video.thumbnail_loc)}</video:thumbnail_loc>`
+              parts[partIndex++] = `            <video:thumbnail_loc>${escapeValueForXml(String(video.thumbnail_loc))}</video:thumbnail_loc>`
             }
             parts[partIndex++] = `            <video:description>${escapeValueForXml(video.description)}</video:description>`
 
             if (video.content_loc) {
-              parts[partIndex++] = `            <video:content_loc>${escapeValueForXml(video.content_loc)}</video:content_loc>`
+              parts[partIndex++] = `            <video:content_loc>${escapeValueForXml(String(video.content_loc))}</video:content_loc>`
             }
+            // todo: check why this is here, player_loc is a string in definitions
             if (video.player_loc) {
               const attrs = video.player_loc.allow_embed ? ' allow_embed="yes"' : ''
               const autoplay = video.player_loc.autoplay ? ' autoplay="yes"' : ''
@@ -134,6 +135,7 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
             if (video.price) {
               const prices = Array.isArray(video.price) ? video.price : [video.price]
               for (const price of prices) {
+                if (!price.price) continue
                 const attrs: string[] = []
                 if (price.currency) attrs.push(`currency="${price.currency}"`)
                 if (price.type) attrs.push(`type="${price.type}"`)
@@ -142,7 +144,7 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
               }
             }
             if (video.uploader) {
-              const info = video.uploader.info ? ` info="${escapeValueForXml(video.uploader.info)}"` : ''
+              const info = video.uploader.info ? ` info="${escapeValueForXml(String(video.uploader.info))}"` : ''
               parts[partIndex++] = `            <video:uploader${info}>${escapeValueForXml(video.uploader.uploader)}</video:uploader>`
             }
             if (video.live !== undefined) {
@@ -154,9 +156,12 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
                 parts[partIndex++] = `            <video:tag>${escapeValueForXml(tag)}</video:tag>`
               }
             }
+
+            // todo: check why these are here, not typed category
             if (video.category) {
               parts[partIndex++] = `            <video:category>${escapeValueForXml(video.category)}</video:category>`
             }
+            // todo: check why these are here, not typed gallery_loc
             if (video.gallery_loc) {
               const title = video.gallery_loc.title ? ` title="${escapeValueForXml(video.gallery_loc.title)}"` : ''
               parts[partIndex++] = `            <video:gallery_loc${title}>${escapeValueForXml(video.gallery_loc)}</video:gallery_loc>`
@@ -181,15 +186,19 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
           if (newsValue.publication_date) {
             parts[partIndex++] = `            <news:publication_date>${newsValue.publication_date}</news:publication_date>`
           }
+          // todo: check why these are here, not typed access
           if (newsValue.access) {
             parts[partIndex++] = `            <news:access>${newsValue.access}</news:access>`
           }
+          // todo: check why these are here, not typed genres
           if (newsValue.genres) {
             parts[partIndex++] = `            <news:genres>${escapeValueForXml(newsValue.genres)}</news:genres>`
           }
+          // todo: check why these are here, not typed keywords
           if (newsValue.keywords) {
             parts[partIndex++] = `            <news:keywords>${escapeValueForXml(newsValue.keywords)}</news:keywords>`
           }
+          // todo: check why these are here, not typed stock_tickers
           if (newsValue.stock_tickers) {
             parts[partIndex++] = `            <news:stock_tickers>${escapeValueForXml(newsValue.stock_tickers)}</news:stock_tickers>`
           }

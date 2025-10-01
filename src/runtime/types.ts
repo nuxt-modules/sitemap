@@ -2,6 +2,7 @@ import type { FetchOptions } from 'ofetch'
 import type { H3Event } from 'h3'
 import type { ParsedURL } from 'ufo'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
+import type { MaybeArray } from 'unhead/types'
 
 declare module 'nitropack/types' {
   interface NitroApp {
@@ -9,6 +10,12 @@ declare module 'nitropack/types' {
   }
 
   interface NitroRouteConfig {
+    robots?: boolean
+  }
+}
+
+declare module 'nitropack' {
+  interface NitroRouteRules {
     robots?: boolean
   }
 }
@@ -462,11 +469,11 @@ export interface VideoEntry {
   family_friendly?: 'yes' | 'no' | boolean
   restriction?: Restriction
   platform?: Platform
-  price?: ({
+  price?: MaybeArray<{
     price?: number | string
     currency?: string
     type?: 'rent' | 'purchase' | 'package' | 'subscription'
-  })[]
+  }>
   requires_subscription?: 'yes' | 'no' | boolean
   uploader?: {
     uploader: string
