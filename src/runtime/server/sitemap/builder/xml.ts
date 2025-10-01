@@ -97,12 +97,6 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
             if (video.content_loc) {
               parts[partIndex++] = `            <video:content_loc>${escapeValueForXml(String(video.content_loc))}</video:content_loc>`
             }
-            // todo: check why this is here, player_loc is a string in definitions
-            if (video.player_loc) {
-              const attrs = video.player_loc.allow_embed ? ' allow_embed="yes"' : ''
-              const autoplay = video.player_loc.autoplay ? ' autoplay="yes"' : ''
-              parts[partIndex++] = `            <video:player_loc${attrs}${autoplay}>${escapeValueForXml(video.player_loc)}</video:player_loc>`
-            }
             if (video.duration !== undefined) {
               parts[partIndex++] = `            <video:duration>${video.duration}</video:duration>`
             }
@@ -156,15 +150,11 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
                 parts[partIndex++] = `            <video:tag>${escapeValueForXml(tag)}</video:tag>`
               }
             }
-
-            // todo: check why these are here, not typed category
             if (video.category) {
               parts[partIndex++] = `            <video:category>${escapeValueForXml(video.category)}</video:category>`
             }
-            // todo: check why these are here, not typed gallery_loc
             if (video.gallery_loc) {
-              const title = video.gallery_loc.title ? ` title="${escapeValueForXml(video.gallery_loc.title)}"` : ''
-              parts[partIndex++] = `            <video:gallery_loc${title}>${escapeValueForXml(video.gallery_loc)}</video:gallery_loc>`
+              parts[partIndex++] = `            <video:gallery_loc>${escapeValueForXml(String(video.gallery_loc))}</video:gallery_loc>`
             }
             parts[partIndex++] = '        </video:video>'
           }
@@ -185,22 +175,6 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
           }
           if (newsValue.publication_date) {
             parts[partIndex++] = `            <news:publication_date>${newsValue.publication_date}</news:publication_date>`
-          }
-          // todo: check why these are here, not typed access
-          if (newsValue.access) {
-            parts[partIndex++] = `            <news:access>${newsValue.access}</news:access>`
-          }
-          // todo: check why these are here, not typed genres
-          if (newsValue.genres) {
-            parts[partIndex++] = `            <news:genres>${escapeValueForXml(newsValue.genres)}</news:genres>`
-          }
-          // todo: check why these are here, not typed keywords
-          if (newsValue.keywords) {
-            parts[partIndex++] = `            <news:keywords>${escapeValueForXml(newsValue.keywords)}</news:keywords>`
-          }
-          // todo: check why these are here, not typed stock_tickers
-          if (newsValue.stock_tickers) {
-            parts[partIndex++] = `            <news:stock_tickers>${escapeValueForXml(newsValue.stock_tickers)}</news:stock_tickers>`
           }
           parts[partIndex++] = '        </news:news>'
         }
