@@ -44,10 +44,10 @@ export function generatePathForI18nPages(ctx: StrategyProps): string {
 }
 
 export function normalizeLocales(nuxtI18nConfig: NuxtI18nOptions): AutoI18nConfig['locales'] {
-  let locales = nuxtI18nConfig.locales || []
+  const _locales: NonNullable<NuxtI18nOptions['locales']> = nuxtI18nConfig.locales || []
   let onlyLocales = nuxtI18nConfig?.bundle?.onlyLocales || []
   onlyLocales = typeof onlyLocales === 'string' ? [onlyLocales] : onlyLocales
-  locales = mergeOnKey(locales.map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
+  let locales: AutoI18nConfig['locales'] = mergeOnKey(_locales.map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
   if (onlyLocales.length) {
     locales = locales.filter((locale: LocaleObject) => onlyLocales.includes(locale.code))
   }
