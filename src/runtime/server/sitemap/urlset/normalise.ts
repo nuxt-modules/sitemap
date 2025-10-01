@@ -17,7 +17,7 @@ import type {
 import { mergeOnKey } from '../../../utils-pure'
 
 function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
-function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | undefined {
+function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | URL | undefined {
   if (typeof s === 'undefined' || !resolvers)
     return s
   // convert url to string
@@ -37,8 +37,11 @@ function removeTrailingSlash(s: string) {
 
 export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
   const e = (typeof _e === 'string' ? { loc: _e } : { ..._e }) as ResolvedSitemapUrl
+  // @ts-expect-error detecting older property, url, to update it
   if (e.url && !e.loc) {
+    // @ts-expect-error moving old url property to new loc
     e.loc = e.url
+    // @ts-expect-error url would exist here but still not typed
     delete e.url
   }
   if (typeof e.loc !== 'string') {
@@ -50,7 +53,7 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
   try {
     e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc)
   }
-  catch (e) {
+  catch (e: any) {
     e._path = null
   }
   if (e._path) {
@@ -130,8 +133,9 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
     // Process videos in place
     const videos = e.videos.map(v => ({ ...v }))
     for (let i = 0; i < videos.length; i++) {
-      if (videos[i].content_loc) {
-        videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
+      const contentLoc = videos[i].content_loc
+      if (contentLoc) {
+        videos[i].content_loc = resolve(contentLoc, resolvers)
       }
     }
     e.videos = mergeOnKey(videos, 'content_loc')
