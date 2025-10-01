@@ -294,7 +294,7 @@ export interface SitemapDefinition {
   /**
    * Default options for all URLs in the sitemap.
    */
-  defaults?: Omit<SitemapUrl, 'loc'>
+  defaults: Omit<SitemapUrl, 'loc'>
   /**
    * Additional sources of URLs to include in the sitemap.
    */

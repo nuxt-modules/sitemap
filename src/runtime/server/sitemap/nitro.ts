@@ -17,13 +17,13 @@ import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
-import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { getSiteConfig } from '#site-config/server/composables'
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
   const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
-  const siteConfig = useSiteConfig(e)
+  const siteConfig = getSiteConfig(e)
   return {
     event: e,
     fixSlashes: (path: string) => fixSlashes(siteConfig.trailingSlash, path),
@@ -42,12 +42,12 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   const { sitemapName } = definition
   const nitro = useNitroApp()
   if (import.meta.prerender) {
-    const config = useSiteConfig(event)
+    const config = getSiteConfig(event)
     if (!config.url && !nitro._sitemapWarned) {
       nitro._sitemapWarned = true
       logger.error('Sitemap Site URL missing!')
       logger.info('To fix this please add `{ site: { url: \'site.com\' } }` to your Nuxt config or a `NUXT_PUBLIC_SITE_URL=site.com` to your .env. Learn more at https://nuxtseo.com/site-config/getting-started/how-it-works')
-      throw new createError({
+      throw new (createError as any)({
         statusMessage: 'You must provide a site URL to prerender a sitemap.',
         statusCode: 500,
       })
@@ -60,8 +60,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
   // Process in place to avoid creating intermediate arrays
   let validCount = 0
-  for (let i = 0; i < sitemapUrls.length; i++) {
-    const u = sitemapUrls[i]
+  for (const u of sitemapUrls) {
     const path = u._path?.pathname || u.loc
 
     // Early continue for robots blocked paths

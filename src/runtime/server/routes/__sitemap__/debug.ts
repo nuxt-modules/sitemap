@@ -1,5 +1,4 @@
 import { defineEventHandler } from 'h3'
-import type { SitemapDefinition } from '../../../types'
 import { useSitemapRuntimeConfig } from '../../utils'
 import {
   childSitemapSources,
@@ -17,8 +16,11 @@ export default defineEventHandler(async (e) => {
   delete runtimeConfig.sitemaps
   const globalSources = await globalSitemapSources()
   const nitroOrigin = getNitroOrigin(e)
-  const sitemaps: Record<string, SitemapDefinition> = {}
+  const sitemaps: Record<string, typeof _sitemaps[number] & { sources: Awaited<ReturnType<typeof resolveSitemapSources>> }> = {}
   for (const s of Object.keys(_sitemaps)) {
+    if (!_sitemaps[s]) {
+      throw new Error('Could not resolve matching key in _sitemaps')
+    }
     // resolve the sources
     sitemaps[s] = {
       ..._sitemaps[s],
