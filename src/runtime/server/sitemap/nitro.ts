@@ -80,7 +80,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
     // Skip invalid entries
     if (routeRules.sitemap === false)
       continue
-    // @ts-expect-error runtime types
+
     if (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
       continue
 

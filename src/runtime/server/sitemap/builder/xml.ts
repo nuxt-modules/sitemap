@@ -1,5 +1,13 @@
 import { withQuery } from 'ufo'
-import type { ModuleRuntimeConfig, NitroUrlResolvers, ResolvedSitemapUrl } from '../../../types'
+import type {
+  AlternativeEntry,
+  GoogleNewsEntry,
+  ImageEntry,
+  ModuleRuntimeConfig,
+  NitroUrlResolvers,
+  ResolvedSitemapUrl,
+  VideoEntry
+} from '../../../types'
 import { xmlEscape } from '../../utils'
 
 // Optimized XML escaping using string replace (faster than character loop)
@@ -11,7 +19,7 @@ export function escapeValueForXml(value: boolean | string | number): string {
 }
 
 // Cache constant strings to avoid repeated concatenation
-const URLSET_OPENING_TAG = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+const URLSET_OPENING_TAG = '<urlset xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="https://www.sitemaps.org/schemas/sitemap/0.9 https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd https://www.google.com/schemas/sitemap-image/1.1 https://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">'
 
 // Use a string builder approach for memory efficiency
 function buildUrlXml(url: ResolvedSitemapUrl): string {
@@ -52,7 +60,7 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
     switch (key) {
       case 'alternatives':
         if (Array.isArray(value) && value.length > 0) {
-          for (const alt of value) {
+          for (const alt of value as AlternativeEntry[]) {
             const attrs = Object.entries(alt)
               .map(([k, v]) => `${k}="${escapeValueForXml(v)}"`)
               .join(' ')
@@ -63,7 +71,7 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
 
       case 'images':
         if (Array.isArray(value) && value.length > 0) {
-          for (const img of value) {
+          for (const img of value as ImageEntry[]) {
             parts[partIndex++] = '        <image:image>'
             parts[partIndex++] = `            <image:loc>${escapeValueForXml(img.loc)}</image:loc>`
             if (img.title) parts[partIndex++] = `            <image:title>${escapeValueForXml(img.title)}</image:title>`
@@ -77,7 +85,7 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
 
       case 'videos':
         if (Array.isArray(value) && value.length > 0) {
-          for (const video of value) {
+          for (const video of value as VideoEntry[]) {
             parts[partIndex++] = '        <video:video>'
             parts[partIndex++] = `            <video:title>${escapeValueForXml(video.title)}</video:title>`
 
@@ -160,29 +168,30 @@ function buildUrlXml(url: ResolvedSitemapUrl): string {
 
       case 'news':
         if (value) {
+          const newsValue = value as GoogleNewsEntry
           parts[partIndex++] = '        <news:news>'
           parts[partIndex++] = '            <news:publication>'
-          parts[partIndex++] = `                <news:name>${escapeValueForXml(value.publication.name)}</news:name>`
-          parts[partIndex++] = `                <news:language>${escapeValueForXml(value.publication.language)}</news:language>`
+          parts[partIndex++] = `                <news:name>${escapeValueForXml(newsValue.publication.name)}</news:name>`
+          parts[partIndex++] = `                <news:language>${escapeValueForXml(newsValue.publication.language)}</news:language>`
           parts[partIndex++] = '            </news:publication>'
 
-          if (value.title) {
-            parts[partIndex++] = `            <news:title>${escapeValueForXml(value.title)}</news:title>`
+          if (newsValue.title) {
+            parts[partIndex++] = `            <news:title>${escapeValueForXml(newsValue.title)}</news:title>`
           }
-          if (value.publication_date) {
-            parts[partIndex++] = `            <news:publication_date>${value.publication_date}</news:publication_date>`
+          if (newsValue.publication_date) {
+            parts[partIndex++] = `            <news:publication_date>${newsValue.publication_date}</news:publication_date>`
           }
-          if (value.access) {
-            parts[partIndex++] = `            <news:access>${value.access}</news:access>`
+          if (newsValue.access) {
+            parts[partIndex++] = `            <news:access>${newsValue.access}</news:access>`
           }
-          if (value.genres) {
-            parts[partIndex++] = `            <news:genres>${escapeValueForXml(value.genres)}</news:genres>`
+          if (newsValue.genres) {
+            parts[partIndex++] = `            <news:genres>${escapeValueForXml(newsValue.genres)}</news:genres>`
           }
-          if (value.keywords) {
-            parts[partIndex++] = `            <news:keywords>${escapeValueForXml(value.keywords)}</news:keywords>`
+          if (newsValue.keywords) {
+            parts[partIndex++] = `            <news:keywords>${escapeValueForXml(newsValue.keywords)}</news:keywords>`
           }
-          if (value.stock_tickers) {
-            parts[partIndex++] = `            <news:stock_tickers>${escapeValueForXml(value.stock_tickers)}</news:stock_tickers>`
+          if (newsValue.stock_tickers) {
+            parts[partIndex++] = `            <news:stock_tickers>${escapeValueForXml(newsValue.stock_tickers)}</news:stock_tickers>`
           }
           parts[partIndex++] = '        </news:news>'
         }
