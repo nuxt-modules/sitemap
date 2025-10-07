@@ -17,7 +17,7 @@ import type {
 import { mergeOnKey } from '../../../utils-pure'
 
 function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
-function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | undefined {
+function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | URL | undefined {
   if (typeof s === 'undefined' || !resolvers)
     return s
   // convert url to string
@@ -37,8 +37,11 @@ function removeTrailingSlash(s: string) {
 
 export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
   const e = (typeof _e === 'string' ? { loc: _e } : { ..._e }) as ResolvedSitemapUrl
+  // @ts-expect-error detecting older property, url, to update it
   if (e.url && !e.loc) {
+    // @ts-expect-error moving old url property to new loc
     e.loc = e.url
+    // @ts-expect-error url would exist here but still not typed
     delete e.url
   }
   if (typeof e.loc !== 'string') {
@@ -50,7 +53,7 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
   try {
     e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc)
   }
-  catch (e) {
+  catch (e: any) {
     e._path = null
   }
   if (e._path) {
@@ -104,8 +107,7 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
   if (e.alternatives) {
     // Process alternatives in place to avoid extra array allocation
     const alternatives = e.alternatives.map(a => ({ ...a }))
-    for (let i = 0; i < alternatives.length; i++) {
-      const alt = alternatives[i]
+    for (const alt of alternatives) {
       // Modify in place
       if (typeof alt.href === 'string') {
         alt.href = resolve(alt.href, resolvers)
@@ -120,20 +122,23 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
   if (e.images) {
     // Process images in place
     const images = e.images.map(i => ({ ...i }))
-    for (let i = 0; i < images.length; i++) {
-      images[i].loc = resolve(images[i].loc, resolvers)
-    }
+    images.forEach((image, i) => {
+      if (!images[i]) return
+      images[i].loc = resolve(image.loc, resolvers)
+    })
     e.images = mergeOnKey(images, 'loc')
   }
 
   if (e.videos) {
     // Process videos in place
     const videos = e.videos.map(v => ({ ...v }))
-    for (let i = 0; i < videos.length; i++) {
-      if (videos[i].content_loc) {
-        videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
+    videos.forEach((v, i) => {
+      const contentLoc = v.content_loc
+      // current ts says videos[i] can be undefined. It cannot, but check added
+      if (contentLoc && videos[i]) {
+        videos[i].content_loc = resolve(contentLoc, resolvers)
       }
-    }
+    })
     e.videos = mergeOnKey(videos, 'content_loc')
   }
   return e
@@ -156,7 +161,7 @@ export function normaliseDate(d: Date | string) {
     // correct a time component without a timezone
     if (d.includes('T')) {
       const t = d.split('T')[1]
-      if (!t.includes('+') && !t.includes('-') && !t.includes('Z')) {
+      if (!t || (t && !t.includes('+') && !t.includes('-') && !t.includes('Z'))) {
         // add UTC timezone
         d += 'Z'
       }

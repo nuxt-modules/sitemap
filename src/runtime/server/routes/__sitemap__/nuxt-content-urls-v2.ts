@@ -1,4 +1,5 @@
 import { defineEventHandler } from 'h3'
+// @ts-expect-error for nuxt v2 - type checking for nuxt v3
 import type { ParsedContent } from '@nuxt/content'
 
 // @ts-expect-error alias module

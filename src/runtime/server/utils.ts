@@ -21,6 +21,7 @@ export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   // normalize the filters for runtime
   for (const k in clone.sitemaps) {
     const sitemap = clone.sitemaps[k]
+    if (!sitemap) continue
     sitemap.include = normalizeRuntimeFilters(sitemap.include)
     sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
     clone.sitemaps[k] = sitemap

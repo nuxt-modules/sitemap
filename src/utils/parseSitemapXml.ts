@@ -1,4 +1,12 @@
-import type { SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
+import type {
+  SitemapUrlInput,
+  VideoEntry,
+  ImageEntry,
+  AlternativeEntry,
+  GoogleNewsEntry,
+  SitemapStrict,
+  VideoEntryPrice
+} from '../runtime/types'
 
 interface ParsedUrl {
   loc?: string
@@ -384,7 +392,7 @@ function extractUrlFromParsedElement(
               return {
                 price: String(priceValue),
                 currency: price.currency,
-                type: price.type as VideoEntry['price'][0]['type'],
+                type: price.type as VideoEntryPrice['type'],
               }
             })
             .filter((p): p is NonNullable<typeof p> => p !== null)
@@ -487,7 +495,7 @@ function extractUrlFromParsedElement(
   }
 
   // Filter out undefined values and empty arrays
-  const filteredUrlObj = Object.fromEntries(
+  const filteredUrlObj: typeof urlObj = Object.fromEntries(
     Object.entries(urlObj).filter(([_, value]) =>
       value != null && (!Array.isArray(value) || value.length > 0),
     ),
