@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { queryCollection } from '@nuxt/content/server'
+import { queryCollection } from '@nuxt/content/runtime/server'
 // @ts-expect-error alias
 import manifest from '#content/manifest'
 
