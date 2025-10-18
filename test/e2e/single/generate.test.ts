@@ -49,5 +49,7 @@ describe.skipIf(process.env.CI)('generate', () => {
           </url>
       </urlset>"
     `)
+    // verify /noindex is not in the sitemap
+    expect(sitemap).not.toContain('/noindex')
   }, 1200000)
 })
