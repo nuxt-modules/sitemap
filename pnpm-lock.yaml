@@ -32,8 +32,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2(h3@1.15.4)
       nuxt-site-config:
-        specifier: ^3.2.10
-        version: 3.2.10(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
+        specifier: ^3.2.11
+        version: 3.2.11(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
@@ -120,7 +120,7 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@20.0.5)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1)
       vue-tsc:
-        specifier: ^3.0.9
+        specifier: ^3.1.1
         version: 3.1.1(typescript@5.9.3)
 
   client:
@@ -5047,11 +5047,11 @@ packages:
     peerDependencies:
       vue-router: '>=4.4.0'
 
-  nuxt-site-config-kit@3.2.10:
-    resolution: {integrity: sha512-HHBqcOLxYuw1HiAinaR/aGBvTZUdv7YcLsYDW2kuKAhLpiChACYM6lX3RTyrpLe6BNGRUJB69DbJ1VM8+QYWEA==}
+  nuxt-site-config-kit@3.2.11:
+    resolution: {integrity: sha512-Um9/JiJpskAC8H18pHs3D/c7ikKj37/OsM1rvTqDgdzShSzOAxGGN+8qBVtGaqp1V+9BuPFSXhr1+TV7+RRsRA==}
 
-  nuxt-site-config@3.2.10:
-    resolution: {integrity: sha512-2iyjOy3B1gIKlzNFMw3D9WpFw9kMlT5H4DqL3NAvmRf+Sem2vrhOzm8snON7Fxn94OYA5jNjgzusivNEM6InEQ==}
+  nuxt-site-config@3.2.11:
+    resolution: {integrity: sha512-hU78O5f0/n1LOIorDe6iKbW3xw19bao8YbQ7RCiUtVM+1XbD11JWzUXWygX7atV+KtzGhZUbTbhjxmfbnlF//A==}
     peerDependencies:
       h3: ^1
 
@@ -5834,8 +5834,8 @@ packages:
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  site-config-stack@3.2.10:
-    resolution: {integrity: sha512-y6cMJWSRUup1DX1KILvrUH9mVInqvtjFSYOSJMkWC0eIm9n43qYtxM9DMDKEgS5kZXEGmW8A0H3svunyIPLtTg==}
+  site-config-stack@3.2.11:
+    resolution: {integrity: sha512-KRJ49L58VtJJo3WdB7hXv6lq3oEJNOoBpig1v+OuHSppiBp7X6xqcAByJHveeBpBE9kHwqy/sn1LEnIibQ4nOA==}
     peerDependencies:
       vue: ^3
 
@@ -8494,7 +8494,7 @@ snapshots:
       '@nuxt/kit': 4.1.3(magicast@0.3.5)
       consola: 3.4.2
       defu: 6.1.4
-      nuxt-site-config: 3.2.10(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
+      nuxt-site-config: 3.2.11(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
       pathe: 2.0.3
       pkg-types: 2.3.0
       sirv: 3.0.2
@@ -9811,8 +9811,8 @@ snapshots:
   '@vue/language-core@3.1.1(typescript@5.9.3)':
     dependencies:
       '@volar/language-core': 2.4.23
-      '@vue/compiler-dom': 3.5.21
-      '@vue/shared': 3.5.21
+      '@vue/compiler-dom': 3.5.22
+      '@vue/shared': 3.5.22
       alien-signals: 3.0.1
       muggle-string: 0.4.1
       path-browserify: 1.0.1
@@ -12706,26 +12706,26 @@ snapshots:
       - magicast
       - vite
 
-  nuxt-site-config-kit@3.2.10(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3)):
+  nuxt-site-config-kit@3.2.11(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@nuxt/kit': 4.1.3(magicast@0.3.5)
       pkg-types: 2.3.0
-      site-config-stack: 3.2.10(vue@3.5.22(typescript@5.9.3))
+      site-config-stack: 3.2.11(vue@3.5.22(typescript@5.9.3))
       std-env: 3.10.0
       ufo: 1.6.1
     transitivePeerDependencies:
       - magicast
       - vue
 
-  nuxt-site-config@3.2.10(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3)):
+  nuxt-site-config@3.2.11(h3@1.15.4)(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@nuxt/kit': 4.1.3(magicast@0.3.5)
       h3: 1.15.4
-      nuxt-site-config-kit: 3.2.10(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
+      nuxt-site-config-kit: 3.2.11(magicast@0.3.5)(vue@3.5.22(typescript@5.9.3))
       pathe: 2.0.3
       pkg-types: 2.3.0
       sirv: 3.0.2
-      site-config-stack: 3.2.10(vue@3.5.22(typescript@5.9.3))
+      site-config-stack: 3.2.11(vue@3.5.22(typescript@5.9.3))
       ufo: 1.6.1
     transitivePeerDependencies:
       - magicast
@@ -13827,7 +13827,7 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  site-config-stack@3.2.10(vue@3.5.22(typescript@5.9.3)):
+  site-config-stack@3.2.11(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       ufo: 1.6.1
       vue: 3.5.22(typescript@5.9.3)
