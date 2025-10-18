@@ -904,14 +904,25 @@ export {}
     }
 
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.virtual = nitroConfig.virtual || {}
+
+      // Always provide read-sources module stub (real implementation added by prerender.ts when needed)
+      if (!nitroConfig.virtual['#sitemap-virtual/read-sources.mjs']) {
+        nitroConfig.virtual['#sitemap-virtual/read-sources.mjs'] = `
+export async function readSourcesFromFilesystem() {
+  return null
+}
+`
+      }
+
       // Skip virtual templates when prerendering - sources are written to filesystem instead
       if (prerenderSitemap) {
-        nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
-        nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
+        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
+        nitroConfig.virtual[`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
       }
       else {
         // Virtual templates generate sources data - will be cached in storage on first use
-        nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = async () => {
+        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = async () => {
           const globalSources = await generateGlobalSources()
           return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
         }
