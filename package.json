@@ -73,7 +73,7 @@
     "defu": "^6.1.4",
     "fast-xml-parser": "^5.3.0",
     "h3-compression": "^0.3.2",
-    "nuxt-site-config": "^3.2.10",
+    "nuxt-site-config": "^3.2.11",
     "ofetch": "^1.4.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
@@ -104,7 +104,7 @@
     "nuxt-i18n-micro": "^1.102.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4",
-    "vue-tsc": "^3.0.9"
+    "vue-tsc": "^3.1.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
