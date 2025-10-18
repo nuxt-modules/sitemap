@@ -70,6 +70,27 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
         return
       }
 
+      const extractedMeta = parseHtmlExtractSitemapMeta(html, {
+        images: options.discoverImages,
+        videos: options.discoverVideos,
+        // TODO configurable?
+        lastmod: true,
+        alternatives: true,
+        resolveUrl(s) {
+          // if the match is relative
+          return s.startsWith('/') ? withSiteUrl(s) : s
+        },
+      })
+
+      // skip if route is blocked from indexing
+      if (extractedMeta === null) {
+        route._sitemap = {
+          loc: route.route,
+          _sitemap: false,
+        }
+        return
+      }
+
       // maybe the user already provided a _sitemap on the route
       route._sitemap = defu(route._sitemap, {
         loc: route.route,
@@ -87,17 +108,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
         }
       }
 
-      route._sitemap = defu(parseHtmlExtractSitemapMeta(html, {
-        images: options.discoverImages,
-        videos: options.discoverVideos,
-        // TODO configurable?
-        lastmod: true,
-        alternatives: true,
-        resolveUrl(s) {
-          // if the match is relative
-          return s.startsWith('/') ? withSiteUrl(s) : s
-        },
-      }), route._sitemap) as SitemapUrl
+      route._sitemap = defu(extractedMeta, route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
       const globalSources = await generateGlobalSources()
