@@ -13,5 +13,9 @@ export default defineEventHandler(async (e) => {
     return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), import.meta.dev ? 302 : 301)
   }
 
-  return createSitemap(e, Object.values(sitemaps)[0], runtimeConfig)
+  const sitemap = Object.values(sitemaps)
+  // if we had an index, we would have returned above. as we do not
+  // this is compatible with SitemapDefinition expected
+  const sm = sitemap[0] as typeof sitemaps['any_key_except_index']
+  return createSitemap(e, sm, runtimeConfig)
 })

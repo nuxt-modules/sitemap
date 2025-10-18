@@ -70,10 +70,11 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
     for (const e of validI18nUrlsForTransform) {
       // let's try and find other urls that we can use for alternatives
       if (!e._i18nTransform && !e.alternatives?.length) {
-        const alternatives = withoutPrefixPaths[e._pathWithoutPrefix]
-          .map((u) => {
+        function processAlternatives(alts: undefined | NormalizedI18n[]) {
+          if (!alts) return []
+          return alts?.map((u) => {
             const entries: AlternativeEntry[] = []
-            if (u._locale.code === autoI18n.defaultLocale) {
+            if (u._locale.code === autoI18n?.defaultLocale) {
               entries.push({
                 href: u.loc,
                 hreflang: 'x-default',
@@ -81,35 +82,41 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             }
             entries.push({
               href: u.loc,
-              hreflang: u._locale._hreflang || autoI18n.defaultLocale,
+              hreflang: u._locale._hreflang || autoI18n?.defaultLocale,
             })
             return entries
           })
-          .flat()
-          .filter(Boolean) as AlternativeEntry[]
+            .flat()
+        }
+        const alternatives = processAlternatives(withoutPrefixPaths[e._pathWithoutPrefix])
+
         if (alternatives.length)
           e.alternatives = alternatives
       }
       else if (e._i18nTransform) {
         delete e._i18nTransform
+        // @ts-expect-error looks to be checking an old possible value for strategy, no longer typed as valid
         if (autoI18n.strategy === 'no_prefix') {
           warnIncorrectI18nTransformUsage = true
         }
-        // keep single entry, just add alternatvies
+        // keep single entry, just add alternatives
         if (autoI18n.differentDomains) {
-          e.alternatives = [
-            {
+          const alternatives: AutoI18nConfig['locales'] = []
+          const defaultLocale = autoI18n.locales.find(l => [l.code, l.language].includes(autoI18n.defaultLocale))
+          if (defaultLocale) {
+            alternatives.push({
               // apply default locale domain
-              ...autoI18n.locales.find(l => [l.code, l.language].includes(autoI18n.defaultLocale)),
+              ...defaultLocale,
               code: 'x-default',
-            },
-            ...autoI18n.locales
-              .filter(l => !!l.domain),
-          ]
+            })
+          }
+          const localesForDomain = autoI18n.locales.filter(l => !!l.domain)
+          alternatives.push(...localesForDomain)
+          e.alternatives = alternatives
             .map((locale) => {
               return {
-                hreflang: locale._hreflang,
-                href: joinURL(withHttps(locale.domain!), e._pathWithoutPrefix),
+                hreflang: locale.hreflang,
+                href: joinURL(withHttps(String(locale.href)!), e._pathWithoutPrefix),
               }
             })
         }
@@ -145,14 +152,12 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             }
 
             const _sitemap = isI18nMapped ? l._sitemap : undefined
-            const newEntry: NormalizedI18n = preNormalizeEntry({
-              _sitemap,
-              ...e,
-              _index: undefined,
-              _key: `${_sitemap || ''}${loc || '/'}${e._path.search}`,
-              _locale: l,
-              loc,
-              alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
+
+            const alternatives: AlternativeEntry[] = [
+              { code: 'x-default', _hreflang: 'x-default' },
+              ...autoI18n.locales,
+            ]
+              .map((locale): AlternativeEntry | false => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
                 let href = e._pathWithoutPrefix
@@ -192,13 +197,24 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
 
                 if (!filterPath(href))
                   return false
+
                 return {
                   hreflang: locale._hreflang,
                   href,
                 }
-              }).filter(Boolean),
+              })
+              .filter(l => l !== false)
+
+            const newEntry: ResolvedSitemapUrl = preNormalizeEntry({
+              _sitemap,
+              ...e,
+              _index: undefined,
+              _locale: l,
+              loc,
+              alternatives,
             }, resolvers)
-            if (e._locale.code === newEntry._locale.code) {
+
+            if (e._index !== undefined && e._locale.code === newEntry._locale?.code) {
               // replace
               _urls[e._index] = newEntry
               // avoid getting re-replaced
@@ -253,7 +269,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
 
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize) as T
+    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize !== false ? defaultSitemapsChunkSize : undefined) as T
   }
   if (autoI18n?.differentDomains) {
     const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain

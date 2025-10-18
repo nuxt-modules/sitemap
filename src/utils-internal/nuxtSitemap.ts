@@ -10,12 +10,12 @@ import type { AutoI18nConfig, SitemapDefinition, SitemapUrl, SitemapUrlInput } f
 import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
 
-export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
+export async function resolveUrls(_urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
+  let urls: SitemapUrlInput[] = []
   try {
-    if (typeof urls === 'function')
-      urls = urls()
-    // resolve promise
-    urls = await urls
+    if (typeof _urls === 'function') {
+      urls = await _urls()
+    }
   }
   catch (e) {
     ctx.logger.error(`Failed to resolve ${typeof urls} urls.`)
@@ -71,7 +71,7 @@ function deepForEachPage(
     if (opts.isI18nMicro) {
       const localePattern = /\/:locale\(([^)]+)\)/
       const match = localePattern.exec(currentPath || '')
-      if (match) {
+      if (match && match[1]) {
         const locales = match[1].split('|')
         locales.forEach((locale) => {
           const subPage = { ...page }
@@ -151,6 +151,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
   pagesWithMeta.reduce((acc: Record<string, any>, e) => {
     if (e.page!.name?.includes(routesNameSeparator)) {
       const [name, locale] = e.page!.name.split(routesNameSeparator)
+      if (!name) {
+        return acc
+      }
       if (!acc[name])
         acc[name] = []
       const { _sitemap } = config.normalisedLocales.find(l => l.code === locale) || { _sitemap: locale }
@@ -170,6 +173,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       // we add pages without a prefix, they may have disabled i18n
       return entries.map((e) => {
         const [name] = (e.page?.name || '').split(routesNameSeparator)
+        if (!name) return false
         // we need to check if the same page with a prefix exists within the default locale
         // for example this will fix the `/` if the configuration is set to `prefix`
         if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
@@ -222,7 +226,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
-  const filterForValidPage = p => p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
+  const filterForValidPage = (p: string | undefined) => p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
   const routeRules = Object.entries(nuxt.options.routeRules || {})
     .filter(([k, v]) => {
       // make sure key doesn't use a wildcard and its not for a file

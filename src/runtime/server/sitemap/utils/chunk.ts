@@ -86,6 +86,10 @@ export function getSitemapConfig(
     }
   }
 
+  if (!sitemaps[sitemapName]) {
+    throw new Error(`Cannot find sitemap with name: '${sitemapName}'`)
+  }
+
   // Regular sitemap
   return sitemaps[sitemapName]
 }

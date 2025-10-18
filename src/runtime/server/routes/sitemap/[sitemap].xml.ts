@@ -66,7 +66,7 @@ export default defineEventHandler(async (e) => {
   }
 
   // Get the appropriate sitemap configuration
-  const sitemapConfig = getSitemapConfig(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize)
+  const sitemapConfig = getSitemapConfig(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize || 1000)
 
   return createSitemap(e, sitemapConfig, runtimeConfig)
 })
