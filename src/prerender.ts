@@ -39,8 +39,8 @@ export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
 
 const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/
 
-export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance }, nuxt: Nuxt = useNuxt()) {
-  const { runtimeConfig: options, logger } = _options
+export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any> }, nuxt: Nuxt = useNuxt()) {
+  const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources } = _options
   const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
   let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
   if (resolveNitroPreset() === 'vercel-edge') {
@@ -60,10 +60,6 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
   }
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
   nuxt.hooks.hook('nitro:init', async (nitro) => {
-    let prerenderer: Nitro
-    nitro.hooks.hook('prerender:init', async (_prerenderer: Nitro) => {
-      prerenderer = _prerenderer
-    })
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
       // extract alternatives from the html
@@ -104,19 +100,21 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       }), route._sitemap) as SitemapUrl
     })
     nitro.hooks.hook('prerender:done', async () => {
-      const isNuxt5 = nuxt.options._majorVersion === 5
-      let nitroModule
-      if (isNuxt5) {
-        nitroModule = await import(String('nitro'))
-      }
-      else {
-        nitroModule = await import(String('nitropack'))
-      }
-      if (!nitroModule) {
-        return
-      }
-      // force templates to be rebuilt
-      await nitroModule.build(prerenderer)
+      const globalSources = await generateGlobalSources()
+      const childSources = await generateChildSources()
+
+      // Write to filesystem for prerender consumption
+      // Write to both output dir and build cache dir
+      const outputAssetsDir = join(nitro.options.output.serverDir, 'assets/sitemap')
+      await mkdir(outputAssetsDir, { recursive: true })
+      await writeFile(join(outputAssetsDir, 'global-sources.json'), JSON.stringify(globalSources))
+      await writeFile(join(outputAssetsDir, 'child-sources.json'), JSON.stringify(childSources))
+
+      const buildAssetsDir = join(nitro.options.buildDir, 'assets/sitemap')
+      await mkdir(buildAssetsDir, { recursive: true })
+      await writeFile(join(buildAssetsDir, 'global-sources.json'), JSON.stringify(globalSources))
+      await writeFile(join(buildAssetsDir, 'child-sources.json'), JSON.stringify(childSources))
+
       await prerenderRoute(nitro, options.isMultiSitemap
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
         : `/${Object.keys(options.sitemaps)[0]}`)

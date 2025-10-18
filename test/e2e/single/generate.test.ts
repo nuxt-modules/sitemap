@@ -10,7 +10,7 @@ describe.skipIf(process.env.CI)('generate', () => {
     process.env.NITRO_PRESET = 'static'
     process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'
     const { resolve } = createResolver(import.meta.url)
-    const rootDir = resolve('../../fixtures/basic')
+    const rootDir = resolve('../../fixtures/generate')
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
