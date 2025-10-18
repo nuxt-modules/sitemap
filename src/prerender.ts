@@ -59,7 +59,25 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     return
   }
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
+
+  const runtimeAssetsPath = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/sitemap')
   nuxt.hooks.hook('nitro:init', async (nitro) => {
+    // Setup virtual module for reading sources
+    nuxt.options.nitro.virtual = nuxt.options.nitro.virtual || {}
+    nuxt.options.nitro.virtual['#sitemap-virtual/read-sources.mjs'] = `
+import { readFile } from 'node:fs/promises'
+import { join } from 'pathe'
+
+export async function readSourcesFromFilesystem(filename) {
+  if (!import.meta.prerender) {
+    return null
+  }
+  const path = join('${runtimeAssetsPath}', filename)
+  const data = await readFile(path, 'utf-8').catch(() => null)
+  return data ? JSON.parse(data) : null
+}
+`
+
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
       // extract alternatives from the html
@@ -104,16 +122,9 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
       const childSources = await generateChildSources()
 
       // Write to filesystem for prerender consumption
-      // Write to both output dir and build cache dir
-      const outputAssetsDir = join(nitro.options.output.serverDir, 'assets/sitemap')
-      await mkdir(outputAssetsDir, { recursive: true })
-      await writeFile(join(outputAssetsDir, 'global-sources.json'), JSON.stringify(globalSources))
-      await writeFile(join(outputAssetsDir, 'child-sources.json'), JSON.stringify(childSources))
-
-      const buildAssetsDir = join(nitro.options.buildDir, 'assets/sitemap')
-      await mkdir(buildAssetsDir, { recursive: true })
-      await writeFile(join(buildAssetsDir, 'global-sources.json'), JSON.stringify(globalSources))
-      await writeFile(join(buildAssetsDir, 'child-sources.json'), JSON.stringify(childSources))
+      await mkdir(runtimeAssetsPath, { recursive: true })
+      await writeFile(join(runtimeAssetsPath, 'global-sources.json'), JSON.stringify(globalSources))
+      await writeFile(join(runtimeAssetsPath, 'child-sources.json'), JSON.stringify(childSources))
 
       await prerenderRoute(nitro, options.isMultiSitemap
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
