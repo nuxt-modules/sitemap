@@ -150,29 +150,13 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
 }
 
-async function readSourcesFromFilesystem(filename: string) {
-  if (!import.meta.prerender)
-    return null
-
-  try {
-    const { readFile } = await import('node:fs/promises')
-    const { join, dirname } = await import('pathe')
-    const { fileURLToPath } = await import('node:url')
-    const currentDir = dirname(fileURLToPath(import.meta.url))
-    const path = join(currentDir, '../assets/sitemap', filename)
-    const data = await readFile(path, 'utf-8')
-    return JSON.parse(data)
-  }
-  catch {
-    return null
-  }
-}
-
 export async function globalSitemapSources() {
-  const sources = await readSourcesFromFilesystem('global-sources.json')
-  if (sources)
-    return sources
-
+  if (import.meta.prerender) {
+    const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
+    const sources = await readSourcesFromFilesystem('global-sources.json')
+    if (sources)
+      return sources
+  }
   const m = await import('#sitemap-virtual/global-sources.mjs')
   return m.sources
 }
@@ -181,9 +165,12 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   if (!definition?._hasSourceChunk)
     return []
 
-  const allSources = await readSourcesFromFilesystem('child-sources.json')
-  if (allSources)
-    return allSources[definition.sitemapName] || []
+  if (import.meta.prerender) {
+    const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
+    const allSources = await readSourcesFromFilesystem('child-sources.json')
+    if (allSources)
+      return allSources[definition.sitemapName] || []
+  }
 
   const m = await import('#sitemap-virtual/child-sources.mjs')
   return m.sources[definition.sitemapName] || []
