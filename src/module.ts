@@ -904,15 +904,22 @@ export {}
     }
 
     nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-      // Virtual templates generate sources data - will be cached in storage on first use
-      nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = async () => {
-        const globalSources = await generateGlobalSources()
-        return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
+      // Skip virtual templates when prerendering - sources are written to filesystem instead
+      if (prerenderSitemap) {
+        nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
+        nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
       }
+      else {
+        // Virtual templates generate sources data - will be cached in storage on first use
+        nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = async () => {
+          const globalSources = await generateGlobalSources()
+          return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
+        }
 
-      nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
-        const childSources = await generateChildSources()
-        return `export const sources = ${JSON.stringify(childSources, null, 4)}`
+        nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
+          const childSources = await generateChildSources()
+          return `export const sources = ${JSON.stringify(childSources, null, 4)}`
+        }
       }
     })
 
