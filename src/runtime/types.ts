@@ -391,7 +391,7 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
-  _sitemap?: string
+  _sitemap?: string | false
 }
 
 export type SitemapStrict = Required<SitemapUrl>

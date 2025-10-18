@@ -313,6 +313,8 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
+    if (e._sitemap === false)
+      return false
     if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
       return e._sitemap === sitemap.sitemapName
     return true

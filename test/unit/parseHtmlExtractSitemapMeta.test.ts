@@ -345,4 +345,27 @@ describe('parseHtmlExtractSitemapMeta', () => {
       }
     `)
   })
+
+  it('blocks pages with noindex meta tag', async () => {
+    const noindex = parseHtmlExtractSitemapMeta(`
+      <head>
+        <meta name="robots" content="noindex">
+      </head>
+    `)
+    expect(noindex).toBe(null)
+
+    const noindexFollow = parseHtmlExtractSitemapMeta(`
+      <head>
+        <meta name="robots" content="noindex, follow">
+      </head>
+    `)
+    expect(noindexFollow).toBe(null)
+
+    const none = parseHtmlExtractSitemapMeta(`
+      <head>
+        <meta name="robots" content="none">
+      </head>
+    `)
+    expect(none).toBe(null)
+  })
 })
