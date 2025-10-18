@@ -61,10 +61,11 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
 
   const runtimeAssetsPath = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/sitemap')
-  nuxt.hooks.hook('nitro:init', async (nitro) => {
-    // Setup virtual module for reading sources
-    nuxt.options.nitro.virtual = nuxt.options.nitro.virtual || {}
-    nuxt.options.nitro.virtual['#sitemap-virtual/read-sources.mjs'] = `
+
+  // Setup virtual module for reading sources - must be in nitro:config to be bundled
+  nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+    nitroConfig.virtual = nitroConfig.virtual || {}
+    nitroConfig.virtual['#sitemap-virtual/read-sources.mjs'] = `
 import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 
@@ -77,7 +78,9 @@ export async function readSourcesFromFilesystem(filename) {
   return data ? JSON.parse(data) : null
 }
 `
+  })
 
+  nuxt.hooks.hook('nitro:init', async (nitro) => {
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
       // extract alternatives from the html
