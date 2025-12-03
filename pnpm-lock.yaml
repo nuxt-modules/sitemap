@@ -111,8 +111,8 @@ importers:
         specifier: ^4.1.3
         version: 4.1.3(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.8.1)(@vue/compiler-sfc@3.5.22)(better-sqlite3@12.4.1)(db0@0.3.2(better-sqlite3@12.4.1))(eslint@9.38.0(jiti@2.6.1))(ioredis@5.7.0)(lightningcss@1.30.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.50.2)(terser@5.44.0)(typescript@5.9.3)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.1(typescript@5.9.3))(yaml@2.8.1)
       nuxt-i18n-micro:
-        specifier: ^1.102.0
-        version: 1.102.0(magicast@0.3.5)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))
+        specifier: ^2.13.0
+        version: 2.13.0(magicast@0.3.5)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -4892,6 +4892,7 @@ packages:
 
   motion-v@1.7.2:
     resolution: {integrity: sha512-h2qfae2LUMLw5KIjQF5cT+r0MrLwP4AFDMOisyp25x/oDI3PHgjLHJrhHx77q8iBNegk4llt5p6deC12EJ5fvQ==}
+    deprecated: deprecate
     peerDependencies:
       '@vueuse/core': '>=10.0.0'
       vue: '>=3.0.0'
@@ -5027,23 +5028,23 @@ packages:
   nuxt-define@1.0.0:
     resolution: {integrity: sha512-CYZ2WjU+KCyCDVzjYUM4eEpMF0rkPmkpiFrybTqqQCRpUbPt2h3snswWIpFPXTi+osRCY6Og0W/XLAQgDL4FfQ==}
 
-  nuxt-i18n-micro-core@1.0.13:
-    resolution: {integrity: sha512-aqnsVhget1OQF1D765lQ+VOO0/3GzqzltZh5hk8ttSbnST2MAMWTB5EnNTjOgk2iBpWsglHIwp+1e5tzAZFF/A==}
+  nuxt-i18n-micro-core@1.0.20:
+    resolution: {integrity: sha512-e09AKZqrTK7F9D52n32SGb2Ydr4IdJH+a02W+2XpHq6EEXMOud4Mr5xzhI+qPs7vKs8yFoDzGIyX1xXGGb9SEg==}
 
-  nuxt-i18n-micro-core@1.0.18:
-    resolution: {integrity: sha512-au8LBpPMUNapyUvG57Kt4UQTzYPqhNHH9xxMXPmu2XRLDdfPjMqsy2pQQLq9QR6fPE0dvlIee09nEyQYjR/ZvA==}
+  nuxt-i18n-micro-core@1.0.26:
+    resolution: {integrity: sha512-eqW2DjZe7XSLg8FCqtn85aR5qnU9671TVj+W5OdTKeMAsiCxowxC1nhXUDx+LPDSPL4qEiInLjVzGmkNwbCffA==}
 
-  nuxt-i18n-micro-test-utils@1.0.6:
-    resolution: {integrity: sha512-ams/n8sRYKXl1rYSCL1YD4LOWB0sG1tLQwb+C1vMAd3pxhDukSF+jwZLqAq4ulwHM4ffLtKwNqbFEAeRsHb5eA==}
+  nuxt-i18n-micro-test-utils@1.0.7:
+    resolution: {integrity: sha512-RdPcOt+z28ONgcwZSV3XR0X8ipG7GbsUiKPkqp6WH2HP4Ck50cgXObzQk2ZxChB8yJYM3/ty0BxHXE7iL0x6qg==}
 
-  nuxt-i18n-micro-types@1.0.10:
-    resolution: {integrity: sha512-NM+ui8Kzg53c3iNuCE75T4w3qTfIuevCeEFSM1ygDzcSs5pgYgJW0LNZBLNWABOGdA4Pd6G4XZGTdU1GVF0CHg==}
+  nuxt-i18n-micro-types@1.0.11:
+    resolution: {integrity: sha512-OkPHrb4TdUbhgaL3bPTLmFH0ecsUzIrKJP6SxLVhuv2o8MbegO33DJedLeeQcXenWeXyeyeUc1b6Sp21KVhu4A==}
 
-  nuxt-i18n-micro-types@1.0.3:
-    resolution: {integrity: sha512-x01rPCLlb2r627Q9lzA0nRC5TEt/mg9G2Hf2fug6941YdttwZtgwOsxXx6chI6O0O2SxBB6pNepyaaVr7lUS9A==}
+  nuxt-i18n-micro-types@1.0.15:
+    resolution: {integrity: sha512-tph2hxW09iXuluu8JeTI3mMe536xww0fi/tecTncJQq6qKW9sH5dmg0SmVYfeaXBTDsnMwHYDDV0NCTbYfWUZw==}
 
-  nuxt-i18n-micro@1.102.0:
-    resolution: {integrity: sha512-QIFCif8MMAu3NnQBduk3Jm3w4lJbfaZ6EkB7SaInOGQQXbx97KXCuaIFrtgDuUKgsjoNFRTmNL85DZ9KQV5v1Q==}
+  nuxt-i18n-micro@2.13.0:
+    resolution: {integrity: sha512-9CG5YXh9pNlcCYPodNsZCYeYbrXq3nkdXPMzvcBpgE6DiYVFfB7ecz5/08Dlvs5DzntmO4FhtrStK+lNDnSIGQ==}
     peerDependencies:
       vue-router: '>=4.4.0'
 
@@ -12673,29 +12674,31 @@ snapshots:
 
   nuxt-define@1.0.0: {}
 
-  nuxt-i18n-micro-core@1.0.13: {}
-
-  nuxt-i18n-micro-core@1.0.18:
+  nuxt-i18n-micro-core@1.0.20:
     dependencies:
-      nuxt-i18n-micro-types: 1.0.3
+      nuxt-i18n-micro-types: 1.0.11
 
-  nuxt-i18n-micro-test-utils@1.0.6:
+  nuxt-i18n-micro-core@1.0.26:
     dependencies:
-      nuxt-i18n-micro-core: 1.0.13
+      nuxt-i18n-micro-types: 1.0.15
 
-  nuxt-i18n-micro-types@1.0.10: {}
+  nuxt-i18n-micro-test-utils@1.0.7:
+    dependencies:
+      nuxt-i18n-micro-core: 1.0.20
 
-  nuxt-i18n-micro-types@1.0.3: {}
+  nuxt-i18n-micro-types@1.0.11: {}
 
-  nuxt-i18n-micro@1.102.0(magicast@0.3.5)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3))):
+  nuxt-i18n-micro-types@1.0.15: {}
+
+  nuxt-i18n-micro@2.13.0(magicast@0.3.5)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3))):
     dependencies:
       '@nuxt/devtools-kit': 2.6.5(magicast@0.3.5)(vite@7.1.10(@types/node@24.8.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(yaml@2.8.1))
       '@nuxt/kit': 4.1.3(magicast@0.3.5)
       chokidar: 3.6.0
       globby: 14.1.0
-      nuxt-i18n-micro-core: 1.0.18
-      nuxt-i18n-micro-test-utils: 1.0.6
-      nuxt-i18n-micro-types: 1.0.10
+      nuxt-i18n-micro-core: 1.0.26
+      nuxt-i18n-micro-test-utils: 1.0.7
+      nuxt-i18n-micro-types: 1.0.15
       sirv: 2.0.4
       ufo: 1.6.1
       vue-router: 4.6.3(vue@3.5.22(typescript@5.9.3))
