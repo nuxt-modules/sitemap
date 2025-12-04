@@ -17,7 +17,19 @@ export default defineContentConfig({
         },
         schema: z.object({
           date: z.string().optional(),
+          draft: z.boolean().optional(),
         }),
+      }, {
+        name: 'content',
+        filter: (entry) => {
+          // exclude drafts
+          if (entry.draft)
+            return false
+          // exclude future posts
+          if (entry.date && new Date(entry.date) > new Date())
+            return false
+          return true
+        },
       }),
     ),
   },

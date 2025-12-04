@@ -2,6 +2,17 @@ import type { Collection } from '@nuxt/content'
 import type { TypeOf } from 'zod'
 import { z } from 'zod'
 
+// use global to persist filters across module boundaries during build
+declare global {
+  // eslint-disable-next-line no-var
+  var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+}
+
+if (!globalThis.__sitemapCollectionFilters)
+  globalThis.__sitemapCollectionFilters = new Map()
+
+const _collectionFilters = globalThis.__sitemapCollectionFilters
+
 export const schema = z.object({
   sitemap: z.object({
     loc: z.string().optional(),
@@ -40,10 +51,37 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-export function asSitemapCollection<T>(collection: Collection<T>): Collection<T> {
+export { _collectionFilters }
+
+export interface AsSitemapCollectionOptions<TEntry = any> {
+  /**
+   * Collection name. Must match the key in your collections object.
+   * Required when using a filter.
+   * @example
+   * collections: {
+   *   blog: defineCollection(asSitemapCollection({...}, { name: 'blog', filter: ... }))
+   * }
+   */
+  name?: string
+  /**
+   * Runtime filter function to exclude entries from sitemap.
+   * Receives the full content entry including all schema fields.
+   * Requires `name` parameter to be set.
+   * @example
+   * { name: 'blog', filter: (entry) => !entry.draft && new Date(entry.date) <= new Date() }
+   */
+  filter?: (entry: TEntry & { path?: string, sitemap?: any }) => boolean
+}
+
+export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
+
+    // store filter - _collectionFilters is a global Map
+    if (options?.filter && options?.name)
+      _collectionFilters.set(options.name, options.filter)
   }
+
   return collection
 }

@@ -459,6 +459,17 @@ export default defineNuxtModule<ModuleOptions>({
         ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
       })
 
+      // inject filter functions as a virtual module
+      nuxt.hook('nitro:config', (nitroConfig) => {
+        const filterEntries: string[] = []
+        if (globalThis.__sitemapCollectionFilters) {
+          for (const [name, filterFn] of globalThis.__sitemapCollectionFilters.entries())
+            filterEntries.push(`filters.set('${name}', ${filterFn.toString()})`)
+        }
+
+        nitroConfig.virtual = nitroConfig.virtual || {}
+        nitroConfig.virtual['#sitemap/content-filters'] = `export const filters = new Map()\n${filterEntries.join('\n')}`
+      })
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
         handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),

@@ -39,6 +39,9 @@ describe('nuxt/content v3 default', () => {
           "loc": "/posts/foo",
         },
         {
+          "loc": "/published",
+        },
+        {
           "changefreq": "weekly",
           "lastmod": "2025-05-14",
           "loc": "/test-json",
@@ -72,6 +75,9 @@ describe('nuxt/content v3 default', () => {
           <url>
               <loc>https://nuxtseo.com/foo</loc>
               <priority>0.5</priority>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/published</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/test-json</loc>
