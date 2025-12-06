@@ -82,8 +82,7 @@
     "sirv": "^3.0.2",
     "std-env": "^3.10.0",
     "ufo": "^1.6.1",
-    "ultrahtml": "^1.6.0",
-    "vue-i18n-routing": "^1.2.0"
+    "ultrahtml": "^1.6.0"
   },
   "peerDependencies": {
     "zod": "^3.0.0 || ^4.0.0"
@@ -94,6 +93,7 @@
     }
   },
   "devDependencies": {
+    "vue-i18n-routing": "^1.2.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@nuxt/content": "^3.9.0",
     "@nuxt/eslint-config": "^1.11.0",
