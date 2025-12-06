@@ -64,7 +64,7 @@
     "test": "vitest run && pnpm run test:attw",
     "test:unit": "vitest --project=unit",
     "test:attw": "attw --pack",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^3.1.1",
@@ -93,6 +93,7 @@
     }
   },
   "devDependencies": {
+    "vue-i18n-routing": "^1.2.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@nuxt/content": "^3.9.0",
     "@nuxt/eslint-config": "^1.11.0",

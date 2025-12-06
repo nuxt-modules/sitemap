@@ -286,7 +286,7 @@ const userSources = computed(() => (data.value?.globalSources || []).filter(s =>
                 <h3 class="opacity-80 text-base mb-1">
                   {{ sitemap.sitemapName }}
                   <NIcon
-                    v-if="(sitemap.sources || []).some(s => !!s.error)"
+                    v-if="(sitemap.sources || []).some(s => !!(s as any).error)"
                     icon="carbon:warning"
                     class="text-red-500"
                   />

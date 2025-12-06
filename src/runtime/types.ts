@@ -2,6 +2,23 @@ import type { FetchOptions } from 'ofetch'
 import type { H3Event } from 'h3'
 import type { ParsedURL } from 'ufo'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
+import type { MaybeArray } from 'unhead/types'
+
+declare module 'nitropack/types' {
+  interface NitroApp {
+    _sitemapWarned?: boolean
+  }
+
+  interface NitroRouteConfig {
+    robots?: boolean
+  }
+}
+
+declare module 'nitropack' {
+  interface NitroRouteRules {
+    robots?: boolean
+  }
+}
 
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause
@@ -208,6 +225,8 @@ interface LocaleObject extends Record<string, any> {
     cache?: boolean
   }[]
   isCatchallLocale?: boolean
+  _sitemap?: string
+  _hreflang?: string
   /**
    * @deprecated in v9, use `language` instead
    */
@@ -217,7 +236,7 @@ interface LocaleObject extends Record<string, any> {
 
 export interface AutoI18nConfig {
   differentDomains?: boolean
-  locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
+  locales: LocaleObject[]
   defaultLocale: string
   strategy: 'prefix' | 'prefix_except_default' | 'prefix_and_default' | 'no_prefix'
   pages?: Record<string, Record<string, string | false>>
@@ -226,7 +245,13 @@ export interface AutoI18nConfig {
 export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify'> {
   version: string
   isNuxtContentDocumentDriven: boolean
-  sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
+  sitemaps: {
+    index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] }
+  }
+  & Record<
+    string,
+      Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }
+  >
   autoI18n?: AutoI18nConfig
   isMultiSitemap: boolean
   isI18nMapped: boolean
@@ -294,7 +319,7 @@ export interface SitemapDefinition {
   /**
    * Default options for all URLs in the sitemap.
    */
-  defaults?: Omit<SitemapUrl, 'loc'>
+  defaults: Omit<SitemapUrl, 'loc'>
   /**
    * Additional sources of URLs to include in the sitemap.
    */
@@ -392,12 +417,19 @@ export interface SitemapUrl {
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
   _sitemap?: string | false
+  /**
+   * Added these for sitemap.ts on or around line 199
+   * const newEntry: ResolvedSitemapUrl = preNormalizeEntry({})
+   */
+  _index?: number
+  _key?: string
+  _locale?: LocaleObject
 }
 
 export type SitemapStrict = Required<SitemapUrl>
 
 export interface AlternativeEntry {
-  hreflang: string
+  hreflang?: string
   href: string | URL
 }
 
@@ -436,6 +468,12 @@ export interface ImageEntry {
   license?: string | URL
 }
 
+export interface VideoEntryPrice {
+  price?: number | string
+  currency?: string
+  type?: 'rent' | 'purchase' | 'package' | 'subscription'
+}
+
 export interface VideoEntry {
   title: string
   thumbnail_loc: string | URL
@@ -450,11 +488,7 @@ export interface VideoEntry {
   family_friendly?: 'yes' | 'no' | boolean
   restriction?: Restriction
   platform?: Platform
-  price?: ({
-    price?: number | string
-    currency?: string
-    type?: 'rent' | 'purchase' | 'package' | 'subscription'
-  })[]
+  price?: MaybeArray<VideoEntryPrice>
   requires_subscription?: 'yes' | 'no' | boolean
   uploader?: {
     uploader: string
@@ -462,6 +496,8 @@ export interface VideoEntry {
   }
   live?: 'yes' | 'no' | boolean
   tag?: string | string[]
+  category?: string
+  gallery_loc?: string | URL
 }
 
 export interface Restriction {
