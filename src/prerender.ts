@@ -73,7 +73,7 @@ export async function readSourcesFromFilesystem(filename) {
   if (!import.meta.prerender) {
     return null
   }
-  const path = join('${runtimeAssetsPath}', filename)
+  const path = join(${JSON.stringify(runtimeAssetsPath)}, filename)
   const data = await readFile(path, 'utf-8').catch(() => null)
   return data ? JSON.parse(data) : null
 }
