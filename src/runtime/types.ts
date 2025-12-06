@@ -431,7 +431,7 @@ export interface GoogleNewsEntry {
 export interface ImageEntry {
   loc: string | URL
   caption?: string
-  geoLocation?: string
+  geo_location?: string
   title?: string
   license?: string | URL
 }
