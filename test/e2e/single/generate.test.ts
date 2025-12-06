@@ -10,7 +10,7 @@ describe.skipIf(process.env.CI)('generate', () => {
     process.env.NITRO_PRESET = 'static'
     process.env.NUXT_PUBLIC_SITE_URL = 'https://nuxtseo.com'
     const { resolve } = createResolver(import.meta.url)
-    const rootDir = resolve('../../fixtures/basic')
+    const rootDir = resolve('../../fixtures/generate')
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
@@ -39,6 +39,9 @@ describe.skipIf(process.env.CI)('generate', () => {
               <loc>https://nuxtseo.com/crawled</loc>
           </url>
           <url>
+              <loc>https://nuxtseo.com/noindex</loc>
+          </url>
+          <url>
               <loc>https://nuxtseo.com/dynamic/crawled</loc>
           </url>
           <url>
@@ -46,5 +49,7 @@ describe.skipIf(process.env.CI)('generate', () => {
           </url>
       </urlset>"
     `)
+    // verify /noindex is not in the sitemap
+    expect(sitemap).not.toContain('/noindex')
   }, 1200000)
 })

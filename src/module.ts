@@ -73,7 +73,7 @@ export default defineNuxtModule<ModuleOptions>({
     '@nuxtjs/robots': {
       version: '>=4',
       optional: true,
-    }
+    },
   },
   defaults: {
     enabled: true,
@@ -753,137 +753,184 @@ export {}
     const pagesPromise = createPagesPromise()
     const nitroPromise = createNitroPromise()
     let resolvedConfigUrls = false
-    nuxt.hooks.hook('nitro:config', (nitroConfig) => {
-      nitroConfig.virtual!['#sitemap-virtual/global-sources.mjs'] = async () => {
-        const { prerenderUrls, routeRules } = generateExtraRoutesFromNuxtConfig()
-        const prerenderUrlsFinal = [
-          ...prerenderUrls,
-          ...((await nitroPromise)._prerenderedRoutes || [])
-            .filter((r) => {
-              // avoid adding fallback pages to sitemap
-              if (['/200.html', '/404.html', '/index.html'].includes(r.route) || r.error || isPathFile(r.route))
-                return false
-              return r.contentType?.includes('text/html')
-            })
-            .map(r => r._sitemap),
-        ]
-        const pageSource = convertNuxtPagesToSitemapEntries(await pagesPromise, {
-          isI18nMapped,
-          autoLastmod: config.autoLastmod,
-          defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
-          strategy: nuxtI18nConfig.strategy || 'no_prefix',
-          routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
-          normalisedLocales,
-          filter: {
-            include: normalizeFilters(config.include),
-            exclude: normalizeFilters(config.exclude),
-          },
-          isI18nMicro: i18nModule === 'nuxt-i18n-micro',
-        })
-        if (!pageSource.length) {
-          pageSource.push(nuxt.options.app.baseURL || '/')
+
+    const isValidPrerenderRoute = (r: any) => {
+      // avoid adding fallback pages to sitemap
+      if (['/200.html', '/404.html', '/index.html'].includes(r.route) || r.error || isPathFile(r.route))
+        return false
+      return r.contentType?.includes('text/html')
+    }
+
+    const generateGlobalSources = async () => {
+      const { routeRules } = generateExtraRoutesFromNuxtConfig()
+      const nitro = await nitroPromise
+      const prerenderedRoutes = nitro._prerenderedRoutes || []
+      const prerenderUrlsFinal = [
+        ...prerenderedRoutes
+          .filter(isValidPrerenderRoute)
+          .map(r => r._sitemap)
+          .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false)),
+      ]
+      if (config.debug) {
+        logger.info('Prerendered routes:', prerenderUrlsFinal)
+      }
+      const pageSource = convertNuxtPagesToSitemapEntries(await pagesPromise, {
+        isI18nMapped,
+        autoLastmod: config.autoLastmod,
+        defaultLocale: nuxtI18nConfig.defaultLocale || 'en',
+        strategy: nuxtI18nConfig.strategy || 'no_prefix',
+        routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
+        normalisedLocales,
+        filter: {
+          include: normalizeFilters(config.include),
+          exclude: normalizeFilters(config.exclude),
+        },
+        isI18nMicro: i18nModule === 'nuxt-i18n-micro',
+      })
+      if (!pageSource.length) {
+        pageSource.push(nuxt.options.app.baseURL || '/')
+      }
+      // Dedupe: remove pages that were prerendered (prerender data takes precedence)
+      const allPrerenderedPaths = new Set(
+        prerenderedRoutes
+          .filter(isValidPrerenderRoute)
+          .map(r => r.route),
+      )
+      const dedupedPageSource = pageSource.filter((p) => {
+        const path = typeof p === 'string' ? p : p.loc
+        return !allPrerenderedPaths.has(path)
+      })
+      if (!resolvedConfigUrls && config.urls) {
+        const urls = await resolveUrls(config.urls, { path: 'sitemap:urls', logger })
+        if (urls.length) {
+          userGlobalSources.push({
+            context: {
+              name: 'sitemap:urls',
+              description: 'Set with the `sitemap.urls` config.',
+            },
+            urls,
+          })
         }
-        if (!resolvedConfigUrls && config.urls) {
-          if (config.urls) {
-            userGlobalSources.push({
-              context: {
-                name: 'sitemap:urls',
-                description: 'Set with the `sitemap.urls` config.',
-              },
-              urls: await resolveUrls(config.urls, { path: 'sitemap:urls', logger }),
-            })
-          }
-          // we want to avoid adding duplicates as well as hitting api endpoints multiple times
-          resolvedConfigUrls = true
-        }
-        const globalSources: SitemapSourceInput[] = [
-          ...userGlobalSources.map((s) => {
-            if (typeof s === 'string' || Array.isArray(s)) {
-              return <SitemapSourceBase> {
-                sourceType: 'user',
-                fetch: s,
-              }
+        resolvedConfigUrls = true
+      }
+      const globalSources: SitemapSourceInput[] = [
+        ...userGlobalSources.map((s) => {
+          if (typeof s === 'string' || Array.isArray(s)) {
+            return <SitemapSourceBase> {
+              sourceType: 'user',
+              fetch: s,
             }
-            s.sourceType = 'user'
+          }
+          s.sourceType = 'user'
+          return s
+        }),
+        ...(config.excludeAppSources === true
+          ? []
+          : <typeof appGlobalSources>[
+            ...appGlobalSources,
+            {
+              context: {
+                name: 'nuxt:pages',
+                description: 'Generated from your static page files.',
+                tips: [
+                  'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
+                ],
+              },
+              urls: dedupedPageSource,
+            },
+            {
+              context: {
+                name: 'nuxt:route-rules',
+                description: 'Generated from your route rules config.',
+                tips: [
+                  'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
+                ],
+              },
+              urls: routeRules,
+            },
+            {
+              context: {
+                name: 'nuxt:prerender',
+                description: 'Generated at build time when prerendering.',
+                tips: [
+                  'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
+                ],
+              },
+              urls: prerenderUrlsFinal,
+            },
+          ])
+          .filter(s =>
+            !(config.excludeAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
+            && (!!s.urls?.length || !!s.fetch))
+          .map((s) => {
+            s.sourceType = 'app'
             return s
           }),
-          ...(config.excludeAppSources === true
-            ? []
-            : <typeof appGlobalSources>[
-              ...appGlobalSources,
-              {
-                context: {
-                  name: 'nuxt:pages',
-                  description: 'Generated from your static page files.',
-                  tips: [
-                    'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
-                  ],
-                },
-                urls: pageSource,
+      ]
+      return globalSources
+    }
+
+    const extraSitemapModules = typeof config.sitemaps == 'object' ? Object.keys(config.sitemaps).filter(n => n !== 'index') : []
+    const sitemapSources: Record<string, SitemapSourceInput[]> = {}
+    const generateChildSources = async () => {
+      for (const sitemapName of extraSitemapModules) {
+        sitemapSources[sitemapName] = sitemapSources[sitemapName] || []
+        const definition = (config.sitemaps as Record<string, SitemapDefinition>)[sitemapName] as SitemapDefinition
+        if (!sitemapSources[sitemapName].length) {
+          if (definition.urls) {
+            sitemapSources[sitemapName].push({
+              context: {
+                name: `sitemaps:${sitemapName}:urls`,
+                description: 'Set with the `sitemap.urls` config.',
               },
-              {
-                context: {
-                  name: 'nuxt:route-rules',
-                  description: 'Generated from your route rules config.',
-                  tips: [
-                    'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
-                  ],
-                },
-                urls: routeRules,
-              },
-              {
-                context: {
-                  name: 'nuxt:prerender',
-                  description: 'Generated at build time when prerendering.',
-                  tips: [
-                    'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
-                  ],
-                },
-                urls: prerenderUrlsFinal,
-              },
-            ])
-            .filter(s =>
-              !(config.excludeAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
-              && (!!s.urls?.length || !!s.fetch))
+              urls: await resolveUrls(definition.urls, { path: `sitemaps:${sitemapName}:urls`, logger }),
+            })
+          }
+          sitemapSources[sitemapName].push(...(definition.sources || [])
             .map((s) => {
-              s.sourceType = 'app'
+              if (typeof s === 'string' || Array.isArray(s)) {
+                return <SitemapSourceBase> {
+                  sourceType: 'user',
+                  fetch: s,
+                }
+              }
+              s.sourceType = 'user'
               return s
             }),
-        ]
-        return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
+          )
+        }
+      }
+      return sitemapSources
+    }
+
+    nuxt.hooks.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.virtual = nitroConfig.virtual || {}
+
+      // Always provide read-sources module stub (real implementation added by prerender.ts when needed)
+      if (!nitroConfig.virtual['#sitemap-virtual/read-sources.mjs']) {
+        nitroConfig.virtual['#sitemap-virtual/read-sources.mjs'] = `
+export async function readSourcesFromFilesystem() {
+  return null
+}
+`
       }
 
-      const extraSitemapModules = typeof config.sitemaps == 'object' ? Object.keys(config.sitemaps).filter(n => n !== 'index') : []
-      const sitemapSources: Record<string, SitemapSourceInput[]> = {}
-      nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
-        for (const sitemapName of extraSitemapModules) {
-          sitemapSources[sitemapName] = sitemapSources[sitemapName] || []
-          const definition = (config.sitemaps as Record<string, SitemapDefinition>)[sitemapName] as SitemapDefinition
-          if (!sitemapSources[sitemapName].length) {
-            if (definition.urls) {
-              sitemapSources[sitemapName].push({
-                context: {
-                  name: `sitemaps:${sitemapName}:urls`,
-                  description: 'Set with the `sitemap.urls` config.',
-                },
-                urls: await resolveUrls(definition.urls, { path: `sitemaps:${sitemapName}:urls`, logger }),
-              })
-            }
-            sitemapSources[sitemapName].push(...(definition.sources || [])
-              .map((s) => {
-                if (typeof s === 'string' || Array.isArray(s)) {
-                  return <SitemapSourceBase> {
-                    sourceType: 'user',
-                    fetch: s,
-                  }
-                }
-                s.sourceType = 'user'
-                return s
-              }),
-            )
-          }
+      // Skip virtual templates when prerendering - sources are written to filesystem instead
+      if (prerenderSitemap) {
+        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
+        nitroConfig.virtual[`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
+      }
+      else {
+        // Virtual templates generate sources data - will be cached in storage on first use
+        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = async () => {
+          const globalSources = await generateGlobalSources()
+          return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
         }
-        return `export const sources = ${JSON.stringify(sitemapSources, null, 4)}`
+
+        nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
+          const childSources = await generateChildSources()
+          return `export const sources = ${JSON.stringify(childSources, null, 4)}`
+        }
       }
     })
 
@@ -905,6 +952,6 @@ export {}
       handler: resolve('./runtime/server/routes/sitemap.xml'),
     })
 
-    setupPrerenderHandler({ runtimeConfig, logger })
+    setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
   },
 })

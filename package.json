@@ -1,8 +1,8 @@
 {
   "name": "@nuxtjs/sitemap",
   "type": "module",
-  "version": "7.4.7",
-  "packageManager": "pnpm@10.16.1",
+  "version": "7.4.8",
+  "packageManager": "pnpm@10.24.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -67,45 +67,53 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/devtools-kit": "^2.6.3",
-    "@nuxt/kit": "^4.1.2",
+    "@nuxt/devtools-kit": "^3.1.1",
+    "@nuxt/kit": "^4.2.1",
     "chalk": "^5.6.2",
     "defu": "^6.1.4",
-    "fast-xml-parser": "^5.2.5",
+    "fast-xml-parser": "^5.3.2",
     "h3-compression": "^0.3.2",
-    "nuxt-site-config": "^3.2.5",
-    "ofetch": "^1.4.1",
+    "nuxt-site-config": "^3.2.11",
+    "ofetch": "^1.5.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "radix3": "^1.1.2",
-    "semver": "^7.7.2",
+    "semver": "^7.7.3",
     "sirv": "^3.0.2",
-    "std-env": "^3.9.0",
+    "std-env": "^3.10.0",
     "ufo": "^1.6.1",
     "ultrahtml": "^1.6.0",
     "vue-i18n-routing": "^1.2.0"
   },
+  "peerDependencies": {
+    "zod": "^3.0.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@nuxt/content": "^3.7.1",
-    "@nuxt/eslint-config": "^1.9.0",
+    "@nuxt/content": "^3.9.0",
+    "@nuxt/eslint-config": "^1.11.0",
     "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/test-utils": "^3.19.2",
-    "@nuxt/ui": "^3.3.4",
-    "@nuxtjs/i18n": "^10.1.0",
-    "@nuxtjs/robots": "^5.5.1",
+    "@nuxt/test-utils": "^3.21.0",
+    "@nuxt/ui": "^4.2.1",
+    "@nuxtjs/i18n": "^10.2.1",
+    "@nuxtjs/robots": "^5.6.1",
     "@nuxtjs/sitemap": "workspace:*",
-    "better-sqlite3": "^12.2.0",
-    "bumpp": "^10.2.3",
-    "eslint": "^9.35.0",
-    "eslint-plugin-n": "^17.23.0",
-    "execa": "^9.6.0",
-    "happy-dom": "^18.0.1",
-    "nuxt": "^4.1.2",
-    "nuxt-i18n-micro": "^1.95.0",
-    "typescript": "^5.9.2",
-    "vitest": "^3.2.4",
-    "vue-tsc": "^3.0.7"
+    "better-sqlite3": "^12.5.0",
+    "bumpp": "^10.3.2",
+    "eslint": "^9.39.1",
+    "eslint-plugin-n": "^17.23.1",
+    "execa": "^9.6.1",
+    "happy-dom": "^20.0.11",
+    "nuxt": "^4.2.1",
+    "nuxt-i18n-micro": "^2.13.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3",
+    "vue-tsc": "^3.1.6"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

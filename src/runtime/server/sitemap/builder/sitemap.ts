@@ -329,8 +329,13 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
-    if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
+    if (e._sitemap === false)
+      return false
+    if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
+      if (sitemap._isChunking)
+        return sitemap.sitemapName.startsWith(e._sitemap + '-')
       return e._sitemap === sitemap.sitemapName
+    }
     return true
   })
   // 4. sort

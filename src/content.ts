@@ -1,6 +1,6 @@
 import type { Collection } from '@nuxt/content'
 import type { TypeOf } from 'zod'
-import { z } from '@nuxt/content'
+import { z } from 'zod'
 
 export const schema = z.object({
   sitemap: z.object({

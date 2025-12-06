@@ -40,7 +40,7 @@ function isValidDate(dateString: string): boolean {
   return !Number.isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < 3000
 }
 
-export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean, resolveUrl?: (s: string) => string }) {
+export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: boolean, videos?: boolean, lastmod?: boolean, alternatives?: boolean, resolveUrl?: (s: string) => string }): Partial<SitemapUrl> | null {
   options = options || { images: true, videos: true, lastmod: true, alternatives: true }
   const payload: Partial<SitemapUrl> = {}
   const resolveUrl = options?.resolveUrl || ((s: string) => s)
@@ -61,6 +61,7 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
   const videoSources = new Map<ElementNode, string[]>()
   let articleModifiedTime: string | undefined
   const alternatives: ResolvedSitemapUrl['alternatives'] = []
+  let isBlocked = false
 
   // First pass: find main element and collect document-level elements
   walkSync(doc, (node) => {
@@ -71,6 +72,15 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
       // Find main element
       if (element.name === 'main' && !mainElement) {
         mainElement = element
+      }
+
+      // Check for blocking meta tags
+      if (element.name === 'meta') {
+        const name = sanitizeString(attrs.name).toLowerCase()
+        const content = sanitizeString(attrs.content).toLowerCase()
+        if (name === 'robots' && (content.includes('noindex') || content.includes('none'))) {
+          isBlocked = true
+        }
       }
 
       // Collect lastmod meta tags (document-level)
@@ -275,6 +285,11 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
 
   if (options?.alternatives && alternatives.length > 0 && (alternatives.length > 1 || alternatives[0]?.hreflang !== 'x-default')) {
     payload.alternatives = alternatives
+  }
+
+  // Return null if blocked from indexing
+  if (isBlocked) {
+    return null
   }
 
   return payload

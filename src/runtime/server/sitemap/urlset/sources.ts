@@ -150,18 +150,30 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   }
 }
 
-export function globalSitemapSources() {
-  return import('#sitemap-virtual/global-sources.mjs')
-    .then(m => m.sources)
+export async function globalSitemapSources() {
+  if (import.meta.prerender) {
+    const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
+    const sources = await readSourcesFromFilesystem('global-sources.json')
+    if (sources)
+      return sources
+  }
+  const m = await import('#sitemap-virtual/global-sources.mjs')
+  return m.sources
 }
 
-export function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
-  return (
-    definition?._hasSourceChunk
-      ? import(`#sitemap-virtual/child-sources.mjs`)
-          .then(m => m.sources[definition.sitemapName] || [])
-      : Promise.resolve([])
-  )
+export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
+  if (!definition?._hasSourceChunk)
+    return []
+
+  if (import.meta.prerender) {
+    const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
+    const allSources = await readSourcesFromFilesystem('child-sources.json')
+    if (allSources)
+      return allSources[definition.sitemapName] || []
+  }
+
+  const m = await import('#sitemap-virtual/child-sources.mjs')
+  return m.sources[definition.sitemapName] || []
 }
 
 export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {

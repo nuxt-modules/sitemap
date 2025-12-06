@@ -416,8 +416,7 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
-  _sitemap?: string
-
+  _sitemap?: string | false
   /**
    * Added these for sitemap.ts on or around line 199
    * const newEntry: ResolvedSitemapUrl = preNormalizeEntry({})
