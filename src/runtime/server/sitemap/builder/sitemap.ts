@@ -315,8 +315,11 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   const filteredUrls = enhancedUrls.filter((e) => {
     if (e._sitemap === false)
       return false
-    if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
+    if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
+      if (sitemap._isChunking)
+        return sitemap.sitemapName.startsWith(e._sitemap + '-')
       return e._sitemap === sitemap.sitemapName
+    }
     return true
   })
   // 4. sort
