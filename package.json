@@ -64,7 +64,7 @@
     "test": "vitest run && pnpm run test:attw",
     "test:unit": "vitest --project=unit",
     "test:attw": "attw --pack",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^3.1.1",

@@ -13,7 +13,6 @@ import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { splitForLocales } from './runtime/utils-pure'
 import { resolveNitroPreset } from './utils-internal/kit'
-import type { Stream } from 'node:stream'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -179,9 +178,7 @@ async function prerenderRoute(nitro: Nitro, route: string) {
   if (filePath.endsWith('json') || typeof data === 'object')
     await writeFile(filePath, JSON.stringify(data), 'utf8')
   else
-    // todo: validate data returned is of type that can be written to a file - may cause an error if not?
-    // @ts-expect-error data is not yet typed and validated from the response
-    await writeFile(filePath, data, 'utf8')
+    await writeFile(filePath, data as string, 'utf8')
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
   nitro.logger.log(formatPrerenderRoute(_route))
