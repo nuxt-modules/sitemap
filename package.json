@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.4.9",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@nuxt/devtools-kit": "^3.1.1",
-    "@nuxt/kit": "^4.2.1",
+    "@nuxt/kit": "^4.2.2",
     "chalk": "^5.6.2",
     "defu": "^6.1.4",
     "fast-xml-parser": "^5.3.2",
@@ -85,7 +85,7 @@
     "ultrahtml": "^1.6.0"
   },
   "peerDependencies": {
-    "zod": "^3.0.0 || ^4.0.0"
+    "zod": ">=3"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -95,12 +95,12 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@nuxt/content": "^3.9.0",
-    "@nuxt/eslint-config": "^1.11.0",
+    "@nuxt/eslint-config": "^1.12.1",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/test-utils": "^3.21.0",
     "@nuxt/ui": "^4.2.1",
     "@nuxtjs/i18n": "^10.2.1",
-    "@nuxtjs/robots": "^5.6.1",
+    "@nuxtjs/robots": "^5.6.3",
     "@nuxtjs/sitemap": "workspace:*",
     "better-sqlite3": "^12.5.0",
     "bumpp": "^10.3.2",
@@ -108,11 +108,11 @@
     "eslint-plugin-n": "^17.23.1",
     "execa": "^9.6.1",
     "happy-dom": "^20.0.11",
-    "nuxt": "^4.2.1",
-    "nuxt-i18n-micro": "^2.13.0",
+    "nuxt": "^4.2.2",
+    "nuxt-i18n-micro": "^2.15.2",
     "typescript": "^5.9.3",
-    "vitest": "^3",
-    "vue-tsc": "^3.1.6"
+    "vitest": "^4.0.15",
+    "vue-tsc": "^3.1.8"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
