@@ -1,6 +1,13 @@
 ---
 title: Nitro Hooks
 description: Learn how to use Nitro Hooks to customize your sitemap entries.
+relatedPages:
+  - path: /docs/sitemap/getting-started/data-sources
+    title: Data Sources
+  - path: /docs/sitemap/guides/dynamic-urls
+    title: Dynamic URL Endpoints
+  - path: /docs/sitemap/guides/multi-sitemaps
+    title: Multi Sitemaps
 ---
 
 Nitro hooks can be added to modify the output of your sitemaps at runtime.
