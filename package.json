@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.4.9",
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -111,7 +111,7 @@
     "nuxt": "^4.2.2",
     "nuxt-i18n-micro": "^2.15.2",
     "typescript": "^5.9.3",
-    "vitest": "4.0.15",
+    "vitest": "3.2.4",
     "vue-tsc": "^3.1.8"
   },
   "pnpm": {
