@@ -153,6 +153,15 @@ export interface ModuleOptions extends SitemapDefinition {
    * @experimental Will be enabled by default in v5 (if stable)
    */
   experimentalCompression?: boolean
+  /**
+   * When enabled, sitemap generation only runs during prerendering.
+   * The sitemap building code is tree-shaken from the runtime bundle.
+   *
+   * Requires sitemaps to be prerendered (e.g., `nuxt generate` or `nitro.prerender.routes` includes sitemap).
+   *
+   * @default false
+   */
+  zeroRuntime?: boolean
 }
 
 export interface IndexSitemapRemotes {

@@ -101,6 +101,7 @@ export default defineNuxtModule<ModuleOptions>({
     // sources
     sources: [],
     excludeAppSources: [],
+    zeroRuntime: false,
   },
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -349,7 +350,21 @@ export {}
     })
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
+    let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
+
+    // zeroRuntime forces prerendering
+    if (config.zeroRuntime && !prerenderSitemap) {
+      prerenderSitemap = true
+      nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
+      nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
+      nuxt.options.nitro.prerender.routes.push('/sitemap.xml')
+      logger.info('`zeroRuntime` enabled - sitemap routes will be prerendered.')
+    }
+    // base path for route handlers
+    const routesPath = config.zeroRuntime
+      ? './runtime/server/routes/__zero-runtime'
+      : './runtime/server/routes'
+
     const routeRules: NitroRouteConfig = {}
     nuxt.options.nitro.routeRules = nuxt.options.nitro.routeRules || {}
     if (prerenderSitemap) {
@@ -394,10 +409,15 @@ export {}
       nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
     }
 
-    if (config.experimentalWarmUp)
-      addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
-    if (config.experimentalCompression)
-      addServerPlugin(resolve('./runtime/server/plugins/compression'))
+    // skip experimental runtime plugins in zeroRuntime mode
+    if (config.zeroRuntime && (config.experimentalWarmUp || config.experimentalCompression))
+      logger.warn('`experimentalWarmUp` and `experimentalCompression` are ignored in zeroRuntime mode.')
+    if (!config.zeroRuntime) {
+      if (config.experimentalWarmUp)
+        addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
+      if (config.experimentalCompression)
+        addServerPlugin(resolve('./runtime/server/plugins/compression'))
+    }
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
@@ -514,14 +534,14 @@ export {}
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
-        handler: resolve('./runtime/server/routes/sitemap_index.xml'),
+        handler: resolve(`${routesPath}/sitemap_index.xml`),
         lazy: true,
         middleware: false,
       })
       if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/') {
         addServerHandler({
           route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
-          handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+          handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
           lazy: true,
           middleware: false,
         })
@@ -537,7 +557,7 @@ export {}
           // Register the base sitemap route
           addServerHandler({
             route: withLeadingSlash(`${sitemapName}.xml`),
-            handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+            handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
             lazy: true,
             middleware: false,
           })
@@ -547,7 +567,7 @@ export {}
             // Register a wildcard route for chunks instead of individual routes
             addServerHandler({
               route: `/${sitemapName}-*.xml`,
-              handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+              handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
               lazy: true,
               middleware: false,
             })
@@ -718,7 +738,8 @@ export {}
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = runtimeConfig
 
-    if (config.debug || nuxt.options.dev) {
+    // debug endpoints - skip in zeroRuntime as they pull in full sitemap code
+    if ((config.debug || nuxt.options.dev) && !config.zeroRuntime) {
       addServerHandler({
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
@@ -949,9 +970,22 @@ export async function readSourcesFromFilesystem() {
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
       route: `/${config.sitemapName}`,
-      handler: resolve('./runtime/server/routes/sitemap.xml'),
+      handler: resolve(`${routesPath}/sitemap.xml`),
     })
 
     setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
+
+    // suggest zeroRuntime when no dynamic sources detected
+    if (!config.zeroRuntime && !nuxt.options.dev && !nuxt.options._prepare) {
+      const hasDynamicSource = (source: SitemapSourceInput) =>
+        typeof source === 'string' || Array.isArray(source) || !!(source as SitemapSourceBase).fetch
+
+      const globalHasFetch = (config.sources || []).some(hasDynamicSource)
+      const sitemapsHaveFetch = typeof config.sitemaps === 'object'
+        && Object.values(config.sitemaps).some(s => s && 'sources' in s && (s.sources || []).some(hasDynamicSource))
+
+      if (!globalHasFetch && !sitemapsHaveFetch)
+        logger.info('No dynamic sources detected. Consider enabling `zeroRuntime` to reduce server bundle size. See https://nuxtseo.com/sitemap/guides/zero-runtime')
+    }
   },
 })
