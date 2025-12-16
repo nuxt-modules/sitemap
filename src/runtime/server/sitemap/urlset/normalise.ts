@@ -17,16 +17,19 @@ import type {
 import { mergeOnKey } from '../../../utils-pure'
 
 function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
-function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | undefined {
-  if (typeof s === 'undefined' || !resolvers)
-    return s
+function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): string | undefined
+function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): string | undefined {
+  if (typeof s === 'undefined')
+    return undefined
   // convert url to string
-  s = typeof s === 'string' ? s : s.toString()
+  const str = typeof s === 'string' ? s : s.toString()
+  if (!resolvers)
+    return str
   // avoid transforming remote urls and urls already resolved
-  if (hasProtocol(s, { acceptRelative: true, strict: false }))
-    return resolvers.fixSlashes(s)
+  if (hasProtocol(str, { acceptRelative: true, strict: false }))
+    return resolvers.fixSlashes(str)
 
-  return resolvers.canonicalUrlResolver(s)
+  return resolvers.canonicalUrlResolver(str)
 }
 
 function removeTrailingSlash(s: string) {
@@ -36,21 +39,23 @@ function removeTrailingSlash(s: string) {
 }
 
 export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
-  const e = (typeof _e === 'string' ? { loc: _e } : { ..._e }) as ResolvedSitemapUrl
-  if (e.url && !e.loc) {
-    e.loc = e.url
-    delete e.url
+  // Normalize url → loc before casting to ResolvedSitemapUrl
+  const input = typeof _e === 'string' ? { loc: _e } : { ..._e }
+  if (input.url && !input.loc) {
+    input.loc = input.url
   }
-  if (typeof e.loc !== 'string') {
-    e.loc = ''
+  delete input.url
+  if (typeof input.loc !== 'string') {
+    input.loc = ''
   }
+  const e = input as ResolvedSitemapUrl
   // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
   e.loc = removeTrailingSlash(e.loc)
   e._abs = hasProtocol(e.loc, { acceptRelative: false, strict: false })
   try {
     e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc)
   }
-  catch (e) {
+  catch {
     e._path = null
   }
   if (e._path) {
@@ -102,11 +107,8 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   // correct alternative hrefs
   if (e.alternatives) {
-    // Process alternatives in place to avoid extra array allocation
     const alternatives = e.alternatives.map(a => ({ ...a }))
-    for (let i = 0; i < alternatives.length; i++) {
-      const alt = alternatives[i]
-      // Modify in place
+    for (const alt of alternatives) {
       if (typeof alt.href === 'string') {
         alt.href = resolve(alt.href, resolvers)
       }
@@ -118,20 +120,18 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
   }
 
   if (e.images) {
-    // Process images in place
     const images = e.images.map(i => ({ ...i }))
-    for (let i = 0; i < images.length; i++) {
-      images[i].loc = resolve(images[i].loc, resolvers)
+    for (const img of images) {
+      img.loc = resolve(img.loc, resolvers)
     }
     e.images = mergeOnKey(images, 'loc')
   }
 
   if (e.videos) {
-    // Process videos in place
     const videos = e.videos.map(v => ({ ...v }))
-    for (let i = 0; i < videos.length; i++) {
-      if (videos[i].content_loc) {
-        videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
+    for (const video of videos) {
+      if (video.content_loc) {
+        video.content_loc = resolve(video.content_loc, resolvers)
       }
     }
     e.videos = mergeOnKey(videos, 'content_loc')
@@ -154,8 +154,9 @@ export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
     // correct a time component without a timezone
-    if (d.includes('T')) {
-      const t = d.split('T')[1]
+    const tIdx = d.indexOf('T')
+    if (tIdx !== -1) {
+      const t = d.slice(tIdx + 1)
       if (!t.includes('+') && !t.includes('-') && !t.includes('Z')) {
         // add UTC timezone
         d += 'Z'

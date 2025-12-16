@@ -252,7 +252,7 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
   /**
    * @internal
    */
-  _path: ParsedURL
+  _path: ParsedURL | null
   /**
    * @internal
    */
@@ -383,6 +383,10 @@ export type Changefreq
 
 export interface SitemapUrl {
   loc: string
+  /**
+   * Alias for `loc`. Will be normalized to `loc`.
+   */
+  url?: string
   lastmod?: string | Date
   changefreq?: Changefreq
   priority?: 0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1

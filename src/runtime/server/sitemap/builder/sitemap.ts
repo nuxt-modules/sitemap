@@ -59,7 +59,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         return false
       e._locale = locale
       e._index = i
-      e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path.search}`
+      e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path?.search || ''}`
       withoutPrefixPaths[pathWithoutPrefix] = withoutPrefixPaths[pathWithoutPrefix] || []
       // need to make sure the locale doesn't already exist
       if (!withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
@@ -146,7 +146,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             const newEntry = preNormalizeEntry({
               _sitemap,
               ...rest,
-              _key: `${_sitemap || ''}${loc || '/'}${e._path.search}`,
+              _key: `${_sitemap || ''}${loc || '/'}${e._path?.search || ''}`,
               _locale: l,
               loc,
               alternatives: ([{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales] as Array<{ code: string, _hreflang: string }>).map((locale) => {
@@ -209,7 +209,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       if (isI18nMapped) {
         e._sitemap = e._sitemap || e._locale._sitemap
-        e._key = `${e._sitemap || ''}${e.loc || '/'}${e._path.search}`
+        e._key = `${e._sitemap || ''}${e.loc || '/'}${e._path?.search || ''}`
       }
       if (e._index)
         _urls[e._index] = e

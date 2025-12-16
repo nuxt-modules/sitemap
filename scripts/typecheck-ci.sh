@@ -2,7 +2,6 @@
 # Typecheck excluding known high-error files that are being worked on separately
 
 EXCLUDE_PATTERNS=(
-  "sitemap/urlset/normalise.ts"
   "sitemap/builder/xml.ts"
 )
 
@@ -32,5 +31,5 @@ if [ $error_count -gt 0 ]; then
   exit 1
 fi
 
-echo "TypeCheck passed (excluded files: urlset/normalise.ts, builder/xml.ts)"
+echo "TypeCheck passed (excluded files: builder/xml.ts)"
 exit 0
