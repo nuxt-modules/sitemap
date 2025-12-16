@@ -53,7 +53,6 @@ export interface ModuleHooks {
   'sitemap:prerender:done': (ctx: {
     options: ModuleRuntimeConfig
     sitemaps: { name: string, content: string }[]
-    prerenderRoute: (route: string) => Promise<{ content: string, prerenderUrls: string[] }>
   }) => void | Promise<void>
 }
 
