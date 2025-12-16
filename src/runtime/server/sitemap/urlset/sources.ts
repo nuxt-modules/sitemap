@@ -154,11 +154,14 @@ export async function globalSitemapSources() {
   if (import.meta.prerender) {
     const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
     const sources = await readSourcesFromFilesystem('global-sources.json')
-    if (sources)
-      return sources
+    if (sources) {
+      // Spread to create a copy since the cached module returns a mutable reference
+      return [...sources]
+    }
   }
   const m = await import('#sitemap-virtual/global-sources.mjs')
-  return m.sources
+  // Spread to create a copy since the cached module returns a mutable reference
+  return [...m.sources]
 }
 
 export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
@@ -168,12 +171,15 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   if (import.meta.prerender) {
     const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
     const allSources = await readSourcesFromFilesystem('child-sources.json')
-    if (allSources)
-      return allSources[definition.sitemapName] || []
+    if (allSources) {
+      // Spread to create a copy since the cached module returns a mutable reference
+      return [...(allSources[definition.sitemapName] || [])]
+    }
   }
 
   const m = await import('#sitemap-virtual/child-sources.mjs')
-  return m.sources[definition.sitemapName] || []
+  // Spread to create a copy since the cached module returns a mutable reference
+  return [...(m.sources[definition.sitemapName] || [])]
 }
 
 export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {

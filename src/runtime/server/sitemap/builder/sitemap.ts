@@ -274,11 +274,10 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
 
   // always fetch all sitemap data for the primary sitemap
-  // Important: spread to create a copy since the cached module returns a mutable reference
-  let sourcesInput = [
-    ...(effectiveSitemap.includeAppSources ? await globalSitemapSources() : []),
-    ...await childSitemapSources(effectiveSitemap),
-  ]
+  // Note: globalSitemapSources() and childSitemapSources() return fresh copies
+  let sourcesInput = effectiveSitemap.includeAppSources
+    ? [...await globalSitemapSources(), ...await childSitemapSources(effectiveSitemap)]
+    : await childSitemapSources(effectiveSitemap)
 
   // Allow hook to modify sources before resolution
   if (nitro && resolvers.event) {
