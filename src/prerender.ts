@@ -144,7 +144,11 @@ export async function readSourcesFromFilesystem(filename) {
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
         : `/${Object.keys(options.sitemaps)[0]}`
       const sitemaps = await prerenderSitemapsFromEntry(nitro, sitemapEntry)
-      await nuxt.hooks.callHook('sitemap:prerender:done', { options, sitemaps })
+      await nuxt.hooks.callHook('sitemap:prerender:done', {
+        options,
+        sitemaps,
+        prerenderRoute: (route: string) => prerenderRoute(nitro, route),
+      })
     })
   })
 }
