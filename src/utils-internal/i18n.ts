@@ -1,8 +1,9 @@
 import type { NuxtI18nOptions, LocaleObject } from '@nuxtjs/i18n'
-import type { Strategies } from 'vue-i18n-routing'
 import { joinURL, withBase, withHttps } from 'ufo'
 import type { AutoI18nConfig, FilterInput } from '../runtime/types'
 import { mergeOnKey, splitForLocales } from '../runtime/utils-pure'
+
+type Strategies = 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
 
 export interface StrategyProps {
   localeCode: string
@@ -44,20 +45,20 @@ export function generatePathForI18nPages(ctx: StrategyProps): string {
 }
 
 export function normalizeLocales(nuxtI18nConfig: NuxtI18nOptions): AutoI18nConfig['locales'] {
-  let locales = nuxtI18nConfig.locales || []
+  const rawLocales = nuxtI18nConfig.locales || []
   let onlyLocales = nuxtI18nConfig?.bundle?.onlyLocales || []
   onlyLocales = typeof onlyLocales === 'string' ? [onlyLocales] : onlyLocales
-  locales = mergeOnKey(locales.map((locale: any) => typeof locale === 'string' ? { code: locale } : locale), 'code')
+  let locales = mergeOnKey(rawLocales.map((locale): LocaleObject => typeof locale === 'string' ? { code: locale } : locale), 'code') as LocaleObject[]
   if (onlyLocales.length) {
-    locales = locales.filter((locale: LocaleObject) => onlyLocales.includes(locale.code))
+    locales = locales.filter(locale => onlyLocales.includes(locale.code))
   }
   return locales.map((locale) => {
     // we prefer i18n v9 config
-    if (locale.iso && !locale.language) {
+    if (typeof locale.iso === 'string' && !locale.language) {
       locale.language = locale.iso
     }
-    locale._hreflang = locale.language || locale.code
-    locale._sitemap = locale.language || locale.code
-    return locale
+    const _hreflang = locale.language || locale.code
+    const _sitemap = locale.language || locale.code
+    return { ...locale, _hreflang, _sitemap }
   })
 }

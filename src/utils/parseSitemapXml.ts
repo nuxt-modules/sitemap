@@ -1,4 +1,4 @@
-import type { SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
+import type { SitemapUrl, SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
 
 interface ParsedUrl {
   loc?: string
@@ -124,7 +124,7 @@ function extractUrlFromParsedElement(
     return null
   }
 
-  const urlObj: Partial<SitemapUrlInput> = { loc: urlElement.loc }
+  const urlObj: Partial<SitemapUrl> & { loc: string } = { loc: urlElement.loc }
 
   // Handle optional fields with validation
   if (isValidString(urlElement.lastmod)) {
@@ -384,7 +384,7 @@ function extractUrlFromParsedElement(
               return {
                 price: String(priceValue),
                 currency: price.currency,
-                type: price.type as VideoEntry['price'][0]['type'],
+                type: price.type as NonNullable<VideoEntry['price']>[0]['type'],
               }
             })
             .filter((p): p is NonNullable<typeof p> => p !== null)
@@ -486,14 +486,12 @@ function extractUrlFromParsedElement(
     }
   }
 
-  // Filter out undefined values and empty arrays
-  const filteredUrlObj = Object.fromEntries(
+  // Filter out undefined values and empty arrays - Object.fromEntries loses type info so cast is necessary
+  return Object.fromEntries(
     Object.entries(urlObj).filter(([_, value]) =>
       value != null && (!Array.isArray(value) || value.length > 0),
     ),
-  )
-
-  return filteredUrlObj as SitemapUrlInput
+  ) as unknown as SitemapUrl
 }
 
 export async function parseSitemapXml(xml: string): Promise<SitemapParseResult> {

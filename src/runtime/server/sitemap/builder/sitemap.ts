@@ -7,13 +7,14 @@ import type {
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapDefinition, SitemapInputCtx,
+  SitemapUrl,
   SitemapUrlInput,
   SitemapSourcesHookCtx,
 } from '../../../types'
 import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
+import { createPathFilter, splitForLocales } from '../../../utils-pure'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -40,7 +41,6 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   }).filter(Boolean) as ResolvedSitemapUrl[]
 
   let validI18nUrlsForTransform: NormalizedI18n[] = []
-  let warnIncorrectI18nTransformUsage = false
   const withoutPrefixPaths: Record<string, NormalizedI18n[]> = {}
   if (autoI18n && autoI18n.strategy !== 'no_prefix') {
     const localeCodes = autoI18n.locales.map(l => l.code)
@@ -70,7 +70,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
     for (const e of validI18nUrlsForTransform) {
       // let's try and find other urls that we can use for alternatives
       if (!e._i18nTransform && !e.alternatives?.length) {
-        const alternatives = withoutPrefixPaths[e._pathWithoutPrefix]
+        const alternatives = (withoutPrefixPaths[e._pathWithoutPrefix] || [])
           .map((u) => {
             const entries: AlternativeEntry[] = []
             if (u._locale.code === autoI18n.defaultLocale) {
@@ -92,9 +92,6 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       else if (e._i18nTransform) {
         delete e._i18nTransform
-        if (autoI18n.strategy === 'no_prefix') {
-          warnIncorrectI18nTransformUsage = true
-        }
         // keep single entry, just add alternatvies
         if (autoI18n.differentDomains) {
           e.alternatives = [
@@ -108,7 +105,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
           ]
             .map((locale) => {
               return {
-                hreflang: locale._hreflang,
+                hreflang: locale._hreflang!,
                 href: joinURL(withHttps(locale.domain!), e._pathWithoutPrefix),
               }
             })
@@ -145,14 +142,14 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             }
 
             const _sitemap = isI18nMapped ? l._sitemap : undefined
-            const newEntry: NormalizedI18n = preNormalizeEntry({
+            const { _index: _, ...rest } = e
+            const newEntry = preNormalizeEntry({
               _sitemap,
-              ...e,
-              _index: undefined,
+              ...rest,
               _key: `${_sitemap || ''}${loc || '/'}${e._path.search}`,
               _locale: l,
               loc,
-              alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
+              alternatives: ([{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales] as Array<{ code: string, _hreflang: string }>).map((locale) => {
                 const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
                 const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
                 let href = e._pathWithoutPrefix
@@ -196,11 +193,11 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
                   hreflang: locale._hreflang,
                   href,
                 }
-              }).filter(Boolean),
-            }, resolvers)
+              }).filter(Boolean) as AlternativeEntry[],
+            } as SitemapUrl, resolvers) as NormalizedI18n
             if (e._locale.code === newEntry._locale.code) {
               // replace
-              _urls[e._index] = newEntry
+              _urls[e._index!] = newEntry
               // avoid getting re-replaced
               e._index = undefined
             }
@@ -217,9 +214,6 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       if (e._index)
         _urls[e._index] = e
     }
-  }
-  if (import.meta.dev && warnIncorrectI18nTransformUsage) {
-    logger.warn('You\'re using _i18nTransform with the `no_prefix` strategy. This will cause issues with the sitemap. Please remove the _i18nTransform flag or change i18n strategy.')
   }
   return _urls
 }
@@ -246,14 +240,15 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   } = runtimeConfig
 
   // Parse chunk information from the sitemap name
-  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize)
+  const chunkSize = defaultSitemapsChunkSize || undefined
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, chunkSize)
 
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortInPlace(urls) : urls
   }
 
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize) as T
+    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, chunkSize) as T
   }
   if (autoI18n?.differentDomains) {
     const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain

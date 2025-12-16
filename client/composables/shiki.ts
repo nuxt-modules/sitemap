@@ -1,8 +1,8 @@
 import type { HighlighterCore } from 'shiki'
 import { createHighlighterCore } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
+import type { MaybeRef } from 'vue'
 import { computed, ref, toValue } from 'vue'
-import type { MaybeRef } from '@vueuse/core'
 import { devtools } from './rpc'
 
 export const shiki = ref<HighlighterCore>()

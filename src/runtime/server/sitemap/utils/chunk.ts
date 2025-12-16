@@ -87,7 +87,7 @@ export function getSitemapConfig(
   }
 
   // Regular sitemap
-  return sitemaps[sitemapName]
+  return sitemaps[sitemapName]!
 }
 
 export function sliceUrlsForChunk<T>(

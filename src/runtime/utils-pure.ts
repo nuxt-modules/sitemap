@@ -46,7 +46,7 @@ export function splitForLocales(path: string, locales: string[]): [string | null
   // we only want to use the first path segment otherwise we can end up turning "/ending" into "/en/ding"
   const prefix = withLeadingSlash(path).split('/')[1]
   // make sure prefix is a valid locale
-  if (locales.includes(prefix))
+  if (prefix && locales.includes(prefix))
     return [prefix, path.replace(`/${prefix}`, '')]
   return [null, path]
 }
@@ -63,7 +63,7 @@ export function normalizeRuntimeFilters(input?: FilterInput[]): (RegExp | string
     // regex is already validated
     const match = rule.regex.match(StringifiedRegExpPattern)
     if (match)
-      return new RegExp(match[1], match[2])
+      return new RegExp(match[1]!, match[2])
     return false
   }).filter(Boolean) as (RegExp | string)[]
 }

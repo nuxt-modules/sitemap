@@ -31,7 +31,7 @@ export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx
     ctx.logger.error(e)
     return []
   }
-  return urls
+  return urls as SitemapUrlInput[]
 }
 
 export interface NuxtPagesToSitemapEntriesOptions {
@@ -222,13 +222,13 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
-  const filterForValidPage = p => p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
+  const filterForValidPage = (p: unknown): p is string => typeof p === 'string' && !!p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
   const routeRules = Object.entries(nuxt.options.routeRules || {})
     .filter(([k, v]) => {
       // make sure key doesn't use a wildcard and its not for a file
       if (k.includes('*') || k.includes('.') || k.includes(':'))
         return false
-      if (typeof v.robots === 'boolean' && !v.robots)
+      if ('robots' in v && typeof v.robots === 'boolean' && !v.robots)
         return false
       // make sure that we're not redirecting
       return !v.redirect

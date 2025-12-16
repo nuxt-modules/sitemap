@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
 import { useNitroApp, defineCachedFunction } from 'nitropack/runtime'
+import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -19,6 +20,10 @@ import { sortInPlace } from './urlset/sort'
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
+
+interface SitemapNitroApp extends NitroApp {
+  _sitemapWarned?: boolean
+}
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
@@ -40,14 +45,14 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
 // Shared sitemap building logic
 async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
-  const nitro = useNitroApp()
+  const nitro = useNitroApp() as SitemapNitroApp
   if (import.meta.prerender) {
     const config = useSiteConfig(event)
     if (!config.url && !nitro._sitemapWarned) {
       nitro._sitemapWarned = true
       logger.error('Sitemap Site URL missing!')
       logger.info('To fix this please add `{ site: { url: \'site.com\' } }` to your Nuxt config or a `NUXT_PUBLIC_SITE_URL=site.com` to your .env. Learn more at https://nuxtseo.com/site-config/getting-started/how-it-works')
-      throw new createError({
+      throw createError({
         statusMessage: 'You must provide a site URL to prerender a sitemap.',
         statusCode: 500,
       })
@@ -61,7 +66,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   // Process in place to avoid creating intermediate arrays
   let validCount = 0
   for (let i = 0; i < sitemapUrls.length; i++) {
-    const u = sitemapUrls[i]
+    const u = sitemapUrls[i]!
     const path = u._path?.pathname || u.loc
 
     // Early continue for robots blocked paths
@@ -92,7 +97,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
       continue
 
     // Move valid entries to the front of the array
-    sitemapUrls[validCount++] = routeRules.sitemap ? defu(u, routeRules.sitemap) as ResolvedSitemapUrl : u
+    sitemapUrls[validCount++] = (routeRules.sitemap ? defu(u, routeRules.sitemap) : u) as ResolvedSitemapUrl
   }
 
   // Truncate array to valid entries only
@@ -114,8 +119,9 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
   const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortInPlace(urls) : urls
   // final urls
-  const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, definition.defaults, resolvers))
-  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, definition.defaults, resolvers)))
+  const defaults = definition.defaults || {}
+  const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, defaults, resolvers))
+  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, defaults, resolvers)))
 
   // Check if this is a chunk request that would be empty
   if (definition._isChunking && definition.sitemapName.includes('-')) {

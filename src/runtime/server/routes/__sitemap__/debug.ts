@@ -19,11 +19,12 @@ export default defineEventHandler(async (e) => {
   const nitroOrigin = getNitroOrigin(e)
   const sitemaps: Record<string, SitemapDefinition> = {}
   for (const s of Object.keys(_sitemaps)) {
+    const sitemap = _sitemaps[s]!
     // resolve the sources
     sitemaps[s] = {
-      ..._sitemaps[s],
-      sources: await resolveSitemapSources(await childSitemapSources(_sitemaps[s]), e),
-    }
+      ...sitemap,
+      sources: await resolveSitemapSources(await childSitemapSources(sitemap), e),
+    } as SitemapDefinition
   }
   return {
     nitroOrigin,

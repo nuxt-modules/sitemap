@@ -13,5 +13,5 @@ export default defineEventHandler(async (e) => {
     return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), import.meta.dev ? 302 : 301)
   }
 
-  return createSitemap(e, Object.values(sitemaps)[0], runtimeConfig)
+  return createSitemap(e, Object.values(sitemaps)[0]!, runtimeConfig)
 })

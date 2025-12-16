@@ -11,7 +11,7 @@ export const devtools = ref<NuxtDevtoolsClient>()
 export const colorMode = ref<'dark' | 'light'>()
 
 onDevtoolsClientConnected(async (client) => {
-  appFetch.value = client.host.app.$fetch
+  appFetch.value = client.host.app.$fetch as $Fetch
   watchEffect(() => {
     colorMode.value = client.host.app.colorMode.value
   })

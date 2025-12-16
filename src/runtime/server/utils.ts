@@ -20,7 +20,7 @@ export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   const clone = JSON.parse(JSON.stringify(useRuntimeConfig(e).sitemap)) as any as ModuleRuntimeConfig
   // normalize the filters for runtime
   for (const k in clone.sitemaps) {
-    const sitemap = clone.sitemaps[k]
+    const sitemap = clone.sitemaps[k]!
     sitemap.include = normalizeRuntimeFilters(sitemap.include)
     sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
     clone.sitemaps[k] = sitemap
