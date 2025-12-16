@@ -263,7 +263,7 @@ const sitemapWithStringFilters: SitemapDefinition = {
 const sitemapWithRegexFilters: SitemapDefinition = {
   sitemapName: 'regex-filtered',
   include: [/^\/category-[0-2]\//, /^\/category-5\//],
-  exclude: [/product-[0-9]$/, /product-1[0-9]$/],
+  exclude: [/product-\d$/, /product-1\d$/],
 }
 
 // Sitemap with many filter rules (stress test)
