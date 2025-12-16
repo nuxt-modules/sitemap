@@ -43,10 +43,19 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
   await nitro.hooks.callHook('sitemap:output', ctx)
 
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (runtimeConfig.cacheMaxAgeSeconds)
+  if (runtimeConfig.cacheMaxAgeSeconds) {
     setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
-  else
+    const now = new Date()
+    setHeader(e, 'X-Sitemap-Generated', now.toISOString())
+    setHeader(e, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
+    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
+    setHeader(e, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
+    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
+    setHeader(e, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
+  }
+  else {
     setHeader(e, 'Cache-Control', `no-cache, no-store`)
+  }
 
   return ctx.sitemap
 }
