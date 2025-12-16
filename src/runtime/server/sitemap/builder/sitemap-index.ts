@@ -85,7 +85,8 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   if (typeof sitemaps.chunks !== 'undefined') {
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
-    let sourcesInput = await globalSitemapSources()
+    // Important: spread to create a copy since the cached module returns a mutable reference
+    let sourcesInput = [...await globalSitemapSources()]
 
     // Allow hook to modify sources before resolution
     if (nitro && resolvers.event) {
@@ -156,8 +157,11 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
       // We need to determine how many chunks this sitemap will have
       // This requires knowing the total count of URLs, which we'll get from sources
-      let sourcesInput = sitemapConfig.includeAppSources ? await globalSitemapSources() : []
-      sourcesInput.push(...await childSitemapSources(sitemapConfig))
+      // Important: spread to create a copy since the cached module returns a mutable reference
+      let sourcesInput = [
+        ...(sitemapConfig.includeAppSources ? await globalSitemapSources() : []),
+        ...await childSitemapSources(sitemapConfig),
+      ]
 
       // Allow hook to modify sources before resolution
       if (nitro && resolvers.event) {
