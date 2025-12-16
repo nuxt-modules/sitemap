@@ -59,9 +59,12 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
     e._path = null
   }
   if (e._path) {
-    const query = parseQuery(e._path.search)
-    const qs = stringifyQuery(query)
-    e._relativeLoc = `${encodePath(e._path?.pathname)}${qs.length ? `?${qs}` : ''}`
+    const search = e._path.search
+    // Skip parse/stringify if no query string
+    const qs = search && search.length > 1
+      ? stringifyQuery(parseQuery(search))
+      : ''
+    e._relativeLoc = `${encodePath(e._path.pathname)}${qs.length ? `?${qs}` : ''}`
     if (e._path.host) {
       e.loc = stringifyParsedURL(e._path)
     }

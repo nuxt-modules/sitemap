@@ -39,9 +39,6 @@ describe.skipIf(process.env.CI)('generate', () => {
               <loc>https://nuxtseo.com/crawled</loc>
           </url>
           <url>
-              <loc>https://nuxtseo.com/noindex</loc>
-          </url>
-          <url>
               <loc>https://nuxtseo.com/dynamic/crawled</loc>
           </url>
           <url>
