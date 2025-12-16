@@ -974,5 +974,18 @@ export async function readSourcesFromFilesystem() {
     })
 
     setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
+
+    // suggest zeroRuntime when no dynamic sources detected
+    if (!config.zeroRuntime && !nuxt.options.dev && !nuxt.options._prepare) {
+      const hasDynamicSource = (source: SitemapSourceInput) =>
+        typeof source === 'string' || Array.isArray(source) || !!(source as SitemapSourceBase).fetch
+
+      const globalHasFetch = (config.sources || []).some(hasDynamicSource)
+      const sitemapsHaveFetch = typeof config.sitemaps === 'object'
+        && Object.values(config.sitemaps).some(s => s && 'sources' in s && (s.sources || []).some(hasDynamicSource))
+
+      if (!globalHasFetch && !sitemapsHaveFetch)
+        logger.info('No dynamic sources detected. Consider enabling `zeroRuntime` to reduce server bundle size. See https://nuxtseo.com/sitemap/guides/zero-runtime')
+    }
   },
 })
