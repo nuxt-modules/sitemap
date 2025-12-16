@@ -238,6 +238,12 @@ const simpleUrls: SitemapUrlInput[] = Array.from({ length: 1000 }, (_, i) => ({
   lastmod: '2024-01-01',
 }))
 
+// Large URL set for filtering benchmarks
+const largeUrls: SitemapUrlInput[] = Array.from({ length: 5000 }, (_, i) => ({
+  loc: `/category-${i % 10}/product-${i}`,
+  lastmod: '2024-01-01',
+}))
+
 // Mixed URLs with various features
 const mixedUrls: SitemapUrlInput[] = Array.from({ length: 1000 }, (_, i) => ({
   loc: `/page-${i}?foo=bar`,
@@ -245,6 +251,27 @@ const mixedUrls: SitemapUrlInput[] = Array.from({ length: 1000 }, (_, i) => ({
   changefreq: 'weekly' as const,
   priority: 0.8,
 }))
+
+// Sitemap with string pattern filtering (glob-style)
+const sitemapWithStringFilters: SitemapDefinition = {
+  sitemapName: 'filtered',
+  include: ['/category-0/**', '/category-1/**', '/category-2/**'],
+  exclude: ['/category-*/product-0', '/category-*/product-1'],
+}
+
+// Sitemap with regex filtering
+const sitemapWithRegexFilters: SitemapDefinition = {
+  sitemapName: 'regex-filtered',
+  include: [/^\/category-[0-2]\//, /^\/category-5\//],
+  exclude: [/product-[0-9]$/, /product-1[0-9]$/],
+}
+
+// Sitemap with many filter rules (stress test)
+const sitemapWithManyFilters: SitemapDefinition = {
+  sitemapName: 'many-filters',
+  include: Array.from({ length: 20 }, (_, i) => `/category-${i % 10}/**`),
+  exclude: Array.from({ length: 10 }, (_, i) => `/category-*/product-${i}`),
+}
 
 describe('resolveSitemapEntries', () => {
   bench('1000 simple urls (no i18n)', () => {
@@ -270,4 +297,28 @@ describe('resolveSitemapEntries', () => {
   bench('200 urls _i18nTransform (prefix_except_default)', () => {
     resolveSitemapEntries(sitemap, transformUrls, { autoI18n: autoI18nPrefixExceptDefault, isI18nMapped: false }, resolvers)
   }, { iterations: 20 })
+})
+
+describe('createPathFilter performance', () => {
+  bench('5000 urls with string pattern filters', () => {
+    resolveSitemapEntries(sitemapWithStringFilters, largeUrls, { autoI18n: undefined, isI18nMapped: false }, resolvers)
+  }, { iterations: 20 })
+
+  bench('5000 urls with regex filters', () => {
+    resolveSitemapEntries(sitemapWithRegexFilters, largeUrls, { autoI18n: undefined, isI18nMapped: false }, resolvers)
+  }, { iterations: 20 })
+
+  bench('5000 urls with many filter rules', () => {
+    resolveSitemapEntries(sitemapWithManyFilters, largeUrls, { autoI18n: undefined, isI18nMapped: false }, resolvers)
+  }, { iterations: 20 })
+
+  bench('createPathFilter - isolated filter calls (1000x)', () => {
+    const filter = createPathFilter({
+      include: ['/category-0/**', '/category-1/**'],
+      exclude: ['/category-*/product-0'],
+    })
+    for (let i = 0; i < 1000; i++) {
+      filter(`/category-${i % 10}/product-${i}`)
+    }
+  }, { iterations: 100 })
 })

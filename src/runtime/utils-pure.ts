@@ -38,8 +38,9 @@ export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K): T[] {
     }
   }
 
-  // Return only the used portion of the array
-  return result.slice(0, resultLength)
+  // Truncate in-place instead of creating a copy via slice
+  result.length = resultLength
+  return result
 }
 
 export function splitForLocales(path: string, locales: string[]): [string | null, string] {
@@ -95,30 +96,47 @@ export function createFilter(options: CreateFilterOptions = {}): (path: string) 
   if (include.length === 0 && exclude.length === 0)
     return () => true
 
+  // Pre-compute regex and string rules once
+  const excludeRegex = exclude.filter(r => r instanceof RegExp) as RegExp[]
+  const includeRegex = include.filter(r => r instanceof RegExp) as RegExp[]
+  const excludeStrings = exclude.filter(r => typeof r === 'string') as string[]
+  const includeStrings = include.filter(r => typeof r === 'string') as string[]
+
+  // Pre-create routers once (expensive operation)
+  const excludeMatcher = excludeStrings.length > 0
+    ? toRouteMatcher(createRouter({
+        routes: Object.fromEntries(excludeStrings.map(r => [r, true])),
+        strictTrailingSlash: false,
+      }))
+    : null
+  const includeMatcher = includeStrings.length > 0
+    ? toRouteMatcher(createRouter({
+        routes: Object.fromEntries(includeStrings.map(r => [r, true])),
+        strictTrailingSlash: false,
+      }))
+    : null
+
+  // Pre-create Sets for O(1) exact match lookups
+  const excludeExact = new Set(excludeStrings)
+  const includeExact = new Set(includeStrings)
+
   return function (path: string): boolean {
-    for (const v of [{ rules: exclude, result: false }, { rules: include, result: true }]) {
-      const regexRules = v.rules.filter(r => r instanceof RegExp) as RegExp[]
+    // Check exclude rules first
+    if (excludeRegex.some(r => r.test(path)))
+      return false
+    if (excludeExact.has(path))
+      return false
+    if (excludeMatcher && excludeMatcher.matchAll(path).length > 0)
+      return false
 
-      if (regexRules.some(r => r.test(path)))
-        return v.result
+    // Check include rules
+    if (includeRegex.some(r => r.test(path)))
+      return true
+    if (includeExact.has(path))
+      return true
+    if (includeMatcher && includeMatcher.matchAll(path).length > 0)
+      return true
 
-      const stringRules = v.rules.filter(r => typeof r === 'string') as string[]
-      if (stringRules.length > 0) {
-        const routes = {}
-        for (const r of stringRules) {
-          // quick scan of literal string matches
-          if (r === path)
-            return v.result
-
-          // need to flip the array data for radix3 format, true value is arbitrary
-          // @ts-expect-error untyped
-          routes[r] = true
-        }
-        const routeRulesMatcher = toRouteMatcher(createRouter({ routes, strictTrailingSlash: false }))
-        if (routeRulesMatcher.matchAll(path).length > 0)
-          return Boolean(v.result)
-      }
-    }
     return include.length === 0
   }
 }
