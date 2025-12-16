@@ -466,6 +466,8 @@ export interface VideoEntry {
   }
   live?: 'yes' | 'no' | boolean
   tag?: string | string[]
+  category?: string
+  gallery_loc?: string | URL
 }
 
 export interface Restriction {
