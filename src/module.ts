@@ -446,7 +446,7 @@ export {}
         // add any top level images
         const images: SitemapUrl['images'] = []
         if (config.discoverImages) {
-          images.push(...(content.body.value
+          images.push(...(content.body?.value
             ?.filter(c =>
               ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
             )
