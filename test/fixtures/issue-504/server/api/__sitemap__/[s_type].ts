@@ -6,6 +6,7 @@ let callCount = 0
 export default defineEventHandler((event) => {
   const category = getRouterParam(event, 's_type')
   callCount++
+  // eslint-disable-next-line no-console
   console.log(`sitemap: ${category} (call ${callCount})`)
 
   // Store count in app context for test retrieval
