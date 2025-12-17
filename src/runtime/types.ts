@@ -405,6 +405,21 @@ export interface SitemapUrl {
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
   _sitemap?: string | false
+  /**
+   * Mark the URL as already encoded.
+   *
+   * When true, the loc will not be automatically encoded, preventing double-encoding
+   * when you've already applied encodeURIComponent() to path segments.
+   *
+   * @example
+   * ```ts
+   * {
+   *   loc: `/${encodeURIComponent('$pecial-char')}`,
+   *   _encoded: true
+   * }
+   * ```
+   */
+  _encoded?: boolean
 }
 
 export type SitemapStrict = Required<SitemapUrl>

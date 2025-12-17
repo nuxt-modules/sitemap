@@ -48,6 +48,8 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
   if (typeof input.loc !== 'string') {
     input.loc = ''
   }
+  // Check if URL is marked as already encoded
+  const skipEncoding = input._encoded === true
   const e = input as ResolvedSitemapUrl
   // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
   e.loc = removeTrailingSlash(e.loc)
@@ -64,7 +66,8 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
     const qs = search && search.length > 1
       ? stringifyQuery(parseQuery(search))
       : ''
-    e._relativeLoc = `${encodePath(e._path.pathname)}${qs.length ? `?${qs}` : ''}`
+    const pathname = skipEncoding ? e._path.pathname : encodePath(e._path.pathname)
+    e._relativeLoc = `${pathname}${qs.length ? `?${qs}` : ''}`
     if (e._path.host) {
       e.loc = stringifyParsedURL(e._path)
     }
@@ -72,7 +75,7 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
       e.loc = e._relativeLoc
     }
   }
-  else if (!isEncoded(e.loc)) {
+  else if (!skipEncoding && !isEncoded(e.loc)) {
     e.loc = encodeURI(e.loc)
   }
   if (e.loc === '')
