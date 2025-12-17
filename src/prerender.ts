@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { withBase } from 'ufo'
@@ -96,7 +97,9 @@ export async function readSourcesFromFilesystem(filename) {
         videos: options.discoverVideos,
         // TODO configurable?
         lastmod: true,
-        alternatives: true,
+        // when autoI18n is enabled, let the sitemap builder generate alternatives
+        // based on i18n config instead of extracting from HTML (which can be incomplete)
+        alternatives: !options.autoI18n,
         resolveUrl(s) {
           // if the match is relative
           return s.startsWith('/') ? withSiteUrl(s) : s
@@ -140,18 +143,38 @@ export async function readSourcesFromFilesystem(filename) {
       await writeFile(join(runtimeAssetsPath, 'global-sources.json'), JSON.stringify(globalSources))
       await writeFile(join(runtimeAssetsPath, 'child-sources.json'), JSON.stringify(childSources))
 
-      await prerenderRoute(nitro, options.isMultiSitemap
+      const sitemapEntry = options.isMultiSitemap
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
-        : `/${Object.keys(options.sitemaps)[0]}`)
+        : `/${Object.keys(options.sitemaps)[0]}`
+      const sitemaps = await prerenderSitemapsFromEntry(nitro, sitemapEntry)
+      await nuxt.hooks.callHook('sitemap:prerender:done', { options, sitemaps })
     })
   })
 }
 
-async function prerenderRoute(nitro: Nitro, route: string) {
+async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
+  const sitemaps: { name: string, get content(): string }[] = []
+  const queue = [entry]
+  const processed = new Set<string>()
+  while (queue.length) {
+    const route = queue.shift()!
+    if (processed.has(route)) continue
+    processed.add(route)
+    const { filePath, prerenderUrls } = await prerenderRoute(nitro, route)
+    sitemaps.push({
+      name: route,
+      get content() {
+        return readFileSync(filePath, { encoding: 'utf8' })
+      },
+    })
+    queue.push(...prerenderUrls)
+  }
+  return sitemaps
+}
+
+export async function prerenderRoute(nitro: Nitro, route: string) {
   const start = Date.now()
-  // Create result object
   const _route: PrerenderRoute = { route, fileName: route }
-  // Fetch the route
   const encodedRoute = encodeURI(route)
   const fetchUrl = withBase(encodedRoute, nitro.options.baseURL)
   const res = await globalThis.$fetch.raw(
@@ -163,24 +186,21 @@ async function prerenderRoute(nitro: Nitro, route: string) {
     },
   )
   const header = (res.headers.get('x-nitro-prerender') || '') as string
-  const prerenderUrls = [...header
+  const prerenderUrls = header
     .split(',')
-    .map(i => i.trim())
-    .map(i => decodeURIComponent(i))
-    .filter(Boolean),
-  ]
+    .map(i => decodeURIComponent(i.trim()))
+    .filter(Boolean)
   const filePath = join(nitro.options.output.publicDir, _route.fileName!)
   await mkdir(dirname(filePath), { recursive: true })
   const data = res._data
   if (data === undefined)
     throw new Error(`No data returned from '${fetchUrl}'`)
-  if (filePath.endsWith('json') || typeof data === 'object')
-    await writeFile(filePath, JSON.stringify(data), 'utf8')
-  else
-    await writeFile(filePath, data as string, 'utf8')
+  const content = filePath.endsWith('json') || typeof data === 'object'
+    ? JSON.stringify(data)
+    : data as string
+  await writeFile(filePath, content, 'utf8')
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
   nitro.logger.log(formatPrerenderRoute(_route))
-  for (const url of prerenderUrls)
-    await prerenderRoute(nitro, url)
+  return { filePath, prerenderUrls }
 }
