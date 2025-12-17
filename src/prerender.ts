@@ -97,7 +97,9 @@ export async function readSourcesFromFilesystem(filename) {
         videos: options.discoverVideos,
         // TODO configurable?
         lastmod: true,
-        alternatives: true,
+        // when autoI18n is enabled, let the sitemap builder generate alternatives
+        // based on i18n config instead of extracting from HTML (which can be incomplete)
+        alternatives: !options.autoI18n,
         resolveUrl(s) {
           // if the match is relative
           return s.startsWith('/') ? withSiteUrl(s) : s
