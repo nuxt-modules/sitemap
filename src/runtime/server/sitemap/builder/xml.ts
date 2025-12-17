@@ -21,7 +21,7 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
   if (url.changefreq) xml += `${I2}<changefreq>${url.changefreq}</changefreq>${NL}`
   if (url.priority !== undefined) {
     const p = typeof url.priority === 'number' ? url.priority : Number.parseFloat(url.priority)
-    xml += `${I2}<priority>${p % 1 === 0 ? p : p.toFixed(1)}</priority>${NL}`
+    xml += `${I2}<priority>${p.toFixed(1)}</priority>${NL}`
   }
 
   if (url.alternatives) {

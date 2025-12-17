@@ -57,12 +57,12 @@ describe('route rules', () => {
           <url>
               <loc>https://nuxtseo.com/defaults</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/wildcard/defaults/foo</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
           </url>
       </urlset>"
     `)

@@ -67,7 +67,7 @@ describe('i18n route rules', () => {
           <url>
               <loc>https://nuxtseo.com/defaults</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/defaults" hreflang="x-default" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/defaults" hreflang="en-US" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/defaults" hreflang="fr-FR" />
@@ -83,7 +83,7 @@ describe('i18n route rules', () => {
           <url>
               <loc>https://nuxtseo.com/fr/defaults</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/defaults" hreflang="x-default" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/defaults" hreflang="en-US" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/defaults" hreflang="fr-FR" />
@@ -107,7 +107,7 @@ describe('i18n route rules', () => {
           <url>
               <loc>https://nuxtseo.com/wildcard/defaults/foo</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/wildcard/defaults/foo" hreflang="x-default" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/wildcard/defaults/foo" hreflang="en-US" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/wildcard/defaults/foo" hreflang="fr-FR" />
@@ -115,7 +115,7 @@ describe('i18n route rules', () => {
           <url>
               <loc>https://nuxtseo.com/fr/wildcard/defaults/foo</loc>
               <changefreq>daily</changefreq>
-              <priority>1</priority>
+              <priority>1.0</priority>
               <xhtml:link rel="alternate" href="https://nuxtseo.com/wildcard/defaults/foo" hreflang="x-default" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/wildcard/defaults/foo" hreflang="en-US" />
               <xhtml:link rel="alternate" href="https://nuxtseo.com/fr/wildcard/defaults/foo" hreflang="fr-FR" />
