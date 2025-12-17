@@ -13,7 +13,7 @@ import {
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
-import type { NitroRouteConfig, PrerenderRoute } from 'nitropack/types'
+import type { NitroRouteConfig } from 'nitropack/types'
 import { readPackageJSON } from 'pkg-types'
 import { dirname, relative } from 'pathe'
 import type { FileAfterParseHook } from '@nuxt/content'
@@ -52,8 +52,7 @@ export interface ModuleHooks {
    */
   'sitemap:prerender:done': (ctx: {
     options: ModuleRuntimeConfig
-    sitemaps: { name: string, content: string }[]
-    prerenderRoute: (route: string) => PrerenderRoute | undefined
+    sitemaps: { name: string, readonly content: string }[]
   }) => void | Promise<void>
 }
 

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { withBase } from 'ufo'
@@ -144,22 +145,26 @@ export async function readSourcesFromFilesystem(filename) {
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
         : `/${Object.keys(options.sitemaps)[0]}`
       const sitemaps = await prerenderSitemapsFromEntry(nitro, sitemapEntry)
-      await nuxt.hooks.callHook('sitemap:prerender:done', {
-        options,
-        sitemaps,
-        prerenderRoute: (route: string) => prerenderRoute(nitro, route),
-      })
+      await nuxt.hooks.callHook('sitemap:prerender:done', { options, sitemaps })
     })
   })
 }
 
 async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
-  const sitemaps: { name: string, content: string }[] = []
+  const sitemaps: { name: string, get content(): string }[] = []
   const queue = [entry]
+  const processed = new Set<string>()
   while (queue.length) {
     const route = queue.shift()!
-    const { content, prerenderUrls } = await prerenderRoute(nitro, route)
-    sitemaps.push({ name: route, content })
+    if (processed.has(route)) continue
+    processed.add(route)
+    const { filePath, prerenderUrls } = await prerenderRoute(nitro, route)
+    sitemaps.push({
+      name: route,
+      get content() {
+        return readFileSync(filePath, { encoding: 'utf8' })
+      },
+    })
     queue.push(...prerenderUrls)
   }
   return sitemaps
@@ -195,5 +200,5 @@ export async function prerenderRoute(nitro: Nitro, route: string) {
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
   nitro.logger.log(formatPrerenderRoute(_route))
-  return { content, prerenderUrls }
+  return { filePath, prerenderUrls }
 }
