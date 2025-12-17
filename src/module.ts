@@ -547,8 +547,10 @@ export {}
         })
       }
       else {
-        // Register individual sitemap routes to support chunking
+        // when prefix is '/' or false, register individual sitemap routes
+        // and explicit chunk routes since h3 doesn't support wildcard patterns
         const sitemapNames = Object.keys(config.sitemaps || {})
+        let hasChunkedSitemaps = false
         for (const sitemapName of sitemapNames) {
           if (sitemapName === 'index')
             continue
@@ -562,15 +564,31 @@ export {}
             middleware: false,
           })
 
-          // For chunked sitemaps, we need to add a pattern-matching handler
-          if (sitemapConfig.chunks) {
-            // Register a wildcard route for chunks instead of individual routes
-            addServerHandler({
-              route: `/${sitemapName}-*.xml`,
-              handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
-              lazy: true,
-              middleware: false,
-            })
+          if (sitemapConfig.chunks)
+            hasChunkedSitemaps = true
+        }
+
+        // For chunked sitemaps, register individual routes for each chunk index
+        // since h3 doesn't support wildcard patterns like /sitemap-*.xml at root level.
+        // This is a limitation when using sitemapsPathPrefix: '/' - we pre-register routes
+        // for up to 20 chunks per sitemap (20,000 URLs with default chunk size of 1000).
+        // For larger sitemaps, use a different prefix like '/sitemaps/' instead of '/'.
+        if (hasChunkedSitemaps) {
+          const maxChunks = 20
+          for (const sitemapName of sitemapNames) {
+            if (sitemapName === 'index')
+              continue
+            const sitemapConfig = config.sitemaps![sitemapName as keyof typeof config.sitemaps] as MultiSitemapEntry[string]
+            if (sitemapConfig.chunks) {
+              for (let i = 0; i < maxChunks; i++) {
+                addServerHandler({
+                  route: `/${sitemapName}-${i}.xml`,
+                  handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
+                  lazy: true,
+                  middleware: false,
+                })
+              }
+            }
           }
         }
       }

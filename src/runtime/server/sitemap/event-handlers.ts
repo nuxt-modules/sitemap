@@ -61,6 +61,10 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
 }
 
 export async function sitemapChildXmlEventHandler(e: H3Event) {
+  // Only process .xml requests - pass through for other paths
+  if (!e.path.endsWith('.xml'))
+    return
+
   const runtimeConfig = useSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
