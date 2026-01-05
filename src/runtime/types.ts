@@ -378,7 +378,7 @@ export interface SitemapOutputHookCtx extends NitroBaseHook {
 
 export interface SitemapSourcesHookCtx extends NitroBaseHook {
   sitemapName: string
-  sources: (SitemapSourceBase | SitemapSourceResolved)[]
+  sources: SitemapSourceInput[]
 }
 
 export type Changefreq

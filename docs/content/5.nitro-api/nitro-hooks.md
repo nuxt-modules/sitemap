@@ -108,7 +108,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:sources'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; sitemapName: string; sources: (SitemapSourceBase | SitemapSourceResolved)[] }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: H3Event; sitemapName: string; sources: SitemapSourceInput[] }) => void | Promise<void>`{lang="ts"}
 
 Triggered before resolving sitemap sources. This hook allows you to:
 - Add new sources dynamically
@@ -122,31 +122,39 @@ import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:sources', async (ctx) => {
-    // Add a new source
+    // Add a source that will be fetched
     ctx.sources.push('/api/dynamic-urls')
-    
+
+    // Add a source with fetch options
+    ctx.sources.push(['/api/authenticated-urls', { headers: { 'X-Api-Key': 'secret' } }])
+
+    // Add a resolved source with URLs directly (no fetch needed)
+    ctx.sources.push({
+      context: { name: 'my-custom-source' },
+      urls: ['/page-1', '/page-2', { loc: '/page-3', priority: 0.8 }],
+    })
+
     // Modify existing sources to add headers
-    ctx.sources = ctx.sources.map(source => {
-      if (typeof source === 'object' && source.fetch) {
+    ctx.sources = ctx.sources.map((source) => {
+      if (typeof source === 'object' && 'fetch' in source && source.fetch) {
         const [url, options = {}] = Array.isArray(source.fetch) ? source.fetch : [source.fetch, {}]
-        
+
         // Add headers from original request
         const authHeader = ctx.event.node.req.headers.authorization
         if (authHeader) {
           options.headers = options.headers || {}
           options.headers['Authorization'] = authHeader
         }
-        
+
         source.fetch = [url, options]
       }
       return source
     })
-    
+
     // Filter out sources
-    ctx.sources = ctx.sources.filter(source => {
-      if (typeof source === 'string') {
+    ctx.sources = ctx.sources.filter((source) => {
+      if (typeof source === 'string')
         return !source.includes('skip-this')
-      }
       return true
     })
   })

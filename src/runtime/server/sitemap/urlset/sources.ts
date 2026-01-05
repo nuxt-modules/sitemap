@@ -6,11 +6,24 @@ import { parseURL } from 'ufo'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
+  SitemapSourceInput,
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
 import { logger } from '../../../utils-pure'
 import { parseSitemapXml } from '@nuxtjs/sitemap/utils'
+
+export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceBase | SitemapSourceResolved {
+  // string -> { fetch: string, context: { name: 'hook' } }
+  if (typeof source === 'string') {
+    return { context: { name: 'hook' }, fetch: source }
+  }
+  // [string, FetchOptions] -> { fetch: [string, FetchOptions], context: { name: 'hook' } }
+  if (Array.isArray(source)) {
+    return { context: { name: 'hook' }, fetch: source }
+  }
+  return source
+}
 
 async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
   const isExternalUrl = !url.startsWith('/')
@@ -182,21 +195,22 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   return [...(m.sources[definition.sitemapName] || [])]
 }
 
-export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {
+export async function resolveSitemapSources(sources: SitemapSourceInput[], event?: H3Event) {
   return (await Promise.all(
     sources.map((source) => {
-      if (typeof source === 'object' && 'urls' in source) {
+      const normalized = normalizeSourceInput(source)
+      if ('urls' in normalized) {
         return <SitemapSourceResolved> {
           timeTakenMs: 0,
-          ...source,
-          urls: source.urls,
+          ...normalized,
+          urls: normalized.urls,
         }
       }
-      if (source.fetch)
-        return fetchDataSource(source, event)
+      if (normalized.fetch)
+        return fetchDataSource(normalized, event)
 
       return <SitemapSourceResolved> {
-        ...source,
+        ...normalized,
         error: 'Invalid source',
       }
     }),
