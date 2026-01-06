@@ -3,9 +3,9 @@ import { applyDynamicParams, findPageMapping } from '../../src/runtime/utils-pur
 
 describe('i18n dynamic routes', () => {
   const pages = {
-    about: { en: '/about', fr: '/a-propos' },
-    posts: { en: '/posts/[slug]', fr: '/article/[slug]', es: '/articulo/[slug]' },
-    products: { en: '/products/[category]/[id]', fr: '/produits/[category]/[id]' },
+    'about': { en: '/about', fr: '/a-propos' },
+    'posts': { en: '/posts/[slug]', fr: '/article/[slug]', es: '/articulo/[slug]' },
+    'products': { en: '/products/[category]/[id]', fr: '/produits/[category]/[id]' },
     'blog/posts': { en: '/blog/posts/[slug]', fr: '/blog/articles/[slug]' },
   }
 
