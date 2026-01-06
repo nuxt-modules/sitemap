@@ -4,57 +4,10 @@ import { $fetch, setup } from '@nuxt/test-utils'
 
 const { resolve } = createResolver(import.meta.url)
 
+// Use dedicated fixture with custom path config including dynamic routes
 await setup({
-  rootDir: resolve('../../fixtures/i18n'),
+  rootDir: resolve('../../fixtures/i18n-custom-paths'),
   server: true,
-  sitemap: {
-    urls: [
-      // test custom path mapping
-      {
-        loc: '/test',
-        _i18nTransform: true,
-      },
-      {
-        loc: '/about',
-        _i18nTransform: true,
-      },
-      {
-        loc: '/__sitemap/url',
-      },
-    ],
-  },
-  nuxtConfig: {
-    i18n: {
-      locales: [
-        {
-          code: 'en',
-          iso: 'en-US',
-        },
-        {
-          code: 'es',
-          iso: 'es-ES',
-        },
-        {
-          code: 'fr',
-          iso: 'fr-FR',
-        },
-      ],
-      defaultLocale: 'en',
-      strategy: 'prefix_except_default',
-      pages: {
-        test: {
-          en: '/test',
-          es: '/prueba',
-          fr: '/teste',
-        },
-        about: {
-          en: '/about',
-          es: '/acerca-de',
-          fr: '/a-propos',
-        },
-      },
-    },
-  },
 })
 
 describe('i18n custom paths with _i18nTransform', () => {
@@ -101,5 +54,41 @@ describe('i18n custom paths with _i18nTransform', () => {
     expect(aboutUrl).toContain('<xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/acerca-de" />')
     expect(aboutUrl).toContain('<xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/a-propos" />')
     expect(aboutUrl).toContain('<xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/about" />')
+  })
+
+  // Issue #542: dynamic route with parameters should apply custom path transformation
+  it('should apply custom paths to dynamic routes with single parameter', async () => {
+    const enSitemap = await $fetch('/__sitemap__/en-US.xml')
+    const esSitemap = await $fetch('/__sitemap__/es-ES.xml')
+    const frSitemap = await $fetch('/__sitemap__/fr-FR.xml')
+
+    // Test that /posts/my-slug with _i18nTransform generates custom paths with parameter substitution
+    expect(enSitemap).toContain('<loc>https://nuxtseo.com/posts/my-slug</loc>')
+    expect(esSitemap).toContain('<loc>https://nuxtseo.com/es/articulos/my-slug</loc>')
+    expect(frSitemap).toContain('<loc>https://nuxtseo.com/fr/article/my-slug</loc>')
+  })
+
+  it('should generate correct alternatives for dynamic routes with parameter', async () => {
+    const enSitemap = await $fetch('/__sitemap__/en-US.xml')
+
+    // Check the posts URL entry - should have parameter substitution in alternatives
+    const postsUrlMatch = enSitemap.match(/<url>[\s\S]*?<loc>https:\/\/nuxtseo\.com\/posts\/my-slug<\/loc>[\s\S]*?<\/url>/g)
+    expect(postsUrlMatch).toBeDefined()
+
+    const postsUrl = postsUrlMatch![0]
+    expect(postsUrl).toContain('<xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/articulos/my-slug" />')
+    expect(postsUrl).toContain('<xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/article/my-slug" />')
+    expect(postsUrl).toContain('<xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/posts/my-slug" />')
+  })
+
+  it('should apply custom paths to dynamic routes with multiple parameters', async () => {
+    const enSitemap = await $fetch('/__sitemap__/en-US.xml')
+    const esSitemap = await $fetch('/__sitemap__/es-ES.xml')
+    const frSitemap = await $fetch('/__sitemap__/fr-FR.xml')
+
+    // Test that /products/electronics/laptop-123 generates custom paths with both parameters
+    expect(enSitemap).toContain('<loc>https://nuxtseo.com/products/electronics/laptop-123</loc>')
+    expect(esSitemap).toContain('<loc>https://nuxtseo.com/es/productos/electronics/laptop-123</loc>')
+    expect(frSitemap).toContain('<loc>https://nuxtseo.com/fr/produits/electronics/laptop-123</loc>')
   })
 })

@@ -90,6 +90,39 @@ export function createPathFilter(options: CreateFilterOptions = {}) {
   }
 }
 
+export interface PageMatch {
+  mappings: Record<string, string | false>
+  paramSegments: string[]
+}
+
+export function findPageMapping(pathWithoutPrefix: string, pages: Record<string, Record<string, string | false>>): PageMatch | null {
+  const stripped = pathWithoutPrefix[0] === '/' ? pathWithoutPrefix.slice(1) : pathWithoutPrefix
+  const pageKey = stripped.endsWith('/index') ? stripped.slice(0, -6) || 'index' : stripped || 'index'
+
+  // exact match
+  if (pages[pageKey])
+    return { mappings: pages[pageKey], paramSegments: [] }
+
+  // prefix matching for dynamic routes (e.g., 'posts/2' matches 'posts' key)
+  // sort by length desc to match most specific first
+  const sortedKeys = Object.keys(pages).sort((a, b) => b.length - a.length)
+  for (const key of sortedKeys) {
+    if (pageKey.startsWith(key + '/')) {
+      const paramPath = pageKey.slice(key.length + 1)
+      return { mappings: pages[key], paramSegments: paramPath.split('/') }
+    }
+  }
+
+  return null
+}
+
+export function applyDynamicParams(customPath: string, paramSegments: string[]): string {
+  if (!paramSegments.length)
+    return customPath
+  let i = 0
+  return customPath.replace(/\[[^\]]+\]/g, () => paramSegments[i++] || '')
+}
+
 export function createFilter(options: CreateFilterOptions = {}): (path: string) => boolean {
   const include = options.include || []
   const exclude = options.exclude || []

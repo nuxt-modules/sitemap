@@ -14,18 +14,13 @@ import type {
 import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { createPathFilter, splitForLocales } from '../../../utils-pure'
+import { applyDynamicParams, createPathFilter, findPageMapping, splitForLocales } from '../../../utils-pure'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string
   _locale: AutoI18nConfig['locales'][number]
   _index?: number
-}
-
-function getPageKey(pathWithoutPrefix: string): string {
-  const stripped = pathWithoutPrefix[0] === '/' ? pathWithoutPrefix.slice(1) : pathWithoutPrefix
-  return stripped.endsWith('/index') ? stripped.slice(0, -6) || 'index' : stripped || 'index'
 }
 
 export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
@@ -130,9 +125,8 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             })
         }
         else {
-          // Cache pageKey outside the locale loop
-          const pageKey = hasPages ? getPageKey(e._pathWithoutPrefix) : ''
-          const pageMappings = hasPages ? autoI18n.pages![pageKey] : undefined
+          // Find page mapping with support for dynamic routes
+          const pageMatch = hasPages ? findPageMapping(e._pathWithoutPrefix, autoI18n.pages!) : null
           const pathSearch = e._path?.search || ''
           const pathWithoutPrefix = e._pathWithoutPrefix
 
@@ -141,14 +135,19 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             let loc = pathWithoutPrefix
 
             // Check if there's a custom mapping in i18n pages config
-            if (hasPages && pageMappings && pageMappings[l.code] !== undefined) {
-              const customPath = pageMappings[l.code]
+            if (pageMatch && pageMatch.mappings[l.code] !== undefined) {
+              const customPath = pageMatch.mappings[l.code]
               // If customPath is false, skip this locale
               if (customPath === false)
                 continue
-              // If customPath is a string, use it
-              if (typeof customPath === 'string')
+              // If customPath is a string, use it (applying dynamic params if present)
+              if (typeof customPath === 'string') {
                 loc = customPath[0] === '/' ? customPath : `/${customPath}`
+                loc = applyDynamicParams(loc, pageMatch.paramSegments)
+                // Add locale prefix for non-default locales
+                if (isPrefixStrategy || (isPrefixExceptOrAndDefault && l.code !== defaultLocale))
+                  loc = joinURL(`/${l.code}`, loc)
+              }
             }
             else if (!hasDifferentDomains && !(isPrefixExceptOrAndDefault && l.code === defaultLocale)) {
               // No custom mapping found, use default behavior
@@ -164,12 +163,17 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
               let href = pathWithoutPrefix
 
               // Check for custom path mapping
-              if (hasPages && pageMappings && pageMappings[code] !== undefined) {
-                const customPath = pageMappings[code]
+              if (pageMatch && pageMatch.mappings[code] !== undefined) {
+                const customPath = pageMatch.mappings[code]
                 if (customPath === false)
                   continue
-                if (typeof customPath === 'string')
+                if (typeof customPath === 'string') {
                   href = customPath[0] === '/' ? customPath : `/${customPath}`
+                  href = applyDynamicParams(href, pageMatch.paramSegments)
+                  // Add locale prefix for non-default locales
+                  if (isPrefixStrategy || (isPrefixExceptOrAndDefault && !isDefault))
+                    href = joinURL('/', code, href)
+                }
               }
               else if (isPrefixStrategy) {
                 href = joinURL('/', code, pathWithoutPrefix)
