@@ -102,6 +102,7 @@
     "@nuxtjs/i18n": "^10.2.1",
     "@nuxtjs/robots": "^5.6.7",
     "@nuxtjs/sitemap": "workspace:*",
+    "@vue/test-utils": "^2.4.6",
     "better-sqlite3": "^12.5.0",
     "bumpp": "^10.3.2",
     "eslint": "^9.39.2",
