@@ -109,7 +109,7 @@ export function findPageMapping(pathWithoutPrefix: string, pages: Record<string,
   for (const key of sortedKeys) {
     if (pageKey.startsWith(key + '/')) {
       const paramPath = pageKey.slice(key.length + 1)
-      return { mappings: pages[key], paramSegments: paramPath.split('/') }
+      return { mappings: pages[key]!, paramSegments: paramPath.split('/') }
     }
   }
 
