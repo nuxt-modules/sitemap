@@ -1,3 +1,4 @@
 imports.autoImport=false
 typescript.includeWorkspace=true
-modules[]=@nuxtjs/sitemap
+modules.0="@nuxtjs/sitemap"
+setups.@nuxt/test-utils="3.23.0"
