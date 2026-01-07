@@ -58,9 +58,6 @@ importers:
       ultrahtml:
         specifier: ^1.6.0
         version: 1.6.0
-      zod:
-        specifier: '>=3'
-        version: 4.3.5
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
@@ -125,6 +122,9 @@ importers:
       vue-tsc:
         specifier: ^3.2.2
         version: 3.2.2(typescript@5.9.3)
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   client:
     devDependencies:
