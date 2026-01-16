@@ -102,6 +102,9 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
   // Truncate array to valid entries only
   sitemapUrls.length = validCount
+  if (import.meta.dev && validCount === 0 && sitemapUrls.length > 0) {
+    logger.warn(`Sitemap had ${sitemapUrls.length} that were all filtered out. This may be due to a robots rules blocking these URLs from indexing. Check your /** route rules or robots.txt configuration.`)
+  }
 
   // 6. nitro hooks
   const locSize = sitemapUrls.length
