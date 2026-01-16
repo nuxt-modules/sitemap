@@ -18,7 +18,7 @@ import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
-import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
+import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 
 interface SitemapNitroApp extends NitroApp {
@@ -28,7 +28,7 @@ interface SitemapNitroApp extends NitroApp {
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
   const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
-  const siteConfig = useSiteConfig(e)
+  const siteConfig = getSiteConfig(e)
   return {
     event: e,
     fixSlashes: (path: string) => fixSlashes(siteConfig.trailingSlash, path),
@@ -47,7 +47,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   const { sitemapName } = definition
   const nitro = useNitroApp() as SitemapNitroApp
   if (import.meta.prerender) {
-    const config = useSiteConfig(event)
+    const config = getSiteConfig(event)
     if (!config.url && !nitro._sitemapWarned) {
       nitro._sitemapWarned = true
       logger.error('Sitemap Site URL missing!')
