@@ -5,9 +5,9 @@
     "@iconify-json/carbon": "^1.2.15",
     "@nuxt/devtools-kit": "^3.1.1",
     "@nuxt/devtools-ui-kit": "^3.1.1",
-    "@nuxt/kit": "^4.2.2",
+    "@nuxt/kit": "^4.3.0",
     "floating-vue": "^5.2.2",
-    "nuxt": "^4.2.2",
+    "nuxt": "^4.3.0",
     "shiki": "^3.21.0",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
