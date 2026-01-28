@@ -21,16 +21,17 @@ export default defineEventHandler(async (e) => {
   const contentList: Promise<ContentEntry[]>[] = []
   for (const collection of collections) {
     const hasFilter = filters?.has(collection)
+    // @ts-expect-error dynamic collection name
     const query = queryCollection(e, collection)
       .where('path', 'IS NOT NULL')
       .where('sitemap', 'IS NOT NULL')
 
     // only select specific fields if no filter, otherwise get all fields
     if (!hasFilter)
+      // @ts-expect-error dynamic field names
       query.select('path', 'sitemap')
 
     contentList.push(
-      // @ts-expect-error dynamic collection name
       query.all()
         .then((results) => {
           // apply runtime filter if available
