@@ -3,6 +3,7 @@ import type { Nuxt } from 'nuxt/schema'
 import type { Resolver } from '@nuxt/kit'
 import { useNuxt } from '@nuxt/kit'
 import type { ModuleOptions } from './module'
+import { addCustomTab } from '@nuxt/devtools-kit'
 
 const DEVTOOLS_UI_ROUTE = '/__sitemap__/devtools'
 const DEVTOOLS_UI_LOCAL_PORT = 3030
@@ -41,19 +42,17 @@ export function setupDevToolsUI(options: ModuleOptions, resolve: Resolver['resol
     })
   }
 
-  nuxt.hook('devtools:customTabs', (tabs) => {
-    tabs.push({
-      // unique identifier
-      name: 'sitemap',
-      // title to display in the tab
-      title: 'Sitemap',
-      // any icon from Iconify, or a URL to an image
-      icon: 'carbon:load-balancer-application',
-      // iframe view
-      view: {
-        type: 'iframe',
-        src: DEVTOOLS_UI_ROUTE,
-      },
-    })
+  addCustomTab({
+    // unique identifier
+    name: 'sitemap',
+    // title to display in the tab
+    title: 'Sitemap',
+    // any icon from Iconify, or a URL to an image
+    icon: 'carbon:load-balancer-application',
+    // iframe view
+    view: {
+      type: 'iframe',
+      src: DEVTOOLS_UI_ROUTE,
+    },
   })
 }

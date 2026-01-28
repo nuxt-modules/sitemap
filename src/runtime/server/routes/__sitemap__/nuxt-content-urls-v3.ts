@@ -1,6 +1,5 @@
 import { defineEventHandler } from 'h3'
 import { queryCollection } from '@nuxt/content/server'
-// @ts-expect-error alias
 import manifest from '#content/manifest'
 
 interface ContentEntry {
@@ -12,6 +11,7 @@ export default defineEventHandler(async (e) => {
   const collections: string[] = []
   // each collection in the manifest has a key => with fields which has a `sitemap`, we want to get all those
   for (const collection in manifest) {
+    // @ts-expect-error nuxt content v3
     if (manifest[collection].fields.sitemap) {
       collections.push(collection)
     }
@@ -22,6 +22,7 @@ export default defineEventHandler(async (e) => {
     contentList.push(
       // @ts-expect-error dynamic collection name
       queryCollection(e, collection)
+        // @ts-expect-error nuxt content v3
         .select('path', 'sitemap')
         .where('path', 'IS NOT NULL')
         .where('sitemap', 'IS NOT NULL')
