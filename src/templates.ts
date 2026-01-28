@@ -90,6 +90,10 @@ declare module '#sitemap-virtual/child-sources.mjs' {
 
   export const sources: Record<string, (SitemapSourceBase | SitemapSourceResolved)[]>
 }
+
+declare module '#sitemap/content-filters' {
+  export const filters: Map<string, (entry: any) => boolean>
+}
 `,
   })
 }

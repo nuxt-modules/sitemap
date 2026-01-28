@@ -6,16 +6,14 @@ export default defineNuxtConfig({
     '@nuxt/ui',
   ],
   ssr: false,
-
-  devtools: {
-    enabled: false,
-  },
+  devtools: false,
 
   app: {
     baseURL: '/__sitemap__/devtools',
   },
 
   css: ['~/assets/css/global.css'],
+  content: false,
 
   compatibilityDate: '2025-03-13',
 
@@ -30,4 +28,5 @@ export default defineNuxtConfig({
       { name: 'Hubot Sans' },
     ],
   },
+  sitemap: false,
 })

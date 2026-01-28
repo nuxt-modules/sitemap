@@ -1,6 +1,15 @@
-import type { Collection } from '@nuxt/content'
+import type { Collection, PageCollectionItemBase } from '@nuxt/content'
 import type { TypeOf } from 'zod'
 import { z } from 'zod'
+
+declare global {
+  var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+}
+
+if (!globalThis.__sitemapCollectionFilters)
+  globalThis.__sitemapCollectionFilters = new Map()
+
+const collectionFilters = globalThis.__sitemapCollectionFilters
 
 export const schema = z.object({
   sitemap: z.object({
@@ -40,10 +49,38 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-export function asSitemapCollection<T>(collection: Collection<T>): Collection<T> {
+export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
+  /**
+   * Collection name. Must match the key in your collections object.
+   * Required when using a filter.
+   * @example
+   * collections: {
+   *   blog: defineCollection(asSitemapCollection({...}, { name: 'blog', filter: ... }))
+   * }
+   */
+  name?: string
+  /**
+   * Runtime filter function to exclude entries from sitemap.
+   * Receives the full content entry including all schema fields.
+   * Requires `name` parameter to be set.
+   * @example
+   * { name: 'blog', filter: (entry) => !entry.draft && new Date(entry.date) <= new Date() }
+   */
+  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
+}
+
+export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
+
+    // store filter - collectionFilters is a global Map
+    if (options?.filter) {
+      if (!options.name)
+        throw new Error('[sitemap] `name` is required when using `filter` in asSitemapCollection()')
+      collectionFilters.set(options.name, options.filter)
+    }
   }
+
   return collection
 }
