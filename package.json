@@ -32,8 +32,7 @@
   },
   "main": "./dist/module.mjs",
   "files": [
-    "dist",
-    "virtual.d.ts"
+    "dist"
   ],
   "typesVersions": {
     "*": {

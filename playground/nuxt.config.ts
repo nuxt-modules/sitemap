@@ -144,6 +144,9 @@ export default defineNuxtConfig({
     experimentalWarmUp: true,
     urls: [
       '/manual-url-test',
+      { loc: '/bad-lastmod', lastmod: 'not-a-date' },
+      { loc: '/bad-changefreq', changefreq: 'sometimes' as any },
+      { loc: '/bad-priority', priority: 5 },
     ],
     sources: [
       '/some-invalid-url',

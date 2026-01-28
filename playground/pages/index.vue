@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { definePageMeta } from '#imports'
-
 // does not work (yet?)
 definePageMeta({
   sitemap: {
-    changefreq: 'daily',
+    lastmod: 'broken',
+    changefreq: 'foo',
   },
 })
 </script>

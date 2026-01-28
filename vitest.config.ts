@@ -18,6 +18,22 @@ export default defineConfig({
           ],
         },
       }),
+      // type-level tests via vitest typecheck
+      defineProject({
+        test: {
+          name: 'typecheck',
+          typecheck: {
+            enabled: true,
+            tsconfig: './test/types/tsconfig.json',
+          },
+          include: [
+            './test/types/**/*.test-d.ts',
+          ],
+          exclude: [
+            '**/node_modules/**',
+          ],
+        },
+      }),
       // e2e tests in test/e2e
       defineVitestProject({
         test: {
