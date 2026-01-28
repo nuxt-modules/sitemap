@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   modules: [
@@ -6,10 +7,9 @@ export default defineNuxtConfig({
     '@nuxt/ui',
   ],
   ssr: false,
-
-  devtools: {
-    enabled: false,
-  },
+  content: false,
+  sitemap: false,
+  devtools: false,
 
   app: {
     baseURL: '/__sitemap__/devtools',
