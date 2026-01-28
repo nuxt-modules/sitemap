@@ -2,9 +2,7 @@ import type { Collection, PageCollectionItemBase } from '@nuxt/content'
 import type { TypeOf } from 'zod'
 import { z } from 'zod'
 
-// use global to persist filters across module boundaries during build
 declare global {
-
   var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
 }
 
@@ -77,8 +75,11 @@ export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSi
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
 
     // store filter - collectionFilters is a global Map
-    if (options?.filter && options?.name)
+    if (options?.filter) {
+      if (!options.name)
+        throw new Error('[sitemap] `name` is required when using `filter` in asSitemapCollection()')
       collectionFilters.set(options.name, options.filter)
+    }
   }
 
   return collection

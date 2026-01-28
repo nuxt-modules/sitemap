@@ -5,7 +5,7 @@ import { $fetch, setup } from '@nuxt/test-utils'
 const { resolve } = createResolver(import.meta.url)
 
 await setup({
-  rootDir: resolve('../../fixtures/content-v3'),
+  rootDir: resolve('../../fixtures/content-v3-filtering'),
   build: true,
 })
 

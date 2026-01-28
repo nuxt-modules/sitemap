@@ -1,7 +1,6 @@
 import { defineEventHandler } from 'h3'
 import { queryCollection } from '@nuxt/content/server'
 import manifest from '#content/manifest'
-// @ts-expect-error virtual module
 import { filters } from '#sitemap/content-filters'
 
 interface ContentEntry {

@@ -464,7 +464,7 @@ export default defineNuxtModule<ModuleOptions>({
         const filterEntries: string[] = []
         if (globalThis.__sitemapCollectionFilters) {
           for (const [name, filterFn] of globalThis.__sitemapCollectionFilters.entries())
-            filterEntries.push(`filters.set('${name}', ${filterFn.toString()})`)
+            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${filterFn.toString()})`)
         }
 
         nitroConfig.virtual = nitroConfig.virtual || {}
