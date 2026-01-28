@@ -91,6 +91,11 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
     xml += `${I2}</news:news>${NL}`
   }
 
+  if (import.meta.dev && url._warnings?.length) {
+    for (const w of url._warnings)
+      xml += `${I2}<!-- WARN: ${w} -->${NL}`
+  }
+
   xml += `${I1}</url>`
   return xml
 }

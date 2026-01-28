@@ -13,8 +13,30 @@ import type {
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapUrl,
+  SitemapUrlInput,
 } from '../../../types'
 import { mergeOnKey } from '../../../utils-pure'
+
+const VALID_CHANGEFREQ = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']
+
+export function validateSitemapUrl(url: SitemapUrlInput): string[] {
+  if (typeof url === 'string')
+    return []
+  const warnings: string[] = []
+  if (url.lastmod) {
+    const d = typeof url.lastmod === 'string' ? url.lastmod : undefined
+    if (d && !isValidW3CDate(d))
+      warnings.push(`lastmod "${d}" is not a valid W3C date`)
+  }
+  if (url.changefreq && !VALID_CHANGEFREQ.includes(url.changefreq))
+    warnings.push(`changefreq "${url.changefreq}" is not valid (expected: always|hourly|daily|weekly|monthly|yearly|never)`)
+  if (url.priority !== undefined) {
+    const p = typeof url.priority === 'number' ? url.priority : Number.parseFloat(String(url.priority))
+    if (Number.isNaN(p) || p < 0 || p > 1)
+      warnings.push(`priority "${url.priority}" is not valid (expected: number between 0.0 and 1.0)`)
+  }
+  return warnings
+}
 
 function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
 function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): string | undefined
@@ -97,6 +119,11 @@ export function isEncoded(url: string) {
 
 export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
   const e = defu(_e, defaults) as ResolvedSitemapUrl
+  if (import.meta.dev) {
+    const warnings = validateSitemapUrl(e)
+    if (warnings.length)
+      e._warnings = (e._warnings || []).concat(warnings)
+  }
   if (e.lastmod) {
     const date = normaliseDate(e.lastmod)
     if (date)

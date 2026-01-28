@@ -194,6 +194,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   error?: any
   timeTakenMs?: number
   _isFailure?: boolean
+  _urlWarnings?: { loc: string, message: string }[]
 }
 
 export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'
@@ -270,6 +271,10 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
    * @internal
    */
   _abs: boolean
+  /**
+   * @internal
+   */
+  _warnings?: string[]
 }
 
 export interface SitemapDefinition {
@@ -421,6 +426,8 @@ export interface SitemapUrl {
    */
   _encoded?: boolean
 }
+
+export type SitemapItemDefaults = Omit<SitemapUrl, 'loc'>
 
 export type SitemapStrict = Required<SitemapUrl>
 
