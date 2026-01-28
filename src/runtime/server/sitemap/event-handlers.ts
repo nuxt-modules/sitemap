@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import { appendHeader, createError, getRouterParam, sendRedirect, setHeader } from 'h3'
-import { joinURL, withBase, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
+import { joinURL, withBase, withoutLeadingSlash, withoutTrailingSlash, withLeadingSlash } from 'ufo'
 import { useRuntimeConfig, useNitroApp } from 'nitropack/runtime'
 import { useSitemapRuntimeConfig } from '../utils'
 import { createSitemap, useNitroUrlResolvers } from './nitro'
@@ -71,7 +71,7 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   let sitemapName = getRouterParam(e, 'sitemap')
   if (!sitemapName) {
     const path = e.path
-    const match = path.match(/(?:\/__sitemap__\/)?([^/]+)\.xml$/)
+    const match = path.match(/(?:\/__sitemap__\/)?(.+)\.xml$/)
     if (match)
       sitemapName = match[1]
   }
@@ -79,9 +79,17 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   if (!sitemapName)
     throw createError({ statusCode: 400, message: 'Invalid sitemap request' })
 
-  sitemapName = withoutLeadingSlash(withoutTrailingSlash(sitemapName.replace('.xml', '')
-    .replace('__sitemap__/', '')
-    .replace(runtimeConfig.sitemapsPathPrefix || '', '')))
+  sitemapName = sitemapName.replace(/\.xml$/, '')
+  sitemapName = withLeadingSlash(sitemapName)
+  if (sitemapName.startsWith('/__sitemap__/'))
+    sitemapName = sitemapName.replace('/__sitemap__/', '/')
+
+  if (runtimeConfig.sitemapsPathPrefix) {
+    const prefix = withLeadingSlash(runtimeConfig.sitemapsPathPrefix)
+    if (sitemapName.startsWith(prefix))
+      sitemapName = sitemapName.replace(prefix, '/')
+  }
+  sitemapName = withoutLeadingSlash(withoutTrailingSlash(sitemapName))
 
   const chunkInfo = parseChunkInfo(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize)
   const isAutoChunked = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
