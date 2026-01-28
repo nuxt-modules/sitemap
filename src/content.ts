@@ -1,4 +1,4 @@
-import type { Collection } from '@nuxt/content'
+import type { Collection, PageCollectionItemBase } from '@nuxt/content'
 import type { TypeOf } from 'zod'
 import { z } from 'zod'
 
@@ -51,7 +51,7 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-export interface AsSitemapCollectionOptions<TEntry = any> {
+export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   /**
    * Collection name. Must match the key in your collections object.
    * Required when using a filter.
@@ -68,7 +68,7 @@ export interface AsSitemapCollectionOptions<TEntry = any> {
    * @example
    * { name: 'blog', filter: (entry) => !entry.draft && new Date(entry.date) <= new Date() }
    */
-  filter?: (entry: TEntry & { path?: string, sitemap?: any }) => boolean
+  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
 }
 
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
