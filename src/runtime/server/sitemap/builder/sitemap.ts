@@ -14,7 +14,7 @@ import type {
 import { preNormalizeEntry } from '../urlset/normalise'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { applyDynamicParams, createPathFilter, findPageMapping, splitForLocales } from '../../../utils-pure'
+import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -311,6 +311,25 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
   const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+
+  if (isMultiSitemap) {
+    const sitemapNames = Object.keys(sitemaps).filter(k => k !== 'index')
+    // @ts-expect-error loose typing
+    const warnedSitemaps = nitro?._sitemapWarnedSitemaps || new Set<string>()
+    for (const e of enhancedUrls) {
+      if (typeof e._sitemap === 'string' && !sitemapNames.includes(e._sitemap)) {
+        if (!warnedSitemaps.has(e._sitemap)) {
+          warnedSitemaps.add(e._sitemap)
+          logger.error(`Sitemap \`${e._sitemap}\` not found in sitemap config. Available sitemaps: ${sitemapNames.join(', ')}. Entry \`${e.loc}\` will be omitted.`)
+        }
+      }
+    }
+    if (nitro) {
+      // @ts-expect-error loose typing
+      nitro._sitemapWarnedSitemaps = warnedSitemaps
+    }
+  }
+
   // 3. filtered urls
   // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
