@@ -25,6 +25,8 @@ describe('base', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/base/about</loc>
+              <changefreq>daily</changefreq>
+              <priority>0.8</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/base/crawled</loc>

@@ -26,6 +26,8 @@ describe('base url trailing slash', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/subdir/about/</loc>
+              <changefreq>daily</changefreq>
+              <priority>0.8</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/subdir/crawled/</loc>

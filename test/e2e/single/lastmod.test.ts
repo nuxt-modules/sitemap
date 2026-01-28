@@ -50,6 +50,8 @@ describe('lastmod', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/about</loc>
+              <changefreq>daily</changefreq>
+              <priority>0.8</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/bar</loc>

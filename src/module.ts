@@ -127,6 +127,8 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
+    nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
+    nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
     config.xslColumns = config.xslColumns || [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
