@@ -94,6 +94,10 @@ declare module '#sitemap-virtual/child-sources.mjs' {
 declare module '#sitemap/content-filters' {
   export const filters: Map<string, (entry: any) => boolean>
 }
+
+declare module '#sitemap/content-on-url' {
+  export const onUrlFns: Map<string, (url: Record<string, unknown>, entry: any, collection: string) => void>
+}
 `,
   })
 }

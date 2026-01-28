@@ -4,12 +4,16 @@ import { z } from 'zod'
 
 declare global {
   var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+  var __sitemapCollectionOnUrlFns: Map<string, (ctx: any) => void> | undefined
 }
 
 if (!globalThis.__sitemapCollectionFilters)
   globalThis.__sitemapCollectionFilters = new Map()
+if (!globalThis.__sitemapCollectionOnUrlFns)
+  globalThis.__sitemapCollectionOnUrlFns = new Map()
 
 const collectionFilters = globalThis.__sitemapCollectionFilters
+const collectionOnUrlFns = globalThis.__sitemapCollectionOnUrlFns
 
 export const schema = z.object({
   sitemap: z.object({
@@ -52,7 +56,7 @@ export type SitemapSchema = TypeOf<typeof schema>
 export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   /**
    * Collection name. Must match the key in your collections object.
-   * Required when using a filter.
+   * Required when using `filter` or `onUrl`.
    * @example
    * collections: {
    *   blog: defineCollection(asSitemapCollection({...}, { name: 'blog', filter: ... }))
@@ -67,6 +71,25 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
    * { name: 'blog', filter: (entry) => !entry.draft && new Date(entry.date) <= new Date() }
    */
   filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
+  /**
+   * Transform the sitemap URL entry for each item in this collection.
+   * Mutate `url` directly to change `loc`, `lastmod`, `priority`, etc.
+   * The full content entry and collection name are provided for context.
+   * Useful when the collection uses `prefix: ''` in its source config,
+   * which strips the directory prefix from content paths.
+   * Requires `name` parameter to be set.
+   * @example
+   * // Add a locale prefix
+   * { name: 'content_zh', onUrl: (url) => { url.loc = `/zh${url.loc}` } }
+   * @example
+   * // Use content entry fields to set priority
+   * { name: 'blog', onUrl: (url, entry) => { url.priority = entry.featured ? 1.0 : 0.5 } }
+   */
+  onUrl?: (
+    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
+    entry: PageCollectionItemBase & SitemapSchema & TEntry,
+    collection: string,
+  ) => void
 }
 
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
@@ -74,11 +97,13 @@ export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSi
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
 
-    // store filter - collectionFilters is a global Map
-    if (options?.filter) {
+    if (options?.filter || options?.onUrl) {
       if (!options.name)
-        throw new Error('[sitemap] `name` is required when using `filter` in asSitemapCollection()')
-      collectionFilters.set(options.name, options.filter)
+        throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in asSitemapCollection()')
+      if (options.filter)
+        collectionFilters.set(options.name, options.filter)
+      if (options.onUrl)
+        collectionOnUrlFns.set(options.name, options.onUrl)
     }
   }
 
