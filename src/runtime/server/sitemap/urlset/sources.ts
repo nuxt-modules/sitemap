@@ -81,7 +81,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       {
         Accept: isXmlRequest ? 'text/xml' : 'application/json',
       },
-      event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
+      (event && !isExternalUrl) ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
     )
 
     const fetchOptions = {
