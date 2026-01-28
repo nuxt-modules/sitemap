@@ -1,4 +1,6 @@
 export { parseSitemapXml } from './parseSitemapXml'
 export type { SitemapWarning, SitemapParseResult } from './parseSitemapXml'
+export { parseSitemapIndex, isSitemapIndex } from './parseSitemapIndex'
+export type { SitemapIndexEntry, SitemapIndexParseResult } from './parseSitemapIndex'
 export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
 export type * from '../runtime/types'
