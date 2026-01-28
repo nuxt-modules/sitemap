@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 declare global {
   var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
-  var __sitemapCollectionOnUrlFns: Map<string, (ctx: any) => void> | undefined
+  var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
 }
 
 if (!globalThis.__sitemapCollectionFilters)
