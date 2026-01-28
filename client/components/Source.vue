@@ -14,8 +14,6 @@ const fetchUrl = computed(() => {
 })
 
 function normaliseTip(tip: string) {
-  // we need to convert code in the tip for example
-  // this is `someCode` -> this is <code>someCode</code>
   return tip.replace(/`([^`]+)`/g, '<code>$1</code>')
 }
 </script>
@@ -23,77 +21,98 @@ function normaliseTip(tip: string) {
 <template>
   <OSectionBlock>
     <template #text>
-      <div class="flex space-x-5">
-        <h3 class="opacity-80 text-base mb-1 flex space-x-3 items-center">
-          <div
-            v-if="source.fetch"
-            class="flex space-x-2"
+      <div class="flex items-center gap-3">
+        <div
+          v-if="source.fetch"
+          class="flex items-center gap-1.5"
+        >
+          <UIcon
+            name="carbon:api-1"
+            class="text-[var(--color-text-muted)]"
+          />
+          <span
+            v-if="source.timeTakenMs"
+            class="timing-badge"
           >
-            <NIcon
-              icon="carbon:api-1"
-              class="opacity-50 text-lg"
-            />
-            <div
-              v-if="source.timeTakenMs"
-              class="opacity-60 text-sm"
-            >
-              {{ source.timeTakenMs }}ms
-            </div>
-          </div>
-          <div>
-            {{ source.context.name }}
-          </div>
-          <div>
-            <NBadge>{{ source.urls?.length || 0 }}</NBadge>
-          </div>
-        </h3>
+            {{ source.timeTakenMs }}ms
+          </span>
+        </div>
+        <span class="font-semibold">{{ source.context.name }}</span>
+        <span class="url-count">
+          {{ source.urls?.length || 0 }} URLs
+        </span>
       </div>
     </template>
     <template #description>
-      <div class="flex items-center space-x-3">
-        <div v-if="source.fetch">
-          <NLink
-            :href="fetchUrl"
-            target="_blank"
-          >
-            {{ source.fetch }}
-          </NLink>
-        </div>
-        <div
+      <div class="flex items-center gap-3">
+        <a
+          v-if="source.fetch"
+          :href="fetchUrl"
+          target="_blank"
+          class="link-external text-sm"
+        >
+          {{ source.fetch }}
+        </a>
+        <span
           v-if="source.context.description"
-          class="text-xs mt-1 opacity-70"
+          class="text-xs text-[var(--color-text-muted)]"
         >
           {{ source.context.description }}
-        </div>
+        </span>
       </div>
     </template>
-    <div v-if="source.error">
-      <NIcon
-        icon="carbon:warning"
-        class="text-red-500"
-      /> {{ source.error }}
+    <div
+      v-if="source.error"
+      class="flex items-center gap-2 text-red-500"
+    >
+      <UIcon name="carbon:warning" />
+      <span>{{ source.error }}</span>
     </div>
-    <OCodeBlock
-      v-else
-      class="max-h-[250px] overflow-y-auto"
-      :code="JSON.stringify(source.urls, null, 2)"
-      lang="json"
-    />
+    <template v-else>
+      <div
+        v-if="source._urlWarnings?.length"
+        class="url-warnings"
+      >
+        <div class="url-warnings-header">
+          <UIcon name="carbon:warning-alt" />
+          <span>{{ source._urlWarnings.length }} URL warning{{ source._urlWarnings.length > 1 ? 's' : '' }}</span>
+        </div>
+        <ul class="url-warnings-list">
+          <li
+            v-for="(w, i) in source._urlWarnings"
+            :key="i"
+          >
+            <code>{{ w.loc }}</code> — {{ w.message }}
+          </li>
+        </ul>
+      </div>
+      <OCodeBlock
+        class="max-h-[250px] overflow-y-auto"
+        :code="JSON.stringify(source.urls, null, 2)"
+        lang="json"
+      />
+    </template>
     <div
       v-if="source.context.tips?.length"
-      class="px-3 py-3 mt-2 dark:bg-gray-900/50 bg-gray-50/50 opacity-70"
+      class="hint-callout mt-3"
     >
-      <h3 class="text-sm font-bold mb-1">
-        Hints
-      </h3>
-      <ul class="list-disc ml-5">
-        <li
-          v-for="(tip, key) in source.context.tips"
-          :key="key"
-          class="text-sm opacity-80 mb-1"
-          v-html="normaliseTip(tip)"
-        />
-      </ul>
+      <UIcon
+        name="carbon:idea"
+        class="hint-callout-icon text-base flex-shrink-0 mt-0.5"
+      />
+      <div>
+        <h3 class="text-xs font-semibold mb-1.5 text-[var(--color-text)] uppercase tracking-wide opacity-70">
+          Hints
+        </h3>
+        <ul class="space-y-1">
+          <li
+            v-for="(tip, key) in source.context.tips"
+            :key="key"
+            class="text-sm text-[var(--color-text-muted)] leading-relaxed"
+            v-html="normaliseTip(tip)"
+          />
+        </ul>
+      </div>
     </div>
   </OSectionBlock>
 </template>
