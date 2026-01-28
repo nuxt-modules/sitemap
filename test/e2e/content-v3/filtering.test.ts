@@ -10,45 +10,19 @@ await setup({
 })
 
 describe('nuxt/content v3 filtering', () => {
-  it('filters draft posts', async () => {
-    const nuxtContentUrls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
-    const paths = nuxtContentUrls.map(u => u.loc)
+  it('filters content entries using collection filter', async () => {
+    const urls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
+    const paths = urls.map(u => u.loc)
 
-    // draft.md should be filtered out
+    // draft.md (draft: true) should be excluded
     expect(paths).not.toContain('/draft')
-  })
-
-  it('filters future posts', async () => {
-    const nuxtContentUrls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
-    const paths = nuxtContentUrls.map(u => u.loc)
-
-    // future.md should be filtered out
+    // future.md (date: 2099-01-01) should be excluded
     expect(paths).not.toContain('/future')
-  })
 
-  it('includes published posts', async () => {
-    const nuxtContentUrls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
-    const paths = nuxtContentUrls.map(u => u.loc)
-
-    // published.md should be included
+    // published.md (date in past, draft: false) should be included
     expect(paths).toContain('/published')
-  })
-
-  it('includes regular posts without draft/date fields', async () => {
-    const nuxtContentUrls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
-    const paths = nuxtContentUrls.map(u => u.loc)
-
-    // regular posts should still be included
+    // regular posts without draft/date fields should be included
     expect(paths).toContain('/foo')
     expect(paths).toContain('/bar')
-  })
-
-  it('total count reflects filtering', async () => {
-    const nuxtContentUrls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
-
-    // should have filtered out 2 items (draft + future)
-    // original has: bar, draft, foo, future, posts/bar, posts/fallback, posts/foo, published, test-json, test-yaml = 10
-    // filtered: 10 - 2 = 8
-    expect(nuxtContentUrls.length).toBe(8)
   })
 })

@@ -4,14 +4,14 @@ import { z } from 'zod'
 
 // use global to persist filters across module boundaries during build
 declare global {
-  // eslint-disable-next-line no-var
+
   var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
 }
 
 if (!globalThis.__sitemapCollectionFilters)
   globalThis.__sitemapCollectionFilters = new Map()
 
-const _collectionFilters = globalThis.__sitemapCollectionFilters
+const collectionFilters = globalThis.__sitemapCollectionFilters
 
 export const schema = z.object({
   sitemap: z.object({
@@ -51,8 +51,6 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-export { _collectionFilters }
-
 export interface AsSitemapCollectionOptions<TEntry = any> {
   /**
    * Collection name. Must match the key in your collections object.
@@ -78,9 +76,9 @@ export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSi
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
 
-    // store filter - _collectionFilters is a global Map
+    // store filter - collectionFilters is a global Map
     if (options?.filter && options?.name)
-      _collectionFilters.set(options.name, options.filter)
+      collectionFilters.set(options.name, options.filter)
   }
 
   return collection
