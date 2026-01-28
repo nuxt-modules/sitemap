@@ -60,6 +60,13 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   }
   const { urls: sitemapUrls, failedSources } = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
 
+  if (import.meta.prerender && failedSources.length) {
+    throw createError({
+      statusCode: 500,
+      message: `Sitemap generation failed due to ${failedSources.length} failed sources: ${failedSources.map(s => `"${s.url}" (${s.error})`).join(', ')}`,
+    })
+  }
+
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
 
