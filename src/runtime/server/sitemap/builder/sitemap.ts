@@ -317,7 +317,10 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     // @ts-expect-error loose typing
     const warnedSitemaps = nitro?._sitemapWarnedSitemaps || new Set<string>()
     for (const e of enhancedUrls) {
-      if (typeof e._sitemap === 'string' && !sitemapNames.includes(e._sitemap)) {
+      // Check if _sitemap matches any sitemap name directly OR via locale prefix (e.g., "en-US" matches "en-US-pages")
+      const hasMatchingSitemap = typeof e._sitemap === 'string'
+        && (sitemapNames.includes(e._sitemap) || sitemapNames.some(name => name.startsWith(e._sitemap + '-')))
+      if (typeof e._sitemap === 'string' && !hasMatchingSitemap) {
         if (!warnedSitemaps.has(e._sitemap)) {
           warnedSitemaps.add(e._sitemap)
           logger.error(`Sitemap \`${e._sitemap}\` not found in sitemap config. Available sitemaps: ${sitemapNames.join(', ')}. Entry \`${e.loc}\` will be omitted.`)
@@ -338,7 +341,8 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
       if (sitemap._isChunking)
         return sitemap.sitemapName.startsWith(e._sitemap + '-')
-      return e._sitemap === sitemap.sitemapName
+      // Match exact sitemap name OR locale-prefixed sitemap (e.g., "en-US" matches "en-US-pages")
+      return e._sitemap === sitemap.sitemapName || sitemap.sitemapName.startsWith(e._sitemap + '-')
     }
     return true
   })

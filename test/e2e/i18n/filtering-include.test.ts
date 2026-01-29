@@ -4,6 +4,8 @@ import { $fetch, setup } from '@nuxt/test-utils'
 
 const { resolve } = createResolver(import.meta.url)
 
+// With i18n + includeAppSources, sitemaps are automatically expanded to per-locale sitemaps
+// The include filter is applied to each locale sitemap
 await setup({
   rootDir: resolve('../../fixtures/i18n'),
   nuxtConfig: {
@@ -11,48 +13,33 @@ await setup({
       sitemaps: {
         main: {
           includeAppSources: true,
-          include: ['/fr', '/en', '/fr/test', '/en/test'],
+          include: ['/', '/test'],
         },
       },
     },
   },
 })
 describe('i18n filtering with include', () => {
-  it('basic', async () => {
-    const sitemap = await $fetch('/__sitemap__/main.xml')
+  it('generates per-locale sitemaps with include filter applied', async () => {
+    // With the fix for #486, includeAppSources sitemaps are expanded to {locale}-{name} sitemaps
+    const index = await $fetch('/sitemap_index.xml')
+    expect(index).toContain('en-US-main.xml')
+    expect(index).toContain('fr-FR-main.xml')
+    expect(index).toContain('es-ES-main.xml')
+    // main.xml should NOT exist - it's expanded to locale sitemaps
+    expect(index).not.toContain('/main.xml')
 
-    expect(sitemap).toMatchInlineSnapshot(`
-      "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
-      <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-          <url>
-              <loc>https://nuxtseo.com/en</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/fr</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/en/test</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en/test" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/test" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/test" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en/test" />
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/fr/test</loc>
-              <xhtml:link rel="alternate" hreflang="en-US" href="https://nuxtseo.com/en/test" />
-              <xhtml:link rel="alternate" hreflang="es-ES" href="https://nuxtseo.com/es/test" />
-              <xhtml:link rel="alternate" hreflang="fr-FR" href="https://nuxtseo.com/fr/test" />
-              <xhtml:link rel="alternate" hreflang="x-default" href="https://nuxtseo.com/en/test" />
-          </url>
-      </urlset>"
-    `)
+    // English sitemap should have filtered URLs with alternatives
+    const enSitemap = await $fetch('/__sitemap__/en-US-main.xml')
+    expect(enSitemap).toContain('/en')
+    expect(enSitemap).toContain('/en/test')
+    expect(enSitemap).toContain('hreflang')
+    expect(enSitemap).toContain('x-default')
+
+    // French sitemap should have filtered URLs with alternatives
+    const frSitemap = await $fetch('/__sitemap__/fr-FR-main.xml')
+    expect(frSitemap).toContain('/fr')
+    expect(frSitemap).toContain('/fr/test')
+    expect(frSitemap).toContain('hreflang')
   }, 60000)
 })

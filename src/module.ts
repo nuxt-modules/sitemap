@@ -275,17 +275,65 @@ export default defineNuxtModule<ModuleOptions>({
       }
       let canI18nMap = config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
       if (typeof config.sitemaps === 'object') {
-        const isSitemapIndexOnly = typeof config.sitemaps.index !== 'undefined' && Object.keys(config.sitemaps).length === 1
-        if (!isSitemapIndexOnly)
+        const sitemapEntries = Object.entries(config.sitemaps).filter(([k]) => k !== 'index')
+        const isSitemapIndexOnly = sitemapEntries.length === 0
+        // Allow i18n mapping if any sitemap has includeAppSources
+        const hasIncludeAppSources = sitemapEntries.some(([_, v]) => v && typeof v === 'object' && (v as SitemapDefinition).includeAppSources)
+        if (!isSitemapIndexOnly && !hasIncludeAppSources)
           canI18nMap = false
       }
       // if they haven't set `sitemaps` explicitly then we can set it up automatically for them
       if (canI18nMap && resolvedAutoI18n) {
+        const existingSitemaps: Record<string, unknown> = typeof config.sitemaps === 'object' ? config.sitemaps : {}
+        const i18nSitemaps: Array<{ name: string, cfg: SitemapDefinition }> = []
+        const nonI18nSitemaps: Record<string, unknown> = {}
+
+        // Process existing sitemaps - separate includeAppSources from others
+        for (const [name, cfg] of Object.entries(existingSitemaps)) {
+          if (name === 'index')
+            continue
+          if (cfg && typeof cfg === 'object' && (cfg as SitemapDefinition).includeAppSources) {
+            i18nSitemaps.push({ name, cfg: cfg as SitemapDefinition })
+          }
+          else {
+            // Keep non-includeAppSources sitemaps as-is
+            nonI18nSitemaps[name] = cfg
+          }
+        }
+
+        // Build new sitemaps config
+        const newSitemaps: Record<string, unknown> = {
+          index: [...((existingSitemaps.index as unknown[]) || []), ...(config.appendSitemaps || [])],
+        }
+
+        // Expand each includeAppSources sitemap to per-locale sitemaps
+        // If no custom sitemaps defined, use standard locale names (e.g., "en")
+        // If custom sitemaps defined, use "{locale}-{name}" format (e.g., "en-pages")
+        const hasCustomI18nSitemaps = i18nSitemaps.length > 0
+        if (hasCustomI18nSitemaps) {
+          for (const { name, cfg } of i18nSitemaps) {
+            for (const locale of resolvedAutoI18n.locales) {
+              newSitemaps[`${locale._sitemap}-${name}`] = {
+                includeAppSources: true,
+                ...(cfg.exclude?.length && { exclude: cfg.exclude }),
+                ...(cfg.include?.length && { include: cfg.include }),
+              }
+            }
+          }
+        }
+        else {
+          // Default behavior: create standard locale sitemaps
+          for (const locale of resolvedAutoI18n.locales) {
+            newSitemaps[locale._sitemap] = { includeAppSources: true }
+          }
+        }
+
+        // Add back non-i18n sitemaps
+        Object.assign(newSitemaps, nonI18nSitemaps)
+
         // @ts-expect-error untyped
-        config.sitemaps = { index: [...(config.sitemaps?.index || []), ...(config.appendSitemaps || [])] }
-        for (const locale of resolvedAutoI18n.locales)
-          // @ts-expect-error untyped
-          config.sitemaps[locale._sitemap] = { includeAppSources: true }
+        config.sitemaps = newSitemaps
+
         isI18nMapped = true
         usingMultiSitemaps = true
       }
