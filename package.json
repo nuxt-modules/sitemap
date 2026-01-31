@@ -71,7 +71,7 @@
     "chalk": "^5.6.2",
     "defu": "^6.1.4",
     "fast-xml-parser": "^5.3.3",
-    "nuxt-site-config": "^3.2.18",
+    "nuxt-site-config": "^3.2.19",
     "ofetch": "^1.5.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
@@ -83,7 +83,7 @@
     "ultrahtml": "^1.6.0"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "zod": ">=3.25.76"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -98,7 +98,7 @@
     "@nuxt/test-utils": "^3.23.0",
     "@nuxt/ui": "^4.4.0",
     "@nuxtjs/i18n": "^10.2.1",
-    "@nuxtjs/robots": "^5.6.7",
+    "@nuxtjs/robots": "^5.7.0",
     "@nuxtjs/sitemap": "workspace:*",
     "@vue/test-utils": "^2.4.6",
     "better-sqlite3": "^12.6.2",
@@ -106,7 +106,7 @@
     "eslint": "^9.39.2",
     "eslint-plugin-n": "^17.23.2",
     "execa": "^9.6.1",
-    "happy-dom": "^20.3.9",
+    "happy-dom": "^20.4.0",
     "nuxt": "^4.3.0",
     "nuxt-i18n-micro": "^2.20.1",
     "typescript": "^5.9.3",
