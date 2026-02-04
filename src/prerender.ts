@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { styleText } from 'node:util'
 import { withBase } from 'ufo'
 import { useNuxt } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro, PrerenderRoute } from 'nitropack'
-import chalk from 'chalk'
 import { dirname } from 'pathe'
 import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
@@ -19,12 +19,12 @@ function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
 
   if (route.error) {
-    const errorColor = chalk[route.error.statusCode === 404 ? 'yellow' : 'red']
+    const errorColor = styleText.bind(null, route.error.statusCode === 404 ? 'yellow' : 'red')
     const errorLead = '└──'
-    str += `\n  │ ${errorLead} ${errorColor(route.error)}`
+    str += `\n  │ ${errorLead} ${errorColor(route.error.message)}`
   }
 
-  return chalk.gray(str)
+  return styleText('gray', str)
 }
 
 export function includesSitemapRoot(sitemapName: string, routes: string[]) {
@@ -53,7 +53,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
   const shouldHookIntoPrerender = prerenderSitemap || (nuxt.options.nitro.prerender.routes.length && nuxt.options.nitro.prerender.crawlLinks)
   if (isNuxtGenerate() && options.debug) {
     nuxt.options.nitro.prerender.routes.push('/__sitemap__/debug.json')
-    logger.info('Adding debug route for sitemap generation:', chalk.cyan('/__sitemap__/debug.json'))
+    logger.info('Adding debug route for sitemap generation:', styleText('cyan', '/__sitemap__/debug.json'))
   }
   // need to filter it out of the config as we render it after all other routes
   if (!shouldHookIntoPrerender) {
