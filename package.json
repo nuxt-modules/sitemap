@@ -68,6 +68,7 @@
   "dependencies": {
     "@nuxt/devtools-kit": "^3.1.1",
     "@nuxt/kit": "^4.3.0",
+    "consola": "^3.4.2",
     "defu": "^6.1.4",
     "fast-xml-parser": "^5.3.3",
     "nuxt-site-config": "^3.2.18",
