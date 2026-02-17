@@ -83,7 +83,7 @@
     "ultrahtml": "^1.6.0"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "zod": ">=4.3.6"
   },
   "peerDependenciesMeta": {
     "zod": {
