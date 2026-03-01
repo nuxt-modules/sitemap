@@ -13,11 +13,11 @@ declare module 'nitropack' {
     _sitemap?: SitemapUrl
   }
   interface NitroRouteRules {
-    index?: boolean
+    robots?: boolean
     sitemap?: SitemapItemDefaults | false
   }
   interface NitroRouteConfig {
-    index?: boolean
+    robots?: boolean
     sitemap?: SitemapItemDefaults | false
   }
   interface NitroRuntimeHooks {
@@ -34,11 +34,11 @@ declare module 'nitropack/types' {
     _sitemap?: SitemapUrl
   }
   interface NitroRouteRules {
-    index?: boolean
+    robots?: boolean
     sitemap?: SitemapItemDefaults | false
   }
   interface NitroRouteConfig {
-    index?: boolean
+    robots?: boolean
     sitemap?: SitemapItemDefaults | false
   }
   interface NitroRuntimeHooks {
