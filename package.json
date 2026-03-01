@@ -95,7 +95,7 @@
     "@nuxt/content": "^3.11.0",
     "@nuxt/eslint-config": "^1.13.0",
     "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/test-utils": "^3.23.0",
+    "@nuxt/test-utils": "^4.0.0",
     "@nuxt/ui": "^4.4.0",
     "@nuxtjs/i18n": "^10.2.1",
     "@nuxtjs/robots": "^5.6.7",
