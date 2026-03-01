@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "7.6.0",
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.30.3",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -66,24 +66,24 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
-    "@nuxt/devtools-kit": "^3.1.1",
+    "@nuxt/devtools-kit": "^3.2.2",
     "@nuxt/kit": "^4.3.0",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
-    "fast-xml-parser": "^5.3.3",
-    "nuxt-site-config": "^3.2.18",
+    "fast-xml-parser": "^5.4.1",
+    "nuxt-site-config": "^3.2.21",
     "ofetch": "^1.5.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "radix3": "^1.1.2",
-    "semver": "^7.7.3",
+    "semver": "^7.7.4",
     "sirv": "^3.0.2",
     "std-env": "^3.10.0",
     "ufo": "^1.6.3",
     "ultrahtml": "^1.6.0"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "zod": ">=3.25.76"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -92,26 +92,26 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@nuxt/content": "^3.11.0",
-    "@nuxt/eslint-config": "^1.13.0",
+    "@nuxt/content": "^3.12.0",
+    "@nuxt/eslint-config": "^1.15.2",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/test-utils": "^3.23.0",
-    "@nuxt/ui": "^4.4.0",
-    "@nuxtjs/i18n": "^10.2.1",
-    "@nuxtjs/robots": "^5.6.7",
+    "@nuxt/ui": "^4.5.0",
+    "@nuxtjs/i18n": "^10.2.3",
+    "@nuxtjs/robots": "^5.7.0",
     "@nuxtjs/sitemap": "workspace:*",
     "@vue/test-utils": "^2.4.6",
     "better-sqlite3": "^12.6.2",
-    "bumpp": "^10.4.0",
-    "eslint": "^9.39.2",
-    "eslint-plugin-n": "^17.23.2",
+    "bumpp": "^10.4.1",
+    "eslint": "^9.39.3",
+    "eslint-plugin-n": "^17.24.0",
     "execa": "^9.6.1",
-    "happy-dom": "^20.3.9",
+    "happy-dom": "^20.7.0",
     "nuxt": "^4.3.0",
     "nuxt-i18n-micro": "^2.20.1",
     "typescript": "^5.9.3",
     "vitest": "3.2.4",
-    "vue-tsc": "^3.2.4",
+    "vue-tsc": "^3.2.5",
     "zod": "^4.3.6"
   },
   "pnpm": {
