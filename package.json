@@ -103,7 +103,7 @@
     "@vue/test-utils": "^2.4.6",
     "better-sqlite3": "^12.6.2",
     "bumpp": "^10.4.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.3",
     "eslint-plugin-n": "^17.23.2",
     "execa": "^9.6.1",
     "happy-dom": "^20.3.9",
