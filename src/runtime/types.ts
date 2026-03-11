@@ -517,8 +517,4 @@ export interface NitroUrlResolvers {
   fixSlashes: (path: string) => string
 }
 
-interface NuxtI18nMicro {
-  includeDefaultLocaleRoute?: boolean
-}
-
-export type I18nIntegrationOptions = NuxtI18nOptions & NuxtI18nMicro
+export type I18nIntegrationOptions = NuxtI18nOptions

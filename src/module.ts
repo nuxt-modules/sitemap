@@ -201,9 +201,6 @@ export default defineNuxtModule<ModuleOptions>({
       if (i18nVersion && i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
         logger.warn(`You are using ${i18nModule} v${i18nVersion}. For the best compatibility, please upgrade to ${i18nModule} v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as I18nIntegrationOptions
-      if (typeof nuxtI18nConfig.includeDefaultLocaleRoute !== 'undefined') {
-        nuxtI18nConfig.strategy = nuxtI18nConfig.includeDefaultLocaleRoute ? 'prefix' : 'prefix_except_default'
-      }
       normalisedLocales = normalizeLocales(nuxtI18nConfig)
       usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
