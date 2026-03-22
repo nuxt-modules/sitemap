@@ -19,7 +19,7 @@ await setup({
 describe('issue 564 - base URL in sitemap redirect with multi sitemaps', () => {
   it('redirects /test/sitemap.xml to /test/sitemap_index.xml', async () => {
     const response = await fetch('/test/sitemap.xml', { redirect: 'manual' })
-    expect(response.status).toBe(301)
+    expect(response.status).toBe(307)
     const location = response.headers.get('location')
     expect(location).toContain('/test/sitemap_index.xml')
     expect(location).not.toBe('/sitemap_index.xml')
