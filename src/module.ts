@@ -366,7 +366,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
     if (usingMultiSitemaps) {
-      nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: '/sitemap_index.xml' }
+      nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: withBase('/sitemap_index.xml', nuxt.options.app.baseURL) }
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
