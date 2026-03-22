@@ -146,7 +146,7 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-// TODO: deprecate in next major in favour of defineSitemapSchema()
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. */
 export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   name?: string
   filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
@@ -157,7 +157,7 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
-// TODO: deprecate in next major in favour of defineSitemapSchema()
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. */
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
