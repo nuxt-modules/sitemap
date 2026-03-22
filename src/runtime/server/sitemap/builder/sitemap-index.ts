@@ -1,22 +1,23 @@
-import { defu } from 'defu'
-import { joinURL, withQuery } from 'ufo'
-import { defineCachedFunction } from 'nitropack/runtime'
-import type { NitroApp } from 'nitropack/types'
 import type { H3Event } from 'h3'
-import { getHeader } from 'h3'
+import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapIndexEntry, SitemapInputCtx,
-  SitemapUrl,
+  SitemapIndexEntry,
+  SitemapInputCtx,
   SitemapSourcesHookCtx,
+  SitemapUrl,
 } from '../../../types'
+import { defu } from 'defu'
+import { getHeader } from 'h3'
+import { defineCachedFunction } from 'nitropack/runtime'
+import { joinURL, withQuery } from 'ufo'
 import { normaliseDate } from '../urlset/normalise'
-import { globalSitemapSources, childSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { escapeValueForXml } from './xml'
+import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { resolveSitemapEntries } from './sitemap'
+import { escapeValueForXml } from './xml'
 
 // Create cached wrapper for sitemap index building
 const buildSitemapIndexCached = defineCachedFunction(
@@ -63,7 +64,8 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
   // Process all sitemaps to determine chunks
   for (const sitemapName in sitemaps) {
-    if (sitemapName === 'index' || sitemapName === 'chunks') continue
+    if (sitemapName === 'index' || sitemapName === 'chunks')
+      continue
 
     const sitemapConfig = sitemaps[sitemapName]!
 

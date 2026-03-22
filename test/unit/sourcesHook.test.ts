@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
 import type { H3Event } from 'h3'
 import type { SitemapSourcesHookCtx } from '../../src/runtime/types'
+import { describe, expect, it } from 'vitest'
 
 describe('sitemap:sources hook', () => {
   it('hook context is correctly typed', () => {
@@ -84,7 +84,7 @@ describe('sitemap:sources hook', () => {
 
         const authHeader = ctx.event.node?.req?.headers?.authorization
         if (authHeader) {
-          options.headers['Authorization'] = authHeader
+          options.headers.Authorization = authHeader
         }
 
         return { ...source, fetch: [url, options] }
@@ -97,7 +97,7 @@ describe('sitemap:sources hook', () => {
     const headers = modifiedSource.fetch[1].headers
     expect(headers['X-Original']).toBe('original')
     expect(headers['X-Custom']).toBe('custom-value')
-    expect(headers['Authorization']).toBe('Bearer test-token')
+    expect(headers.Authorization).toBe('Bearer test-token')
   })
 
   it('hook can filter sources', () => {

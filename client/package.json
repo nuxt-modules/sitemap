@@ -2,16 +2,16 @@
   "name": "@nuxtjs/sitemap-client",
   "private": true,
   "devDependencies": {
-    "@iconify-json/carbon": "^1.2.19",
-    "@iconify-json/simple-icons": "^1.2.73",
-    "@nuxt/devtools-kit": "^3.2.3",
-    "@nuxt/fonts": "^0.14.0",
-    "@nuxt/kit": "^4.3.1",
-    "@nuxt/ui": "^4.5.1",
-    "@vueuse/core": "^14.2.1",
-    "nuxt": "^4.3.1",
-    "shiki": "^4.0.2",
-    "vue": "^3.5.30",
-    "vue-router": "^5.0.3"
+    "@iconify-json/carbon": "catalog:",
+    "@iconify-json/simple-icons": "catalog:",
+    "@nuxt/devtools-kit": "catalog:",
+    "@nuxt/fonts": "catalog:",
+    "@nuxt/kit": "catalog:",
+    "@nuxt/ui": "catalog:",
+    "@vueuse/core": "catalog:",
+    "nuxt": "catalog:",
+    "shiki": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:"
   }
 }

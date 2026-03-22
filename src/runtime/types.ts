@@ -1,7 +1,7 @@
-import type { FetchOptions } from 'ofetch'
-import type { H3Event } from 'h3'
-import type { ParsedURL } from 'ufo'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
+import type { H3Event } from 'h3'
+import type { FetchOptions } from 'ofetch'
+import type { ParsedURL } from 'ufo'
 
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause

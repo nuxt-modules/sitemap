@@ -1,8 +1,8 @@
-import { defineEventHandler, getHeader, setHeader, getQuery as h3GetQuery } from 'h3'
-import { getQuery, parseURL, withQuery } from 'ufo'
-import { useSitemapRuntimeConfig, xmlEscape } from '../utils'
 import { useSiteConfig } from '#site-config/server/composables/useSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { defineEventHandler, getHeader, getQuery as h3GetQuery, setHeader } from 'h3'
+import { getQuery, parseURL, withQuery } from 'ufo'
+import { useSitemapRuntimeConfig, xmlEscape } from '../utils'
 
 export default defineEventHandler(async (e) => {
   const fixPath = createSitePathResolver(e, { absolute: false, withBase: true })

@@ -1,7 +1,7 @@
 import type { HighlighterCore } from 'shiki'
+import type { MaybeRef } from 'vue'
 import { createHighlighterCore } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
-import type { MaybeRef } from 'vue'
 import { computed, ref, toValue } from 'vue'
 import { devtools } from './rpc'
 
@@ -23,7 +23,7 @@ export function loadShiki() {
   })
 }
 
-export function renderCodeHighlight(code: MaybeRef<string>, lang: 'json') {
+export function useRenderCodeHighlight(code: MaybeRef<string>, lang: 'json') {
   return computed(() => {
     const colorMode = devtools.value?.colorMode || 'light'
     return shiki.value!.codeToHtml(toValue(code), {

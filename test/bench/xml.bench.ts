@@ -1,6 +1,6 @@
+import type { ResolvedSitemapUrl } from '../../src/runtime/types'
 import { bench, describe } from 'vitest'
 import { urlsToXml } from '../../src/runtime/server/sitemap/builder/xml'
-import type { ResolvedSitemapUrl } from '../../src/runtime/types'
 
 const resolvers = {
   canonicalUrlResolver: (url: string) => `https://example.com${url}`,

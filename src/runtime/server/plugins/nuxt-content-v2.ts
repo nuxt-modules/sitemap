@@ -1,7 +1,7 @@
-import { defu } from 'defu'
 import type { NitroApp } from 'nitropack/types'
-import { defineNitroPlugin } from 'nitropack/runtime'
 import type { SitemapUrl } from '../../types'
+import { defu } from 'defu'
+import { defineNitroPlugin } from 'nitropack/runtime'
 import { useSitemapRuntimeConfig } from '../utils'
 
 interface NuxtContentDocument {

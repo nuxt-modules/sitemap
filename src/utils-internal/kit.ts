@@ -1,9 +1,9 @@
-import type { NuxtModule, NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { extendPages, loadNuxtModuleInstance, useNuxt, tryUseNuxt } from '@nuxt/kit'
 import type { Nitro } from 'nitropack'
-import { env, provider } from 'std-env'
 import type { NitroConfig } from 'nitropack/types'
+import type { NuxtModule, NuxtPage } from 'nuxt/schema'
+import { extendPages, loadNuxtModuleInstance, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { env, provider } from 'std-env'
 
 /**
  * Get the user provided options for a Nuxt module.

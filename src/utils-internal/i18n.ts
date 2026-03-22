@@ -1,6 +1,6 @@
-import type { NuxtI18nOptions, LocaleObject } from '@nuxtjs/i18n'
-import { joinURL, withBase, withHttps } from 'ufo'
+import type { LocaleObject, NuxtI18nOptions } from '@nuxtjs/i18n'
 import type { AutoI18nConfig, FilterInput } from '../runtime/types'
+import { joinURL, withBase, withHttps } from 'ufo'
 import { mergeOnKey, splitForLocales } from '../runtime/utils-pure'
 
 type Strategies = 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'

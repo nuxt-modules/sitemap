@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import { createResolver } from '@nuxt/kit'
 import { fetch, setup } from '@nuxt/test-utils'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
 

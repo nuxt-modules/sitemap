@@ -1,3 +1,19 @@
+import type { FileAfterParseHook } from '@nuxt/content'
+import type { NitroRouteConfig } from 'nitropack/types'
+import type {
+  ModuleOptions as _ModuleOptions,
+  AppSourceContext,
+  AutoI18nConfig,
+  FilterInput,
+  I18nIntegrationOptions,
+  ModuleRuntimeConfig,
+  MultiSitemapEntry,
+  SitemapDefinition,
+  SitemapSourceBase,
+  SitemapSourceInput,
+  SitemapSourceResolved,
+  SitemapUrl,
+} from './runtime/types'
 import {
   addPrerenderRoutes,
   addServerHandler,
@@ -7,44 +23,31 @@ import {
   defineNuxtModule,
   getNuxtModuleVersion,
   hasNuxtModule,
-  hasNuxtModuleCompatibility, resolveModule,
+  hasNuxtModuleCompatibility,
+  resolveModule,
   useLogger,
 } from '@nuxt/kit'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
-import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { defu } from 'defu'
-import type { NitroRouteConfig } from 'nitropack/types'
-import { readPackageJSON } from 'pkg-types'
+import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
+import { isPathFile } from 'nuxt-site-config/urls'
 import { dirname } from 'pathe'
-import type { FileAfterParseHook } from '@nuxt/content'
-import type {
-  AppSourceContext,
-  AutoI18nConfig,
-  ModuleRuntimeConfig,
-  MultiSitemapEntry,
-  SitemapDefinition,
-  SitemapSourceBase,
-  SitemapSourceInput,
-  SitemapSourceResolved,
-  ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions, SitemapUrl,
-} from './runtime/types'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
-import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
+import { readPackageJSON } from 'pkg-types'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { setupDevToolsUI } from './devtools'
+import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
+import { registerTypeTemplates } from './templates'
+import { normalizeFilters } from './utils-internal/filter'
 import {
   generatePathForI18nPages,
   normalizeLocales,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { normalizeFilters } from './utils-internal/filter'
-import { isPathFile } from 'nuxt-site-config/urls'
-import { registerTypeTemplates } from './templates'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
 export type * from './runtime/types'
 
-// eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
 
 export interface ModuleHooks {

@@ -1,14 +1,14 @@
-import { statSync } from 'node:fs'
-import type { NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { useNuxt } from '@nuxt/kit'
-import { extname } from 'pathe'
-import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
-import { withBase, withHttps } from 'ufo'
+import type { NuxtPage } from 'nuxt/schema'
 import type { AutoI18nConfig, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
-import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
+import { statSync } from 'node:fs'
+import { useNuxt } from '@nuxt/kit'
+import { defu } from 'defu'
+import { extname } from 'pathe'
+import { withBase, withHttps } from 'ufo'
+import { createPathFilter } from '../runtime/utils-pure'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
   try {
@@ -111,7 +111,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     .filter(page => !page.loc.includes(':'))
     // Removing duplicates
     .filter((page, idx, arr) => {
-      return !arr.find((p) => {
+      return !arr.some((p) => {
         return p.loc === page.loc && p.depth! > page.depth!
       })
     })
@@ -215,10 +215,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         alternatives,
       }
     })
-  })
-    .filter(Boolean)
-    // TODO fix types
-    .flat() as SitemapUrlInput[]
+  }).filter(Boolean).flat() as SitemapUrlInput[]
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {

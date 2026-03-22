@@ -1,8 +1,10 @@
-import { defineConfig, defineProject } from 'vitest/config'
 import { defineVitestProject } from '@nuxt/test-utils/config'
+import { defineConfig, defineProject } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    globals: true,
+    reporters: 'dot',
     projects: [
       // utils folders as *.test.ts in either test/unit or in src/**/*.test.ts
       defineProject({
@@ -45,6 +47,9 @@ export default defineConfig({
             '**/node_modules/**',
           ],
           globalSetup: './test/e2e/global-setup.ts',
+        },
+        resolve: {
+          external: ['bun:test'],
         },
       }),
     ],

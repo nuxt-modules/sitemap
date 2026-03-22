@@ -25,7 +25,7 @@ import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:resolved', async (ctx) => {
-    // SitemapUrlInput is either a string 
+    // SitemapUrlInput is either a string
     ctx.urls.push('/foo')
     // or an object with loc, changefreq, and priority
     ctx.urls.push({
@@ -143,7 +143,7 @@ export default defineNitroPlugin((nitroApp) => {
         const authHeader = ctx.event.node.req.headers.authorization
         if (authHeader) {
           options.headers = options.headers || {}
-          options.headers['Authorization'] = authHeader
+          options.headers.Authorization = authHeader
         }
 
         source.fetch = [url, options]

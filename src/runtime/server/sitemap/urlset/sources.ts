@@ -1,8 +1,5 @@
-import { getRequestHost } from 'h3'
 import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
-import { defu } from 'defu'
-import { parseURL } from 'ufo'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
@@ -10,8 +7,11 @@ import type {
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
-import { logger } from '../../../utils-pure'
 import { parseSitemapXml } from '@nuxtjs/sitemap/utils'
+import { defu } from 'defu'
+import { getRequestHost } from 'h3'
+import { parseURL } from 'ufo'
+import { logger } from '../../../utils-pure'
 
 export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceBase | SitemapSourceResolved {
   // string -> { fetch: string, context: { name: 'hook' } }

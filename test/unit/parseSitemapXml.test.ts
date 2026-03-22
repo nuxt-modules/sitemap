@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { parseSitemapXml } from '../../src/utils/parseSitemapXml'
 
 describe('parseSitemapXml', () => {
@@ -280,7 +280,7 @@ describe('parseSitemapXml', () => {
     })
   })
 
-  describe('XML namespace handling', () => {
+  describe('xML namespace handling', () => {
     it('should handle mixed namespace prefixes', async () => {
       const xml = `
         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

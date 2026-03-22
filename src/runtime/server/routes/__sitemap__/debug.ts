@@ -1,13 +1,13 @@
-import { defineEventHandler } from 'h3'
 import type { SitemapDefinition, SitemapSourceResolved } from '../../../types'
-import { useSitemapRuntimeConfig } from '../../utils'
+import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
+import { defineEventHandler } from 'h3'
+import { validateSitemapUrl } from '../../sitemap/urlset/normalise'
 import {
   childSitemapSources,
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import { validateSitemapUrl } from '../../sitemap/urlset/normalise'
-import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
+import { useSitemapRuntimeConfig } from '../../utils'
 
 function attachUrlWarnings(sources: SitemapSourceResolved[]) {
   for (const source of sources) {

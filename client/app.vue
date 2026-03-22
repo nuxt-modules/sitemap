@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import type { SitemapDefinition } from '../src/runtime/types'
+import { useHead } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
 import { joinURL } from 'ufo'
-import type { SitemapDefinition } from '../src/runtime/types'
-import { loadShiki } from './composables/shiki'
+import { computed, ref } from 'vue'
 import { colorMode } from './composables/rpc'
+import { loadShiki } from './composables/shiki'
 import { data, refreshSources } from './composables/state'
-import { useHead } from '#imports'
 
 await loadShiki()
 
@@ -14,7 +14,8 @@ const loading = ref(false)
 const refreshing = ref(false)
 
 async function refresh() {
-  if (refreshing.value) return
+  if (refreshing.value)
+    return
   refreshing.value = true
   loading.value = true
   data.value = null
@@ -258,7 +259,7 @@ const navItems = [
                           target="_blank"
                           class="link-external"
                         >
-                          Learn more
+                          Learn more about sitemap indexes
                         </a>
                       </div>
                     </div>

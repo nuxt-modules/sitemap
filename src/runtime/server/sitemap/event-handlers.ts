@@ -1,11 +1,11 @@
 import type { H3Event } from 'h3'
 import { appendHeader, createError, getRouterParam, sendRedirect, setHeader } from 'h3'
-import { joinURL, withBase, withoutLeadingSlash, withoutTrailingSlash, withLeadingSlash } from 'ufo'
-import { useRuntimeConfig, useNitroApp } from 'nitropack/runtime'
+import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../utils'
-import { createSitemap, useNitroUrlResolvers } from './nitro'
 import { buildSitemapIndex, urlsToIndexXml } from './builder/sitemap-index'
-import { parseChunkInfo, getSitemapConfig } from './utils/chunk'
+import { createSitemap, useNitroUrlResolvers } from './nitro'
+import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
 export async function sitemapXmlEventHandler(e: H3Event) {
   const runtimeConfig = useSitemapRuntimeConfig()

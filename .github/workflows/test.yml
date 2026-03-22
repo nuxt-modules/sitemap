@@ -1,44 +1,69 @@
-name: Test
-
-permissions: {contents: read}
+name: CI
 
 on:
   push:
-    branches:
-      - main
     paths-ignore:
       - '**/README.md'
+      - 'docs/**'
   pull_request:
     branches:
       - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
 
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4.2.0
-
-      - name: Use Node.js 24.x
-        uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 24.x
-          registry-url: https://registry.npmjs.org/
+          node-version: lts/*
           cache: pnpm
-
       - run: pnpm i
+      - run: pnpm lint
 
-      - name: Build
-        run: pnpm run build
+  typecheck:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm i
+      - run: pnpm dev:prepare
+      - run: pnpm typecheck
 
-      - name: Lint
-        run: pnpm run lint
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm i
+      - run: pnpm build
 
-      - name: Typecheck
-        run: pnpm run typecheck
-
-      - name: Test
-        run: pnpm run test
+  test:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm i
+      - run: pnpm dev:prepare
+      - run: pnpm prepare:fixtures
+      - run: pnpm test

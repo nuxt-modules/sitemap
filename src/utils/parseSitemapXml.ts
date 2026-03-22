@@ -1,4 +1,4 @@
-import type { SitemapUrl, SitemapUrlInput, VideoEntry, ImageEntry, AlternativeEntry, GoogleNewsEntry, SitemapStrict } from '../runtime/types'
+import type { AlternativeEntry, GoogleNewsEntry, ImageEntry, SitemapStrict, SitemapUrl, SitemapUrlInput, VideoEntry } from '../runtime/types'
 
 interface ParsedUrl {
   loc?: string
@@ -94,7 +94,8 @@ function isValidString(value: unknown): value is string {
 }
 
 function parseNumber(value: unknown): number | undefined {
-  if (typeof value === 'number') return value
+  if (typeof value === 'number')
+    return value
   if (typeof value === 'string' && value.trim()) {
     const num = Number.parseFloat(value.trim())
     return Number.isNaN(num) ? undefined : num
@@ -103,7 +104,8 @@ function parseNumber(value: unknown): number | undefined {
 }
 
 function parseInteger(value: unknown): number | undefined {
-  if (typeof value === 'number') return Math.floor(value)
+  if (typeof value === 'number')
+    return Math.floor(value)
   if (typeof value === 'string' && value.trim()) {
     const num = Number.parseInt(value.trim(), 10)
     return Number.isNaN(num) ? undefined : num
@@ -196,10 +198,14 @@ function extractUrlFromParsedElement(
       .map((video: ParsedVideo): VideoEntry | null => {
         // Check required fields
         const missingFields: string[] = []
-        if (!isValidString(video.title)) missingFields.push('title')
-        if (!isValidString(video.thumbnail_loc)) missingFields.push('thumbnail_loc')
-        if (!isValidString(video.description)) missingFields.push('description')
-        if (!isValidString(video.content_loc)) missingFields.push('content_loc')
+        if (!isValidString(video.title))
+          missingFields.push('title')
+        if (!isValidString(video.thumbnail_loc))
+          missingFields.push('thumbnail_loc')
+        if (!isValidString(video.description))
+          missingFields.push('description')
+        if (!isValidString(video.content_loc))
+          missingFields.push('content_loc')
 
         if (missingFields.length > 0) {
           warnings.push({

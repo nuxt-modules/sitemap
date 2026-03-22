@@ -1,5 +1,5 @@
-import { XMLParser } from 'fast-xml-parser'
 import type { SitemapWarning } from './parseSitemapXml'
+import { XMLParser } from 'fast-xml-parser'
 
 export interface SitemapIndexEntry {
   loc: string
@@ -31,13 +31,7 @@ const parser = new XMLParser({
 })
 
 function isValidUrl(value: string): boolean {
-  try {
-    new URL(value)
-    return true
-  }
-  catch {
-    return false
-  }
+  return URL.canParse(value)
 }
 
 export function parseSitemapIndex(xml: string): SitemapIndexParseResult {

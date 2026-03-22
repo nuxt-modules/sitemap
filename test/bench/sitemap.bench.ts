@@ -1,8 +1,8 @@
-import { bench, describe } from 'vitest'
+import type { AlternativeEntry, AutoI18nConfig, ModuleRuntimeConfig, NitroUrlResolvers, ResolvedSitemapUrl, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../../src/runtime/types'
 import { joinURL, withHttps } from 'ufo'
+import { bench, describe } from 'vitest'
 import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 import { createPathFilter, splitForLocales } from '../../src/runtime/utils-pure'
-import type { AlternativeEntry, AutoI18nConfig, ModuleRuntimeConfig, NitroUrlResolvers, ResolvedSitemapUrl, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../../src/runtime/types'
 
 interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string

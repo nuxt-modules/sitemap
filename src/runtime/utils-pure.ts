@@ -1,8 +1,8 @@
-import { createDefu } from 'defu'
-import { parseURL, withLeadingSlash } from 'ufo'
-import { createRouter, toRouteMatcher } from 'radix3'
-import { createConsola } from 'consola'
 import type { FilterInput } from './types'
+import { createConsola } from 'consola'
+import { createDefu } from 'defu'
+import { createRouter, toRouteMatcher } from 'radix3'
+import { parseURL, withLeadingSlash } from 'ufo'
 
 export const logger = createConsola({
   defaults: {
@@ -107,7 +107,7 @@ export function findPageMapping(pathWithoutPrefix: string, pages: Record<string,
   // sort by length desc to match most specific first
   const sortedKeys = Object.keys(pages).sort((a, b) => b.length - a.length)
   for (const key of sortedKeys) {
-    if (pageKey.startsWith(key + '/')) {
+    if (pageKey.startsWith(`${key}/`)) {
       const paramPath = pageKey.slice(key.length + 1)
       return { mappings: pages[key]!, paramSegments: paramPath.split('/') }
     }

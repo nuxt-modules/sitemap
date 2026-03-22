@@ -1,8 +1,8 @@
-import { defineEventHandler } from 'h3'
-import { queryCollection } from '@nuxt/content/server'
 import manifest from '#content/manifest'
 import { filters } from '#sitemap/content-filters'
 import { onUrlFns } from '#sitemap/content-on-url'
+import { queryCollection } from '@nuxt/content/server'
+import { defineEventHandler } from 'h3'
 
 interface ContentEntry {
   path?: string

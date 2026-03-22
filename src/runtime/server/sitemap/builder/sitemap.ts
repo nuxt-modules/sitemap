@@ -1,20 +1,22 @@
-import { resolveSitePath } from 'nuxt-site-config/urls'
-import { joinURL, withHttps } from 'ufo'
 import type { NitroApp } from 'nitropack/types'
 import type {
-  AlternativeEntry, AutoI18nConfig,
+  AlternativeEntry,
+  AutoI18nConfig,
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapDefinition, SitemapInputCtx,
+  SitemapDefinition,
+  SitemapInputCtx,
+  SitemapSourcesHookCtx,
   SitemapUrl,
   SitemapUrlInput,
-  SitemapSourcesHookCtx,
 } from '../../../types'
-import { preNormalizeEntry } from '../urlset/normalise'
-import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
-import { sortInPlace } from '../urlset/sort'
+import { resolveSitePath } from 'nuxt-site-config/urls'
+import { joinURL, withHttps } from 'ufo'
 import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
+import { preNormalizeEntry } from '../urlset/normalise'
+import { sortInPlace } from '../urlset/sort'
+import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -337,7 +339,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
       return false
     if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
       if (sitemap._isChunking)
-        return sitemap.sitemapName.startsWith(e._sitemap + '-')
+        return sitemap.sitemapName.startsWith(`${e._sitemap}-`)
       return e._sitemap === sitemap.sitemapName
     }
     return true

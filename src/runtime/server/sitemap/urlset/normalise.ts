@@ -1,3 +1,10 @@
+import type {
+  NitroUrlResolvers,
+  ResolvedSitemapUrl,
+  SitemapUrl,
+  SitemapUrlInput,
+} from '../../../types'
+import { defu } from 'defu'
 import {
   encodePath,
   hasProtocol,
@@ -8,13 +15,6 @@ import {
   stringifyQuery,
   withoutTrailingSlash,
 } from 'ufo'
-import { defu } from 'defu'
-import type {
-  NitroUrlResolvers,
-  ResolvedSitemapUrl,
-  SitemapUrl,
-  SitemapUrlInput,
-} from '../../../types'
 import { mergeOnKey } from '../../../utils-pure'
 
 const VALID_CHANGEFREQ = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']

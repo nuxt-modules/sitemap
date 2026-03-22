@@ -1,19 +1,19 @@
+import type { Nuxt } from '@nuxt/schema'
+import type { ConsolaInstance } from 'consola'
+import type { Nitro, PrerenderRoute } from 'nitropack'
+import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { colors } from 'consola/utils'
-import { withBase } from 'ufo'
 import { useNuxt } from '@nuxt/kit'
-import type { Nuxt } from '@nuxt/schema'
-import type { Nitro, PrerenderRoute } from 'nitropack'
-import { dirname } from 'pathe'
+import { colors } from 'consola/utils'
 import { defu } from 'defu'
-import type { ConsolaInstance } from 'consola'
 import { withSiteUrl } from 'nuxt-site-config/kit'
-import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
-import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
+import { dirname } from 'pathe'
+import { withBase } from 'ufo'
 import { splitForLocales } from './runtime/utils-pure'
 import { resolveNitroPreset } from './utils-internal/kit'
+import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
@@ -38,7 +38,7 @@ export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
   ].includes(resolveNitroPreset())
 }
 
-const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/
+const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/ // eslint-disable-line regexp/no-unused-capturing-group
 
 export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any> }, nuxt: Nuxt = useNuxt()) {
   const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources } = _options
@@ -88,7 +88,7 @@ export async function readSourcesFromFilesystem(filename) {
       if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
       // ignore redirects
-      if (html.match(NuxtRedirectHtmlRegex)) {
+      if (NuxtRedirectHtmlRegex.test(html)) {
         return
       }
 
@@ -158,7 +158,8 @@ async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
   const processed = new Set<string>()
   while (queue.length) {
     const route = queue.shift()!
-    if (processed.has(route)) continue
+    if (processed.has(route))
+      continue
     processed.add(route)
     const { filePath, prerenderUrls } = await prerenderRoute(nitro, route)
     sitemaps.push({

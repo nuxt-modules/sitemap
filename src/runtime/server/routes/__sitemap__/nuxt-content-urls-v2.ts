@@ -1,6 +1,6 @@
-import { defineEventHandler } from 'h3'
 // @ts-expect-error alias module
 import { serverQueryContent } from '#content/server'
+import { defineEventHandler } from 'h3'
 
 interface ContentWithSitemap {
   sitemap?: unknown

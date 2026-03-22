@@ -27,7 +27,7 @@ need these.
 - 😌 Automatic `lastmod`, image discovery and best practice sitemaps
 - 🔄 SWR caching, route rules support
 - 🎨 Debug using the Nuxt DevTools integration or the XML Stylesheet
-- 🤝 Integrates seamlessly with [Nuxt I18n](https://github.com/nuxt-modules/i18n) and [Nuxt Content](https://github.com/nuxt/content)
+- 🤝 Integrates smoothly with [Nuxt I18n](https://github.com/nuxt-modules/i18n) and [Nuxt Content](https://github.com/nuxt/content)
 
 ## Installation
 
@@ -62,7 +62,7 @@ npx nuxi@latest module add sitemap
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg">
-    <img src='https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg'/>
+    <img src='https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg' alt="Sponsors"/>
   </a>
 </p>
 

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
-import { describe, expect, it } from 'vitest'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
 import { $fetch, setup } from '@nuxt/test-utils'
+import { describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
 

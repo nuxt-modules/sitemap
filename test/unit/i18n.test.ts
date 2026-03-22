@@ -1,6 +1,6 @@
+import type { AutoI18nConfig } from '../../src/runtime/types'
 import { describe, expect, it } from 'vitest'
 import { normalizeLocales, splitPathForI18nLocales } from '../../src/utils-internal/i18n'
-import type { AutoI18nConfig } from '../../src/runtime/types'
 
 const EnFrAutoI18n = {
   locales: normalizeLocales({ locales: [{
@@ -61,9 +61,7 @@ describe('i18n', () => {
       iso: 'fr-FR',
     }, {
       code: 'es',
-    },
-    'br',
-    {
+    }, 'br', {
       code: 'xx',
       language: 'xx-XX',
     }]

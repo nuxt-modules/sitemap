@@ -1,8 +1,4 @@
-import { getQuery, setHeader, createError, getHeader } from 'h3'
 import type { H3Event } from 'h3'
-import { fixSlashes } from 'nuxt-site-config/urls'
-import { defu } from 'defu'
-import { useNitroApp, defineCachedFunction } from 'nitropack/runtime'
 import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
@@ -11,15 +7,19 @@ import type {
   SitemapDefinition,
   SitemapRenderCtx,
 } from '../../types'
+// @ts-expect-error virtual
+import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
+import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
+import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { defu } from 'defu'
+import { createError, getHeader, getQuery, setHeader } from 'h3'
+import { defineCachedFunction, useNitroApp } from 'nitropack/runtime'
+import { fixSlashes } from 'nuxt-site-config/urls'
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
-// @ts-expect-error virtual
-import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
-import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
-import { createSitePathResolver } from '#site-config/server/composables/utils'
 
 interface SitemapNitroApp extends NitroApp {
   _sitemapWarned?: boolean
@@ -117,7 +117,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   const locSize = sitemapUrls.length
   const resolvedCtx: SitemapRenderCtx = {
     urls: sitemapUrls,
-    sitemapName: sitemapName,
+    sitemapName,
     event,
   }
   await nitro.hooks.callHook('sitemap:resolved', resolvedCtx)

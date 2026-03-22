@@ -3,7 +3,9 @@ import type { TypeOf } from 'zod'
 import { z } from 'zod'
 
 declare global {
+  // eslint-disable-next-line vars-on-top
   var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+  // eslint-disable-next-line vars-on-top
   var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
 }
 

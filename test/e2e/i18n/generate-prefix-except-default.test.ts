@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import { describe, expect, it } from 'vitest'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
+import { describe, expect, it } from 'vitest'
 
 describe('generate prefix_except_default', () => {
   it('root path should have all alternatives when prerendered', async () => {

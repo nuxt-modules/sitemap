@@ -1,6 +1,6 @@
+import type { SitemapSourceResolved } from '#sitemap'
 import { bench, describe } from 'vitest'
 import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
-import type { SitemapSourceResolved } from '#sitemap'
 
 const sources: SitemapSourceResolved[] = [
   {
