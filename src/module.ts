@@ -519,7 +519,7 @@ export default defineNuxtModule<ModuleOptions>({
           ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
         }
         catch (e) {
-          logger.warn('Failed to process sitemap data for content file, skipping.', e)
+          logger.warn(`Failed to process sitemap data for content file (collection: ${ctx.collection?.name}, path: ${ctx.content?.path}), skipping.`, e)
         }
       })
 
