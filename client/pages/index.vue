@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SitemapDefinition } from '../../src/runtime/types'
-import OCodeBlock from 'nuxtseo-shared/client/components/OCodeBlock'
-import OSectionBlock from 'nuxtseo-shared/client/components/OSectionBlock'
+import OCodeBlock from 'nuxtseo-shared/runtime/app/components/OCodeBlock'
+import OSectionBlock from 'nuxtseo-shared/runtime/app/components/OSectionBlock'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
 import Source from '../components/Source.vue'

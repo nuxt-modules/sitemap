@@ -3,6 +3,8 @@ import { dirname, resolve } from 'pathe'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+const sharedPkg = resolve(__dirname, '../node_modules/nuxtseo-shared')
+
 export default defineNuxtConfig({
   ssr: false,
 
@@ -17,7 +19,7 @@ export default defineNuxtConfig({
 
   components: [
     '~/components',
-    { path: resolve(__dirname, '../node_modules/nuxtseo-shared/src/client/components'), pathPrefix: false },
+    { path: resolve(sharedPkg, 'dist/runtime/app/components'), pathPrefix: false },
   ],
 
   // @ts-expect-error @nuxt/fonts module config

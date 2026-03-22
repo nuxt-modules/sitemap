@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import OCodeBlock from 'nuxtseo-shared/client/components/OCodeBlock'
-import OSectionBlock from 'nuxtseo-shared/client/components/OSectionBlock'
+import OCodeBlock from 'nuxtseo-shared/runtime/app/components/OCodeBlock'
+import OSectionBlock from 'nuxtseo-shared/runtime/app/components/OSectionBlock'
 import { data } from '../composables/state'
 </script>
 

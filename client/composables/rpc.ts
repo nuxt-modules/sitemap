@@ -1,4 +1,4 @@
-import { appFetch, colorMode, devtools, useDevtoolsConnection } from 'nuxtseo-shared/client/composables/rpc'
+import { appFetch, colorMode, devtools, useDevtoolsConnection } from 'nuxtseo-shared/runtime/app/composables/rpc'
 import { refreshSources } from './state'
 
 export { appFetch, colorMode, devtools }

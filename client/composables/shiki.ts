@@ -1,1 +1,1 @@
-export { loadShiki, shiki, useRenderCodeHighlight } from 'nuxtseo-shared/client/composables/shiki'
+export { loadShiki, shiki, useRenderCodeHighlight } from 'nuxtseo-shared/runtime/app/composables/shiki'
