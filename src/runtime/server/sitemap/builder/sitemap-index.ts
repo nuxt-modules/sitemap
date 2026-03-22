@@ -11,7 +11,7 @@ import type {
 } from '../../../types'
 import { defu } from 'defu'
 import { getHeader } from 'h3'
-import { defineCachedFunction } from 'nitropack/runtime'
+import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
 import { joinURL, withQuery } from 'ufo'
 import { normaliseDate } from '../urlset/normalise'
 import { sortInPlace } from '../urlset/sort'
@@ -118,7 +118,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       event: resolvers.event,
     }
     await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
     // 2. enhance
     const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
@@ -193,7 +193,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       }
       await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
 
-      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
       const totalUrls = normalisedUrls.length
       const chunkCount = Math.ceil(totalUrls / chunkSize)
 

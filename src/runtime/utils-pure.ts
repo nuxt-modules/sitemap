@@ -2,7 +2,7 @@ import type { FilterInput } from './types'
 import { createConsola } from 'consola'
 import { createDefu } from 'defu'
 import { createRouter, toRouteMatcher } from 'radix3'
-import { parseURL, withLeadingSlash } from 'ufo'
+import { parseURL, withLeadingSlash, withoutBase } from 'ufo'
 
 export const logger = createConsola({
   defaults: {
@@ -74,8 +74,9 @@ export interface CreateFilterOptions {
   exclude?: (FilterInput | string | RegExp)[]
 }
 
-export function createPathFilter(options: CreateFilterOptions = {}) {
+export function createPathFilter(options: CreateFilterOptions = {}, baseURL?: string) {
   const urlFilter = createFilter(options)
+  const hasBase = baseURL && baseURL !== '/'
   return (loc: string) => {
     let path = loc
     try {
@@ -86,6 +87,8 @@ export function createPathFilter(options: CreateFilterOptions = {}) {
       // invalid URL
       return false
     }
+    if (hasBase)
+      path = withoutBase(path, baseURL)
     return urlFilter(path)
   }
 }

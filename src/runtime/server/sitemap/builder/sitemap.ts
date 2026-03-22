@@ -11,6 +11,7 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
 import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
@@ -25,7 +26,7 @@ export interface NormalizedI18n extends ResolvedSitemapUrl {
   _index?: number
 }
 
-export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
+export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers, baseURL?: string): ResolvedSitemapUrl[] {
   const {
     autoI18n,
     isI18nMapped,
@@ -33,7 +34,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   const filterPath = createPathFilter({
     include: sitemap.include,
     exclude: sitemap.exclude,
-  })
+  }, baseURL || '/')
   // 1. normalise
   const _urls = urls.map((_e) => {
     const e = preNormalizeEntry(_e, resolvers)
@@ -312,7 +313,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     event: resolvers.event,
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
 
   if (isMultiSitemap) {
     const sitemapNames = Object.keys(sitemaps).filter(k => k !== 'index')
@@ -333,7 +334,6 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
 
   // 3. filtered urls
-  // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
     if (e._sitemap === false)
       return false
