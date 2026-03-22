@@ -5,12 +5,10 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - chokidar
   - semver
-
 packages:
   - client
   - test/fixtures/**
   - playground
-
 overrides:
   '@vitejs/plugin-vue': ^6.0.5
   vite: ^8.0.1
@@ -38,13 +36,13 @@ catalog:
   consola: ^3.4.2
   defu: ^6.1.4
   eslint: ^10.1.0
-  eslint-plugin-harlanzw: ^0.9.3
+  eslint-plugin-harlanzw: ^0.10.3
   execa: ^9.6.1
   fast-xml-parser: ^5.5.8
   happy-dom: ^20.8.4
   nuxt: ^4.4.2
   nuxt-i18n-micro: ^3.13.4
-  nuxt-site-config: ^3.2.21
+  nuxt-site-config: ^4.0.0
   nuxtseo-shared: ^0.1.1
   ofetch: ^1.5.1
   pathe: ^2.0.3
@@ -62,6 +60,9 @@ catalog:
   vue-router: ^5.0.4
   vue-tsc: ^3.2.6
   zod: ^4.3.6
+
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
+
+trustPolicyIgnoreAfter: 262800

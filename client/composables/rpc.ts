@@ -1,20 +1,8 @@
-import type { NuxtDevtoolsClient } from '@nuxt/devtools-kit/types'
-import type { $Fetch } from 'nitropack'
-import { onDevtoolsClientConnected } from '@nuxt/devtools-kit/iframe-client'
-import { ref, watchEffect } from 'vue'
+import { appFetch, colorMode, devtools, useDevtoolsConnection } from 'nuxtseo-shared/client/composables/rpc'
 import { refreshSources } from './state'
 
-export const appFetch = ref<$Fetch>()
+export { appFetch, colorMode, devtools }
 
-export const devtools = ref<NuxtDevtoolsClient>()
-
-export const colorMode = ref<'dark' | 'light'>()
-
-onDevtoolsClientConnected(async (client) => {
-  appFetch.value = client.host.app.$fetch as $Fetch
-  watchEffect(() => {
-    colorMode.value = client.host.app.colorMode.value
-  })
-  devtools.value = client.devtools
-  refreshSources()
+useDevtoolsConnection({
+  onConnected: () => refreshSources(),
 })

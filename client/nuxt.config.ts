@@ -1,32 +1,54 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineNuxtConfig({
+  ssr: false,
+
   modules: [
     '@nuxt/fonts',
     '@nuxt/ui',
   ],
-  ssr: false,
-  devtools: false,
 
-  app: {
-    baseURL: '/__sitemap__/devtools',
-  },
+  sitemap: false,
 
   css: ['~/assets/css/global.css'],
-  content: false,
 
-  compatibilityDate: '2025-03-13',
+  components: [
+    '~/components',
+    { path: resolve(__dirname, '../node_modules/nuxtseo-shared/src/client/components'), pathPrefix: false },
+  ],
 
-  nitro: {
-    output: {
-      publicDir: resolve(__dirname, '../dist/client'),
-    },
-  },
-
+  // @ts-expect-error @nuxt/fonts module config
   fonts: {
     families: [
       { name: 'Hubot Sans' },
     ],
   },
-  sitemap: false,
+
+  devtools: {
+    enabled: false,
+  },
+
+  nitro: {
+    prerender: {
+      routes: [
+        '/',
+        '/user-sources',
+        '/app-sources',
+        '/debug',
+        '/docs',
+      ],
+    },
+    output: {
+      publicDir: resolve(__dirname, '../dist/client'),
+    },
+  },
+
+  app: {
+    baseURL: '/__sitemap__/devtools',
+  },
+
+  compatibilityDate: '2025-03-13',
 })
