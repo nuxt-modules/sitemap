@@ -45,6 +45,7 @@ import {
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
+import { setupVercelEdgeFix } from './utils-internal/vercel-edge-fix'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -992,6 +993,9 @@ export async function readSourcesFromFilesystem() {
     })
 
     setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
+
+    // Fix unenv v2 process polyfill breaking Vercel Edge (private class fields + Proxy)
+    setupVercelEdgeFix(nuxt)
 
     // suggest zeroRuntime when no dynamic sources detected
     if (!config.zeroRuntime && !nuxt.options.dev && !nuxt.options._prepare) {

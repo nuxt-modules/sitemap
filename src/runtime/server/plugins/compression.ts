@@ -22,7 +22,7 @@ export default defineNitroPlugin((nitro) => {
 
     const body = typeof response.body === 'string' ? response.body : JSON.stringify(response.body)
     const stream = new Blob([body]).stream().pipeThrough(new CompressionStream(encoding))
-    response.body = Buffer.from(await new Response(stream).arrayBuffer())
+    response.body = new Uint8Array(await new Response(stream).arrayBuffer())
     setResponseHeader(event, 'Content-Encoding', encoding)
   })
 })
