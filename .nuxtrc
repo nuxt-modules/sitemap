@@ -1,4 +1,5 @@
 imports.autoImport=false
+vite.legacy.inconsistentCjsInterop=true
 typescript.includeWorkspace=true
 modules.0="@nuxtjs/sitemap"
 modules.1="@nuxt/content"

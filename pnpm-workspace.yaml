@@ -10,6 +10,9 @@ packages:
   - test/fixtures/**
   - playground
 
+overrides:
+  vite: ^8.0.1
+
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:

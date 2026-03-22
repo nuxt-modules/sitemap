@@ -1,0 +1,15 @@
+skills:
+  nuxt-test-utils-skilld:
+    packageName: "@nuxt/test-utils"
+    version: 4.0.0
+    repo: nuxt/test-utils
+    source: "http://nuxt.com/llms.txt"
+    syncedAt: 2026-03-22
+    generator: skilld
+  vitest-skilld:
+    packageName: vitest
+    version: 4.1.0
+    repo: vitest-dev/vitest
+    source: "https://github.com/vitest-dev/vitest/tree/v4.1.0/docs"
+    syncedAt: 2026-03-22
+    generator: skilld

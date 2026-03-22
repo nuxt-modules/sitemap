@@ -48,8 +48,18 @@ export default defineConfig({
           ],
           globalSetup: './test/e2e/global-setup.ts',
         },
-        resolve: {
-          external: ['bun:test'],
+        plugins: [
+          {
+            name: 'ignore-bun-test',
+            enforce: 'pre',
+            resolveId(id) {
+              if (id === 'bun:test')
+                return { id: 'bun:test', external: true }
+            },
+          },
+        ],
+        legacy: {
+          inconsistentCjsInterop: true,
         },
       }),
     ],
