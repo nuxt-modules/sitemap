@@ -273,7 +273,7 @@ export default defineNuxtModule<ModuleOptions>({
           pages: nuxtI18nConfig.pages,
         }
       }
-      let canI18nMap = config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
+      let canI18nMap = !hasDisabledAutoI18n && config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
       if (typeof config.sitemaps === 'object') {
         const isSitemapIndexOnly = typeof config.sitemaps.index !== 'undefined' && Object.keys(config.sitemaps).length === 1
         if (!isSitemapIndexOnly)
