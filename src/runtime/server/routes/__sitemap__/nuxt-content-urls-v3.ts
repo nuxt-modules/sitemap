@@ -47,7 +47,7 @@ export default defineEventHandler(async (e) => {
     .flatMap(({ collection, entries }) => {
       const onUrl = onUrlFns?.get(collection)
       return entries
-        .filter(c => c.sitemap !== false && c.path)
+        .filter(c => c.sitemap !== false && c.path && !c.path.endsWith('.navigation'))
         .map((c) => {
           const url: Record<string, unknown> = {
             loc: c.path,
