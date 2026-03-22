@@ -24,3 +24,6 @@ test/fixtures/**/.output
 .build-*
 .netlify
 .data
+
+# Skilld references (recreated by `skilld install`)
+.skilld

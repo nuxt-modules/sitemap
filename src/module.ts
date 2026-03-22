@@ -46,6 +46,13 @@ import {
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
+declare global {
+  // eslint-disable-next-line vars-on-top
+  var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+  // eslint-disable-next-line vars-on-top
+  var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
+}
+
 export type * from './runtime/types'
 
 export interface ModuleOptions extends _ModuleOptions {}
