@@ -72,8 +72,7 @@ This section documents version-specific API changes — prioritize recent major/
 
 ```ts
 mockNuxtImport('useRoute', original =>
-  vi.fn(original)
-)
+  vi.fn(original))
 ```
 
 - Extract `import.meta.server` and `import.meta.client` to a helper module before mocking — direct assignment to `import.meta` doesn't work; wrap in a re-export and mock that instead [source](./.skilld/discussions/discussion-884.md)
