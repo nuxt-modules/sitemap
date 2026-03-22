@@ -322,7 +322,7 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     for (const e of enhancedUrls) {
       // Check if _sitemap matches any sitemap name directly OR via locale prefix (e.g., "en-US" matches "en-US-pages")
       const hasMatchingSitemap = typeof e._sitemap === 'string'
-        && (sitemapNames.includes(e._sitemap) || sitemapNames.some(name => name.startsWith(`${e._sitemap}-`)))
+        && (sitemapNames.includes(e._sitemap) || (isI18nMapped && sitemapNames.some(name => name.startsWith(`${e._sitemap}-`))))
       if (typeof e._sitemap === 'string' && !hasMatchingSitemap) {
         if (!warnedSitemaps.has(e._sitemap)) {
           warnedSitemaps.add(e._sitemap)
@@ -342,9 +342,9 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
       return false
     if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
       if (sitemap._isChunking)
-        return sitemap.sitemapName.startsWith(`${e._sitemap}-`)
+        return e._sitemap === baseSitemapName || (isI18nMapped && sitemap.sitemapName.startsWith(`${e._sitemap}-`))
       // Match exact sitemap name OR locale-prefixed sitemap (e.g., "en-US" matches "en-US-pages")
-      return e._sitemap === sitemap.sitemapName || sitemap.sitemapName.startsWith(`${e._sitemap}-`)
+      return e._sitemap === sitemap.sitemapName || (isI18nMapped && sitemap.sitemapName.startsWith(`${e._sitemap}-`))
     }
     return true
   })
