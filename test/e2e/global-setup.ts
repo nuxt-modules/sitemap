@@ -10,5 +10,9 @@ export default async function setup() {
       recursive: true,
       force: true,
     })
+    await fsp.rm(join(fixturesDir, project, '.data'), {
+      recursive: true,
+      force: true,
+    })
   }
 }
