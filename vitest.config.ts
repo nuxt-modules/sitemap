@@ -1,4 +1,3 @@
-import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig, defineProject } from 'vitest/config'
 
 export default defineConfig({
@@ -37,9 +36,10 @@ export default defineConfig({
         },
       }),
       // e2e tests in test/e2e
-      defineVitestProject({
+      defineProject({
         test: {
           name: 'e2e',
+          environment: 'node',
           include: [
             './test/e2e/**/*.test.ts',
           ],
@@ -47,19 +47,6 @@ export default defineConfig({
             '**/node_modules/**',
           ],
           globalSetup: './test/e2e/global-setup.ts',
-        },
-        plugins: [
-          {
-            name: 'ignore-bun-test',
-            enforce: 'pre',
-            resolveId(id) {
-              if (id === 'bun:test')
-                return { id: 'bun:test', external: true }
-            },
-          },
-        ],
-        legacy: {
-          inconsistentCjsInterop: true,
         },
       }),
     ],
