@@ -469,53 +469,58 @@ export default defineNuxtModule<ModuleOptions>({
         nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
       }
       nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
-        const content = ctx.content as any as {
-          body: { value: [string, Record<string, any>][] }
-          sitemap?: Partial<SitemapUrl> | false
-          path: string
-          updatedAt?: string
-        } & Record<string, any>
-        nuxtV3Collections.add(ctx.collection.name)
-        // ignore .dot files and paths
-        if (String(ctx.content.path).includes('/.')) {
-          ctx.content.sitemap = null
-          return
-        }
-        if (!('sitemap' in ctx.collection.fields)) {
-          ctx.content.sitemap = null
-          return
-        }
-        // support sitemap: false
-        if (typeof content.sitemap !== 'undefined' && !content.sitemap) {
-          ctx.content.sitemap = null
-          return
-        }
-        if (ctx.content.robots === false) {
-          ctx.content.sitemap = null
-          return
-        }
-        // add any top level images
-        const images: SitemapUrl['images'] = []
-        if (config.discoverImages) {
-          images.push(...(content.body?.value
-            ?.filter(c =>
-              ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
+        try {
+          const content = ctx.content as any as {
+            body: { value: [string, Record<string, any>][] }
+            sitemap?: Partial<SitemapUrl> | false
+            path: string
+            updatedAt?: string
+          } & Record<string, any>
+          nuxtV3Collections.add(ctx.collection.name)
+          // ignore .dot files and paths
+          if (String(ctx.content.path).includes('/.')) {
+            ctx.content.sitemap = null
+            return
+          }
+          if (!ctx.collection.fields || !('sitemap' in ctx.collection.fields)) {
+            ctx.content.sitemap = null
+            return
+          }
+          // support sitemap: false
+          if (typeof content.sitemap !== 'undefined' && !content.sitemap) {
+            ctx.content.sitemap = null
+            return
+          }
+          if (ctx.content.robots === false) {
+            ctx.content.sitemap = null
+            return
+          }
+          // add any top level images
+          const images: SitemapUrl['images'] = []
+          if (config.discoverImages) {
+            images.push(...(content.body?.value
+              ?.filter(c =>
+                ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
+              )
+              .filter(c => c[1]?.src)
+              .map(c => ({ loc: c[1].src })) || []),
             )
-            .filter(c => c[1]?.src)
-            .map(c => ({ loc: c[1].src })) || []),
-          )
-        }
-        // Note: videos only supported through prerendering for simpler logic
+          }
+          // Note: videos only supported through prerendering for simpler logic
 
-        const lastmod = content.seo?.articleModifiedTime || content.updatedAt
-        const defaults: Partial<SitemapUrl> = {
-          loc: content.path,
+          const lastmod = content.seo?.articleModifiedTime || content.updatedAt
+          const defaults: Partial<SitemapUrl> = {
+            loc: content.path,
+          }
+          if (images.length > 0)
+            defaults.images = images
+          if (lastmod)
+            defaults.lastmod = lastmod
+          ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
         }
-        if (images.length > 0)
-          defaults.images = images
-        if (lastmod)
-          defaults.lastmod = lastmod
-        ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
+        catch (e) {
+          logger.warn('Failed to process sitemap data for content file, skipping.', e)
+        }
       })
 
       // inject filter functions and loc prefixes as virtual modules
