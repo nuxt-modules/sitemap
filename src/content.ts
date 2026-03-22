@@ -146,7 +146,7 @@ export const schema = z.object({
 
 export type SitemapSchema = TypeOf<typeof schema>
 
-/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. */
+// TODO: deprecate in next major in favour of defineSitemapSchema()
 export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   name?: string
   filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
@@ -157,7 +157,7 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
-/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. */
+// TODO: deprecate in next major in favour of defineSitemapSchema()
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
