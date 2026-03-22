@@ -17,52 +17,63 @@ if (!globalThis.__sitemapCollectionOnUrlFns)
 const collectionFilters = globalThis.__sitemapCollectionFilters
 const collectionOnUrlFns = globalThis.__sitemapCollectionOnUrlFns
 
-export const schema = z.object({
-  sitemap: z.object({
-    loc: z.string().optional(),
-    lastmod: z.date().optional(),
-    changefreq: z.union([z.literal('always'), z.literal('hourly'), z.literal('daily'), z.literal('weekly'), z.literal('monthly'), z.literal('yearly'), z.literal('never')]).optional(),
-    priority: z.number().optional(),
-    images: z.array(z.object({
-      loc: z.string(),
-      caption: z.string().optional(),
-      geo_location: z.string().optional(),
-      title: z.string().optional(),
-      license: z.string().optional(),
+function buildSitemapObjectSchema(_z: typeof z) {
+  return _z.object({
+    loc: _z.string().optional(),
+    lastmod: _z.date().optional(),
+    changefreq: _z.union([_z.literal('always'), _z.literal('hourly'), _z.literal('daily'), _z.literal('weekly'), _z.literal('monthly'), _z.literal('yearly'), _z.literal('never')]).optional(),
+    priority: _z.number().optional(),
+    images: _z.array(_z.object({
+      loc: _z.string(),
+      caption: _z.string().optional(),
+      geo_location: _z.string().optional(),
+      title: _z.string().optional(),
+      license: _z.string().optional(),
     })).optional(),
-    videos: z.array(z.object({
-      content_loc: z.string(),
-      player_loc: z.string().optional(),
-      duration: z.string().optional(),
-      expiration_date: z.date().optional(),
-      rating: z.number().optional(),
-      view_count: z.number().optional(),
-      publication_date: z.date().optional(),
-      family_friendly: z.boolean().optional(),
-      tag: z.string().optional(),
-      category: z.string().optional(),
-      restriction: z.object({
-        relationship: z.literal('allow').optional(),
-        value: z.string().optional(),
+    videos: _z.array(_z.object({
+      content_loc: _z.string(),
+      player_loc: _z.string().optional(),
+      duration: _z.string().optional(),
+      expiration_date: _z.date().optional(),
+      rating: _z.number().optional(),
+      view_count: _z.number().optional(),
+      publication_date: _z.date().optional(),
+      family_friendly: _z.boolean().optional(),
+      tag: _z.string().optional(),
+      category: _z.string().optional(),
+      restriction: _z.object({
+        relationship: _z.literal('allow').optional(),
+        value: _z.string().optional(),
       }).optional(),
-      gallery_loc: z.string().optional(),
-      price: z.string().optional(),
-      requires_subscription: z.boolean().optional(),
-      uploader: z.string().optional(),
+      gallery_loc: _z.string().optional(),
+      price: _z.string().optional(),
+      requires_subscription: _z.boolean().optional(),
+      uploader: _z.string().optional(),
     })).optional(),
-  }).optional(),
-})
+  }).optional()
+}
 
-export type SitemapSchema = TypeOf<typeof schema>
+const sitemapObjectSchema = buildSitemapObjectSchema(z)
 
-export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
+function withEditorHidden<T extends z.ZodTypeAny>(s: T): T {
+  // .editor() is patched onto ZodType by @nuxt/content at runtime
+  if (typeof (s as any).editor === 'function')
+    return (s as any).editor({ hidden: true })
+  return s
+}
+
+export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
+  /**
+   * Pass the `z` instance from `@nuxt/content` to ensure `.editor({ hidden: true })` works
+   * across Zod versions. When omitted, the bundled `z` is used (`.editor()` applied if available).
+   * @example
+   * import { z } from '@nuxt/content' // or 'zod'
+   * defineSitemapSchema({ z })
+   */
+  z?: typeof z
   /**
    * Collection name. Must match the key in your collections object.
    * Required when using `filter` or `onUrl`.
-   * @example
-   * collections: {
-   *   blog: defineCollection(asSitemapCollection({...}, { name: 'blog', filter: ... }))
-   * }
    */
   name?: string
   /**
@@ -70,22 +81,15 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
    * Receives the full content entry including all schema fields.
    * Requires `name` parameter to be set.
    * @example
-   * { name: 'blog', filter: (entry) => !entry.draft && new Date(entry.date) <= new Date() }
+   * defineSitemapSchema({ name: 'blog', filter: (entry) => !entry.draft })
    */
   filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
   /**
    * Transform the sitemap URL entry for each item in this collection.
    * Mutate `url` directly to change `loc`, `lastmod`, `priority`, etc.
-   * The full content entry and collection name are provided for context.
-   * Useful when the collection uses `prefix: ''` in its source config,
-   * which strips the directory prefix from content paths.
    * Requires `name` parameter to be set.
    * @example
-   * // Add a locale prefix
-   * { name: 'content_zh', onUrl: (url) => { url.loc = `/zh${url.loc}` } }
-   * @example
-   * // Use content entry fields to set priority
-   * { name: 'blog', onUrl: (url, entry) => { url.priority = entry.featured ? 1.0 : 0.5 } }
+   * defineSitemapSchema({ name: 'content_zh', onUrl: (url) => { url.loc = `/zh${url.loc}` } })
    */
   onUrl?: (
     url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
@@ -94,6 +98,66 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
+/**
+ * Define the sitemap schema field for a Nuxt Content collection.
+ *
+ * @example
+ * // Basic usage
+ * defineCollection({
+ *   type: 'page',
+ *   source: '**',
+ *   schema: z.object({
+ *     sitemap: defineSitemapSchema()
+ *   })
+ * })
+ *
+ * @example
+ * // With filter and onUrl
+ * defineCollection({
+ *   type: 'page',
+ *   source: 'blog/**',
+ *   schema: z.object({
+ *     draft: z.boolean().optional(),
+ *     sitemap: defineSitemapSchema({
+ *       name: 'blog',
+ *       filter: (entry) => !entry.draft,
+ *       onUrl: (url) => { url.priority = 0.8 }
+ *     })
+ *   })
+ * })
+ */
+export function defineSitemapSchema<T = Record<string, unknown>>(options?: DefineSitemapSchemaOptions<T>) {
+  if (options?.filter || options?.onUrl) {
+    if (!options.name)
+      throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
+    if (options.filter)
+      collectionFilters.set(options.name, options.filter)
+    if (options.onUrl)
+      collectionOnUrlFns.set(options.name, options.onUrl)
+  }
+  const s = options?.z ? buildSitemapObjectSchema(options.z) : sitemapObjectSchema
+  return withEditorHidden(s)
+}
+
+// Legacy schema export (wraps entire collection)
+export const schema = z.object({
+  sitemap: withEditorHidden(sitemapObjectSchema),
+})
+
+export type SitemapSchema = TypeOf<typeof schema>
+
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. */
+export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
+  name?: string
+  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
+  onUrl?: (
+    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
+    entry: PageCollectionItemBase & SitemapSchema & TEntry,
+    collection: string,
+  ) => void
+}
+
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. */
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
   if (collection.type === 'page') {
     // @ts-expect-error untyped
