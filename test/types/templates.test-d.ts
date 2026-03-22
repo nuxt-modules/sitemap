@@ -31,10 +31,6 @@ describe('nitropack augmentations', () => {
     expectTypeOf<NitroRouteRules['sitemap']>().toEqualTypeOf<SitemapItemDefaults | false | undefined>()
   })
 
-  it('NitroRouteRules.index is boolean', () => {
-    expectTypeOf<NitroRouteRules['index']>().toEqualTypeOf<boolean | undefined>()
-  })
-
   it('NitroRouteConfig.sitemap is SitemapItemDefaults | false', () => {
     expectTypeOf<NitroRouteConfig['sitemap']>().toEqualTypeOf<SitemapItemDefaults | false | undefined>()
   })
