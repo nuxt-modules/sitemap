@@ -77,4 +77,32 @@ describe('normalise', () => {
       }
     `)
   })
+
+  it('_encoded: true preserves pre-encoded URLs', () => {
+    // Test reserved characters - user pre-encoded with encodeURIComponent
+    const reservedChars = preNormalizeEntry({ loc: '/%24-%3A%29', _encoded: true })
+    expect(reservedChars.loc).toBe('/%24-%3A%29')
+
+    // Test pre-encoded emoji stays intact
+    const emoji = preNormalizeEntry({ loc: '/%F0%9F%98%85', _encoded: true })
+    expect(emoji.loc).toBe('/%F0%9F%98%85')
+
+    // Test unencoded URL stays as-is when _encoded: true (user's responsibility)
+    const unencoded = preNormalizeEntry({ loc: '/😅', _encoded: true })
+    expect(unencoded.loc).toBe('/😅')
+  })
+
+  it('default encoding behavior', () => {
+    // Emoji should be encoded
+    const emoji = preNormalizeEntry({ loc: '/😅' })
+    expect(emoji.loc).toBe('/%F0%9F%98%85')
+
+    // Space should be encoded
+    const space = preNormalizeEntry({ loc: '/hello world' })
+    expect(space.loc).toBe('/hello%20world')
+
+    // Reserved chars like $ and : are NOT encoded by encodePath (per RFC-3986)
+    const reserved = preNormalizeEntry({ loc: '/$-:)' })
+    expect(reserved.loc).toBe('/$-:)')
+  })
 })

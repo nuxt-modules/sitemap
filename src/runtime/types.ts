@@ -1,7 +1,7 @@
-import type { FetchOptions } from 'ofetch'
-import type { H3Event } from 'h3'
-import type { ParsedURL } from 'ufo'
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
+import type { H3Event } from 'h3'
+import type { FetchOptions } from 'ofetch'
+import type { ParsedURL } from 'ufo'
 
 // we need to have the module options within the runtime entry
 // as we don't want to depend on the module entry as it can cause
@@ -153,6 +153,15 @@ export interface ModuleOptions extends SitemapDefinition {
    * @experimental Will be enabled by default in v5 (if stable)
    */
   experimentalCompression?: boolean
+  /**
+   * When enabled, sitemap generation only runs during prerendering.
+   * The sitemap building code is tree-shaken from the runtime bundle.
+   *
+   * Requires sitemaps to be prerendered (e.g., `nuxt generate` or `nitro.prerender.routes` includes sitemap).
+   *
+   * @default false
+   */
+  zeroRuntime?: boolean
 }
 
 export interface IndexSitemapRemotes {
@@ -185,6 +194,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   error?: any
   timeTakenMs?: number
   _isFailure?: boolean
+  _urlWarnings?: { loc: string, message: string }[]
 }
 
 export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'
@@ -252,7 +262,7 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
   /**
    * @internal
    */
-  _path: ParsedURL
+  _path: ParsedURL | null
   /**
    * @internal
    */
@@ -261,6 +271,10 @@ export type ResolvedSitemapUrl = Omit<SitemapUrl, 'url'> & Required<Pick<Sitemap
    * @internal
    */
   _abs: boolean
+  /**
+   * @internal
+   */
+  _warnings?: string[]
 }
 
 export interface SitemapDefinition {
@@ -369,7 +383,7 @@ export interface SitemapOutputHookCtx extends NitroBaseHook {
 
 export interface SitemapSourcesHookCtx extends NitroBaseHook {
   sitemapName: string
-  sources: (SitemapSourceBase | SitemapSourceResolved)[]
+  sources: SitemapSourceInput[]
 }
 
 export type Changefreq
@@ -383,6 +397,10 @@ export type Changefreq
 
 export interface SitemapUrl {
   loc: string
+  /**
+   * Alias for `loc`. Will be normalized to `loc`.
+   */
+  url?: string
   lastmod?: string | Date
   changefreq?: Changefreq
   priority?: 0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1
@@ -392,7 +410,24 @@ export interface SitemapUrl {
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
   _sitemap?: string | false
+  /**
+   * Mark the URL as already encoded.
+   *
+   * When true, the loc will not be automatically encoded, preventing double-encoding
+   * when you've already applied encodeURIComponent() to path segments.
+   *
+   * @example
+   * ```ts
+   * {
+   *   loc: `/${encodeURIComponent('$pecial-char')}`,
+   *   _encoded: true
+   * }
+   * ```
+   */
+  _encoded?: boolean
 }
+
+export type SitemapItemDefaults = Omit<SitemapUrl, 'loc'>
 
 export type SitemapStrict = Required<SitemapUrl>
 
@@ -431,7 +466,7 @@ export interface GoogleNewsEntry {
 export interface ImageEntry {
   loc: string | URL
   caption?: string
-  geoLocation?: string
+  geo_location?: string
   title?: string
   license?: string | URL
 }
@@ -462,6 +497,8 @@ export interface VideoEntry {
   }
   live?: 'yes' | 'no' | boolean
   tag?: string | string[]
+  category?: string
+  gallery_loc?: string | URL
 }
 
 export interface Restriction {
@@ -480,8 +517,4 @@ export interface NitroUrlResolvers {
   fixSlashes: (path: string) => string
 }
 
-interface NuxtI18nMicro {
-  includeDefaultLocaleRoute?: boolean
-}
-
-export type I18nIntegrationOptions = NuxtI18nOptions & NuxtI18nMicro
+export type I18nIntegrationOptions = NuxtI18nOptions

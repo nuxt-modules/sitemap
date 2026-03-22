@@ -1,50 +1,75 @@
-import {
-  addPrerenderRoutes,
-  addServerHandler,
-  addServerImports,
-  addServerPlugin, addTypeTemplate,
-  createResolver,
-  defineNuxtModule,
-  getNuxtModuleVersion,
-  hasNuxtModule,
-  hasNuxtModuleCompatibility, resolveModule,
-  useLogger,
-} from '@nuxt/kit'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
-import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
-import { defu } from 'defu'
-import type { NitroRouteConfig } from 'nitropack'
-import { readPackageJSON } from 'pkg-types'
-import { dirname, relative } from 'pathe'
 import type { FileAfterParseHook } from '@nuxt/content'
+import type { NitroRouteConfig } from 'nitropack/types'
 import type {
+  ModuleOptions as _ModuleOptions,
   AppSourceContext,
   AutoI18nConfig,
+  FilterInput,
+  I18nIntegrationOptions,
   ModuleRuntimeConfig,
   MultiSitemapEntry,
   SitemapDefinition,
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
-  ModuleOptions as _ModuleOptions, FilterInput, I18nIntegrationOptions, SitemapUrl,
+  SitemapUrl,
 } from './runtime/types'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
-import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
+import {
+  addPrerenderRoutes,
+  addServerHandler,
+  addServerImports,
+  addServerPlugin,
+  createResolver,
+  defineNuxtModule,
+  getNuxtModuleVersion,
+  hasNuxtModule,
+  hasNuxtModuleCompatibility,
+  resolveModule,
+  useLogger,
+} from '@nuxt/kit'
+import { defu } from 'defu'
+import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
+import { isPathFile } from 'nuxt-site-config/urls'
+import { dirname } from 'pathe'
+import { readPackageJSON } from 'pkg-types'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { setupDevToolsUI } from './devtools'
+import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
+import { registerTypeTemplates } from './templates'
+import { normalizeFilters } from './utils-internal/filter'
 import {
   generatePathForI18nPages,
   normalizeLocales,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { normalizeFilters } from './utils-internal/filter'
-import { isPathFile } from 'nuxt-site-config/urls'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
+
+declare global {
+  // eslint-disable-next-line vars-on-top
+  var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
+  // eslint-disable-next-line vars-on-top
+  var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
+}
 
 export type * from './runtime/types'
 
-// eslint-disable-next-line
 export interface ModuleOptions extends _ModuleOptions {}
+
+export interface ModuleHooks {
+  /**
+   * Hook called after the prerender of the sitemaps is done.
+   */
+  'sitemap:prerender:done': (ctx: {
+    options: ModuleRuntimeConfig
+    sitemaps: { name: string, readonly content: string }[]
+  }) => void | Promise<void>
+}
+
+declare module '@nuxt/schema' {
+  interface NuxtHooks extends ModuleHooks {}
+}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -101,6 +126,7 @@ export default defineNuxtModule<ModuleOptions>({
     // sources
     sources: [],
     excludeAppSources: [],
+    zeroRuntime: false,
   },
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -116,6 +142,8 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
+    nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
+    nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
     config.xslColumns = config.xslColumns || [
       { label: 'URL', width: '50%' },
       { label: 'Images', width: '25%', select: 'count(image:image)' },
@@ -187,9 +215,6 @@ export default defineNuxtModule<ModuleOptions>({
       if (i18nVersion && i18nModule === '@nuxtjs/i18n' && !await hasNuxtModuleCompatibility(i18nModule, '>=8'))
         logger.warn(`You are using ${i18nModule} v${i18nVersion}. For the best compatibility, please upgrade to ${i18nModule} v8.0.0 or higher.`)
       nuxtI18nConfig = (await getNuxtModuleOptions(i18nModule) || {}) as I18nIntegrationOptions
-      if (typeof nuxtI18nConfig.includeDefaultLocaleRoute !== 'undefined') {
-        nuxtI18nConfig.strategy = nuxtI18nConfig.includeDefaultLocaleRoute ? 'prefix' : 'prefix_except_default'
-      }
       normalisedLocales = normalizeLocales(nuxtI18nConfig)
       usingI18nPages = !!Object.keys(nuxtI18nConfig.pages || {}).length
       if (usingI18nPages && !hasDisabledAutoI18n) {
@@ -259,7 +284,7 @@ export default defineNuxtModule<ModuleOptions>({
           pages: nuxtI18nConfig.pages,
         }
       }
-      let canI18nMap = config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
+      let canI18nMap = !hasDisabledAutoI18n && config.sitemaps !== false && nuxtI18nConfig.strategy !== 'no_prefix'
       if (typeof config.sitemaps === 'object') {
         const isSitemapIndexOnly = typeof config.sitemaps.index !== 'undefined' && Object.keys(config.sitemaps).length === 1
         if (!isSitemapIndexOnly)
@@ -305,51 +330,24 @@ export default defineNuxtModule<ModuleOptions>({
       }
     })
 
-    addTypeTemplate({
-      filename: 'module/nuxt-sitemap.d.ts',
-      getContents: (data) => {
-        const typesPath = relative(resolve(data.nuxt!.options.rootDir, data.nuxt!.options.buildDir, 'module'), resolve('runtime/types'))
-        const types = `  interface PrerenderRoute {
-    _sitemap?: import('${typesPath}').SitemapUrl
-  }
-  interface NitroRouteRules {
-    index?: boolean
-    sitemap?: import('${typesPath}').SitemapItemDefaults
-  }
-  interface NitroRouteConfig {
-    index?: boolean
-    sitemap?: import('${typesPath}').SitemapItemDefaults
-  }
-  interface NitroRuntimeHooks {
-    'sitemap:index-resolved': (ctx: import('${typesPath}').SitemapIndexRenderCtx) => void | Promise<void>
-    'sitemap:input': (ctx: import('${typesPath}').SitemapInputCtx) => void | Promise<void>
-    'sitemap:resolved': (ctx: import('${typesPath}').SitemapRenderCtx) => void | Promise<void>
-    'sitemap:output': (ctx: import('${typesPath}').SitemapOutputHookCtx) => void | Promise<void>
-    'sitemap:sources': (ctx: import('${typesPath}').SitemapSourcesHookCtx) => void | Promise<void>
-  }`
-        return `// Generated by nuxt-robots
-declare module 'nitropack' {
-${types}
-}
-declare module 'nitropack/types' {
-${types}
-}
-declare module 'vue-router' {
-    interface RouteMeta {
-        sitemap?: import('${typesPath}').SitemapItemDefaults
-    }
-}
-
-export {}
-`
-      },
-    }, {
-      nitro: true,
-      nuxt: true,
-    })
+    registerTypeTemplates()
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-    const prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
+    let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
+
+    // zeroRuntime forces prerendering
+    if (config.zeroRuntime && !prerenderSitemap) {
+      prerenderSitemap = true
+      nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
+      nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
+      nuxt.options.nitro.prerender.routes.push('/sitemap.xml')
+      logger.info('`zeroRuntime` enabled - sitemap routes will be prerendered.')
+    }
+    // base path for route handlers
+    const routesPath = config.zeroRuntime
+      ? './runtime/server/routes/__zero-runtime'
+      : './runtime/server/routes'
+
     const routeRules: NitroRouteConfig = {}
     nuxt.options.nitro.routeRules = nuxt.options.nitro.routeRules || {}
     if (prerenderSitemap) {
@@ -368,7 +366,7 @@ export {}
       }
     }
     if (usingMultiSitemaps) {
-      nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: '/sitemap_index.xml' }
+      nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: withBase('/sitemap_index.xml', nuxt.options.app.baseURL) }
       nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
       if (typeof config.sitemaps === 'object') {
         for (const k in config.sitemaps) {
@@ -394,10 +392,15 @@ export {}
       nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
     }
 
-    if (config.experimentalWarmUp)
-      addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
-    if (config.experimentalCompression)
-      addServerPlugin(resolve('./runtime/server/plugins/compression'))
+    // skip experimental runtime plugins in zeroRuntime mode
+    if (config.zeroRuntime && (config.experimentalWarmUp || config.experimentalCompression))
+      logger.warn('`experimentalWarmUp` and `experimentalCompression` are ignored in zeroRuntime mode.')
+    if (!config.zeroRuntime) {
+      if (config.experimentalWarmUp)
+        addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
+      if (config.experimentalCompression)
+        addServerPlugin(resolve('./runtime/server/plugins/compression'))
+    }
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
@@ -417,7 +420,7 @@ export {}
         nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
         nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
       }
-      nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
+      nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
         const content = ctx.content as any as {
           body: { value: [string, Record<string, any>][] }
           sitemap?: Partial<SitemapUrl> | false
@@ -446,7 +449,7 @@ export {}
         // add any top level images
         const images: SitemapUrl['images'] = []
         if (config.discoverImages) {
-          images.push(...(content.body.value
+          images.push(...(content.body?.value
             ?.filter(c =>
               ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
             )
@@ -467,6 +470,23 @@ export {}
         ctx.content.sitemap = defu(typeof content.sitemap === 'object' ? content.sitemap : {}, defaults) as Partial<SitemapUrl>
       })
 
+      // inject filter functions and loc prefixes as virtual modules
+      nuxt.hook('nitro:config', (nitroConfig) => {
+        const filterEntries: string[] = []
+        if (globalThis.__sitemapCollectionFilters) {
+          for (const [name, filterFn] of globalThis.__sitemapCollectionFilters.entries())
+            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${filterFn.toString()})`)
+        }
+        const onUrlEntries: string[] = []
+        if (globalThis.__sitemapCollectionOnUrlFns) {
+          for (const [name, fn] of globalThis.__sitemapCollectionOnUrlFns.entries())
+            onUrlEntries.push(`onUrlFns.set(${JSON.stringify(name)}, ${fn.toString()})`)
+        }
+
+        nitroConfig.virtual = nitroConfig.virtual || {}
+        nitroConfig.virtual['#sitemap/content-filters'] = `export const filters = new Map()\n${filterEntries.join('\n')}`
+        nitroConfig.virtual['#sitemap/content-on-url'] = `export const onUrlFns = new Map()\n${onUrlEntries.join('\n')}`
+      })
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
         handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),
@@ -514,21 +534,23 @@ export {}
     if (usingMultiSitemaps) {
       addServerHandler({
         route: '/sitemap_index.xml',
-        handler: resolve('./runtime/server/routes/sitemap_index.xml'),
+        handler: resolve(`${routesPath}/sitemap_index.xml`),
         lazy: true,
         middleware: false,
       })
       if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/') {
         addServerHandler({
           route: joinURL(config.sitemapsPathPrefix, `/**:sitemap`),
-          handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+          handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
           lazy: true,
           middleware: false,
         })
       }
       else {
-        // Register individual sitemap routes to support chunking
+        // when prefix is '/' or false, register individual sitemap routes
+        // and explicit chunk routes since h3 doesn't support wildcard patterns
         const sitemapNames = Object.keys(config.sitemaps || {})
+        let hasChunkedSitemaps = false
         for (const sitemapName of sitemapNames) {
           if (sitemapName === 'index')
             continue
@@ -537,20 +559,36 @@ export {}
           // Register the base sitemap route
           addServerHandler({
             route: withLeadingSlash(`${sitemapName}.xml`),
-            handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
+            handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
             lazy: true,
             middleware: false,
           })
 
-          // For chunked sitemaps, we need to add a pattern-matching handler
-          if (sitemapConfig.chunks) {
-            // Register a wildcard route for chunks instead of individual routes
-            addServerHandler({
-              route: `/${sitemapName}-*.xml`,
-              handler: resolve('./runtime/server/routes/sitemap/[sitemap].xml'),
-              lazy: true,
-              middleware: false,
-            })
+          if (sitemapConfig.chunks)
+            hasChunkedSitemaps = true
+        }
+
+        // For chunked sitemaps, register individual routes for each chunk index
+        // since h3 doesn't support wildcard patterns like /sitemap-*.xml at root level.
+        // This is a limitation when using sitemapsPathPrefix: '/' - we pre-register routes
+        // for up to 20 chunks per sitemap (20,000 URLs with default chunk size of 1000).
+        // For larger sitemaps, use a different prefix like '/sitemaps/' instead of '/'.
+        if (hasChunkedSitemaps) {
+          const maxChunks = 20
+          for (const sitemapName of sitemapNames) {
+            if (sitemapName === 'index')
+              continue
+            const sitemapConfig = config.sitemaps![sitemapName as keyof typeof config.sitemaps] as MultiSitemapEntry[string]
+            if (sitemapConfig.chunks) {
+              for (let i = 0; i < maxChunks; i++) {
+                addServerHandler({
+                  route: `/${sitemapName}-${i}.xml`,
+                  handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
+                  lazy: true,
+                  middleware: false,
+                })
+              }
+            }
           }
         }
       }
@@ -718,7 +756,8 @@ export {}
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = runtimeConfig
 
-    if (config.debug || nuxt.options.dev) {
+    // debug endpoints - skip in zeroRuntime as they pull in full sitemap code
+    if ((config.debug || nuxt.options.dev) && !config.zeroRuntime) {
       addServerHandler({
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
@@ -949,9 +988,22 @@ export async function readSourcesFromFilesystem() {
     // either this will redirect to sitemap_index or will render the main sitemap.xml
     addServerHandler({
       route: `/${config.sitemapName}`,
-      handler: resolve('./runtime/server/routes/sitemap.xml'),
+      handler: resolve(`${routesPath}/sitemap.xml`),
     })
 
     setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
+
+    // suggest zeroRuntime when no dynamic sources detected
+    if (!config.zeroRuntime && !nuxt.options.dev && !nuxt.options._prepare) {
+      const hasDynamicSource = (source: SitemapSourceInput) =>
+        typeof source === 'string' || Array.isArray(source) || !!(source as SitemapSourceBase).fetch
+
+      const globalHasFetch = (config.sources || []).some(hasDynamicSource)
+      const sitemapsHaveFetch = typeof config.sitemaps === 'object'
+        && Object.values(config.sitemaps).some(s => s && 'sources' in s && (s.sources || []).some(hasDynamicSource))
+
+      if (!globalHasFetch && !sitemapsHaveFetch)
+        logger.info('No dynamic sources detected. Consider enabling `zeroRuntime` to reduce server bundle size. See https://nuxtseo.com/sitemap/guides/zero-runtime')
+    }
   },
 })

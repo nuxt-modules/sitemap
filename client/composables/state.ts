@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from '../../src/runtime/types'
+import { ref } from 'vue'
 import { appFetch } from './rpc'
 
 export const data = ref<{

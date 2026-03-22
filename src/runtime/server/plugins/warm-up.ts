@@ -1,5 +1,5 @@
-import { withLeadingSlash } from 'ufo'
 import { defineNitroPlugin } from 'nitropack/runtime'
+import { withLeadingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../utils'
 
 export default defineNitroPlugin((nitroApp) => {

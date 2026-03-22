@@ -1,3 +1,10 @@
+import type {
+  NitroUrlResolvers,
+  ResolvedSitemapUrl,
+  SitemapUrl,
+  SitemapUrlInput,
+} from '../../../types'
+import { defu } from 'defu'
 import {
   encodePath,
   hasProtocol,
@@ -8,25 +15,43 @@ import {
   stringifyQuery,
   withoutTrailingSlash,
 } from 'ufo'
-import { defu } from 'defu'
-import type {
-  NitroUrlResolvers,
-  ResolvedSitemapUrl,
-  SitemapUrl,
-} from '../../../types'
 import { mergeOnKey } from '../../../utils-pure'
 
-function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
-function resolve(s: string | undefined | URL, resolvers?: NitroUrlResolvers): string | undefined {
-  if (typeof s === 'undefined' || !resolvers)
-    return s
-  // convert url to string
-  s = typeof s === 'string' ? s : s.toString()
-  // avoid transforming remote urls and urls already resolved
-  if (hasProtocol(s, { acceptRelative: true, strict: false }))
-    return resolvers.fixSlashes(s)
+const VALID_CHANGEFREQ = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']
 
-  return resolvers.canonicalUrlResolver(s)
+export function validateSitemapUrl(url: SitemapUrlInput): string[] {
+  if (typeof url === 'string')
+    return []
+  const warnings: string[] = []
+  if (url.lastmod) {
+    const d = typeof url.lastmod === 'string' ? url.lastmod : undefined
+    if (d && !isValidW3CDate(d))
+      warnings.push(`lastmod "${d}" is not a valid W3C date`)
+  }
+  if (url.changefreq && !VALID_CHANGEFREQ.includes(url.changefreq))
+    warnings.push(`changefreq "${url.changefreq}" is not valid (expected: always|hourly|daily|weekly|monthly|yearly|never)`)
+  if (url.priority !== undefined) {
+    const p = typeof url.priority === 'number' ? url.priority : Number.parseFloat(String(url.priority))
+    if (Number.isNaN(p) || p < 0 || p > 1)
+      warnings.push(`priority "${url.priority}" is not valid (expected: number between 0.0 and 1.0)`)
+  }
+  return warnings
+}
+
+function resolve(s: string | URL, resolvers?: NitroUrlResolvers): string
+function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): string | undefined
+function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): string | undefined {
+  if (typeof s === 'undefined')
+    return undefined
+  // convert url to string
+  const str = typeof s === 'string' ? s : s.toString()
+  if (!resolvers)
+    return str
+  // avoid transforming remote urls and urls already resolved
+  if (hasProtocol(str, { acceptRelative: true, strict: false }))
+    return resolvers.fixSlashes(str)
+
+  return resolvers.canonicalUrlResolver(str)
 }
 
 function removeTrailingSlash(s: string) {
@@ -36,27 +61,35 @@ function removeTrailingSlash(s: string) {
 }
 
 export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
-  const e = (typeof _e === 'string' ? { loc: _e } : { ..._e }) as ResolvedSitemapUrl
-  if (e.url && !e.loc) {
-    e.loc = e.url
-    delete e.url
+  // Normalize url → loc before casting to ResolvedSitemapUrl
+  const input = typeof _e === 'string' ? { loc: _e } : { ..._e }
+  if (input.url && !input.loc) {
+    input.loc = input.url
   }
-  if (typeof e.loc !== 'string') {
-    e.loc = ''
+  delete input.url
+  if (typeof input.loc !== 'string') {
+    input.loc = ''
   }
+  // Check if URL is marked as already encoded
+  const skipEncoding = input._encoded === true
+  const e = input as ResolvedSitemapUrl
   // we want a uniform loc so we can dedupe using it, remove slashes and only get the path
   e.loc = removeTrailingSlash(e.loc)
   e._abs = hasProtocol(e.loc, { acceptRelative: false, strict: false })
   try {
     e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc)
   }
-  catch (e) {
+  catch {
     e._path = null
   }
   if (e._path) {
-    const query = parseQuery(e._path.search)
-    const qs = stringifyQuery(query)
-    e._relativeLoc = `${encodePath(e._path?.pathname)}${qs.length ? `?${qs}` : ''}`
+    const search = e._path.search
+    // Skip parse/stringify if no query string
+    const qs = search && search.length > 1
+      ? stringifyQuery(parseQuery(search))
+      : ''
+    const pathname = skipEncoding ? e._path.pathname : encodePath(e._path.pathname)
+    e._relativeLoc = `${pathname}${qs.length ? `?${qs}` : ''}`
     if (e._path.host) {
       e.loc = stringifyParsedURL(e._path)
     }
@@ -64,7 +97,7 @@ export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlR
       e.loc = e._relativeLoc
     }
   }
-  else if (!isEncoded(e.loc)) {
+  else if (!skipEncoding && !isEncoded(e.loc)) {
     e.loc = encodeURI(e.loc)
   }
   if (e.loc === '')
@@ -86,6 +119,11 @@ export function isEncoded(url: string) {
 
 export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
   const e = defu(_e, defaults) as ResolvedSitemapUrl
+  if (import.meta.dev) {
+    const warnings = validateSitemapUrl(e)
+    if (warnings.length)
+      e._warnings = (e._warnings || []).concat(warnings)
+  }
   if (e.lastmod) {
     const date = normaliseDate(e.lastmod)
     if (date)
@@ -102,11 +140,8 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
 
   // correct alternative hrefs
   if (e.alternatives) {
-    // Process alternatives in place to avoid extra array allocation
     const alternatives = e.alternatives.map(a => ({ ...a }))
-    for (let i = 0; i < alternatives.length; i++) {
-      const alt = alternatives[i]
-      // Modify in place
+    for (const alt of alternatives) {
       if (typeof alt.href === 'string') {
         alt.href = resolve(alt.href, resolvers)
       }
@@ -118,20 +153,18 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl
   }
 
   if (e.images) {
-    // Process images in place
     const images = e.images.map(i => ({ ...i }))
-    for (let i = 0; i < images.length; i++) {
-      images[i].loc = resolve(images[i].loc, resolvers)
+    for (const img of images) {
+      img.loc = resolve(img.loc, resolvers)
     }
     e.images = mergeOnKey(images, 'loc')
   }
 
   if (e.videos) {
-    // Process videos in place
     const videos = e.videos.map(v => ({ ...v }))
-    for (let i = 0; i < videos.length; i++) {
-      if (videos[i].content_loc) {
-        videos[i].content_loc = resolve(videos[i].content_loc, resolvers)
+    for (const video of videos) {
+      if (video.content_loc) {
+        video.content_loc = resolve(video.content_loc, resolvers)
       }
     }
     e.videos = mergeOnKey(videos, 'content_loc')
@@ -154,8 +187,9 @@ export function normaliseDate(d: Date | string) {
   // lastmod must adhere to W3C Datetime encoding rules
   if (typeof d === 'string') {
     // correct a time component without a timezone
-    if (d.includes('T')) {
-      const t = d.split('T')[1]
+    const tIdx = d.indexOf('T')
+    if (tIdx !== -1) {
+      const t = d.slice(tIdx + 1)
       if (!t.includes('+') && !t.includes('-') && !t.includes('Z')) {
         // add UTC timezone
         d += 'Z'

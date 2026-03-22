@@ -1,13 +1,15 @@
-import { parseURL } from 'ufo'
-import { parse, walkSync, ELEMENT_NODE } from 'ultrahtml'
 import type { ElementNode } from 'ultrahtml'
 import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/types'
+import { parseURL } from 'ufo'
+import { ELEMENT_NODE, parse, walkSync } from 'ultrahtml'
 
 // Validation helpers
 function isValidUrl(url: string): boolean {
-  if (!url || typeof url !== 'string') return false
+  if (!url || typeof url !== 'string')
+    return false
   const trimmed = url.trim()
-  if (!trimmed) return false
+  if (!trimmed)
+    return false
 
   // Reject data URLs, blob URLs, and other non-http(s) protocols for sitemap content
   if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('file:')) {
@@ -29,13 +31,15 @@ function isValidString(value: unknown): value is string {
 }
 
 function sanitizeString(value: unknown): string {
-  if (!isValidString(value)) return ''
+  if (!isValidString(value))
+    return ''
   // eslint-disable-next-line no-control-regex
   return String(value).trim().replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
 }
 
 function isValidDate(dateString: string): boolean {
-  if (!dateString) return false
+  if (!dateString)
+    return false
   const date = new Date(dateString)
   return !Number.isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < 3000
 }
@@ -236,7 +240,7 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
 
   // Process collected data
   if (options?.images && images.size > 0) {
-    payload.images = [...images].map(i => ({ loc: i }))
+    payload.images = Array.from(images, i => ({ loc: i }))
   }
 
   if (options?.videos) {

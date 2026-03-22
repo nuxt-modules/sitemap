@@ -1,9 +1,9 @@
-import type { NuxtModule, NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { extendPages, loadNuxtModuleInstance, useNuxt, tryUseNuxt } from '@nuxt/kit'
 import type { Nitro } from 'nitropack'
-import { env, provider } from 'std-env'
 import type { NitroConfig } from 'nitropack/types'
+import type { NuxtModule, NuxtPage } from 'nuxt/schema'
+import { loadNuxtModuleInstance, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { env, provider } from 'std-env'
 
 /**
  * Get the user provided options for a Nuxt module.
@@ -42,7 +42,9 @@ export function createPagesPromise(nuxt: Nuxt = useNuxt()) {
       if ((typeof nuxt.options.pages === 'boolean' && nuxt.options.pages === false) || (typeof nuxt.options.pages === 'object' && !nuxt.options.pages.enabled)) {
         return resolve([])
       }
-      extendPages(resolve)
+      // Use pages:resolved instead of pages:extend so that scanPageMeta
+      // has already populated meta (including definePageMeta sitemap config)
+      nuxt.hook('pages:resolved', pages => resolve(pages))
     })
   })
 }

@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import { createResolver } from '@nuxt/kit'
 import { $fetch, setup } from '@nuxt/test-utils'
+import { describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
 
@@ -27,6 +27,8 @@ describe('xsl false', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/about</loc>
+              <changefreq>daily</changefreq>
+              <priority>0.8</priority>
           </url>
           <url>
               <loc>https://nuxtseo.com/crawled</loc>

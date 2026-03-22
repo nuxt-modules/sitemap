@@ -7,7 +7,21 @@ export default defineBuildConfig({
     { input: 'src/utils', name: 'utils' },
   ],
   externals: [
-    // needed for content subpath export
+    // Nuxt core
+    'nuxt',
+    'nuxt/schema',
+    '@nuxt/kit',
+    '@nuxt/schema',
+    'nitropack',
+    'nitropack/types',
+    'h3',
+    // Vue
+    'vue',
+    'vue-router',
+    '@vue/runtime-core',
+    // Common deps
+    '#imports',
+    // Content subpath export
     '@nuxt/content',
     'zod',
   ],

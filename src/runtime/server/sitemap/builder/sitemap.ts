@@ -1,19 +1,23 @@
-import { resolveSitePath } from 'nuxt-site-config/urls'
-import { joinURL, withHttps } from 'ufo'
 import type { NitroApp } from 'nitropack/types'
 import type {
-  AlternativeEntry, AutoI18nConfig,
+  AlternativeEntry,
+  AutoI18nConfig,
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapDefinition, SitemapInputCtx,
-  SitemapUrlInput,
+  SitemapDefinition,
+  SitemapInputCtx,
   SitemapSourcesHookCtx,
+  SitemapUrl,
+  SitemapUrlInput,
 } from '../../../types'
+import { useRuntimeConfig } from 'nitropack/runtime'
+import { resolveSitePath } from 'nuxt-site-config/urls'
+import { joinURL, withHttps } from 'ufo'
+import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
 import { preNormalizeEntry } from '../urlset/normalise'
-import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { createPathFilter, logger, splitForLocales } from '../../../utils-pure'
+import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -22,7 +26,7 @@ export interface NormalizedI18n extends ResolvedSitemapUrl {
   _index?: number
 }
 
-export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl[] {
+export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers, baseURL?: string): ResolvedSitemapUrl[] {
   const {
     autoI18n,
     isI18nMapped,
@@ -30,7 +34,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   const filterPath = createPathFilter({
     include: sitemap.include,
     exclude: sitemap.exclude,
-  })
+  }, baseURL || '/')
   // 1. normalise
   const _urls = urls.map((_e) => {
     const e = preNormalizeEntry(_e, resolvers)
@@ -40,10 +44,21 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   }).filter(Boolean) as ResolvedSitemapUrl[]
 
   let validI18nUrlsForTransform: NormalizedI18n[] = []
-  let warnIncorrectI18nTransformUsage = false
   const withoutPrefixPaths: Record<string, NormalizedI18n[]> = {}
   if (autoI18n && autoI18n.strategy !== 'no_prefix') {
     const localeCodes = autoI18n.locales.map(l => l.code)
+    // Create locale lookup Map for O(1) access
+    const localeByCode = new Map(autoI18n.locales.map(l => [l.code, l]))
+    // Pre-check strategy once
+    const isPrefixStrategy = autoI18n.strategy === 'prefix'
+    const isPrefixExceptOrAndDefault = autoI18n.strategy === 'prefix_and_default' || autoI18n.strategy === 'prefix_except_default'
+    // Pre-create x-default + locales array for alternatives
+    const xDefaultAndLocales = [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales] as Array<{ code: string, _hreflang: string }>
+    // Cache frequently accessed values
+    const defaultLocale = autoI18n.defaultLocale
+    const hasPages = !!autoI18n.pages
+    const hasDifferentDomains = !!autoI18n.differentDomains
+
     validI18nUrlsForTransform = _urls.map((_e, i) => {
       if (_e._abs)
         return false
@@ -51,15 +66,16 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       let localeCode = split[0]
       const pathWithoutPrefix = split[1]
       if (!localeCode)
-        localeCode = autoI18n.defaultLocale
+        localeCode = defaultLocale
       const e = _e as NormalizedI18n
       e._pathWithoutPrefix = pathWithoutPrefix
-      const locale = autoI18n.locales.find(l => l.code === localeCode)!
+      // Use Map instead of find for O(1) lookup
+      const locale = localeByCode.get(localeCode)
       if (!locale)
         return false
       e._locale = locale
       e._index = i
-      e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path.search}`
+      e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path?.search || ''}`
       withoutPrefixPaths[pathWithoutPrefix] = withoutPrefixPaths[pathWithoutPrefix] || []
       // need to make sure the locale doesn't already exist
       if (!withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
@@ -70,10 +86,10 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
     for (const e of validI18nUrlsForTransform) {
       // let's try and find other urls that we can use for alternatives
       if (!e._i18nTransform && !e.alternatives?.length) {
-        const alternatives = withoutPrefixPaths[e._pathWithoutPrefix]
+        const alternatives = (withoutPrefixPaths[e._pathWithoutPrefix] || [])
           .map((u) => {
             const entries: AlternativeEntry[] = []
-            if (u._locale.code === autoI18n.defaultLocale) {
+            if (u._locale.code === defaultLocale) {
               entries.push({
                 href: u.loc,
                 hreflang: 'x-default',
@@ -81,7 +97,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
             }
             entries.push({
               href: u.loc,
-              hreflang: u._locale._hreflang || autoI18n.defaultLocale,
+              hreflang: u._locale._hreflang || defaultLocale,
             })
             return entries
           })
@@ -92,15 +108,13 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       else if (e._i18nTransform) {
         delete e._i18nTransform
-        if (autoI18n.strategy === 'no_prefix') {
-          warnIncorrectI18nTransformUsage = true
-        }
         // keep single entry, just add alternatvies
-        if (autoI18n.differentDomains) {
+        if (hasDifferentDomains) {
+          // Use Map instead of find with array creation
+          const defLocale = localeByCode.get(defaultLocale)
           e.alternatives = [
             {
-              // apply default locale domain
-              ...autoI18n.locales.find(l => [l.code, l.language].includes(autoI18n.defaultLocale)),
+              ...defLocale,
               code: 'x-default',
             },
             ...autoI18n.locales
@@ -108,99 +122,89 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
           ]
             .map((locale) => {
               return {
-                hreflang: locale._hreflang,
+                hreflang: locale._hreflang!,
                 href: joinURL(withHttps(locale.domain!), e._pathWithoutPrefix),
               }
             })
         }
         else {
+          // Find page mapping with support for dynamic routes
+          const pageMatch = hasPages ? findPageMapping(e._pathWithoutPrefix, autoI18n.pages!) : null
+          const pathSearch = e._path?.search || ''
+          const pathWithoutPrefix = e._pathWithoutPrefix
+
           // need to add urls for all other locales
           for (const l of autoI18n.locales) {
-            let loc = e._pathWithoutPrefix
+            let loc = pathWithoutPrefix
 
             // Check if there's a custom mapping in i18n pages config
-            if (autoI18n.pages) {
-              // Remove leading slash and /index suffix for page key lookup
-              const pageKey = e._pathWithoutPrefix.replace(/^\//, '').replace(/\/index$/, '') || 'index'
-              const pageMappings = autoI18n.pages[pageKey]
-
-              if (pageMappings && pageMappings[l.code] !== undefined) {
-                const customPath = pageMappings[l.code]
-                // If customPath is false, skip this locale
-                if (customPath === false)
-                  continue
-                // If customPath is a string, use it
-                if (typeof customPath === 'string')
-                  loc = customPath.startsWith('/') ? customPath : `/${customPath}`
-              }
-              else if (!autoI18n.differentDomains && !(['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale)) {
-                // No custom mapping found, use default behavior
-                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
+            if (pageMatch && pageMatch.mappings[l.code] !== undefined) {
+              const customPath = pageMatch.mappings[l.code]
+              // If customPath is false, skip this locale
+              if (customPath === false)
+                continue
+              // If customPath is a string, use it (applying dynamic params if present)
+              if (typeof customPath === 'string') {
+                loc = customPath[0] === '/' ? customPath : `/${customPath}`
+                loc = applyDynamicParams(loc, pageMatch.paramSegments)
+                // Add locale prefix for non-default locales
+                if (isPrefixStrategy || (isPrefixExceptOrAndDefault && l.code !== defaultLocale))
+                  loc = joinURL(`/${l.code}`, loc)
               }
             }
-            else {
-              // No pages config, use original behavior
-              if (!autoI18n.differentDomains && !(['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
-                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix)
+            else if (!hasDifferentDomains && !(isPrefixExceptOrAndDefault && l.code === defaultLocale)) {
+              // No custom mapping found, use default behavior
+              loc = joinURL(`/${l.code}`, pathWithoutPrefix)
             }
 
             const _sitemap = isI18nMapped ? l._sitemap : undefined
-            const newEntry: NormalizedI18n = preNormalizeEntry({
+            // Build alternatives array with loop instead of map().filter()
+            const alternatives: AlternativeEntry[] = []
+            for (const locale of xDefaultAndLocales) {
+              const code = locale.code === 'x-default' ? defaultLocale : locale.code
+              const isDefault = locale.code === 'x-default' || locale.code === defaultLocale
+              let href = pathWithoutPrefix
+
+              // Check for custom path mapping
+              if (pageMatch && pageMatch.mappings[code] !== undefined) {
+                const customPath = pageMatch.mappings[code]
+                if (customPath === false)
+                  continue
+                if (typeof customPath === 'string') {
+                  href = customPath[0] === '/' ? customPath : `/${customPath}`
+                  href = applyDynamicParams(href, pageMatch.paramSegments)
+                  // Add locale prefix for non-default locales
+                  if (isPrefixStrategy || (isPrefixExceptOrAndDefault && !isDefault))
+                    href = joinURL('/', code, href)
+                }
+              }
+              else if (isPrefixStrategy) {
+                href = joinURL('/', code, pathWithoutPrefix)
+              }
+              else if (isPrefixExceptOrAndDefault && !isDefault) {
+                href = joinURL('/', code, pathWithoutPrefix)
+              }
+
+              if (!filterPath(href))
+                continue
+              alternatives.push({
+                hreflang: locale._hreflang,
+                href,
+              })
+            }
+
+            const { _index: _, ...rest } = e
+            const newEntry = preNormalizeEntry({
               _sitemap,
-              ...e,
-              _index: undefined,
-              _key: `${_sitemap || ''}${loc || '/'}${e._path.search}`,
+              ...rest,
+              _key: `${_sitemap || ''}${loc || '/'}${pathSearch}`,
               _locale: l,
               loc,
-              alternatives: [{ code: 'x-default', _hreflang: 'x-default' }, ...autoI18n.locales].map((locale) => {
-                const code = locale.code === 'x-default' ? autoI18n.defaultLocale : locale.code
-                const isDefault = locale.code === 'x-default' || locale.code === autoI18n.defaultLocale
-                let href = e._pathWithoutPrefix
-
-                // Check for custom path mapping
-                if (autoI18n.pages) {
-                  const pageKey = e._pathWithoutPrefix.replace(/^\//, '').replace(/\/index$/, '') || 'index'
-                  const pageMappings = autoI18n.pages[pageKey]
-
-                  if (pageMappings && pageMappings[code] !== undefined) {
-                    const customPath = pageMappings[code]
-                    if (customPath === false)
-                      return false
-                    if (typeof customPath === 'string')
-                      href = customPath.startsWith('/') ? customPath : `/${customPath}`
-                  }
-                  else if (autoI18n.strategy === 'prefix') {
-                    href = joinURL('/', code, e._pathWithoutPrefix)
-                  }
-                  else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
-                    if (!isDefault) {
-                      href = joinURL('/', code, e._pathWithoutPrefix)
-                    }
-                  }
-                }
-                else {
-                  // Original behavior without pages config
-                  if (autoI18n.strategy === 'prefix') {
-                    href = joinURL('/', code, e._pathWithoutPrefix)
-                  }
-                  else if (['prefix_and_default', 'prefix_except_default'].includes(autoI18n.strategy)) {
-                    if (!isDefault) {
-                      href = joinURL('/', code, e._pathWithoutPrefix)
-                    }
-                  }
-                }
-
-                if (!filterPath(href))
-                  return false
-                return {
-                  hreflang: locale._hreflang,
-                  href,
-                }
-              }).filter(Boolean),
-            }, resolvers)
+              alternatives,
+            } as SitemapUrl, resolvers) as NormalizedI18n
             if (e._locale.code === newEntry._locale.code) {
               // replace
-              _urls[e._index] = newEntry
+              _urls[e._index!] = newEntry
               // avoid getting re-replaced
               e._index = undefined
             }
@@ -212,14 +216,11 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       if (isI18nMapped) {
         e._sitemap = e._sitemap || e._locale._sitemap
-        e._key = `${e._sitemap || ''}${e.loc || '/'}${e._path.search}`
+        e._key = `${e._sitemap || ''}${e.loc || '/'}${e._path?.search || ''}`
       }
       if (e._index)
         _urls[e._index] = e
     }
-  }
-  if (import.meta.dev && warnIncorrectI18nTransformUsage) {
-    logger.warn('You\'re using _i18nTransform with the `no_prefix` strategy. This will cause issues with the sitemap. Please remove the _i18nTransform flag or change i18n strategy.')
   }
   return _urls
 }
@@ -246,17 +247,18 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   } = runtimeConfig
 
   // Parse chunk information from the sitemap name
-  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize)
+  const chunkSize = defaultSitemapsChunkSize || undefined
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, chunkSize)
 
   function maybeSort(urls: ResolvedSitemapUrl[]) {
     return sortEntries ? sortInPlace(urls) : urls
   }
 
   function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize) as T
+    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, chunkSize) as T
   }
   if (autoI18n?.differentDomains) {
-    const domain = autoI18n.locales.find(e => [e.language, e.code].includes(sitemap.sitemapName))?.domain
+    const domain = autoI18n.locales.find(e => e.language === sitemap.sitemapName || e.code === sitemap.sitemapName)?.domain
     if (domain) {
       const _tester = resolvers.canonicalUrlResolver
       resolvers.canonicalUrlResolver = (path: string) => resolveSitePath(path, {
@@ -279,8 +281,10 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   }
 
   // always fetch all sitemap data for the primary sitemap
-  let sourcesInput = effectiveSitemap.includeAppSources ? await globalSitemapSources() : []
-  sourcesInput.push(...await childSitemapSources(effectiveSitemap))
+  // Note: globalSitemapSources() and childSitemapSources() return fresh copies
+  let sourcesInput = effectiveSitemap.includeAppSources
+    ? [...await globalSitemapSources(), ...await childSitemapSources(effectiveSitemap)]
+    : await childSitemapSources(effectiveSitemap)
 
   // Allow hook to modify sources before resolution
   if (nitro && resolvers.event) {
@@ -309,14 +313,35 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     event: resolvers.event,
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
+
+  if (isMultiSitemap) {
+    const sitemapNames = Object.keys(sitemaps).filter(k => k !== 'index')
+    // @ts-expect-error loose typing
+    const warnedSitemaps = nitro?._sitemapWarnedSitemaps || new Set<string>()
+    for (const e of enhancedUrls) {
+      if (typeof e._sitemap === 'string' && !sitemapNames.includes(e._sitemap)) {
+        if (!warnedSitemaps.has(e._sitemap)) {
+          warnedSitemaps.add(e._sitemap)
+          logger.error(`Sitemap \`${e._sitemap}\` not found in sitemap config. Available sitemaps: ${sitemapNames.join(', ')}. Entry \`${e.loc}\` will be omitted.`)
+        }
+      }
+    }
+    if (nitro) {
+      // @ts-expect-error loose typing
+      nitro._sitemapWarnedSitemaps = warnedSitemaps
+    }
+  }
+
   // 3. filtered urls
-  // TODO make sure include and exclude start with baseURL?
   const filteredUrls = enhancedUrls.filter((e) => {
     if (e._sitemap === false)
       return false
-    if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
+    if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
+      if (sitemap._isChunking)
+        return sitemap.sitemapName.startsWith(`${e._sitemap}-`)
       return e._sitemap === sitemap.sitemapName
+    }
     return true
   })
   // 4. sort

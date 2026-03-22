@@ -1,29 +1,30 @@
+import type { Nuxt } from '@nuxt/schema'
+import type { ConsolaInstance } from 'consola'
+import type { Nitro, PrerenderRoute } from 'nitropack'
+import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
+import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { withBase } from 'ufo'
 import { useNuxt } from '@nuxt/kit'
-import type { Nuxt } from '@nuxt/schema'
-import type { Nitro, PrerenderRoute } from 'nitropack'
-import chalk from 'chalk'
-import { dirname } from 'pathe'
+import { colors } from 'consola/utils'
 import { defu } from 'defu'
-import type { ConsolaInstance } from 'consola'
 import { withSiteUrl } from 'nuxt-site-config/kit'
-import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
-import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
+import { dirname } from 'pathe'
+import { withBase } from 'ufo'
 import { splitForLocales } from './runtime/utils-pure'
 import { resolveNitroPreset } from './utils-internal/kit'
+import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`
 
   if (route.error) {
-    const errorColor = chalk[route.error.statusCode === 404 ? 'yellow' : 'red']
+    const errorColor = colors[route.error.statusCode === 404 ? 'yellow' : 'red']
     const errorLead = '└──'
-    str += `\n  │ ${errorLead} ${errorColor(route.error)}`
+    str += `\n  │ ${errorLead} ${errorColor(route.error.message)}`
   }
 
-  return chalk.gray(str)
+  return colors.gray(str)
 }
 
 export function includesSitemapRoot(sitemapName: string, routes: string[]) {
@@ -37,7 +38,7 @@ export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
   ].includes(resolveNitroPreset())
 }
 
-const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/
+const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/ // eslint-disable-line regexp/no-unused-capturing-group
 
 export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any> }, nuxt: Nuxt = useNuxt()) {
   const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources } = _options
@@ -52,7 +53,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
   const shouldHookIntoPrerender = prerenderSitemap || (nuxt.options.nitro.prerender.routes.length && nuxt.options.nitro.prerender.crawlLinks)
   if (isNuxtGenerate() && options.debug) {
     nuxt.options.nitro.prerender.routes.push('/__sitemap__/debug.json')
-    logger.info('Adding debug route for sitemap generation:', chalk.cyan('/__sitemap__/debug.json'))
+    logger.info('Adding debug route for sitemap generation:', colors.cyan('/__sitemap__/debug.json'))
   }
   // need to filter it out of the config as we render it after all other routes
   if (!shouldHookIntoPrerender) {
@@ -73,7 +74,7 @@ export async function readSourcesFromFilesystem(filename) {
   if (!import.meta.prerender) {
     return null
   }
-  const path = join('${runtimeAssetsPath}', filename)
+  const path = join(${JSON.stringify(runtimeAssetsPath)}, filename)
   const data = await readFile(path, 'utf-8').catch(() => null)
   return data ? JSON.parse(data) : null
 }
@@ -87,7 +88,7 @@ export async function readSourcesFromFilesystem(filename) {
       if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
       // ignore redirects
-      if (html.match(NuxtRedirectHtmlRegex)) {
+      if (NuxtRedirectHtmlRegex.test(html)) {
         return
       }
 
@@ -96,7 +97,9 @@ export async function readSourcesFromFilesystem(filename) {
         videos: options.discoverVideos,
         // TODO configurable?
         lastmod: true,
-        alternatives: true,
+        // when autoI18n is enabled, let the sitemap builder generate alternatives
+        // based on i18n config instead of extracting from HTML (which can be incomplete)
+        alternatives: !options.autoI18n,
         resolveUrl(s) {
           // if the match is relative
           return s.startsWith('/') ? withSiteUrl(s) : s
@@ -140,21 +143,43 @@ export async function readSourcesFromFilesystem(filename) {
       await writeFile(join(runtimeAssetsPath, 'global-sources.json'), JSON.stringify(globalSources))
       await writeFile(join(runtimeAssetsPath, 'child-sources.json'), JSON.stringify(childSources))
 
-      await prerenderRoute(nitro, options.isMultiSitemap
+      const sitemapEntry = options.isMultiSitemap
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
-        : `/${Object.keys(options.sitemaps)[0]}`)
+        : `/${Object.keys(options.sitemaps)[0]}`
+      const sitemaps = await prerenderSitemapsFromEntry(nitro, sitemapEntry)
+      await nuxt.hooks.callHook('sitemap:prerender:done' as any, { options, sitemaps })
     })
   })
 }
 
-async function prerenderRoute(nitro: Nitro, route: string) {
+async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
+  const sitemaps: { name: string, get content(): string }[] = []
+  const queue = [entry]
+  const processed = new Set<string>()
+  while (queue.length) {
+    const route = queue.shift()!
+    if (processed.has(route))
+      continue
+    processed.add(route)
+    const { filePath, prerenderUrls } = await prerenderRoute(nitro, route)
+    sitemaps.push({
+      name: route,
+      get content() {
+        return readFileSync(filePath, { encoding: 'utf8' })
+      },
+    })
+    queue.push(...prerenderUrls)
+  }
+  return sitemaps
+}
+
+export async function prerenderRoute(nitro: Nitro, route: string) {
   const start = Date.now()
-  // Create result object
   const _route: PrerenderRoute = { route, fileName: route }
-  // Fetch the route
   const encodedRoute = encodeURI(route)
+  const fetchUrl = withBase(encodedRoute, nitro.options.baseURL)
   const res = await globalThis.$fetch.raw(
-    withBase(encodedRoute, nitro.options.baseURL),
+    fetchUrl,
     {
       headers: { 'x-nitro-prerender': encodedRoute },
       retry: nitro.options.prerender.retry,
@@ -162,22 +187,21 @@ async function prerenderRoute(nitro: Nitro, route: string) {
     },
   )
   const header = (res.headers.get('x-nitro-prerender') || '') as string
-  const prerenderUrls = [...header
+  const prerenderUrls = header
     .split(',')
-    .map(i => i.trim())
-    .map(i => decodeURIComponent(i))
-    .filter(Boolean),
-  ]
+    .map(i => decodeURIComponent(i.trim()))
+    .filter(Boolean)
   const filePath = join(nitro.options.output.publicDir, _route.fileName!)
   await mkdir(dirname(filePath), { recursive: true })
   const data = res._data
-  if (filePath.endsWith('json') || typeof data === 'object')
-    await writeFile(filePath, JSON.stringify(data), 'utf8')
-  else
-    await writeFile(filePath, data, 'utf8')
+  if (data === undefined)
+    throw new Error(`No data returned from '${fetchUrl}'`)
+  const content = filePath.endsWith('json') || typeof data === 'object'
+    ? JSON.stringify(data)
+    : data as string
+  await writeFile(filePath, content, 'utf8')
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
   nitro.logger.log(formatPrerenderRoute(_route))
-  for (const url of prerenderUrls)
-    await prerenderRoute(nitro, url)
+  return { filePath, prerenderUrls }
 }

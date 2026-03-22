@@ -1,55 +1,29 @@
-# Dependencies
 node_modules
-
-# Logs
-*.log*
-
-# Temp directories
+dist
+.output
+.nuxt
 .temp
 .tmp
 .cache
-
-# Yarn
-**/.yarn/cache
-**/.yarn/*state*
-
-playground/nuxt-runtime
-
-# Generated dirs
-dist
+.idea
+.vscode
+*.swp
+.DS_Store
+*.log
+coverage
+.env
+.env.*
+!.env.example
 
 # Nuxt
-.nuxt
-.output
+playground/.nuxt
+playground/.output
+test/fixtures/**/.nuxt
+test/fixtures/**/.output
 .vercel_build_output
 .build-*
-.env
 .netlify
-
-# Env
-.env
-
-# Testing
-reports
-coverage
-*.lcov
-.nyc_output
-
-# VSCode
-.vscode
-
-# Intellij idea
-*.iml
-.idea
-
-# OSX
-.DS_Store
-.AppleDouble
-.LSOverride
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
 .data
+
+# Skilld references (recreated by `skilld install`)
+.skilld

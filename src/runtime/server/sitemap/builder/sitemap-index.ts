@@ -1,22 +1,23 @@
-import { defu } from 'defu'
-import { joinURL, withQuery } from 'ufo'
-import { defineCachedFunction } from 'nitropack/runtime'
-import type { NitroApp } from 'nitropack/types'
 import type { H3Event } from 'h3'
-import { getHeader } from 'h3'
+import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
-  SitemapIndexEntry, SitemapInputCtx,
-  SitemapUrl,
+  SitemapIndexEntry,
+  SitemapInputCtx,
   SitemapSourcesHookCtx,
+  SitemapUrl,
 } from '../../../types'
+import { defu } from 'defu'
+import { getHeader } from 'h3'
+import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
+import { joinURL, withQuery } from 'ufo'
 import { normaliseDate } from '../urlset/normalise'
-import { globalSitemapSources, childSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
-import { escapeValueForXml } from './xml'
+import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { resolveSitemapEntries } from './sitemap'
+import { escapeValueForXml } from './xml'
 
 // Create cached wrapper for sitemap index building
 const buildSitemapIndexCached = defineCachedFunction(
@@ -63,7 +64,8 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
   // Process all sitemaps to determine chunks
   for (const sitemapName in sitemaps) {
-    if (sitemapName === 'index' || sitemapName === 'chunks') continue
+    if (sitemapName === 'index' || sitemapName === 'chunks')
+      continue
 
     const sitemapConfig = sitemaps[sitemapName]!
 
@@ -85,6 +87,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   if (typeof sitemaps.chunks !== 'undefined') {
     const sitemap = sitemaps.chunks
     // we need to figure out how many entries we're dealing with
+    // Note: globalSitemapSources() returns a fresh copy
     let sourcesInput = await globalSitemapSources()
 
     // Allow hook to modify sources before resolution
@@ -115,7 +118,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       event: resolvers.event,
     }
     await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
     // 2. enhance
     const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
       .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
@@ -156,8 +159,10 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
       // We need to determine how many chunks this sitemap will have
       // This requires knowing the total count of URLs, which we'll get from sources
-      let sourcesInput = sitemapConfig.includeAppSources ? await globalSitemapSources() : []
-      sourcesInput.push(...await childSitemapSources(sitemapConfig))
+      // Note: globalSitemapSources() and childSitemapSources() return fresh copies
+      let sourcesInput = sitemapConfig.includeAppSources
+        ? [...await globalSitemapSources(), ...await childSitemapSources(sitemapConfig)]
+        : await childSitemapSources(sitemapConfig)
 
       // Allow hook to modify sources before resolution
       if (nitro && resolvers.event) {
@@ -188,7 +193,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       }
       await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
 
-      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers)
+      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
       const totalUrls = normalisedUrls.length
       const chunkCount = Math.ceil(totalUrls / chunkSize)
 

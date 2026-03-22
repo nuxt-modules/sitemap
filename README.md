@@ -27,7 +27,7 @@ need these.
 - 😌 Automatic `lastmod`, image discovery and best practice sitemaps
 - 🔄 SWR caching, route rules support
 - 🎨 Debug using the Nuxt DevTools integration or the XML Stylesheet
-- 🤝 Integrates seamlessly with [Nuxt I18n](https://github.com/nuxt-modules/i18n) and [Nuxt Content](https://github.com/nuxt/content)
+- 🤝 Integrates smoothly with [Nuxt I18n](https://github.com/nuxt-modules/i18n) and [Nuxt Content](https://github.com/nuxt/content)
 
 ## Installation
 
@@ -38,6 +38,12 @@ Install `@nuxtjs/sitemap` dependency to your project:
 ```bash
 npx nuxi@latest module add sitemap
 ```
+
+> [!TIP]
+> Generate an Agent Skill for this package using [skilld](https://github.com/harlan-zw/skilld):
+> ```bash
+> npx skilld add @nuxtjs/sitemap
+> ```
 
 💡 Need a complete SEO solution for Nuxt? Check out [Nuxt SEO](https://nuxtseo.com).
 
@@ -56,7 +62,7 @@ npx nuxi@latest module add sitemap
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg">
-    <img src='https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg'/>
+    <img src='https://raw.githubusercontent.com/harlan-zw/static/main/sponsors.svg' alt="Sponsors"/>
   </a>
 </p>
 
@@ -74,5 +80,5 @@ Licensed under the [MIT license](https://github.com/nuxt-modules/sitemap/blob/ma
 [license-src]: https://img.shields.io/github/license/nuxt-modules/sitemap.svg?style=flat&colorA=18181B&colorB=28CF8D
 [license-href]: https://github.com/nuxt-modules/sitemap/blob/main/LICENSE.md
 
-[nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
+[nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt
 [nuxt-href]: https://nuxt.com

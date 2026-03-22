@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import { describe, expect, it } from 'vitest'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
+import { describe, expect, it } from 'vitest'
 
 describe.skipIf(process.env.CI)('generate', () => {
   it('basic', async () => {
@@ -37,9 +37,6 @@ describe.skipIf(process.env.CI)('generate', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/crawled</loc>
-          </url>
-          <url>
-              <loc>https://nuxtseo.com/noindex</loc>
           </url>
           <url>
               <loc>https://nuxtseo.com/dynamic/crawled</loc>

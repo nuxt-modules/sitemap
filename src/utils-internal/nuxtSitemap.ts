@@ -1,14 +1,14 @@
-import { statSync } from 'node:fs'
-import type { NuxtPage } from 'nuxt/schema'
 import type { Nuxt } from '@nuxt/schema'
-import { useNuxt } from '@nuxt/kit'
-import { extname } from 'pathe'
-import { defu } from 'defu'
 import type { ConsolaInstance } from 'consola'
-import { withBase, withHttps } from 'ufo'
+import type { NuxtPage } from 'nuxt/schema'
 import type { AutoI18nConfig, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
-import { createPathFilter } from '../runtime/utils-pure'
 import type { CreateFilterOptions } from '../runtime/utils-pure'
+import { statSync } from 'node:fs'
+import { useNuxt } from '@nuxt/kit'
+import { defu } from 'defu'
+import { extname } from 'pathe'
+import { withBase, withHttps } from 'ufo'
+import { createPathFilter } from '../runtime/utils-pure'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
   try {
@@ -31,7 +31,7 @@ export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx
     ctx.logger.error(e)
     return []
   }
-  return urls
+  return urls as SitemapUrlInput[]
 }
 
 export interface NuxtPagesToSitemapEntriesOptions {
@@ -71,7 +71,7 @@ function deepForEachPage(
     if (opts.isI18nMicro) {
       const localePattern = /\/:locale\(([^)]+)\)/
       const match = localePattern.exec(currentPath || '')
-      if (match) {
+      if (match && match[1]) {
         const locales = match[1].split('|')
         locales.forEach((locale) => {
           const subPage = { ...page }
@@ -111,7 +111,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     .filter(page => !page.loc.includes(':'))
     // Removing duplicates
     .filter((page, idx, arr) => {
-      return !arr.find((p) => {
+      return !arr.some((p) => {
         return p.loc === page.loc && p.depth! > page.depth!
       })
     })
@@ -133,13 +133,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
 
   const pagesWithMeta = flattenedPages.map((p) => {
     if (config.autoLastmod && p.page!.file) {
-      try {
-        const stats = statSync(p.page!.file)
-        if (stats?.mtime)
-          p.lastmod = stats.mtime
-      }
-      // eslint-disable-next-line no-empty
-      catch {}
+      const stats = statSync(p.page!.file, { throwIfNoEntry: false })
+      if (stats?.mtime)
+        p.lastmod = stats.mtime
     }
     if (p.page?.meta?.sitemap) {
       // merge in page meta
@@ -151,6 +147,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
   pagesWithMeta.reduce((acc: Record<string, any>, e) => {
     if (e.page!.name?.includes(routesNameSeparator)) {
       const [name, locale] = e.page!.name.split(routesNameSeparator)
+      if (!name)
+        return acc
       if (!acc[name])
         acc[name] = []
       const { _sitemap } = config.normalisedLocales.find(l => l.code === locale) || { _sitemap: locale }
@@ -170,6 +168,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       // we add pages without a prefix, they may have disabled i18n
       return entries.map((e) => {
         const [name] = (e.page?.name || '').split(routesNameSeparator)
+        if (!name)
+          return false
         // we need to check if the same page with a prefix exists within the default locale
         // for example this will fix the `/` if the configuration is set to `prefix`
         if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
@@ -215,20 +215,17 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         alternatives,
       }
     })
-  })
-    .filter(Boolean)
-    // TODO fix types
-    .flat() as SitemapUrlInput[]
+  }).filter(Boolean).flat() as SitemapUrlInput[]
 }
 
 export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
-  const filterForValidPage = p => p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
+  const filterForValidPage = (p: unknown): p is string => typeof p === 'string' && !!p && !extname(p) && !p.startsWith('/api/') && !p.startsWith('/_')
   const routeRules = Object.entries(nuxt.options.routeRules || {})
     .filter(([k, v]) => {
       // make sure key doesn't use a wildcard and its not for a file
       if (k.includes('*') || k.includes('.') || k.includes(':'))
         return false
-      if (typeof v.robots === 'boolean' && !v.robots)
+      if ('robots' in v && typeof v.robots === 'boolean' && !v.robots)
         return false
       // make sure that we're not redirecting
       return !v.redirect

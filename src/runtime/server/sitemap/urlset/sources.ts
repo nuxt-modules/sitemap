@@ -1,16 +1,29 @@
-import { getRequestHost } from 'h3'
 import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
-import { defu } from 'defu'
-import { parseURL } from 'ufo'
 import type {
   ModuleRuntimeConfig,
   SitemapSourceBase,
+  SitemapSourceInput,
   SitemapSourceResolved,
   SitemapUrlInput,
 } from '../../../types'
-import { logger } from '../../../utils-pure'
 import { parseSitemapXml } from '@nuxtjs/sitemap/utils'
+import { defu } from 'defu'
+import { getRequestHost } from 'h3'
+import { parseURL } from 'ufo'
+import { logger } from '../../../utils-pure'
+
+export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceBase | SitemapSourceResolved {
+  // string -> { fetch: string, context: { name: 'hook' } }
+  if (typeof source === 'string') {
+    return { context: { name: 'hook' }, fetch: source }
+  }
+  // [string, FetchOptions] -> { fetch: [string, FetchOptions], context: { name: 'hook' } }
+  if (Array.isArray(source)) {
+    return { context: { name: 'hook' }, fetch: source }
+  }
+  return source
+}
 
 async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
   const isExternalUrl = !url.startsWith('/')
@@ -68,7 +81,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       {
         Accept: isXmlRequest ? 'text/xml' : 'application/json',
       },
-      event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
+      (event && !isExternalUrl) ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
     )
 
     const fetchOptions = {
@@ -154,11 +167,14 @@ export async function globalSitemapSources() {
   if (import.meta.prerender) {
     const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
     const sources = await readSourcesFromFilesystem('global-sources.json')
-    if (sources)
-      return sources
+    if (sources) {
+      // Spread to create a copy since the cached module returns a mutable reference
+      return [...sources]
+    }
   }
   const m = await import('#sitemap-virtual/global-sources.mjs')
-  return m.sources
+  // Spread to create a copy since the cached module returns a mutable reference
+  return [...m.sources]
 }
 
 export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
@@ -168,29 +184,33 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   if (import.meta.prerender) {
     const { readSourcesFromFilesystem } = await import('#sitemap-virtual/read-sources.mjs')
     const allSources = await readSourcesFromFilesystem('child-sources.json')
-    if (allSources)
-      return allSources[definition.sitemapName] || []
+    if (allSources) {
+      // Spread to create a copy since the cached module returns a mutable reference
+      return [...(allSources[definition.sitemapName] || [])]
+    }
   }
 
   const m = await import('#sitemap-virtual/child-sources.mjs')
-  return m.sources[definition.sitemapName] || []
+  // Spread to create a copy since the cached module returns a mutable reference
+  return [...(m.sources[definition.sitemapName] || [])]
 }
 
-export async function resolveSitemapSources(sources: (SitemapSourceBase | SitemapSourceResolved)[], event?: H3Event) {
+export async function resolveSitemapSources(sources: SitemapSourceInput[], event?: H3Event) {
   return (await Promise.all(
     sources.map((source) => {
-      if (typeof source === 'object' && 'urls' in source) {
+      const normalized = normalizeSourceInput(source)
+      if ('urls' in normalized) {
         return <SitemapSourceResolved> {
           timeTakenMs: 0,
-          ...source,
-          urls: source.urls,
+          ...normalized,
+          urls: normalized.urls,
         }
       }
-      if (source.fetch)
-        return fetchDataSource(source, event)
+      if (normalized.fetch)
+        return fetchDataSource(normalized, event)
 
       return <SitemapSourceResolved> {
-        ...source,
+        ...normalized,
         error: 'Invalid source',
       }
     }),

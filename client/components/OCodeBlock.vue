@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BundledLanguage } from 'shiki'
 import { computed } from 'vue'
-import { renderCodeHighlight } from '../composables/shiki'
+import { useRenderCodeHighlight } from '../composables/shiki'
 
 const props = withDefaults(
   defineProps<{
@@ -15,21 +15,15 @@ const props = withDefaults(
   },
 )
 const rendered = computed(() => {
-  const code = renderCodeHighlight(props.code, 'json')
+  const code = useRenderCodeHighlight(props.code, 'json')
   return props.transformRendered ? props.transformRendered(code.value || '') : code.value
 })
 </script>
 
 <template>
   <pre
-    class="n-code-block"
-    :class="lines ? 'n-code-block-lines' : ''"
+    class="code-block p-5"
+    :class="lines ? 'code-block-lines' : ''"
     v-html="rendered"
   />
 </template>
-
-<style>
-.n-code-block-lines .shiki code .line::before {
-  display: none;
-}
-</style>
