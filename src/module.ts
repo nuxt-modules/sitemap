@@ -67,6 +67,10 @@ export interface ModuleHooks {
   }) => void | Promise<void>
 }
 
+declare module '@nuxt/schema' {
+  interface NuxtHooks extends ModuleHooks {}
+}
+
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/sitemap',
@@ -416,7 +420,7 @@ export default defineNuxtModule<ModuleOptions>({
         nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
         nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
       }
-      nuxt.hooks.hook('content:file:afterParse', (ctx: FileAfterParseHook) => {
+      nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
         const content = ctx.content as any as {
           body: { value: [string, Record<string, any>][] }
           sitemap?: Partial<SitemapUrl> | false
