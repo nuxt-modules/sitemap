@@ -127,6 +127,8 @@ export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
  * })
  */
 export function defineSitemapSchema<T = Record<string, unknown>>(options?: DefineSitemapSchemaOptions<T>) {
+  if (options && ('type' in options || 'source' in options))
+    throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
   if (options?.filter || options?.onUrl) {
     if (!options.name)
       throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
@@ -157,8 +159,9 @@ export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
-/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. */
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. See https://nuxtseo.com/sitemap/guides/content */
 export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
+  console.warn('[sitemap] `asSitemapCollection()` is deprecated. Use `defineSitemapSchema()` in your collection schema instead. See https://nuxtseo.com/sitemap/guides/content')
   if (collection.type === 'page') {
     // @ts-expect-error untyped
     collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
