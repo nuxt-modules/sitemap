@@ -19,7 +19,7 @@ function normaliseTip(tip: string) {
 </script>
 
 <template>
-  <OSectionBlock>
+  <DevtoolsSection>
     <template #text>
       <div class="flex items-center gap-3">
         <div
@@ -30,17 +30,19 @@ function normaliseTip(tip: string) {
             name="carbon:api-1"
             class="text-[var(--color-text-muted)]"
           />
-          <span
+          <DevtoolsMetric
             v-if="source.timeTakenMs"
-            class="timing-badge"
-          >
-            {{ source.timeTakenMs }}ms
-          </span>
+            :value="source.timeTakenMs"
+            label="ms"
+            variant="info"
+          />
         </div>
         <span class="font-semibold">{{ source.context.name }}</span>
-        <span class="url-count">
-          {{ source.urls?.length || 0 }} URLs
-        </span>
+        <DevtoolsMetric
+          :value="source.urls?.length || 0"
+          label="URLs"
+          variant="success"
+        />
       </div>
     </template>
     <template #description>
@@ -61,45 +63,41 @@ function normaliseTip(tip: string) {
         </span>
       </div>
     </template>
-    <div
+    <DevtoolsAlert
       v-if="source.error"
-      class="flex items-center gap-2 text-red-500"
+      variant="warning"
     >
-      <UIcon name="carbon:warning" />
-      <span>{{ source.error }}</span>
-    </div>
+      {{ source.error }}
+    </DevtoolsAlert>
     <template v-else>
-      <div
+      <DevtoolsAlert
         v-if="source._urlWarnings?.length"
-        class="url-warnings"
+        variant="warning"
       >
-        <div class="url-warnings-header">
-          <UIcon name="carbon:warning-alt" />
-          <span>{{ source._urlWarnings.length }} URL warning{{ source._urlWarnings.length > 1 ? 's' : '' }}</span>
+        <div>
+          <div class="text-xs font-semibold mb-1">
+            {{ source._urlWarnings.length }} URL warning{{ source._urlWarnings.length > 1 ? 's' : '' }}
+          </div>
+          <ul class="url-warnings-list">
+            <li
+              v-for="(w, i) in source._urlWarnings"
+              :key="i"
+            >
+              <code>{{ w.loc }}</code> — {{ w.message }}
+            </li>
+          </ul>
         </div>
-        <ul class="url-warnings-list">
-          <li
-            v-for="(w, i) in source._urlWarnings"
-            :key="i"
-          >
-            <code>{{ w.loc }}</code> — {{ w.message }}
-          </li>
-        </ul>
-      </div>
-      <OCodeBlock
-        class="max-h-[250px] overflow-y-auto"
+      </DevtoolsAlert>
+      <DevtoolsSnippet
         :code="JSON.stringify(source.urls, null, 2)"
         lang="json"
+        label="URLs"
       />
     </template>
-    <div
+    <DevtoolsAlert
       v-if="source.context.tips?.length"
-      class="hint-callout mt-3"
+      variant="info"
     >
-      <UIcon
-        name="carbon:idea"
-        class="hint-callout-icon text-base flex-shrink-0 mt-0.5"
-      />
       <div>
         <h3 class="text-xs font-semibold mb-1.5 text-[var(--color-text)] uppercase tracking-wide opacity-70">
           Hints
@@ -113,69 +111,11 @@ function normaliseTip(tip: string) {
           />
         </ul>
       </div>
-    </div>
-  </OSectionBlock>
+    </DevtoolsAlert>
+  </DevtoolsSection>
 </template>
 
 <style scoped>
-/* URL count pill */
-.url-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  padding: 0.125rem 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  border-radius: 9999px;
-  background: oklch(65% 0.2 145 / 0.12);
-  color: var(--seo-green);
-}
-
-/* Timing badge */
-.timing-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.375rem;
-  font-size: 0.625rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-subtle);
-  border: 1px solid var(--color-border-subtle);
-}
-
-/* URL validation warnings */
-.url-warnings {
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  background: oklch(85% 0.1 85 / 0.1);
-  border: 1px solid oklch(70% 0.12 85 / 0.2);
-  margin-bottom: 0.5rem;
-}
-
-:deep(.dark) .url-warnings {
-  background: oklch(30% 0.06 85 / 0.15);
-  border-color: oklch(50% 0.08 85 / 0.25);
-}
-
-.url-warnings-header {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: oklch(55% 0.15 85);
-  margin-bottom: 0.375rem;
-}
-
-:deep(.dark) .url-warnings-header {
-  color: oklch(75% 0.12 85);
-}
-
 .url-warnings-list {
   list-style: none;
   padding: 0;

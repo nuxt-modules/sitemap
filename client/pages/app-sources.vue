@@ -23,38 +23,11 @@ const appSources = computed(() => (data.value?.globalSources || []).filter(s => 
         :source="source"
       />
     </template>
-    <div
+    <DevtoolsEmptyState
       v-else
-      class="empty-state card"
-    >
-      <UIcon
-        name="carbon:bot"
-        class="empty-state-icon"
-      />
-      <p class="text-sm font-medium mb-1">
-        No app sources detected
-      </p>
-      <p class="text-xs opacity-70 max-w-xs">
-        App sources are automatically discovered from your Nuxt application routes and pages.
-      </p>
-    </div>
+      title="No app sources detected"
+      description="App sources are automatically discovered from your Nuxt application routes and pages."
+      icon="carbon:bot"
+    />
   </div>
 </template>
-
-<style scoped>
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-  text-align: center;
-  color: var(--color-text-muted);
-}
-
-.empty-state-icon {
-  font-size: 2.5rem;
-  opacity: 0.4;
-  margin-bottom: 1rem;
-}
-</style>

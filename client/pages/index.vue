@@ -44,7 +44,7 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
         The sitemaps generated from your site.
       </p>
     </div>
-    <OSectionBlock
+    <DevtoolsSection
       v-for="(sitemap, key) in data?.sitemaps"
       :key="key"
     >
@@ -74,22 +74,16 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
       </template>
       <div class="space-y-5">
         <template v-if="sitemap.sitemapName === 'index'">
-          <div class="hint-callout">
-            <UIcon
-              name="carbon:information"
-              class="hint-callout-icon text-lg flex-shrink-0 mt-0.5"
-            />
-            <div class="text-sm text-[var(--color-text-muted)]">
-              This is a special sitemap file that links to your other sitemaps.
-              <a
-                href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
-                target="_blank"
-                class="link-external"
-              >
-                Learn more about sitemap indexes
-              </a>
-            </div>
-          </div>
+          <DevtoolsAlert variant="info">
+            This is a special sitemap file that links to your other sitemaps.
+            <a
+              href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
+              target="_blank"
+              class="link-external"
+            >
+              Learn more about sitemap indexes
+            </a>
+          </DevtoolsAlert>
         </template>
         <template v-else>
           <template v-if="!isProductionMode">
@@ -165,17 +159,17 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
                 </div>
               </div>
               <div class="flex-grow">
-                <OCodeBlock
-                  class="max-h-[350px] min-h-full overflow-y-auto"
+                <DevtoolsSnippet
                   :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)"
                   lang="json"
+                  label="Sitemap Options"
                 />
               </div>
             </div>
           </template>
         </template>
       </div>
-    </OSectionBlock>
+    </DevtoolsSection>
   </div>
 </template>
 
