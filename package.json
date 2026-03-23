@@ -19,6 +19,9 @@
   "bugs": {
     "url": "https://github.com/nuxt-modules/sitemap/issues"
   },
+  "imports": {
+    "#nuxtseo-shared/*": "./node_modules/nuxtseo-shared/dist/runtime/*"
+  },
   "exports": {
     ".": {
       "types": "./dist/types.d.mts",
