@@ -3,7 +3,7 @@ import { createConsola } from 'consola'
 import { createDefu } from 'defu'
 import { parseURL, withLeadingSlash, withoutBase } from 'ufo'
 
-export { createFilter, type CreateFilterOptions } from '#nuxtseo-shared/pure'
+export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/runtime/pure'
 
 export const logger = createConsola({
   defaults: {
