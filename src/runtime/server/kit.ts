@@ -1,6 +1,6 @@
 import type { NitroRouteRules } from 'nitropack'
+import { createNitroRouteRuleMatcher as _createNitroRouteRuleMatcher, withoutQuery } from '#nuxtseo-shared/server/kit'
 import { useRuntimeConfig } from 'nitropack/runtime'
-import { createNitroRouteRuleMatcher as _createNitroRouteRuleMatcher, withoutQuery } from 'nuxtseo-shared/runtime/server/kit'
 import { parseURL } from 'ufo'
 
 export { withoutQuery }
