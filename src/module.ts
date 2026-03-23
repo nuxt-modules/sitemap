@@ -34,7 +34,7 @@ import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { setupDevToolsUI } from './devtools'
-import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
+import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { registerTypeTemplates } from './templates'
 import { normalizeFilters } from './utils-internal/filter'
@@ -43,7 +43,7 @@ import {
   normalizeLocales,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNuxtContentVersion } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
@@ -452,10 +452,10 @@ export default defineNuxtModule<ModuleOptions>({
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
-    const usingNuxtContent = hasNuxtModule('@nuxt/content')
-    const isNuxtContentV3 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^3')
+    const contentVersion = await resolveNuxtContentVersion()
+    const isNuxtContentV3 = contentVersion && contentVersion.version === 3
     const nuxtV3Collections = new Set<string>()
-    const isNuxtContentV2 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^2')
+    const isNuxtContentV2 = contentVersion && contentVersion.version === 2
     if (isNuxtContentV3) {
       // check if content was loaded first
       if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {

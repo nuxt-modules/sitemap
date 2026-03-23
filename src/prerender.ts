@@ -12,7 +12,7 @@ import { withSiteUrl } from 'nuxt-site-config/kit'
 import { dirname } from 'pathe'
 import { withBase } from 'ufo'
 import { splitForLocales } from './runtime/utils-pure'
-import { resolveNitroPreset } from './utils-internal/kit'
+import { isNuxtGenerate, resolveNitroPreset } from './utils-internal/kit'
 import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
@@ -29,13 +29,6 @@ function formatPrerenderRoute(route: PrerenderRoute) {
 
 export function includesSitemapRoot(sitemapName: string, routes: string[]) {
   return routes.includes(`/__sitemap__/`) || routes.includes(`/sitemap.xml`) || routes.includes(`/${sitemapName}`) || routes.includes('/sitemap_index.xml')
-}
-
-export function isNuxtGenerate(nuxt: Nuxt = useNuxt()) {
-  return nuxt.options.nitro.static || (nuxt.options as any)._generate /* TODO: remove in future */ || [
-    'static',
-    'github-pages',
-  ].includes(resolveNitroPreset())
 }
 
 const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/ // eslint-disable-line regexp/no-unused-capturing-group
