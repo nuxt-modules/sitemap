@@ -20,7 +20,8 @@
     "url": "https://github.com/nuxt-modules/sitemap/issues"
   },
   "imports": {
-    "#nuxtseo-shared/*": "./node_modules/nuxtseo-shared/dist/runtime/*"
+    "#nuxtseo-shared/pure": "./node_modules/nuxtseo-shared/dist/runtime/pure.js",
+    "#nuxtseo-shared/server/kit": "./node_modules/nuxtseo-shared/dist/runtime/server/kit.js"
   },
   "exports": {
     ".": {
