@@ -84,6 +84,9 @@ catalogs:
     nuxt-site-config:
       specifier: ^3.2.21
       version: 3.2.21
+    nuxtseo-shared:
+      specifier: ^0.1.6
+      version: 0.1.6
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
@@ -132,7 +135,6 @@ catalogs:
 
 overrides:
   '@vitejs/plugin-vue': ^6.0.5
-  nuxtseo-shared: link:../nuxt-seo/packages/shared
   vite: ^8.0.1
 
 patchedDependencies:
@@ -163,8 +165,8 @@ importers:
         specifier: 'catalog:'
         version: 3.2.21(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
       nuxtseo-shared:
-        specifier: link:../nuxt-seo/packages/shared
-        version: link:../nuxt-seo/packages/shared
+        specifier: 'catalog:'
+        version: 0.1.6(@nuxt/schema@4.4.2)(magicast@0.5.2)(nuxt-site-config@3.2.21(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3)))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.3)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.10)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.10)(rollup@4.59.1))(rollup@4.59.1)(terser@5.46.0)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.3))(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(zod@4.3.6)
       ofetch:
         specifier: 'catalog:'
         version: 1.5.1
@@ -281,8 +283,8 @@ importers:
         specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.3)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.10)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.10)(rollup@4.59.1))(rollup@4.59.1)(terser@5.46.0)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.3)
       nuxtseo-shared:
-        specifier: link:../../nuxt-seo/packages/shared
-        version: link:../../nuxt-seo/packages/shared
+        specifier: 'catalog:'
+        version: 0.1.6(@nuxt/schema@4.4.2)(magicast@0.5.2)(nuxt-site-config@3.2.21(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3)))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.3)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.10)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.10)(rollup@4.59.1))(rollup@4.59.1)(terser@5.46.0)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.3))(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(zod@4.3.6)
       vue:
         specifier: 'catalog:'
         version: 3.5.30(typescript@5.9.3)
@@ -5551,6 +5553,20 @@ packages:
       '@parcel/watcher':
         optional: true
       '@types/node':
+        optional: true
+
+  nuxtseo-shared@0.1.6:
+    resolution: {integrity: sha512-DyBYbFb1HAFMMYk3kuR5+G7C4VB/2fDn0v2yNqi9IE5iTYlqo07jOWhA9xWAc/96FP3A989jaE4a9pEYIcEe4g==}
+    peerDependencies:
+      '@nuxt/schema': ^3.16.0 || ^4.0.0
+      nuxt: ^3.16.0 || ^4.0.0
+      nuxt-site-config: ^3.2.0
+      vue: ^3.5.0
+      zod: ^3.23.0 || ^4.0.0
+    peerDependenciesMeta:
+      nuxt-site-config:
+        optional: true
+      zod:
         optional: true
 
   nypm@0.6.5:
@@ -13309,6 +13325,29 @@ snapshots:
       - vue-tsc
       - xml2js
       - yaml
+
+  nuxtseo-shared@0.1.6(@nuxt/schema@4.4.2)(magicast@0.5.2)(nuxt-site-config@3.2.21(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3)))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.3)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.10)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.10)(rollup@4.59.1))(rollup@4.59.1)(terser@5.46.0)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.3))(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(zod@4.3.6):
+    dependencies:
+      '@clack/prompts': 1.1.0
+      '@nuxt/devtools-kit': 3.2.4(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))
+      '@nuxt/kit': 4.4.2(magicast@0.5.2)
+      '@nuxt/schema': 4.4.2
+      consola: 3.4.2
+      defu: 6.1.4
+      nuxt: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.3)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.10)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.10)(rollup@4.59.1))(rollup@4.59.1)(terser@5.46.0)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.3)
+      ofetch: 1.5.1
+      pathe: 2.0.3
+      radix3: 1.1.2
+      sirv: 3.0.2
+      std-env: 4.0.0
+      ufo: 1.6.3
+      vue: 3.5.30(typescript@5.9.3)
+    optionalDependencies:
+      nuxt-site-config: 3.2.21(magicast@0.5.2)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - magicast
+      - vite
 
   nypm@0.6.5:
     dependencies:

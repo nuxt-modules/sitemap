@@ -11,8 +11,6 @@ packages:
   - playground
 overrides:
   '@vitejs/plugin-vue': ^6.0.5
-  nuxtseo-shared: link:../nuxt-seo/packages/shared
-
   vite: ^8.0.1
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
