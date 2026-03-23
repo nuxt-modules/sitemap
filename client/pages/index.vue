@@ -5,18 +5,25 @@ import OSectionBlock from 'nuxtseo-shared/runtime/app/components/OSectionBlock'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
 import Source from '../components/Source.vue'
-import { data } from '../composables/state'
+import { data, isProductionMode, productionUrl } from '../composables/state'
 
 const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
+
+function resolveSitemapOrigin() {
+  if (isProductionMode.value && productionUrl.value)
+    return `${productionUrl.value.replace(/\/$/, '')}/`
+  return data.value?.nitroOrigin || ''
+}
 
 function resolveSitemapUrl(sitemapName: string) {
   if (!data.value)
     return ''
+  const origin = resolveSitemapOrigin()
   if (sitemapName === 'sitemap' || sitemapName === 'sitemap.xml')
-    return `${data.value.nitroOrigin}sitemap.xml`
+    return `${origin}sitemap.xml`
   if (sitemapName === 'index')
-    return `${data.value.nitroOrigin}sitemap_index.xml`
-  return joinURL(data.value.nitroOrigin, data.value.runtimeConfig?.sitemapsPathPrefix || '', `${sitemapName}-sitemap.xml`)
+    return `${origin}sitemap_index.xml`
+  return joinURL(origin, data.value.runtimeConfig?.sitemapsPathPrefix || '', `${sitemapName}-sitemap.xml`)
 }
 
 function resolveSitemapOptions(definition: SitemapDefinition) {
@@ -87,85 +94,87 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
           </div>
         </template>
         <template v-else>
-          <div
-            v-if="sitemap.sources && sitemap.sources.length"
-            class="flex gap-5"
-          >
-            <div class="w-40 flex-shrink-0">
-              <div class="font-semibold text-sm mb-1">
-                Sources
+          <template v-if="!isProductionMode">
+            <div
+              v-if="sitemap.sources && sitemap.sources.length"
+              class="flex gap-5"
+            >
+              <div class="w-40 flex-shrink-0">
+                <div class="font-semibold text-sm mb-1">
+                  Sources
+                </div>
+                <div class="text-xs text-[var(--color-text-muted)]">
+                  Local sources associated with just this sitemap.
+                </div>
               </div>
-              <div class="text-xs text-[var(--color-text-muted)]">
-                Local sources associated with just this sitemap.
-              </div>
-            </div>
-            <div class="flex-grow space-y-2">
-              <Source
-                v-for="(source, k) in sitemap.sources"
-                :key="k"
-                :source="source"
-              />
-            </div>
-          </div>
-          <div class="flex gap-5">
-            <div class="w-40 flex-shrink-0">
-              <div class="font-semibold text-sm mb-1">
-                App Sources
-              </div>
-              <div class="text-xs text-[var(--color-text-muted)]">
-                Configured with the <code class="px-1 py-0.5 rounded bg-[var(--color-surface-sunken)]">includeAppSources</code> option.
-              </div>
-            </div>
-            <div class="flex-grow flex flex-col justify-center">
-              <div
-                v-if="sitemap.includeAppSources && appSourcesExcluded !== true"
-                class="status-enabled"
-              >
-                <UIcon
-                  name="carbon:checkmark"
-                  class="text-sm"
+              <div class="flex-grow space-y-2">
+                <Source
+                  v-for="(source, k) in sitemap.sources"
+                  :key="k"
+                  :source="source"
                 />
-                <span>Enabled</span>
               </div>
-              <div
-                v-else
-                class="status-disabled"
-              >
-                <UIcon
-                  name="carbon:close"
-                  class="text-sm"
-                />
-                <span>Disabled</span>
+            </div>
+            <div class="flex gap-5">
+              <div class="w-40 flex-shrink-0">
+                <div class="font-semibold text-sm mb-1">
+                  App Sources
+                </div>
+                <div class="text-xs text-[var(--color-text-muted)]">
+                  Configured with the <code class="px-1 py-0.5 rounded bg-[var(--color-surface-sunken)]">includeAppSources</code> option.
+                </div>
               </div>
-              <div class="text-xs text-[var(--color-text-subtle)] mt-2">
-                Switch to
-                <NuxtLink
-                  to="/app-sources"
-                  class="text-[var(--seo-green)] hover:underline"
+              <div class="flex-grow flex flex-col justify-center">
+                <div
+                  v-if="sitemap.includeAppSources && appSourcesExcluded !== true"
+                  class="status-enabled"
                 >
-                  App sources
-                </NuxtLink>
-                to learn more.
+                  <UIcon
+                    name="carbon:checkmark"
+                    class="text-sm"
+                  />
+                  <span>Enabled</span>
+                </div>
+                <div
+                  v-else
+                  class="status-disabled"
+                >
+                  <UIcon
+                    name="carbon:close"
+                    class="text-sm"
+                  />
+                  <span>Disabled</span>
+                </div>
+                <div class="text-xs text-[var(--color-text-subtle)] mt-2">
+                  Switch to
+                  <NuxtLink
+                    to="/app-sources"
+                    class="text-[var(--seo-green)] hover:underline"
+                  >
+                    App sources
+                  </NuxtLink>
+                  to learn more.
+                </div>
               </div>
             </div>
-          </div>
-          <div class="flex gap-5">
-            <div class="w-40 flex-shrink-0">
-              <div class="font-semibold text-sm mb-1">
-                Sitemap Options
+            <div class="flex gap-5">
+              <div class="w-40 flex-shrink-0">
+                <div class="font-semibold text-sm mb-1">
+                  Sitemap Options
+                </div>
+                <div class="text-xs text-[var(--color-text-muted)]">
+                  Extra options used to filter the URLs on the final sitemap and set defaults.
+                </div>
               </div>
-              <div class="text-xs text-[var(--color-text-muted)]">
-                Extra options used to filter the URLs on the final sitemap and set defaults.
+              <div class="flex-grow">
+                <OCodeBlock
+                  class="max-h-[350px] min-h-full overflow-y-auto"
+                  :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)"
+                  lang="json"
+                />
               </div>
             </div>
-            <div class="flex-grow">
-              <OCodeBlock
-                class="max-h-[350px] min-h-full overflow-y-auto"
-                :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)"
-                lang="json"
-              />
-            </div>
-          </div>
+          </template>
         </template>
       </div>
     </OSectionBlock>

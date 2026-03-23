@@ -57,12 +57,5 @@ const siteConfig = useSiteConfig({
         <NuxtPage />
       </UContainer>
     </main>
-    <footer class="text-sm text-gray-700 flex justify-center items-center py-5">
-      Made by <UAvatar
-        src="https://avatars.githubusercontent.com/u/5326365?v=4"
-        size="xs"
-        class="w-5 h-5 mx-1"
-      /> Harlan Wilton
-    </footer>
   </div>
 </template>
