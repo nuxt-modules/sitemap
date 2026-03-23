@@ -29,7 +29,7 @@ export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
-const { defineSchema, asCollection, schema, fieldSchema } = createContentSchemaFactory({
+const { defineSchema, asCollection, schema } = createContentSchemaFactory({
   fieldName: 'sitemap',
   label: 'sitemap',
   docsUrl: 'https://nuxtseo.com/sitemap/guides/content',

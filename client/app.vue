@@ -46,7 +46,7 @@ const runtimeVersion = computed(() => data.value?.runtimeConfig?.version || 'unk
 // Redirect to home when switching to production mode from a dev-only tab
 watch(isProductionMode, (isProd) => {
   if (isProd && ['user-sources', 'app-sources', 'debug'].includes(currentTab.value))
-    navigateTo('/')
+    return navigateTo('/')
 })
 </script>
 

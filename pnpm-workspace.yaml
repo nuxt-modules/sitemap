@@ -21,7 +21,6 @@ catalog:
   '@iconify-json/simple-icons': ^1.2.74
   '@nuxt/content': ^3.12.0
   '@nuxt/devtools-kit': 4.0.0-alpha.1
-  '@nuxt/fonts': ^0.14.0
   '@nuxt/kit': ^4.4.2
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.0
@@ -49,7 +48,6 @@ catalog:
   pkg-types: ^2.3.0
   radix3: ^1.1.2
   semver: ^7.7.4
-  shiki: ^4.0.2
   sirv: ^3.0.2
   std-env: ^4.0.0
   typescript: ^5.9.3
