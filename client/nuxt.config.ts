@@ -1,37 +1,9 @@
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'pathe'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const sharedPkg = resolve(__dirname, '../node_modules/nuxtseo-shared')
+import { resolve } from 'pathe'
 
 export default defineNuxtConfig({
-  ssr: false,
-
-  modules: [
-    '@nuxt/fonts',
-    '@nuxt/ui',
-  ],
+  extends: ['nuxtseo-shared/layer-devtools'],
 
   sitemap: false,
-
-  css: ['~/assets/css/global.css'],
-
-  components: [
-    '~/components',
-    { path: resolve(sharedPkg, 'dist/runtime/app/components'), pathPrefix: false },
-  ],
-
-  // @ts-expect-error @nuxt/fonts module config
-  fonts: {
-    families: [
-      { name: 'Hubot Sans' },
-    ],
-  },
-
-  devtools: {
-    enabled: false,
-  },
 
   nitro: {
     prerender: {
@@ -51,6 +23,4 @@ export default defineNuxtConfig({
   app: {
     baseURL: '/__sitemap__/devtools',
   },
-
-  compatibilityDate: '2025-03-13',
 })
