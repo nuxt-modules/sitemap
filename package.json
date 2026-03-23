@@ -52,7 +52,7 @@
     "lint:fix": "eslint . --fix",
     "client:build": "nuxi generate client",
     "prepack": "pnpm run build",
-    "client:dev": "nuxi dev client --port 3300",
+    "client:dev": "nuxi dev client --port 3030",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "dev": "nuxi dev playground",
     "prepare:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/i18n && nuxi prepare test/fixtures/i18n-micro",
