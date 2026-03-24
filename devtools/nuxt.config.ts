@@ -5,6 +5,10 @@ export default defineNuxtConfig({
 
   sitemap: false,
 
+  imports: {
+    autoImport: true,
+  },
+
   nitro: {
     prerender: {
       routes: ['/', '/user-sources', '/app-sources', '/debug', '/docs'],
