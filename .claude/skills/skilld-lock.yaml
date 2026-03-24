@@ -13,3 +13,10 @@ skills:
     source: 'https://github.com/vitest-dev/vitest/tree/v4.1.0/docs'
     syncedAt: 2026-03-22
     generator: skilld
+  nuxt-site-config-skilld:
+    packageName: nuxt-site-config
+    version: 3.2.21
+    repo: harlan-zw/nuxt-site-config
+    source: 'https://github.com/harlan-zw/nuxt-site-config/tree/v3.2.21/docs'
+    syncedAt: 2026-03-24
+    generator: skilld
