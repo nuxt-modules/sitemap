@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { SitemapDefinition } from '../../src/runtime/types'
+import type { SitemapDefinition, SitemapSourceResolved } from '../../src/runtime/types'
+import { isProductionMode, productionUrl } from 'nuxtseo-layer-devtools/composables/state'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
 import Source from '../components/Source.vue'
@@ -152,7 +153,7 @@ const totalProductionWarnings = computed(() =>
                 </div>
                 <div class="flex-grow space-y-2">
                   <Source
-                    v-for="(source, k) in sitemap.sources"
+                    v-for="(source, k) in (sitemap.sources as SitemapSourceResolved[])"
                     :key="k"
                     :source="source"
                   />
@@ -335,7 +336,7 @@ const totalProductionWarnings = computed(() =>
               </div>
               <div class="flex-grow space-y-2">
                 <Source
-                  v-for="(source, k) in sitemap.sources"
+                  v-for="(source, k) in (sitemap.sources as SitemapSourceResolved[])"
                   :key="k"
                   :source="source"
                 />

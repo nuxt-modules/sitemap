@@ -1,5 +1,7 @@
 import type { ProductionDebugResponse } from '../../src/runtime/server/routes/__sitemap__/debug-production'
 import type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from '../../src/runtime/types'
+import { appFetch } from 'nuxtseo-layer-devtools/composables/rpc'
+import { isProductionMode, productionUrl } from 'nuxtseo-layer-devtools/composables/state'
 import { ref, watch } from 'vue'
 
 export const data = ref<{
@@ -18,7 +20,7 @@ export const productionLoading = ref(false)
 
 export async function refreshSources() {
   if (appFetch.value)
-    data.value = await appFetch.value('/__sitemap__/debug.json')
+    data.value = await appFetch.value('/__sitemap__/debug.json') as typeof data.value
 }
 
 export async function refreshProductionData() {
@@ -30,7 +32,7 @@ export async function refreshProductionData() {
   // Try fetching the full debug endpoint from production first (proxied through local server)
   const remoteDebug = await appFetch.value('/__sitemap__/debug-production.json', {
     query: { url: productionUrl.value, mode: 'debug' },
-  }).catch(() => null)
+  }).catch(() => null) as (typeof data.value & { error?: string }) | null
   if (remoteDebug && !remoteDebug.error && remoteDebug.sitemaps && !Array.isArray(remoteDebug.sitemaps)) {
     // Response has object sitemaps (debug.json format) rather than array (XML fallback format)
     productionRemoteDebugData.value = remoteDebug
@@ -44,7 +46,7 @@ export async function refreshProductionData() {
   }).catch((err: Error) => {
     console.error('Failed to fetch production sitemap data:', err)
     return null
-  })
+  }) as ProductionDebugResponse | null
   productionLoading.value = false
 }
 
