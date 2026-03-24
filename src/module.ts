@@ -1014,7 +1014,8 @@ export async function readSourcesFromFilesystem() {
       }
 
       // Skip virtual templates when prerendering - sources are written to filesystem instead
-      if (prerenderSitemap) {
+      // In dev mode, always generate sources even if prerenderSitemap is true (e.g. zeroRuntime)
+      if (prerenderSitemap && !nuxt.options.dev) {
         nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
         nitroConfig.virtual[`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
       }

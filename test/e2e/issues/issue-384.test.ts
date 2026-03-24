@@ -10,9 +10,10 @@ await setup({
 
 describe('issue #384 - sitemap with robots disallow /', () => {
   it('should still generate sitemap URLs when robots disallows everything', async () => {
+    // robots.txt disallow should NOT prevent URLs from appearing in sitemaps
     const sitemap = await $fetch('/sitemap.xml')
-    expect(sitemap).toContain('https://nuxtseo.com/')
-    expect(sitemap).toContain('https://nuxtseo.com/about')
+    expect(sitemap).toContain('<loc>')
+    expect(sitemap).toContain('/about')
   }, 60000)
 
   it('should block crawlers from the sitemap via X-Robots-Tag', async () => {

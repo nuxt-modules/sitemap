@@ -22,7 +22,7 @@ export default defineContentConfig({
       type: 'page',
       source: {
         include: 'ja/**',
-        prefix: '/',
+        prefix: '/ja',
         cwd: resolve(dirName, 'content'),
       },
       schema: z.object({

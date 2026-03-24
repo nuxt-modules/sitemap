@@ -58,9 +58,11 @@ describe('zeroRuntime', () => {
 
     it('serves sitemap in dev mode', async () => {
       // zeroRuntime handlers still work in dev (import.meta.dev === true)
+      // In dev mode, URLs use the local origin rather than the configured site URL
       const sitemap = await $fetch('/sitemap.xml')
       expect(sitemap).toContain('<urlset')
-      expect(sitemap).toContain('https://nuxtseo.com')
+      expect(sitemap).toContain('<loc>')
+      expect(sitemap).toContain('/about')
     }, 60000)
   })
 })
