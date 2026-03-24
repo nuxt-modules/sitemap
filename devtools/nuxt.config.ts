@@ -20,11 +20,11 @@ export default defineNuxtConfig({
       ],
     },
     output: {
-      publicDir: resolve(__dirname, '../dist/client'),
+      publicDir: resolve(__dirname, '../dist/devtools'),
     },
   },
 
   app: {
-    baseURL: '/__sitemap__/devtools',
+    baseURL: '/__nuxt-sitemap',
   },
 })

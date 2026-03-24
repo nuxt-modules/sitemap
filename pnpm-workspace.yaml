@@ -42,7 +42,7 @@ catalog:
   nuxt-i18n-micro: ^3.13.4
   nuxt-site-config: ^4.0.0
   nuxtseo-layer-devtools: ^0.2.3
-  nuxtseo-shared: ^0.5.3
+  nuxtseo-shared: ^0.6.0
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.0
