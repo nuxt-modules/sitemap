@@ -1,5 +1,4 @@
-import { readFile } from 'node:fs/promises'
-import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
+import { createResolver } from '@nuxt/kit'
 import { $fetch, setup } from '@nuxt/test-utils'
 import { describe, expect, it } from 'vitest'
 
