@@ -1,7 +1,6 @@
-import type { SitemapWarning } from '../../../../utils/parseSitemapXml'
+import type { SitemapWarning } from '@nuxtjs/sitemap/utils'
+import { isSitemapIndex, parseSitemapIndex, parseSitemapXml } from '@nuxtjs/sitemap/utils'
 import { defineEventHandler, getQuery } from 'h3'
-import { isSitemapIndex, parseSitemapIndex } from '../../../../utils/parseSitemapIndex'
-import { parseSitemapXml } from '../../../../utils/parseSitemapXml'
 
 export interface ProductionSitemapEntry {
   loc: string
