@@ -2,9 +2,8 @@
   "extends": "./.nuxt/tsconfig.json",
   "exclude": [
     "dist",
-    "src/runtime/server/routes",
     "test/**",
-    "client",
-    "playground"
+    "playground",
+    "src/runtime/server/routes/__sitemap__/nuxt-content-urls-v3.ts"
   ]
 }
