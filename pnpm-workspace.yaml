@@ -6,19 +6,19 @@ trustPolicyExclude:
   - chokidar
   - semver
 packages:
-  - client
+  - devtools
   - test/fixtures/**
   - playground
 overrides:
   '@vitejs/plugin-vue': ^6.0.5
-  vite: ^8.0.1
+  vite: ^8.0.2
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
   '@antfu/eslint-config': ^7.7.3
   '@arethetypeswrong/cli': ^0.18.2
   '@iconify-json/carbon': ^1.2.19
-  '@iconify-json/simple-icons': ^1.2.74
+  '@iconify-json/simple-icons': ^1.2.75
   '@nuxt/content': ^3.12.0
   '@nuxt/devtools-kit': 4.0.0-alpha.3
   '@nuxt/kit': ^4.4.2
@@ -34,14 +34,14 @@ catalog:
   consola: ^3.4.2
   defu: ^6.1.4
   eslint: ^10.1.0
-  eslint-plugin-harlanzw: ^0.10.4
+  eslint-plugin-harlanzw: ^0.11.0
   execa: ^9.6.1
   fast-xml-parser: ^5.5.9
   happy-dom: ^20.8.7
   nuxt: ^4.4.2
   nuxt-i18n-micro: ^3.13.4
   nuxt-site-config: ^4.0.0
-  nuxtseo-layer-devtools: ^0.2.3
+  nuxtseo-layer-devtools: ^0.2.6
   nuxtseo-shared: ^0.6.0
   ofetch: ^1.5.1
   pathe: ^2.0.3
