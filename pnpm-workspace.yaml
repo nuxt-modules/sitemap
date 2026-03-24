@@ -1,19 +1,7 @@
-shellEmulator: true
-
-trustPolicy: no-downgrade
-
-trustPolicyExclude:
-  - chokidar
-  - semver
 packages:
   - devtools
   - test/fixtures/**
   - playground
-overrides:
-  '@vitejs/plugin-vue': ^6.0.5
-  vite: ^8.0.2
-patchedDependencies:
-  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
   '@antfu/eslint-config': ^7.7.3
   '@arethetypeswrong/cli': ^0.18.2
@@ -41,8 +29,8 @@ catalog:
   nuxt: ^4.4.2
   nuxt-i18n-micro: ^3.13.4
   nuxt-site-config: ^4.0.0
-  nuxtseo-layer-devtools: ^0.2.6
-  nuxtseo-shared: ^0.6.0
+  nuxtseo-layer-devtools: ^0.2.7
+  nuxtseo-shared: ^0.6.1
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.0
@@ -62,4 +50,16 @@ catalog:
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
+overrides:
+  '@vitejs/plugin-vue': ^6.0.5
+  vite: ^8.0.2
+patchedDependencies:
+  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - chokidar
+  - semver
 trustPolicyIgnoreAfter: 262800
