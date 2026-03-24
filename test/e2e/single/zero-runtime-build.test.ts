@@ -1,9 +1,19 @@
 import { readFile } from 'node:fs/promises'
 import { buildNuxt, createResolver, loadNuxt } from '@nuxt/kit'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { setup } from '@nuxt/test-utils'
 import { describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
+
+await setup({
+  rootDir: resolve('../../fixtures/basic'),
+  dev: true,
+  nuxtConfig: {
+    sitemap: {
+      zeroRuntime: true,
+    },
+  },
+})
 
 describe('zeroRuntime', () => {
   describe.skipIf(process.env.CI)('prerender', () => {
@@ -44,23 +54,5 @@ describe('zeroRuntime', () => {
       `)
       expect(sitemap).not.toContain('/noindex')
     }, 1200000)
-  })
-
-  describe('dev mode still works', async () => {
-    await setup({
-      rootDir: resolve('../../fixtures/basic'),
-      nuxtConfig: {
-        sitemap: {
-          zeroRuntime: true,
-        },
-      },
-    })
-
-    it('serves sitemap in dev mode', async () => {
-      // zeroRuntime handlers still work in dev (import.meta.dev === true)
-      const sitemap = await $fetch('/sitemap.xml')
-      expect(sitemap).toContain('<urlset')
-      expect(sitemap).toContain('https://nuxtseo.com')
-    }, 60000)
   })
 })

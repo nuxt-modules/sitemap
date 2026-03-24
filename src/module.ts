@@ -34,7 +34,7 @@ import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { setupDevToolsUI } from './devtools'
-import { includesSitemapRoot, isNuxtGenerate, setupPrerenderHandler } from './prerender'
+import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { registerTypeTemplates } from './templates'
 import { normalizeFilters } from './utils-internal/filter'
@@ -43,7 +43,7 @@ import {
   normalizeLocales,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions } from './utils-internal/kit'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNuxtContentVersion } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
@@ -89,7 +89,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     'nuxt-site-config': {
-      version: '>=3',
+      version: '>=3.2',
     },
     '@nuxt/content': {
       version: '>=2',
@@ -386,9 +386,7 @@ export default defineNuxtModule<ModuleOptions>({
     // zeroRuntime forces prerendering
     if (config.zeroRuntime && !prerenderSitemap) {
       prerenderSitemap = true
-      nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
-      nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
-      nuxt.options.nitro.prerender.routes.push('/sitemap.xml')
+      addPrerenderRoutes('/sitemap.xml')
       logger.info('`zeroRuntime` enabled - sitemap routes will be prerendered.')
     }
     // base path for route handlers
@@ -452,10 +450,10 @@ export default defineNuxtModule<ModuleOptions>({
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
-    const usingNuxtContent = hasNuxtModule('@nuxt/content')
-    const isNuxtContentV3 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^3')
+    const contentVersion = await resolveNuxtContentVersion()
+    const isNuxtContentV3 = contentVersion && contentVersion.version === 3
     const nuxtV3Collections = new Set<string>()
-    const isNuxtContentV2 = usingNuxtContent && await hasNuxtModuleCompatibility('@nuxt/content', '^2')
+    const isNuxtContentV2 = contentVersion && contentVersion.version === 2
     if (isNuxtContentV3) {
       // check if content was loaded first
       if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {
@@ -551,7 +549,9 @@ export default defineNuxtModule<ModuleOptions>({
         context: {
           name: '@nuxt/content@v3:urls',
           description: 'Generated from your markdown files.',
-          tips: [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`],
+          tips: nuxtV3Collections.size
+            ? [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`]
+            : ['No collections found. Make sure your content collections have a `path` field.'],
         },
         fetch: '/__sitemap__/nuxt-content-urls.json',
       })
@@ -815,6 +815,12 @@ export default defineNuxtModule<ModuleOptions>({
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
       })
+      if (nuxt.options.dev) {
+        addServerHandler({
+          route: '/__sitemap__/debug-production.json',
+          handler: resolve('./runtime/server/routes/__sitemap__/debug-production'),
+        })
+      }
 
       // Register handlers for all sitemaps in dev/debug mode
       if (usingMultiSitemaps) {
@@ -874,8 +880,8 @@ export default defineNuxtModule<ModuleOptions>({
         routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
         normalisedLocales,
         filter: {
-          include: normalizeFilters(config.include),
-          exclude: normalizeFilters(config.exclude),
+          include: normalizeFilters(config.include) as (string | RegExp)[],
+          exclude: normalizeFilters(config.exclude) as (string | RegExp)[],
         },
         isI18nMicro: i18nModule === 'nuxt-i18n-micro',
       })
@@ -1008,7 +1014,8 @@ export async function readSourcesFromFilesystem() {
       }
 
       // Skip virtual templates when prerendering - sources are written to filesystem instead
-      if (prerenderSitemap) {
+      // In dev mode, always generate sources even if prerenderSitemap is true (e.g. zeroRuntime)
+      if (prerenderSitemap && !nuxt.options.dev) {
         nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
         nitroConfig.virtual[`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
       }

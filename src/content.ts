@@ -1,5 +1,6 @@
 import type { Collection, PageCollectionItemBase } from '@nuxt/content'
 import type { TypeOf } from 'zod'
+import { createContentSchemaFactory } from 'nuxtseo-shared/content'
 import { z } from 'zod'
 
 declare global {
@@ -16,6 +17,53 @@ if (!globalThis.__sitemapCollectionOnUrlFns)
 
 const collectionFilters = globalThis.__sitemapCollectionFilters
 const collectionOnUrlFns = globalThis.__sitemapCollectionOnUrlFns
+
+export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
+  z?: typeof z
+  name?: string
+  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
+  onUrl?: (
+    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
+    entry: PageCollectionItemBase & SitemapSchema & TEntry,
+    collection: string,
+  ) => void
+}
+
+const { defineSchema, asCollection, schema } = createContentSchemaFactory({
+  fieldName: 'sitemap',
+  label: 'sitemap',
+  docsUrl: 'https://nuxtseo.com/sitemap/guides/content',
+  buildSchema: () => buildSitemapObjectSchema(z),
+  onDefineSchema: (options: DefineSitemapSchemaOptions) => {
+    if ('type' in options || 'source' in options)
+      throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
+    if (options?.filter || options?.onUrl) {
+      if (!options.name)
+        throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
+      if (options.filter)
+        collectionFilters.set(options.name, options.filter)
+      if (options.onUrl)
+        collectionOnUrlFns.set(options.name, options.onUrl)
+    }
+  },
+}, z)
+
+export { defineSchema as defineSitemapSchema, schema }
+
+export type SitemapSchema = TypeOf<typeof schema>
+
+/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. See https://nuxtseo.com/sitemap/guides/content */
+export function asSitemapCollection<T>(collection: Collection<T>, options?: DefineSitemapSchemaOptions<T>): Collection<T> {
+  if (options?.filter || options?.onUrl) {
+    if (!options.name)
+      throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in asSitemapCollection()')
+    if (options.filter)
+      collectionFilters.set(options.name, options.filter)
+    if (options.onUrl)
+      collectionOnUrlFns.set(options.name, options.onUrl)
+  }
+  return asCollection(collection)
+}
 
 function buildSitemapObjectSchema(_z: typeof z) {
   return _z.object({
@@ -51,130 +99,4 @@ function buildSitemapObjectSchema(_z: typeof z) {
       uploader: _z.string().optional(),
     })).optional(),
   }).optional()
-}
-
-const sitemapObjectSchema = buildSitemapObjectSchema(z)
-
-function withEditorHidden<T extends z.ZodTypeAny>(s: T): T {
-  // .editor() is patched onto ZodType by @nuxt/content at runtime
-  if (typeof (s as any).editor === 'function')
-    return (s as any).editor({ hidden: true })
-  return s
-}
-
-export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
-  /**
-   * Pass the `z` instance from `@nuxt/content` to ensure `.editor({ hidden: true })` works
-   * across Zod versions. When omitted, the bundled `z` is used (`.editor()` applied if available).
-   * @example
-   * import { z } from '@nuxt/content' // or 'zod'
-   * defineSitemapSchema({ z })
-   */
-  z?: typeof z
-  /**
-   * Collection name. Must match the key in your collections object.
-   * Required when using `filter` or `onUrl`.
-   */
-  name?: string
-  /**
-   * Runtime filter function to exclude entries from sitemap.
-   * Receives the full content entry including all schema fields.
-   * Requires `name` parameter to be set.
-   * @example
-   * defineSitemapSchema({ name: 'blog', filter: (entry) => !entry.draft })
-   */
-  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
-  /**
-   * Transform the sitemap URL entry for each item in this collection.
-   * Mutate `url` directly to change `loc`, `lastmod`, `priority`, etc.
-   * Requires `name` parameter to be set.
-   * @example
-   * defineSitemapSchema({ name: 'content_zh', onUrl: (url) => { url.loc = `/zh${url.loc}` } })
-   */
-  onUrl?: (
-    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
-    entry: PageCollectionItemBase & SitemapSchema & TEntry,
-    collection: string,
-  ) => void
-}
-
-/**
- * Define the sitemap schema field for a Nuxt Content collection.
- *
- * @example
- * // Basic usage
- * defineCollection({
- *   type: 'page',
- *   source: '**',
- *   schema: z.object({
- *     sitemap: defineSitemapSchema()
- *   })
- * })
- *
- * @example
- * // With filter and onUrl
- * defineCollection({
- *   type: 'page',
- *   source: 'blog/**',
- *   schema: z.object({
- *     draft: z.boolean().optional(),
- *     sitemap: defineSitemapSchema({
- *       name: 'blog',
- *       filter: (entry) => !entry.draft,
- *       onUrl: (url) => { url.priority = 0.8 }
- *     })
- *   })
- * })
- */
-export function defineSitemapSchema<T = Record<string, unknown>>(options?: DefineSitemapSchemaOptions<T>) {
-  if (options && ('type' in options || 'source' in options))
-    throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
-  if (options?.filter || options?.onUrl) {
-    if (!options.name)
-      throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
-    if (options.filter)
-      collectionFilters.set(options.name, options.filter)
-    if (options.onUrl)
-      collectionOnUrlFns.set(options.name, options.onUrl)
-  }
-  const s = options?.z ? buildSitemapObjectSchema(options.z) : sitemapObjectSchema
-  return withEditorHidden(s)
-}
-
-// Legacy schema export (wraps entire collection)
-export const schema = z.object({
-  sitemap: withEditorHidden(sitemapObjectSchema),
-})
-
-export type SitemapSchema = TypeOf<typeof schema>
-
-/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. */
-export interface AsSitemapCollectionOptions<TEntry = Record<string, unknown>> {
-  name?: string
-  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
-  onUrl?: (
-    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
-    entry: PageCollectionItemBase & SitemapSchema & TEntry,
-    collection: string,
-  ) => void
-}
-
-/** @deprecated Use `defineSitemapSchema()` in your collection schema instead. `asSitemapCollection()` encourages a separate overlapping collection which breaks Nuxt Content HMR. See https://nuxtseo.com/sitemap/guides/content */
-export function asSitemapCollection<T>(collection: Collection<T>, options?: AsSitemapCollectionOptions<T>): Collection<T> {
-  console.warn('[sitemap] `asSitemapCollection()` is deprecated. Use `defineSitemapSchema()` in your collection schema instead. See https://nuxtseo.com/sitemap/guides/content')
-  if (collection.type === 'page') {
-    // @ts-expect-error untyped
-    collection.schema = collection.schema ? schema.extend(collection.schema.shape) : schema
-
-    if (options?.filter || options?.onUrl) {
-      if (!options.name)
-        throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in asSitemapCollection()')
-      if (options.filter)
-        collectionFilters.set(options.name, options.filter)
-      if (options.onUrl)
-        collectionOnUrlFns.set(options.name, options.onUrl)
-    }
-  }
-
-  return collection
 }

@@ -19,7 +19,7 @@ function normaliseTip(tip: string) {
 </script>
 
 <template>
-  <OSectionBlock>
+  <DevtoolsSection :class="source.error ? 'source-error' : ''">
     <template #text>
       <div class="flex items-center gap-3">
         <div
@@ -30,17 +30,19 @@ function normaliseTip(tip: string) {
             name="carbon:api-1"
             class="text-[var(--color-text-muted)]"
           />
-          <span
+          <DevtoolsMetric
             v-if="source.timeTakenMs"
-            class="timing-badge"
-          >
-            {{ source.timeTakenMs }}ms
-          </span>
+            :value="source.timeTakenMs"
+            label="ms"
+            variant="info"
+          />
         </div>
         <span class="font-semibold">{{ source.context.name }}</span>
-        <span class="url-count">
-          {{ source.urls?.length || 0 }} URLs
-        </span>
+        <DevtoolsMetric
+          :value="source.urls?.length || 0"
+          label="URLs"
+          :variant="source.error ? 'danger' : !source.urls?.length ? 'warning' : 'success'"
+        />
       </div>
     </template>
     <template #description>
@@ -61,45 +63,41 @@ function normaliseTip(tip: string) {
         </span>
       </div>
     </template>
-    <div
+    <DevtoolsAlert
       v-if="source.error"
-      class="flex items-center gap-2 text-red-500"
+      variant="error"
     >
-      <UIcon name="carbon:warning" />
-      <span>{{ source.error }}</span>
-    </div>
+      {{ source.error }}
+    </DevtoolsAlert>
     <template v-else>
-      <div
+      <DevtoolsAlert
         v-if="source._urlWarnings?.length"
-        class="url-warnings"
+        variant="warning"
       >
-        <div class="url-warnings-header">
-          <UIcon name="carbon:warning-alt" />
-          <span>{{ source._urlWarnings.length }} URL warning{{ source._urlWarnings.length > 1 ? 's' : '' }}</span>
+        <div>
+          <div class="text-xs font-semibold mb-1">
+            {{ source._urlWarnings.length }} URL warning{{ source._urlWarnings.length > 1 ? 's' : '' }}
+          </div>
+          <ul class="url-warnings-list">
+            <li
+              v-for="(w, i) in source._urlWarnings"
+              :key="i"
+            >
+              <code>{{ w.loc }}</code> — {{ w.message }}
+            </li>
+          </ul>
         </div>
-        <ul class="url-warnings-list">
-          <li
-            v-for="(w, i) in source._urlWarnings"
-            :key="i"
-          >
-            <code>{{ w.loc }}</code> — {{ w.message }}
-          </li>
-        </ul>
-      </div>
-      <OCodeBlock
-        class="max-h-[250px] overflow-y-auto"
+      </DevtoolsAlert>
+      <DevtoolsSnippet
         :code="JSON.stringify(source.urls, null, 2)"
         lang="json"
+        label="URLs"
       />
     </template>
-    <div
+    <DevtoolsAlert
       v-if="source.context.tips?.length"
-      class="hint-callout mt-3"
+      :variant="!source.urls?.length && !source.error ? 'warning' : 'info'"
     >
-      <UIcon
-        name="carbon:idea"
-        class="hint-callout-icon text-base flex-shrink-0 mt-0.5"
-      />
       <div>
         <h3 class="text-xs font-semibold mb-1.5 text-[var(--color-text)] uppercase tracking-wide opacity-70">
           Hints
@@ -113,6 +111,38 @@ function normaliseTip(tip: string) {
           />
         </ul>
       </div>
-    </div>
-  </OSectionBlock>
+    </DevtoolsAlert>
+  </DevtoolsSection>
 </template>
+
+<style scoped>
+.source-error {
+  border-color: oklch(55% 0.15 25 / 0.35);
+}
+
+.source-error:hover {
+  border-color: oklch(55% 0.15 25 / 0.5);
+}
+
+.url-warnings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.url-warnings-list li {
+  padding: 0.125rem 0;
+}
+
+.url-warnings-list code {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  padding: 0.0625rem 0.3125rem;
+  border-radius: 3px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+</style>

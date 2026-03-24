@@ -1,64 +1,12 @@
-import type { LocaleObject, NuxtI18nOptions } from '@nuxtjs/i18n'
-import type { AutoI18nConfig, FilterInput } from '../runtime/types'
-import { joinURL, withBase, withHttps } from 'ufo'
-import { mergeOnKey, splitForLocales } from '../runtime/utils-pure'
+import type { AutoI18nConfig } from 'nuxtseo-shared/i18n'
+import type { FilterInput } from '../runtime/types'
+import { splitPathForI18nLocales as _splitPathForI18nLocales } from 'nuxtseo-shared/i18n'
 
-type Strategies = 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
+export { generatePathForI18nPages, normalizeLocales } from 'nuxtseo-shared/i18n'
+export type { AutoI18nConfig, Strategies, StrategyProps } from 'nuxtseo-shared/i18n'
 
-export interface StrategyProps {
-  localeCode: string
-  pageLocales: string
-  nuxtI18nConfig: NuxtI18nOptions
-  forcedStrategy?: Strategies
-  normalisedLocales: AutoI18nConfig['locales']
-}
-
-export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nConfig) {
-  const locales = autoI18n.strategy === 'prefix_except_default' ? autoI18n.locales.filter(l => l.code !== autoI18n.defaultLocale) : autoI18n.locales
-  if (typeof path !== 'string' || path.startsWith('/_'))
+export function splitPathForI18nLocales(path: FilterInput, autoI18n: AutoI18nConfig): FilterInput | FilterInput[] {
+  if (typeof path !== 'string')
     return path
-  const match = splitForLocales(path, locales.map(l => l.code))
-  const locale = match[0]
-  // only accept paths without locale
-  if (locale)
-    return path
-  return [
-    path,
-    ...locales.map(l => `/${l.code}${path}`),
-  ]
-}
-
-export function generatePathForI18nPages(ctx: StrategyProps): string {
-  const { localeCode, pageLocales, nuxtI18nConfig, forcedStrategy, normalisedLocales } = ctx
-  const locale = normalisedLocales.find(l => l.code === localeCode)
-  let path = pageLocales
-  switch (forcedStrategy ?? nuxtI18nConfig.strategy) {
-    case 'prefix_except_default':
-    case 'prefix_and_default':
-      path = localeCode === nuxtI18nConfig.defaultLocale ? pageLocales : joinURL(localeCode, pageLocales)
-      break
-    case 'prefix':
-      path = joinURL(localeCode, pageLocales)
-      break
-  }
-  return locale?.domain ? withHttps(withBase(path, locale.domain)) : path
-}
-
-export function normalizeLocales(nuxtI18nConfig: NuxtI18nOptions): AutoI18nConfig['locales'] {
-  const rawLocales = nuxtI18nConfig.locales || []
-  let onlyLocales = nuxtI18nConfig?.bundle?.onlyLocales || []
-  onlyLocales = typeof onlyLocales === 'string' ? [onlyLocales] : onlyLocales
-  let locales = mergeOnKey(rawLocales.map((locale): LocaleObject => typeof locale === 'string' ? { code: locale } : locale), 'code') as LocaleObject[]
-  if (onlyLocales.length) {
-    locales = locales.filter(locale => onlyLocales.includes(locale.code))
-  }
-  return locales.map((locale) => {
-    // we prefer i18n v9 config
-    if (typeof locale.iso === 'string' && !locale.language) {
-      locale.language = locale.iso
-    }
-    const _hreflang = locale.language || locale.code
-    const _sitemap = locale.language || locale.code
-    return { ...locale, _hreflang, _sitemap }
-  })
+  return _splitPathForI18nLocales(path, autoI18n)
 }
