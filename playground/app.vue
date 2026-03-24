@@ -2,17 +2,12 @@
 import { useI18n, useSiteConfig } from '#imports'
 
 const i18n = useI18n()
-
-function setLanguage(code: string) {
-  i18n.setLocale(code)
-}
-
 const locale = i18n.locale
 
-const languageOptions = [
+const languageItems = [
   [
-    { label: 'English', click() { setLanguage('en') } },
-    { label: 'French', click() { setLanguage('fr') } },
+    { label: 'English', click() { i18n.setLocale('en') } },
+    { label: 'French', click() { i18n.setLocale('fr') } },
   ],
 ]
 
@@ -22,40 +17,40 @@ const siteConfig = useSiteConfig({
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
-    <header class="sticky top-0 z-50 w-full backdrop-blur flex-none border-b border-gray-900/10 dark:border-gray-50/[0.06] bg-white/75 dark:bg-gray-900/75">
-      <UContainer class="py-3">
-        <div class="flex items-center justify-between">
-          <NuxtLink
-            to="/"
-            class="flex items-end gap-1.5 font-bold text-xl text-gray-900 dark:text-white"
-          >
-            <UIcon
-              name="i-logos-nuxt-icon"
-              class="w-8 h-8"
-            />
-            Nuxt
-            <div class="text-primary-500 dark:text-primary-400">
-              {{ siteConfig.name }}
-            </div>
-          </NuxtLink>
-          <UDropdown
-            :items="languageOptions"
-            :popper="{ placement: 'bottom-start' }"
-          >
-            <UButton
-              color="white"
-              :label="locale"
-              trailing-icon="i-heroicons-chevron-down-20-solid"
-            />
-          </UDropdown>
-        </div>
-      </UContainer>
-    </header>
-    <main class="min-h-full h-full flex-grow">
-      <UContainer class="mt-4">
-        <NuxtPage />
-      </UContainer>
-    </main>
-  </div>
+  <UApp>
+    <div class="flex flex-col min-h-screen">
+      <header class="sticky top-0 z-50 w-full backdrop-blur border-b border-(--ui-border) bg-(--ui-bg)/75">
+        <UContainer class="py-3">
+          <div class="flex items-center justify-between">
+            <NuxtLink
+              to="/"
+              class="flex items-end gap-1.5 font-bold text-xl text-(--ui-text-highlighted)"
+            >
+              <UIcon
+                name="i-logos-nuxt-icon"
+                class="size-8"
+              />
+              Nuxt
+              <span class="text-(--ui-primary)">
+                {{ siteConfig.name }}
+              </span>
+            </NuxtLink>
+            <UDropdownMenu :items="languageItems">
+              <UButton
+                color="neutral"
+                variant="outline"
+                :label="locale"
+                trailing-icon="i-lucide-chevron-down"
+              />
+            </UDropdownMenu>
+          </div>
+        </UContainer>
+      </header>
+      <main class="flex-grow">
+        <UContainer class="py-6">
+          <NuxtPage />
+        </UContainer>
+      </main>
+    </div>
+  </UApp>
 </template>

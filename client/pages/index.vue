@@ -3,7 +3,7 @@ import type { SitemapDefinition } from '../../src/runtime/types'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
 import Source from '../components/Source.vue'
-import { data } from '../composables/state'
+import { data, productionData, productionLoading, productionRemoteDebugData, refreshProductionData } from '../composables/state'
 
 const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
 
@@ -13,15 +13,20 @@ function resolveSitemapOrigin() {
   return data.value?.nitroOrigin || ''
 }
 
-function resolveSitemapUrl(sitemapName: string) {
-  if (!data.value)
+function resolveSitemapPath(sitemapName: string) {
+  const source = productionRemoteDebugData.value || data.value
+  if (!source)
     return ''
-  const origin = resolveSitemapOrigin()
+  const prefix = source.runtimeConfig?.sitemapsPathPrefix || ''
   if (sitemapName === 'sitemap' || sitemapName === 'sitemap.xml')
-    return `${origin}sitemap.xml`
+    return '/sitemap.xml'
   if (sitemapName === 'index')
-    return `${origin}sitemap_index.xml`
-  return joinURL(origin, data.value.runtimeConfig?.sitemapsPathPrefix || '', `${sitemapName}-sitemap.xml`)
+    return '/sitemap_index.xml'
+  return joinURL('/', prefix, `${sitemapName}-sitemap.xml`)
+}
+
+function resolveSitemapUrl(sitemapName: string) {
+  return `${resolveSitemapOrigin()}${resolveSitemapPath(sitemapName).replace(/^\//, '')}`
 }
 
 function resolveSitemapOptions(definition: SitemapDefinition) {
@@ -32,71 +37,300 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
   })
   return options
 }
+
+function sitemapOptionsAsKeyValues(definition: SitemapDefinition) {
+  const options = resolveSitemapOptions(definition)
+  return Object.entries(options).map(([key, value]) => {
+    const isObject = typeof value === 'object'
+    return {
+      key,
+      value: isObject ? JSON.stringify(value, null, 2) : value,
+      mono: true,
+      code: isObject ? 'json' as const : undefined,
+    }
+  })
+}
+
+function sitemapPathFromUrl(url: string) {
+  try {
+    return new URL(url).pathname
+  }
+  catch {
+    return url
+  }
+}
+
+const hasRemoteDebug = computed(() => !!productionRemoteDebugData.value)
+
+const totalProductionUrls = computed(() =>
+  productionData.value?.sitemaps.reduce((sum, s) => sum + s.urlCount, 0) ?? 0,
+)
+
+const totalProductionWarnings = computed(() =>
+  productionData.value?.sitemaps.reduce((sum, s) => sum + s.warnings.length, 0) ?? 0,
+)
 </script>
 
 <template>
   <div class="space-y-5 animate-fade-up">
-    <div>
-      <h2 class="text-lg font-semibold mb-1">
-        Sitemaps
-      </h2>
-      <p class="text-xs text-[var(--color-text-muted)]">
-        The sitemaps generated from your site.
-      </p>
-    </div>
-    <DevtoolsSection
-      v-for="(sitemap, key) in data?.sitemaps"
-      :key="key"
-    >
-      <template #text>
-        <div class="flex items-center gap-2">
-          <span class="font-semibold">{{ sitemap.sitemapName }}</span>
-          <UIcon
-            v-if="(sitemap.sources || []).some(s => typeof s !== 'string' && 'error' in s && !!s.error)"
-            name="carbon:warning"
-            class="text-red-500"
+    <!-- Production mode -->
+    <template v-if="isProductionMode">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold mb-1">
+            Production Sitemaps
+          </h2>
+          <p class="text-xs text-[var(--color-text-muted)]">
+            Fetched from {{ productionUrl }}<template v-if="hasRemoteDebug">
+              with debug mode enabled
+            </template>.
+          </p>
+        </div>
+        <UButton
+          icon="carbon:reset"
+          size="xs"
+          variant="ghost"
+          :loading="productionLoading"
+          @click="refreshProductionData()"
+        >
+          Re-validate
+        </UButton>
+      </div>
+
+      <DevtoolsLoading v-if="productionLoading && !productionData && !productionRemoteDebugData" />
+
+      <!-- Full debug view (production has debug: true) -->
+      <template v-if="hasRemoteDebug">
+        <DevtoolsSection
+          v-for="(sitemap, key) in productionRemoteDebugData!.sitemaps"
+          :key="key"
+        >
+          <template #text>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">{{ sitemap.sitemapName }}</span>
+              <a
+                target="_blank"
+                :href="resolveSitemapUrl(sitemap.sitemapName)"
+                class="link-external text-xs font-mono text-[var(--color-text-muted)]"
+              >
+                {{ resolveSitemapPath(sitemap.sitemapName) }}
+              </a>
+              <UIcon
+                v-if="(sitemap.sources || []).some(s => typeof s !== 'string' && 'error' in s && !!s.error)"
+                name="carbon:warning"
+                class="text-red-500"
+              />
+              <UIcon
+                v-else-if="(sitemap.sources || []).some(s => typeof s !== 'string' && '_urlWarnings' in s && s._urlWarnings?.length)"
+                name="carbon:warning-alt"
+                class="text-amber-500"
+              />
+            </div>
+          </template>
+          <div class="space-y-5">
+            <template v-if="sitemap.sitemapName === 'index'">
+              <DevtoolsAlert variant="info">
+                Links to your other sitemaps.
+                <a
+                  href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
+                  target="_blank"
+                  class="link-external"
+                >
+                  Learn more
+                </a>
+              </DevtoolsAlert>
+            </template>
+            <template v-else>
+              <div
+                v-if="sitemap.sources && sitemap.sources.length"
+                class="flex gap-4"
+              >
+                <div class="w-32 flex-shrink-0">
+                  <div class="font-semibold text-sm">
+                    Sources
+                  </div>
+                </div>
+                <div class="flex-grow space-y-2">
+                  <Source
+                    v-for="(source, k) in sitemap.sources"
+                    :key="k"
+                    :source="source"
+                  />
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <div class="w-32 flex-shrink-0">
+                  <div class="font-semibold text-sm">
+                    Options
+                  </div>
+                </div>
+                <div class="flex-grow">
+                  <DevtoolsKeyValue
+                    :items="sitemapOptionsAsKeyValues(sitemap)"
+                    striped
+                  />
+                </div>
+              </div>
+            </template>
+          </div>
+        </DevtoolsSection>
+      </template>
+
+      <!-- XML-based fallback view -->
+      <template v-else-if="productionData?.error">
+        <DevtoolsProductionError :error="productionData.error" />
+      </template>
+
+      <template v-else-if="productionData">
+        <!-- Summary -->
+        <div class="flex items-center gap-4">
+          <DevtoolsMetric
+            :value="productionData.sitemaps.length"
+            :label="productionData.isIndex ? 'child sitemaps' : 'sitemap'"
+            variant="info"
           />
-          <UIcon
-            v-else-if="(sitemap.sources || []).some(s => typeof s !== 'string' && '_urlWarnings' in s && s._urlWarnings?.length)"
-            name="carbon:warning-alt"
-            class="text-amber-500"
+          <DevtoolsMetric
+            :value="totalProductionUrls"
+            label="total URLs"
+            variant="success"
+          />
+          <DevtoolsMetric
+            v-if="totalProductionWarnings > 0"
+            :value="totalProductionWarnings"
+            label="warnings"
+            variant="warning"
           />
         </div>
-      </template>
-      <template #description>
-        <a
-          target="_blank"
-          :href="resolveSitemapUrl(sitemap.sitemapName)"
-          class="link-external text-sm"
+
+        <!-- Each production sitemap -->
+        <DevtoolsSection
+          v-for="(sitemap, i) in productionData.sitemaps"
+          :key="i"
         >
-          {{ resolveSitemapUrl(sitemap.sitemapName) }}
-        </a>
-      </template>
-      <div class="space-y-5">
-        <template v-if="sitemap.sitemapName === 'index'">
-          <DevtoolsAlert variant="info">
-            This is a special sitemap file that links to your other sitemaps.
+          <template #text>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">{{ sitemapPathFromUrl(sitemap.loc) }}</span>
+              <DevtoolsMetric
+                :value="sitemap.urlCount"
+                label="URLs"
+                variant="success"
+              />
+              <UIcon
+                v-if="sitemap.error"
+                name="carbon:warning"
+                class="text-red-500"
+              />
+              <UIcon
+                v-else-if="sitemap.warnings.length"
+                name="carbon:warning-alt"
+                class="text-amber-500"
+              />
+            </div>
+          </template>
+          <template #description>
             <a
-              href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
+              :href="sitemap.loc"
               target="_blank"
-              class="link-external"
+              class="link-external text-xs font-mono text-[var(--color-text-muted)]"
             >
-              Learn more about sitemap indexes
+              {{ sitemap.loc }}
             </a>
-          </DevtoolsAlert>
+          </template>
+          <div v-if="sitemap.error || sitemap.warnings.length" class="space-y-3">
+            <DevtoolsAlert
+              v-if="sitemap.error"
+              variant="warning"
+            >
+              {{ sitemap.error }}
+            </DevtoolsAlert>
+            <DevtoolsAlert
+              v-if="sitemap.warnings.length"
+              variant="warning"
+            >
+              <div>
+                <div class="text-xs font-semibold mb-1">
+                  {{ sitemap.warnings.length }} validation warning{{ sitemap.warnings.length > 1 ? 's' : '' }}
+                </div>
+                <ul class="prod-warnings-list">
+                  <li
+                    v-for="(w, wi) in sitemap.warnings"
+                    :key="wi"
+                  >
+                    <template v-if="w.context?.url">
+                      <code>{{ w.context.url }}</code>:
+                    </template>
+                    {{ w.message }}
+                  </li>
+                </ul>
+              </div>
+            </DevtoolsAlert>
+          </div>
+        </DevtoolsSection>
+
+        <!-- Hint about debug mode -->
+        <DevtoolsAlert variant="info">
+          Want to see full source details and URL validation? Deploy with <code>sitemap: { debug: true }</code> to get the same detailed view as development mode.
+        </DevtoolsAlert>
+      </template>
+    </template>
+
+    <!-- Local mode -->
+    <template v-else>
+      <div>
+        <h2 class="text-lg font-semibold mb-1">
+          Sitemaps
+        </h2>
+        <p class="text-xs text-[var(--color-text-muted)]">
+          The sitemaps generated from your site.
+        </p>
+      </div>
+      <DevtoolsSection
+        v-for="(sitemap, key) in data?.sitemaps"
+        :key="key"
+      >
+        <template #text>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold">{{ sitemap.sitemapName }}</span>
+            <a
+              target="_blank"
+              :href="resolveSitemapUrl(sitemap.sitemapName)"
+              class="link-external text-xs font-mono text-[var(--color-text-muted)]"
+            >
+              {{ resolveSitemapPath(sitemap.sitemapName) }}
+            </a>
+            <UIcon
+              v-if="(sitemap.sources || []).some(s => typeof s !== 'string' && 'error' in s && !!s.error)"
+              name="carbon:warning"
+              class="text-red-500"
+            />
+            <UIcon
+              v-else-if="(sitemap.sources || []).some(s => typeof s !== 'string' && '_urlWarnings' in s && s._urlWarnings?.length)"
+              name="carbon:warning-alt"
+              class="text-amber-500"
+            />
+          </div>
         </template>
-        <template v-else>
-          <template v-if="!isProductionMode">
+        <div class="space-y-5">
+          <template v-if="sitemap.sitemapName === 'index'">
+            <DevtoolsAlert variant="info">
+              Links to your other sitemaps.
+              <a
+                href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps"
+                target="_blank"
+                class="link-external"
+              >
+                Learn more
+              </a>
+            </DevtoolsAlert>
+          </template>
+          <template v-else>
             <div
               v-if="sitemap.sources && sitemap.sources.length"
-              class="flex gap-5"
+              class="flex gap-4"
             >
-              <div class="w-40 flex-shrink-0">
-                <div class="font-semibold text-sm mb-1">
+              <div class="w-32 flex-shrink-0">
+                <div class="font-semibold text-sm">
                   Sources
-                </div>
-                <div class="text-xs text-[var(--color-text-muted)]">
-                  Local sources associated with just this sitemap.
                 </div>
               </div>
               <div class="flex-grow space-y-2">
@@ -107,16 +341,13 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
                 />
               </div>
             </div>
-            <div class="flex gap-5">
-              <div class="w-40 flex-shrink-0">
-                <div class="font-semibold text-sm mb-1">
+            <div class="flex gap-4">
+              <div class="w-32 flex-shrink-0">
+                <div class="font-semibold text-sm">
                   App Sources
                 </div>
-                <div class="text-xs text-[var(--color-text-muted)]">
-                  Configured with the <code class="px-1 py-0.5 rounded bg-[var(--color-surface-sunken)]">includeAppSources</code> option.
-                </div>
               </div>
-              <div class="flex-grow flex flex-col justify-center">
+              <div class="flex-grow flex items-center gap-3">
                 <div
                   v-if="sitemap.includeAppSources && appSourcesExcluded !== true"
                   class="status-enabled"
@@ -137,39 +368,31 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
                   />
                   <span>Disabled</span>
                 </div>
-                <div class="text-xs text-[var(--color-text-subtle)] mt-2">
-                  Switch to
-                  <NuxtLink
-                    to="/app-sources"
-                    class="text-[var(--seo-green)] hover:underline"
-                  >
-                    App sources
-                  </NuxtLink>
-                  to learn more.
-                </div>
+                <NuxtLink
+                  to="/app-sources"
+                  class="text-xs text-[var(--seo-green)] hover:underline"
+                >
+                  View details
+                </NuxtLink>
               </div>
             </div>
-            <div class="flex gap-5">
-              <div class="w-40 flex-shrink-0">
-                <div class="font-semibold text-sm mb-1">
-                  Sitemap Options
-                </div>
-                <div class="text-xs text-[var(--color-text-muted)]">
-                  Extra options used to filter the URLs on the final sitemap and set defaults.
+            <div class="flex gap-4">
+              <div class="w-32 flex-shrink-0">
+                <div class="font-semibold text-sm">
+                  Options
                 </div>
               </div>
               <div class="flex-grow">
-                <DevtoolsSnippet
-                  :code="JSON.stringify(resolveSitemapOptions(sitemap), null, 2)"
-                  lang="json"
-                  label="Sitemap Options"
+                <DevtoolsKeyValue
+                  :items="sitemapOptionsAsKeyValues(sitemap)"
+                  striped
                 />
               </div>
             </div>
           </template>
-        </template>
-      </div>
-    </DevtoolsSection>
+        </div>
+      </DevtoolsSection>
+    </template>
   </div>
 </template>
 
@@ -206,5 +429,27 @@ function resolveSitemapOptions(definition: SitemapDefinition) {
 .dark .status-disabled {
   background: oklch(45% 0.1 25 / 0.15);
   color: oklch(70% 0.12 25);
+}
+
+.prod-warnings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.prod-warnings-list li {
+  padding: 0.125rem 0;
+}
+
+.prod-warnings-list code {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  padding: 0.0625rem 0.3125rem;
+  border-radius: 3px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
 }
 </style>

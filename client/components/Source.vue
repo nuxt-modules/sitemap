@@ -19,7 +19,7 @@ function normaliseTip(tip: string) {
 </script>
 
 <template>
-  <DevtoolsSection>
+  <DevtoolsSection :class="source.error ? 'source-error' : ''">
     <template #text>
       <div class="flex items-center gap-3">
         <div
@@ -41,7 +41,7 @@ function normaliseTip(tip: string) {
         <DevtoolsMetric
           :value="source.urls?.length || 0"
           label="URLs"
-          variant="success"
+          :variant="source.error ? 'danger' : !source.urls?.length ? 'warning' : 'success'"
         />
       </div>
     </template>
@@ -65,7 +65,7 @@ function normaliseTip(tip: string) {
     </template>
     <DevtoolsAlert
       v-if="source.error"
-      variant="warning"
+      variant="error"
     >
       {{ source.error }}
     </DevtoolsAlert>
@@ -96,7 +96,7 @@ function normaliseTip(tip: string) {
     </template>
     <DevtoolsAlert
       v-if="source.context.tips?.length"
-      variant="info"
+      :variant="!source.urls?.length && !source.error ? 'warning' : 'info'"
     >
       <div>
         <h3 class="text-xs font-semibold mb-1.5 text-[var(--color-text)] uppercase tracking-wide opacity-70">
@@ -116,6 +116,14 @@ function normaliseTip(tip: string) {
 </template>
 
 <style scoped>
+.source-error {
+  border-color: oklch(55% 0.15 25 / 0.35);
+}
+
+.source-error:hover {
+  border-color: oklch(55% 0.15 25 / 0.5);
+}
+
 .url-warnings-list {
   list-style: none;
   padding: 0;

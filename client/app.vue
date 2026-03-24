@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { navigateTo, useRoute } from '#imports'
 import { computed, ref, watch } from 'vue'
-import { data, refreshSources } from './composables/state'
+import { data, productionData, productionRemoteDebugData, refreshProductionData, refreshSources } from './composables/state'
 import './composables/rpc'
 
 await loadShiki()
@@ -13,7 +13,11 @@ async function refresh() {
     return
   refreshing.value = true
   data.value = null
+  productionData.value = null
+  productionRemoteDebugData.value = null
   await refreshSources()
+  if (isProductionMode.value)
+    await refreshProductionData()
   setTimeout(() => {
     refreshing.value = false
   }, 300)
@@ -41,7 +45,7 @@ const navItems = [
   { value: 'docs', to: '/docs', icon: 'carbon:book', label: 'Docs', devOnly: false },
 ]
 
-const runtimeVersion = computed(() => data.value?.runtimeConfig?.version || 'unknown')
+const runtimeVersion = computed(() => data.value?.runtimeConfig?.version)
 
 // Redirect to home when switching to production mode from a dev-only tab
 watch(isProductionMode, (isProd) => {

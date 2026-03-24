@@ -10,6 +10,8 @@ export default defineNuxtConfig({
     '@nuxt/ui',
   ],
 
+  css: ['~/assets/css/main.css'],
+
   site: {
     url: 'https://sitemap-edge-demo.vercel.app/',
   },

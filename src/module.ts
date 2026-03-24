@@ -89,7 +89,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     'nuxt-site-config': {
-      version: '>=3',
+      version: '>=3.2',
     },
     '@nuxt/content': {
       version: '>=2',
@@ -549,7 +549,9 @@ export default defineNuxtModule<ModuleOptions>({
         context: {
           name: '@nuxt/content@v3:urls',
           description: 'Generated from your markdown files.',
-          tips: [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`],
+          tips: nuxtV3Collections.size
+            ? [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`]
+            : ['No collections found. Make sure your content collections have a `path` field.'],
         },
         fetch: '/__sitemap__/nuxt-content-urls.json',
       })
@@ -813,6 +815,12 @@ export default defineNuxtModule<ModuleOptions>({
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
       })
+      if (nuxt.options.dev) {
+        addServerHandler({
+          route: '/__sitemap__/debug-production.json',
+          handler: resolve('./runtime/server/routes/__sitemap__/debug-production'),
+        })
+      }
 
       // Register handlers for all sitemaps in dev/debug mode
       if (usingMultiSitemaps) {
@@ -872,8 +880,8 @@ export default defineNuxtModule<ModuleOptions>({
         routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
         normalisedLocales,
         filter: {
-          include: normalizeFilters(config.include),
-          exclude: normalizeFilters(config.exclude),
+          include: normalizeFilters(config.include) as (string | RegExp)[],
+          exclude: normalizeFilters(config.exclude) as (string | RegExp)[],
         },
         isI18nMicro: i18nModule === 'nuxt-i18n-micro',
       })

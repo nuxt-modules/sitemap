@@ -1,6 +1,7 @@
 import type { FilterInput } from './types'
 import { createConsola } from 'consola'
 import { createDefu } from 'defu'
+import { createFilter } from 'nuxtseo-shared/utils'
 import { parseURL, withLeadingSlash, withoutBase } from 'ufo'
 
 export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/utils'
@@ -71,7 +72,10 @@ export function normalizeRuntimeFilters(input?: FilterInput[]): (RegExp | string
 }
 
 export function createPathFilter(options: { include?: (FilterInput | string | RegExp)[], exclude?: (FilterInput | string | RegExp)[] } = {}, baseURL?: string) {
-  const urlFilter = createFilter(options)
+  const urlFilter = createFilter({
+    include: normalizeRuntimeFilters(options.include),
+    exclude: normalizeRuntimeFilters(options.exclude),
+  })
   const hasBase = baseURL && baseURL !== '/'
   return (loc: string) => {
     let path = loc

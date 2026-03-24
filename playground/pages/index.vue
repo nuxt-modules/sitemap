@@ -10,36 +10,28 @@ definePageMeta({
 
 <template>
   <div>
-    <h1 class="text-2xl mt-10 mb-5">
-      Sitemap
+    <h1 class="text-2xl font-bold mb-6">
+      Sitemap Playground
     </h1>
-    <div class="grid grid-cols-2 gap-5 max-w-[900px] mx-auto">
-      <NuxtLink to="/ignore-foo">
+    <div class="grid grid-cols-2 gap-3 max-w-lg">
+      <UButton to="/about" variant="soft" color="neutral">
+        About
+      </UButton>
+      <UButton to="/blog" variant="soft" color="neutral">
+        Blog
+      </UButton>
+      <UButton to="/new-page" variant="soft" color="neutral">
+        New Page
+      </UButton>
+      <UButton to="/secret" variant="soft" color="neutral">
+        Secret (robots: false)
+      </UButton>
+      <UButton to="/ignore-foo" variant="soft" color="neutral">
         ignore-foo
-      </NuxtLink>
-      <NuxtLink to="/new-page">
-        new page
-      </NuxtLink>
-      <NuxtLink to="/about">
-        about
-      </NuxtLink>
-      <NuxtLink to="/secret">
-        secret
-      </NuxtLink>
-      <NuxtLink to="/users-prerender">
-        dynamic pre-render link
-      </NuxtLink>
-      <NuxtLink to="/blog">
-        blog
-      </NuxtLink>
+      </UButton>
+      <UButton to="/users-prerender" variant="soft" color="neutral">
+        Dynamic Pre-render
+      </UButton>
     </div>
   </div>
 </template>
-
-<style scoped>
-a {
-  display: block;
-  margin: 0 0 10px 0;
-  text-decoration: underline;
-}
-</style>
