@@ -213,10 +213,10 @@ interface LocaleObject extends Record<string, any> {
     path: string
     cache?: boolean
   }
-  files?: string[] | {
+  files?: (string | {
     path: string
     cache?: boolean
-  }[]
+  })[]
   isCatchallLocale?: boolean
   /**
    * @deprecated in v9, use `language` instead
