@@ -902,12 +902,13 @@ export default defineNuxtModule<ModuleOptions>({
           pageSourceByPath.set(p.loc, p)
       }
       // merge definePageMeta sitemap data into prerendered entries
-      for (const entry of prerenderUrlsFinal) {
-        if (typeof entry === 'string')
+      for (let i = 0; i < prerenderUrlsFinal.length; i++) {
+        const entry = prerenderUrlsFinal[i]
+        if (!entry || typeof entry === 'string')
           continue
         const pageEntry = pageSourceByPath.get(entry.loc)
         if (pageEntry && typeof pageEntry !== 'string') {
-          Object.assign(entry, defu(entry, pageEntry))
+          prerenderUrlsFinal[i] = defu(entry, pageEntry) as typeof entry
         }
       }
       const dedupedPageSource = pageSource.filter((p) => {
