@@ -9,6 +9,7 @@ packages:
   - devtools
   - test/fixtures/**
   - playground
+  - '!examples/**'
 overrides:
   '@vitejs/plugin-vue': ^6.0.5
   vite: ^8.0.2
@@ -54,7 +55,7 @@ catalog:
   ufo: ^1.6.3
   ultrahtml: ^1.6.0
   vitest: ^4.1.1
-  vue: ^3.5.30
+  vue: ^3.5.31
   vue-router: ^5.0.4
   vue-tsc: ^3.2.6
   zod: ^4.3.6

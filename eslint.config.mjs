@@ -33,4 +33,12 @@ export default antfu(
       'harlanzw/vue-no-faux-composables': 'off',
     },
   },
+  {
+    files: ['examples/**/package.json'],
+    rules: {
+      'pnpm/json-enforce-catalog': 'off',
+      'pnpm/json-valid-catalog': 'off',
+      'pnpm/json-prefer-workspace-settings': 'off',
+    },
+  },
 )
