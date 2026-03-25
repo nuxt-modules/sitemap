@@ -466,6 +466,7 @@ export default defineNuxtModule<ModuleOptions>({
         nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
         nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
       }
+      // @ts-expect-error untyped
       nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
         try {
           const content = ctx.content as any as {
@@ -889,11 +890,26 @@ export default defineNuxtModule<ModuleOptions>({
         pageSource.push(nuxt.options.app.baseURL || '/')
       }
       // Dedupe: remove pages that were prerendered (prerender data takes precedence)
+      // but merge page meta sitemap data (from definePageMeta) into prerendered entries
       const allPrerenderedPaths = new Set(
         prerenderedRoutes
           .filter(isValidPrerenderRoute)
           .map(r => r.route),
       )
+      const pageSourceByPath = new Map<string, (typeof pageSource)[number]>()
+      for (const p of pageSource) {
+        if (typeof p !== 'string' && p.loc)
+          pageSourceByPath.set(p.loc, p)
+      }
+      // merge definePageMeta sitemap data into prerendered entries
+      for (const entry of prerenderUrlsFinal) {
+        if (typeof entry === 'string')
+          continue
+        const pageEntry = pageSourceByPath.get(entry.loc)
+        if (pageEntry && typeof pageEntry !== 'string') {
+          Object.assign(entry, defu(entry, pageEntry))
+        }
+      }
       const dedupedPageSource = pageSource.filter((p) => {
         const path = typeof p === 'string' ? p : p.loc
         return !allPrerenderedPaths.has(path)

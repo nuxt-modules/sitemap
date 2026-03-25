@@ -14,6 +14,12 @@ export default defineNuxtConfig({
     '/foo-redirect': {
       redirect: '/foo',
     },
+    '/sub/page': {
+      sitemap: {
+        changefreq: 'weekly',
+        priority: 0.5,
+      },
+    },
   },
 
   compatibilityDate: '2025-01-15',
