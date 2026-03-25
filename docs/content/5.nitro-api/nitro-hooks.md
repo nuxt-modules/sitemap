@@ -14,7 +14,7 @@ Nitro hooks can be added to modify the output of your sitemaps at runtime.
 
 ## `'sitemap:input'`{lang="ts"}
 
-**Type:** `async (ctx: { urls: SitemapUrlInput[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: H3Event; urls: SitemapUrlInput[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggers once the raw list of URLs is collected from sources.
 
@@ -24,7 +24,7 @@ This hook is best used for inserting new URLs into the sitemap.
 import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook('sitemap:resolved', async (ctx) => {
+  nitroApp.hooks.hook('sitemap:input', async (ctx) => {
     // SitemapUrlInput is either a string
     ctx.urls.push('/foo')
     // or an object with loc, changefreq, and priority
@@ -39,7 +39,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { urls: ResolvedSitemapUrl[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: H3Event; urls: ResolvedSitemapUrl[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the XML is generated, provides the URLs as objects.
 
@@ -70,7 +70,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:index-resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: H3Event; sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the sitemap index is generated, provides the sitemaps as objects.
 
@@ -90,7 +90,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:output'`{lang="ts"}
 
-**Type:** `async (ctx: { sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered before the sitemap is sent to the client.
 It provides the sitemap as a XML string.

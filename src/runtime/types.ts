@@ -73,7 +73,7 @@ export interface ModuleOptions extends SitemapDefinition {
   /**
    * Customised the columns displayed in the xsl.
    *
-   * @default [{ label: 'URL', width: '50%', select: 'string' }, { label: 'Last Modified', width: '25%', select: 'lastmod' }, { label: 'Change Frequency', width: '25%', select: 'changefreq' }]
+   * @default [{ label: 'URL', width: '50%' }, { label: 'Images', width: '25%', select: 'count(image:image)' }, { label: 'Last Updated', width: '25%', select: 'concat(substring(sitemap:lastmod,0,11),concat(\' \', substring(sitemap:lastmod,12,5)),concat(\' \', substring(sitemap:lastmod,20,6)))' }]
    */
   xslColumns?: { label: string, width: `${string}%`, select?: string }[]
   /**
@@ -197,7 +197,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   _urlWarnings?: { loc: string, message: string }[]
 }
 
-export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | '@nuxt/content:document-driven'
+export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | 'nuxt-i18n-micro:pages' | '@nuxt/content@v2:urls' | '@nuxt/content@v3:urls'
 
 export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 
