@@ -8,7 +8,7 @@
     "@nuxt/kit": "catalog:",
     "@vueuse/core": "catalog:",
     "nuxt": "catalog:",
-    "nuxtseo-shared": "catalog:",
+    "nuxtseo-layer-devtools": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:"
   }
