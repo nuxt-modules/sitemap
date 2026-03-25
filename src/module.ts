@@ -466,7 +466,6 @@ export default defineNuxtModule<ModuleOptions>({
         nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
         nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
       }
-      // @ts-expect-error untyped
       nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
         try {
           const content = ctx.content as any as {
