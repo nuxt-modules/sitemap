@@ -20,3 +20,9 @@ skills:
     source: 'https://github.com/harlan-zw/nuxt-site-config/tree/v3.2.21/docs'
     syncedAt: 2026-03-24
     generator: skilld
+  devtools-layer-skilld:
+    packageName: nuxtseo-layer-devtools
+    version: 0.3.0
+    source: shipped
+    syncedAt: 2026-03-25
+    generator: skilld
