@@ -59,6 +59,7 @@ watch(isProductionMode, (isProd) => {
 <template>
   <DevtoolsLayout
     v-model:active-tab="currentTab"
+    module-name="sitemap"
     title="Sitemap"
     icon="carbon:load-balancer-application"
     :version="runtimeVersion"
