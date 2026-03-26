@@ -1,8 +1,20 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - chokidar
+  - semver
 packages:
   - devtools
   - test/fixtures/**
   - playground
   - '!examples/**'
+overrides:
+  '@vitejs/plugin-vue': ^6.0.5
+  vite: ^8.0.3
+patchedDependencies:
+  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
   '@antfu/eslint-config': ^7.7.3
   '@arethetypeswrong/cli': ^0.18.2
@@ -51,16 +63,4 @@ catalog:
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
-overrides:
-  '@vitejs/plugin-vue': ^6.0.5
-  vite: ^8.0.3
-patchedDependencies:
-  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
-shellEmulator: true
-
-trustPolicy: no-downgrade
-
-trustPolicyExclude:
-  - chokidar
-  - semver
 trustPolicyIgnoreAfter: 262800
