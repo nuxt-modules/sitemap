@@ -809,8 +809,8 @@ export default defineNuxtModule<ModuleOptions>({
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = runtimeConfig
 
-    // debug endpoints - skip in zeroRuntime as they pull in full sitemap code
-    if ((config.debug || nuxt.options.dev) && !config.zeroRuntime) {
+    // debug endpoints - skip in production zeroRuntime as they pull in full sitemap code
+    if ((config.debug || nuxt.options.dev) && !(config.zeroRuntime && !nuxt.options.dev)) {
       addServerHandler({
         route: '/__sitemap__/debug.json',
         handler: resolve('./runtime/server/routes/__sitemap__/debug'),
