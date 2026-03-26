@@ -1,20 +1,8 @@
-shellEmulator: true
-
-trustPolicy: no-downgrade
-
-trustPolicyExclude:
-  - chokidar
-  - semver
 packages:
   - devtools
   - test/fixtures/**
   - playground
   - '!examples/**'
-overrides:
-  '@vitejs/plugin-vue': ^6.0.5
-  vite: ^8.0.3
-patchedDependencies:
-  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
   '@antfu/eslint-config': ^7.7.3
   '@arethetypeswrong/cli': ^0.18.2
@@ -27,7 +15,7 @@ catalog:
   '@nuxt/test-utils': ^4.0.0
   '@nuxt/ui': ^4.6.0
   '@nuxtjs/i18n': ^10.2.4
-  '@nuxtjs/robots': ^6.0.4
+  '@nuxtjs/robots': ^6.0.5
   '@vue/test-utils': ^2.4.6
   '@vueuse/core': ^14.2.1
   better-sqlite3: ^12.8.0
@@ -40,10 +28,10 @@ catalog:
   fast-xml-parser: ^5.5.9
   happy-dom: ^20.8.8
   nuxt: ^4.4.2
-  nuxt-i18n-micro: ^3.13.4
+  nuxt-i18n-micro: ^3.14.1
   nuxt-site-config: ^4.0.6
-  nuxtseo-layer-devtools: ^0.4.5
-  nuxtseo-shared: ^0.8.1
+  nuxtseo-layer-devtools: ^0.5.0
+  nuxtseo-shared: ^0.8.2
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.0
@@ -63,4 +51,16 @@ catalog:
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
+overrides:
+  '@vitejs/plugin-vue': ^6.0.5
+  vite: ^8.0.3
+patchedDependencies:
+  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - chokidar
+  - semver
 trustPolicyIgnoreAfter: 262800

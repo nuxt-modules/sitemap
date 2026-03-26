@@ -14,7 +14,11 @@ body:
       required: true
     attributes:
       label: 🛠️ To reproduce
-      description: 'A reproduction of the bug. Check out the Stackblitz starters https://nuxtseo.com/docs/sitemap/getting-started/troubleshooting#submitting-an-issue'
+      description: |
+        A reproduction of the bug. Please create a StackBlitz reproduction from one of the starters:
+        - [Basic](https://stackblitz.com/github/nuxt-modules/sitemap/tree/main/examples/basic)
+        - [i18n](https://stackblitz.com/github/nuxt-modules/sitemap/tree/main/examples/i18n)
+        - [Dynamic URLs](https://stackblitz.com/github/nuxt-modules/sitemap/tree/main/examples/dynamic-urls)
       placeholder: https://stackblitz.com/[...]
   - type: textarea
     validations:
