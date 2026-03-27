@@ -387,7 +387,8 @@ export default defineNuxtModule<ModuleOptions>({
     if (config.zeroRuntime && !prerenderSitemap) {
       prerenderSitemap = true
       addPrerenderRoutes('/sitemap.xml')
-      logger.info('`zeroRuntime` enabled - sitemap routes will be prerendered.')
+      if (!nuxt.options.dev)
+        logger.info('`zeroRuntime` enabled - sitemap routes will be prerendered.')
     }
     // base path for route handlers
     const routesPath = config.zeroRuntime
