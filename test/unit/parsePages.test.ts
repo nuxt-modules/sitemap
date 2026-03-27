@@ -204,6 +204,7 @@ describe('page parser', () => {
       normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
       strategy: 'no_prefix',
       isI18nMicro: false,
+      autoI18n: true,
     })).toMatchInlineSnapshot(`
       [
         {
@@ -666,6 +667,7 @@ describe('page parser', () => {
       ] }),
       strategy: 'prefix_except_default',
       isI18nMicro: true,
+      autoI18n: true,
     })).toMatchInlineSnapshot(`
       [
         {
@@ -698,5 +700,27 @@ describe('page parser', () => {
         },
       ]
     `)
+  })
+
+  it('autoI18n false disables hreflang alternatives', () => {
+    const result = convertNuxtPagesToSitemapEntries(payload, {
+      filter: {
+        include: [],
+        exclude: [],
+      },
+      isI18nMapped: false,
+      autoLastmod: false,
+      defaultLocale: 'en',
+      normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
+      strategy: 'no_prefix',
+      isI18nMicro: false,
+      autoI18n: false,
+    })
+    // no entry should have alternatives when autoI18n is false
+    for (const entry of result) {
+      if (typeof entry === 'string')
+        continue
+      expect(entry).not.toHaveProperty('alternatives')
+    }
   })
 })

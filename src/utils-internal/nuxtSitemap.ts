@@ -43,6 +43,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   isI18nMapped: boolean
   isI18nMicro: boolean
   filter: CreateFilterOptions
+  autoI18n: boolean
 }
 
 interface PageEntry extends SitemapUrl {
@@ -183,25 +184,29 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       }).filter(Boolean)
     }
     return entries.map((entry) => {
-      const alternatives = entries.map((entry) => {
-        const locale = config.normalisedLocales.find(l => l.code === entry.locale)
-        // check if the locale has a iso code
-        if (!pathFilter(entry.loc))
-          return false
-        const href = locale?.domain ? withHttps(withBase(entry.loc, locale?.domain)) : entry.loc
-        return {
-          hreflang: locale?._hreflang,
-          href,
+      const alternatives = config.autoI18n
+        ? entries.map((entry) => {
+            const locale = config.normalisedLocales.find(l => l.code === entry.locale)
+            // check if the locale has a iso code
+            if (!pathFilter(entry.loc))
+              return false
+            const href = locale?.domain ? withHttps(withBase(entry.loc, locale?.domain)) : entry.loc
+            return {
+              hreflang: locale?._hreflang,
+              href,
+            }
+          }).filter(Boolean)
+        : []
+      if (config.autoI18n) {
+        const xDefault = entries.find(a => a.locale === config.defaultLocale)
+        if (xDefault && alternatives.length && pathFilter(xDefault.loc)) {
+          const locale = config.normalisedLocales.find(l => l.code === xDefault.locale)
+          const href = locale?.domain ? withHttps(withBase(xDefault.loc, locale?.domain)) : xDefault.loc
+          alternatives.push({
+            hreflang: 'x-default',
+            href,
+          })
         }
-      }).filter(Boolean)
-      const xDefault = entries.find(a => a.locale === config.defaultLocale)
-      if (xDefault && alternatives.length && pathFilter(xDefault.loc)) {
-        const locale = config.normalisedLocales.find(l => l.code === xDefault.locale)
-        const href = locale?.domain ? withHttps(withBase(xDefault.loc, locale?.domain)) : xDefault.loc
-        alternatives.push({
-          hreflang: 'x-default',
-          href,
-        })
       }
       const e = { ...entry }
       if (config.isI18nMapped) {
@@ -212,7 +217,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       delete e.locale
       return {
         ...e,
-        alternatives,
+        ...(alternatives.length ? { alternatives } : {}),
       }
     })
   }).filter(Boolean).flat() as SitemapUrlInput[]
