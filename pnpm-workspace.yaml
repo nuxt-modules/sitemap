@@ -38,12 +38,12 @@ catalog:
   eslint-plugin-harlanzw: ^0.12.0
   execa: ^9.6.1
   fast-xml-parser: ^5.5.9
-  happy-dom: ^20.8.8
+  happy-dom: ^20.8.9
   nuxt: ^4.4.2
   nuxt-i18n-micro: ^3.14.1
   nuxt-site-config: ^4.0.7
-  nuxtseo-layer-devtools: ^5.0.1
-  nuxtseo-shared: ^5.0.1
+  nuxtseo-layer-devtools: ^5.0.2
+  nuxtseo-shared: ^5.0.2
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.0
