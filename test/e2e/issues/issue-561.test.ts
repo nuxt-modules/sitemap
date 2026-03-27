@@ -19,7 +19,7 @@ describe('issue #561 - autoI18n: false generates empty sitemap', () => {
     expect(sitemap).not.toContain('sitemap_index')
   }, 60000)
 
-  it('should contain all locale routes with alternates', async () => {
+  it('should contain all locale routes without hreflang alternates', async () => {
     let sitemap = await $fetch('/sitemap.xml')
 
     // strip lastmod for cleaner assertions
@@ -39,8 +39,8 @@ describe('issue #561 - autoI18n: false generates empty sitemap', () => {
     expect(sitemap).toContain('/politique-de-confidentialite')
     expect(sitemap).toContain('/en/privacy-policy')
 
-    // should contain xhtml:link alternates
-    expect(sitemap).toContain('xhtml:link')
-    expect(sitemap).toContain('hreflang')
+    // autoI18n: false should suppress hreflang alternatives (#586)
+    expect(sitemap).not.toContain('xhtml:link')
+    expect(sitemap).not.toContain('hreflang')
   }, 60000)
 })

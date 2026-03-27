@@ -884,6 +884,7 @@ export default defineNuxtModule<ModuleOptions>({
           exclude: normalizeFilters(config.exclude) as (string | RegExp)[],
         },
         isI18nMicro: i18nModule === 'nuxt-i18n-micro',
+        autoI18n: !!resolvedAutoI18n,
       })
       if (!pageSource.length) {
         pageSource.push(nuxt.options.app.baseURL || '/')
