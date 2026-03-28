@@ -73,9 +73,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
     if (sitemapConfig.chunks || sitemapConfig._isChunking) {
       // Mark as chunking for later processing
       sitemapConfig._isChunking = true
-      sitemapConfig._chunkSize = typeof sitemapConfig.chunks === 'number'
-        ? sitemapConfig.chunks
-        : (sitemapConfig.chunkSize || defaultSitemapsChunkSize || 1000)
+      sitemapConfig._chunkSize = sitemapConfig.chunkSize || (typeof sitemapConfig.chunks === 'number' ? sitemapConfig.chunks : (defaultSitemapsChunkSize || 1000))
     }
     else {
       // Non-chunked sitemap
