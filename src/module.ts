@@ -807,6 +807,8 @@ export default defineNuxtModule<ModuleOptions>({
     }
     if (resolvedAutoI18n)
       runtimeConfig.autoI18n = resolvedAutoI18n
+    if (hasDisabledAutoI18n)
+      runtimeConfig.hasDisabledAutoI18n = true
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = runtimeConfig
 

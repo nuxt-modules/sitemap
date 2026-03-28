@@ -368,4 +368,27 @@ describe('parseHtmlExtractSitemapMeta', () => {
     `)
     expect(none).toBe(null)
   })
+
+  it('extracts alternatives from hreflang links', () => {
+    const output = parseHtmlExtractSitemapMeta(`
+    <head>
+      <link rel="alternate" hreflang="de-DE" href="https://example.de/about">
+      <link rel="alternate" hreflang="fr-FR" href="https://example.fr/about">
+    </head>
+    `, { alternatives: true })
+    expect(output?.alternatives).toEqual([
+      { hreflang: 'de-DE', href: '/about' },
+      { hreflang: 'fr-FR', href: '/about' },
+    ])
+  })
+
+  it('skips alternatives when alternatives option is false', () => {
+    const output = parseHtmlExtractSitemapMeta(`
+    <head>
+      <link rel="alternate" hreflang="de-DE" href="https://example.de/about">
+      <link rel="alternate" hreflang="fr-FR" href="https://example.fr/about">
+    </head>
+    `, { alternatives: false })
+    expect(output?.alternatives).toBeUndefined()
+  })
 })

@@ -92,7 +92,8 @@ export async function readSourcesFromFilesystem(filename) {
         lastmod: true,
         // when autoI18n is enabled, let the sitemap builder generate alternatives
         // based on i18n config instead of extracting from HTML (which can be incomplete)
-        alternatives: !options.autoI18n,
+        // when autoI18n is explicitly disabled, don't extract alternatives from HTML at all
+        alternatives: !options.autoI18n && !options.hasDisabledAutoI18n,
         resolveUrl(s) {
           // if the match is relative
           return s.startsWith('/') ? withSiteUrl(s) : s
