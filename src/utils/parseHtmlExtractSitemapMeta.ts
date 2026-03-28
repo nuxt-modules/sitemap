@@ -91,8 +91,11 @@ export function parseHtmlExtractSitemapMeta(html: string, options?: { images?: b
       if (options?.lastmod && element.name === 'meta') {
         const property = sanitizeString(attrs.property)
         const content = sanitizeString(attrs.content)
-        if (property === 'article:modified_time' && content && isValidDate(content)) {
-          articleModifiedTime = content
+        if ((property === 'article:modified_time' || property === 'article:published_time') && content && isValidDate(content)) {
+          // prioritize modified_time
+          if (property === 'article:modified_time' || !articleModifiedTime) {
+            articleModifiedTime = content
+          }
         }
       }
 
