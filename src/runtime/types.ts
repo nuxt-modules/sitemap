@@ -238,6 +238,7 @@ export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPr
   isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
+  hasDisabledAutoI18n?: boolean
   isMultiSitemap: boolean
   isI18nMapped: boolean
 }
