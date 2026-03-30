@@ -43,7 +43,7 @@ import {
   normalizeLocales,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNuxtContentVersion } from './utils-internal/kit'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
@@ -382,6 +382,11 @@ export default defineNuxtModule<ModuleOptions>({
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)
+
+    if (resolveNitroPreset() === 'vercel-edge') {
+      logger.warn('Runtime sitemaps are not supported on Vercel Edge, falling back to prerendering sitemaps.')
+      prerenderSitemap = true
+    }
 
     // zeroRuntime forces prerendering
     if (config.zeroRuntime && !prerenderSitemap) {
@@ -1071,7 +1076,7 @@ export async function readSourcesFromFilesystem() {
       handler: resolve(`${routesPath}/sitemap.xml`),
     })
 
-    setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources })
+    setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources, prerenderSitemap })
 
     // suggest zeroRuntime when no dynamic sources detected
     if (!config.zeroRuntime && !nuxt.options.dev && !nuxt.options._prepare) {
