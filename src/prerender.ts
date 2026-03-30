@@ -12,7 +12,7 @@ import { withSiteUrl } from 'nuxt-site-config/kit'
 import { dirname } from 'pathe'
 import { withBase } from 'ufo'
 import { splitForLocales } from './runtime/utils-pure'
-import { isNuxtGenerate, resolveNitroPreset } from './utils-internal/kit'
+import { isNuxtGenerate } from './utils-internal/kit'
 import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
@@ -33,14 +33,8 @@ export function includesSitemapRoot(sitemapName: string, routes: string[]) {
 
 const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/ // eslint-disable-line regexp/no-unused-capturing-group
 
-export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any> }, nuxt: Nuxt = useNuxt()) {
-  const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources } = _options
-  const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
-  let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(options.sitemapName, prerenderedRoutes)
-  if (resolveNitroPreset() === 'vercel-edge') {
-    logger.warn('Runtime sitemaps are not supported on Vercel Edge, falling back to prerendering sitemaps.')
-    prerenderSitemap = true
-  }
+export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any>, prerenderSitemap: boolean }, nuxt: Nuxt = useNuxt()) {
+  const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources, prerenderSitemap } = _options
   nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
   const shouldHookIntoPrerender = prerenderSitemap || (nuxt.options.nitro.prerender.routes.length && nuxt.options.nitro.prerender.crawlLinks)
