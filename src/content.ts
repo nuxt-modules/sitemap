@@ -33,7 +33,7 @@ const { defineSchema, asCollection, schema } = createContentSchemaFactory({
   fieldName: 'sitemap',
   label: 'sitemap',
   docsUrl: 'https://nuxtseo.com/sitemap/guides/content',
-  buildSchema: () => buildSitemapObjectSchema(z),
+  buildSchema: _z => buildSitemapObjectSchema(_z),
   onDefineSchema: (options: DefineSitemapSchemaOptions) => {
     if ('type' in options || 'source' in options)
       throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
