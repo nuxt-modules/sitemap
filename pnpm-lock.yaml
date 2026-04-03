@@ -149,9 +149,6 @@ importers:
 
   .:
     dependencies:
-      '@nuxt/devtools-kit':
-        specifier: 'catalog:'
-        version: 4.0.0-alpha.3(magicast@0.5.2)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 4.4.2(magicast@0.5.2)
@@ -167,9 +164,6 @@ importers:
       nuxt-site-config:
         specifier: 'catalog:'
         version: 4.0.7(@nuxt/schema@4.4.2)(magicast@0.5.2)(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.4)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.31)(better-sqlite3@12.8.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.8.0))(esbuild@0.27.4)(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(magicast@0.5.2)(optionator@0.9.4)(rolldown@1.0.0-rc.12)(rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-rc.12)(rollup@4.60.0))(rollup@4.60.0)(terser@5.46.0)(typescript@6.0.2)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@6.0.2))(yaml@2.8.3))(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.31(typescript@6.0.2))(zod@4.3.6)
-      nuxtseo-layer-devtools:
-        specifier: 'catalog:'
-        version: 5.1.0(8be64831a04117fce4308592e1a9047b)
       nuxtseo-shared:
         specifier: 'catalog:'
         version: 5.1.0(eaa5a927c0ad522847444c96d46f06d8)
@@ -185,15 +179,6 @@ importers:
       radix3:
         specifier: 'catalog:'
         version: 1.1.2
-      semver:
-        specifier: 'catalog:'
-        version: 7.7.4
-      sirv:
-        specifier: 'catalog:'
-        version: 3.0.2
-      std-env:
-        specifier: 'catalog:'
-        version: 4.0.0
       ufo:
         specifier: 'catalog:'
         version: 1.6.3
@@ -210,6 +195,9 @@ importers:
       '@nuxt/content':
         specifier: 'catalog:'
         version: 3.12.0(better-sqlite3@12.8.0)(magicast@0.5.2)
+      '@nuxt/devtools-kit':
+        specifier: 'catalog:'
+        version: 4.0.0-alpha.3(magicast@0.5.2)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))
       '@nuxt/module-builder':
         specifier: 'catalog:'
         version: 1.0.2(@nuxt/cli@3.34.0(@nuxt/schema@4.4.2)(cac@6.7.14)(magicast@0.5.2))(@vue/compiler-core@3.5.31)(esbuild@0.27.4)(typescript@6.0.2)(vue-tsc@3.2.6(typescript@6.0.2))(vue@3.5.31(typescript@6.0.2))
@@ -255,6 +243,18 @@ importers:
       nuxt-i18n-micro:
         specifier: 'catalog:'
         version: 3.15.1(magicast@0.5.2)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.3))(vue-router@5.0.4(@vue/compiler-sfc@3.5.31)(vue@3.5.31(typescript@6.0.2)))
+      nuxtseo-layer-devtools:
+        specifier: 'catalog:'
+        version: 5.1.0(8be64831a04117fce4308592e1a9047b)
+      semver:
+        specifier: 'catalog:'
+        version: 7.7.4
+      sirv:
+        specifier: 'catalog:'
+        version: 3.0.2
+      std-env:
+        specifier: 'catalog:'
+        version: 4.0.0
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
