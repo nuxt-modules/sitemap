@@ -37,6 +37,7 @@ const { defineSchema, asCollection, schema } = createContentSchemaFactory({
   onDefineSchema: (options: DefineSitemapSchemaOptions) => {
     if ('type' in options || 'source' in options)
       throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
+    warnIfZodMismatch(options?.z)
     if (options?.filter || options?.onUrl) {
       if (!options.name)
         throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
@@ -62,7 +63,43 @@ export function asSitemapCollection<T>(collection: Collection<T>, options?: Defi
     if (options.onUrl)
       collectionOnUrlFns.set(options.name, options.onUrl)
   }
-  return asCollection(collection)
+  try {
+    return asCollection(collection) as Collection<T>
+  }
+  catch (e) {
+    console.warn(
+      `[sitemap] Failed to apply sitemap schema to collection. This is likely a Zod version mismatch.`,
+      `Pass your Zod instance explicitly: \`defineSitemapSchema({ z })\`. See https://nuxtseo.com/sitemap/guides/content`,
+      `Error: ${(e as Error).message}`,
+    )
+    return collection
+  }
+}
+
+let _hasWarnedZodMismatch = false
+function warnIfZodMismatch(userZ?: typeof z) {
+  if (_hasWarnedZodMismatch || userZ)
+    return
+  // Detect mixed zod versions: zod 3 uses `_def` without `def`, zod 4 has both
+  const testSchema = z.object({}) as any
+  const hasV3 = '_def' in testSchema && !('def' in testSchema)
+  const hasV4 = 'def' in testSchema
+  // If both zod 3 and zod 4 are installed, `import { z } from 'zod'` may resolve
+  // to a different version than what @nuxt/content uses internally
+  if (hasV3 || hasV4) {
+    // Only warn if we can detect the version (always true), but the user hasn't passed z
+    // The real check: does our z produce schemas compatible with @nuxt/content's detectSchemaVendor?
+    // We can't know for sure without importing content, so just warn if zod 3 is resolved
+    // since @nuxt/content v3.12+ expects zod 4
+    if (hasV3) {
+      _hasWarnedZodMismatch = true
+      console.warn(
+        `[sitemap] Zod 3 detected but @nuxt/content v3 expects Zod 4.`,
+        `Pass your zod instance explicitly: \`defineSitemapSchema({ z })\`.`,
+        `See https://nuxtseo.com/sitemap/guides/content`,
+      )
+    }
+  }
 }
 
 function buildSitemapObjectSchema(_z: typeof z) {
