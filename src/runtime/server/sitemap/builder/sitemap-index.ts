@@ -282,8 +282,10 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
 }
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
-  // Check if should use cached version
-  if (!import.meta.dev && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
+  // Check if should use cached version.
+  // Skip caching during prerender: sources are written to disk by `prerender:done`, so
+  // an early crawl would otherwise poison the cache with an empty result.
+  if (!import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
     return buildSitemapIndexCached(resolvers.event, resolvers, runtimeConfig, nitro)
   }
   return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
