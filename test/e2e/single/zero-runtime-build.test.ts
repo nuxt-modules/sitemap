@@ -40,6 +40,8 @@ describe('zeroRuntime', () => {
             </url>
             <url>
                 <loc>https://nuxtseo.com/about</loc>
+                <changefreq>daily</changefreq>
+                <priority>0.8</priority>
             </url>
             <url>
                 <loc>https://nuxtseo.com/crawled</loc>
@@ -49,6 +51,8 @@ describe('zeroRuntime', () => {
             </url>
             <url>
                 <loc>https://nuxtseo.com/sub/page</loc>
+                <changefreq>weekly</changefreq>
+                <priority>0.5</priority>
             </url>
         </urlset>"
       `)

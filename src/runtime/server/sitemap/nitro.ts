@@ -185,8 +185,11 @@ const buildSitemapXmlCached = defineCachedFunction(
 export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
 
-  // Choose between cached or direct generation
-  const shouldCache = !import.meta.dev && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
+  // Choose between cached or direct generation.
+  // Skip caching during prerender: the crawl may run before `prerender:done` has written
+  // `global-sources.json`, so an early empty result would poison the cache and be returned
+  // on the follow-up render, shipping an empty sitemap.
+  const shouldCache = !import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
   const xml = shouldCache
     ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig)
     : await buildSitemapXml(event, definition, resolvers, runtimeConfig)
