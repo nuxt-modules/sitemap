@@ -20,9 +20,9 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
   if (url.loc)
     xml += `${I2}<loc>${xmlEscape(url.loc)}</loc>${NL}`
   if (url.lastmod)
-    xml += `${I2}<lastmod>${url.lastmod}</lastmod>${NL}`
+    xml += `${I2}<lastmod>${xmlEscape(url.lastmod)}</lastmod>${NL}`
   if (url.changefreq)
-    xml += `${I2}<changefreq>${url.changefreq}</changefreq>${NL}`
+    xml += `${I2}<changefreq>${xmlEscape(url.changefreq)}</changefreq>${NL}`
   if (url.priority !== undefined) {
     const p = typeof url.priority === 'number' ? url.priority : Number.parseFloat(url.priority)
     xml += `${I2}<priority>${p.toFixed(1)}</priority>${NL}`
@@ -62,27 +62,27 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
       if (video.player_loc)
         xml += `${I3}<video:player_loc>${xmlEscape(video.player_loc as string)}</video:player_loc>${NL}`
       if (video.duration !== undefined)
-        xml += `${I3}<video:duration>${video.duration}</video:duration>${NL}`
+        xml += `${I3}<video:duration>${escapeValueForXml(video.duration)}</video:duration>${NL}`
       if (video.expiration_date)
-        xml += `${I3}<video:expiration_date>${video.expiration_date}</video:expiration_date>${NL}`
+        xml += `${I3}<video:expiration_date>${xmlEscape(video.expiration_date)}</video:expiration_date>${NL}`
       if (video.rating !== undefined)
-        xml += `${I3}<video:rating>${video.rating}</video:rating>${NL}`
+        xml += `${I3}<video:rating>${escapeValueForXml(video.rating)}</video:rating>${NL}`
       if (video.view_count !== undefined)
-        xml += `${I3}<video:view_count>${video.view_count}</video:view_count>${NL}`
+        xml += `${I3}<video:view_count>${escapeValueForXml(video.view_count)}</video:view_count>${NL}`
       if (video.publication_date)
-        xml += `${I3}<video:publication_date>${video.publication_date}</video:publication_date>${NL}`
+        xml += `${I3}<video:publication_date>${xmlEscape(video.publication_date)}</video:publication_date>${NL}`
       if (video.family_friendly !== undefined)
         xml += `${I3}<video:family_friendly>${yesNo(video.family_friendly)}</video:family_friendly>${NL}`
       if (video.restriction)
-        xml += `${I3}<video:restriction relationship="${video.restriction.relationship || 'allow'}">${xmlEscape(video.restriction.restriction)}</video:restriction>${NL}`
+        xml += `${I3}<video:restriction relationship="${xmlEscape(video.restriction.relationship || 'allow')}">${xmlEscape(video.restriction.restriction)}</video:restriction>${NL}`
       if (video.platform)
-        xml += `${I3}<video:platform relationship="${video.platform.relationship || 'allow'}">${xmlEscape(video.platform.platform)}</video:platform>${NL}`
+        xml += `${I3}<video:platform relationship="${xmlEscape(video.platform.relationship || 'allow')}">${xmlEscape(video.platform.platform)}</video:platform>${NL}`
       if (video.requires_subscription !== undefined)
         xml += `${I3}<video:requires_subscription>${yesNo(video.requires_subscription)}</video:requires_subscription>${NL}`
       if (video.price) {
         for (const price of video.price) {
-          const c = price.currency ? ` currency="${price.currency}"` : ''
-          const t = price.type ? ` type="${price.type}"` : ''
+          const c = price.currency ? ` currency="${xmlEscape(price.currency)}"` : ''
+          const t = price.type ? ` type="${xmlEscape(price.type)}"` : ''
           xml += `${I3}<video:price${c}${t}>${xmlEscape(String(price.price ?? ''))}</video:price>${NL}`
         }
       }
@@ -112,7 +112,7 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
     if (url.news.title)
       xml += `${I3}<news:title>${xmlEscape(url.news.title)}</news:title>${NL}`
     if (url.news.publication_date)
-      xml += `${I3}<news:publication_date>${url.news.publication_date}</news:publication_date>${NL}`
+      xml += `${I3}<news:publication_date>${xmlEscape(url.news.publication_date)}</news:publication_date>${NL}`
     xml += `${I2}</news:news>${NL}`
   }
 

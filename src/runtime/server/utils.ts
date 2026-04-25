@@ -8,7 +8,7 @@ import { normalizeRuntimeFilters } from '../utils-pure'
 export * from '../utils-pure'
 
 // XML escape function for content inserted into XML/XSL
-export function xmlEscape(str: string): string {
+export function xmlEscape(str: string | number | boolean | Date): string {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
