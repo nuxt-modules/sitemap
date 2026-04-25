@@ -1,8 +1,8 @@
 import type { H3Event } from 'h3'
 import type { ModuleRuntimeConfig } from '../types'
-import { useRuntimeConfig } from 'nitropack/runtime'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import { normalizeRuntimeFilters } from '../utils-pure'
 
 export * from '../utils-pure'
