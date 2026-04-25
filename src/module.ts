@@ -410,37 +410,32 @@ export default defineNuxtModule<ModuleOptions>({
         'X-Sitemap-Prerendered': new Date().toISOString(),
       }
     }
-    if (config.xsl) {
-      nuxt.options.nitro.routeRules[config.xsl] = {
-        headers: {
-          'Content-Type': 'application/xslt+xml',
-        },
-      }
-    }
+    // The xsl handler sets its own Content-Type header, so no routeRule needed for it.
+    // Only register the per-sitemap routeRules entries when they actually carry content.
+    // An empty {} rule still gets matched on every request via the routeRules matcher,
+    // adding measurable overhead on unrelated routes for no benefit.
+    const hasRouteRuleContent = Object.keys(routeRules).length > 0
     if (usingMultiSitemaps) {
       nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: withBase('/sitemap_index.xml', nuxt.options.app.baseURL) }
-      nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
-      if (typeof config.sitemaps === 'object') {
-        for (const k in config.sitemaps) {
-          if (k === 'index')
-            continue
-          // Apply route rules to the base sitemap
-          nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}.xml`)] = routeRules
+      if (hasRouteRuleContent) {
+        nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
+        if (typeof config.sitemaps === 'object') {
+          for (const k in config.sitemaps) {
+            if (k === 'index')
+              continue
+            nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}.xml`)] = routeRules
 
-          // Apply route rules to chunked sitemaps if enabled
-          const sitemapConfig = config.sitemaps[k]!
-          if (sitemapConfig.chunks) {
-            // Support chunked sitemap names (e.g., posts-0.xml, posts-1.xml, etc.)
-            nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}-*.xml`)] = routeRules
+            const sitemapConfig = config.sitemaps[k]!
+            if (sitemapConfig.chunks)
+              nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/${k}-*.xml`)] = routeRules
           }
         }
-      }
-      else {
-        // Auto-chunking: support the chunked generated sitemap names (0.xml, 1.xml, etc.)
-        nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/[0-9]+.xml`)] = routeRules
+        else {
+          nuxt.options.nitro.routeRules[joinURL(config.sitemapsPathPrefix || '', `/[0-9]+.xml`)] = routeRules
+        }
       }
     }
-    else {
+    else if (hasRouteRuleContent) {
       nuxt.options.nitro.routeRules[`/${config.sitemapName}`] = routeRules
     }
 
