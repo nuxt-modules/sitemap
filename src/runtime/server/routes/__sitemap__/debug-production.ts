@@ -59,7 +59,7 @@ export default defineEventHandler(async (e): Promise<ProductionDebugResponse | R
     return { url: sitemapUrl, isIndex: false, sitemaps: [], warnings: [], error: `Failed to fetch sitemap: ${xml.message}` }
 
   if (isSitemapIndex(xml)) {
-    const { entries, warnings } = parseSitemapIndex(xml)
+    const { entries, warnings } = await parseSitemapIndex(xml)
     const sitemaps: ProductionSitemapEntry[] = await Promise.all(
       entries.map(async (entry) => {
         const childXml = await fetchXml(entry.loc).catch((err: Error) => err)
