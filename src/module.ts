@@ -814,8 +814,23 @@ export default defineNuxtModule<ModuleOptions>({
       runtimeConfig.autoI18n = resolvedAutoI18n
     if (hasDisabledAutoI18n)
       runtimeConfig.hasDisabledAutoI18n = true
+
+    // Split into a small dynamic slice (kept in runtimeConfig for env-var overrides)
+    // and a large static slice (emitted as a virtual module). Nitro deep-clones the
+    // entire runtimeConfig on the first useRuntimeConfig(event) per request, so anything
+    // sitting in there is per-request overhead for every route in the app, not just sitemap routes.
+    const dynamicRuntimeConfig = {
+      cacheMaxAgeSeconds: runtimeConfig.cacheMaxAgeSeconds,
+      debug: runtimeConfig.debug,
+    }
+    const { cacheMaxAgeSeconds: _c, debug: _d, ...staticRuntimeConfig } = runtimeConfig
     // @ts-expect-error untyped
-    nuxt.options.runtimeConfig.sitemap = runtimeConfig
+    nuxt.options.runtimeConfig.sitemap = dynamicRuntimeConfig
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.virtual = nitroConfig.virtual || {}
+      nitroConfig.virtual['#sitemap-virtual/static-config.mjs']
+        = `export default ${JSON.stringify(staticRuntimeConfig)}`
+    })
 
     // debug endpoints - skip in production zeroRuntime as they pull in full sitemap code
     if ((config.debug || nuxt.options.dev) && !(config.zeroRuntime && !nuxt.options.dev)) {

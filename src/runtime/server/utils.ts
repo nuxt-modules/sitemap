@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3'
 import type { ModuleRuntimeConfig } from '../types'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { useRuntimeConfig } from 'nitropack/runtime'
 import { normalizeRuntimeFilters } from '../utils-pure'
 
@@ -16,15 +18,15 @@ export function xmlEscape(str: string): string {
 }
 
 export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
-  // we need to clone with this hack so that we can write to the config
-  const clone = JSON.parse(JSON.stringify(useRuntimeConfig(e).sitemap)) as any as ModuleRuntimeConfig
-  // normalize the filters for runtime
+  // Static fields live in a virtual module; only env-overridable fields go through runtimeConfig.
+  // we still need to clone so callers can mutate without affecting the shared module-scope copy
+  const clone = JSON.parse(JSON.stringify(staticConfig)) as ModuleRuntimeConfig
   for (const k in clone.sitemaps) {
     const sitemap = clone.sitemaps[k]!
     sitemap.include = normalizeRuntimeFilters(sitemap.include)
     sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
     clone.sitemaps[k] = sitemap
   }
-  // avoid mutation
+  Object.assign(clone, useRuntimeConfig(e).sitemap)
   return Object.freeze(clone)
 }
