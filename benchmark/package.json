@@ -1,0 +1,14 @@
+{
+  "name": "sitemap-benchmark",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "bench": "node bench.mjs"
+  },
+  "dependencies": {
+    "@nuxtjs/sitemap": "workspace:*",
+    "autocannon": "catalog:",
+    "nuxt": "catalog:",
+    "vue": "catalog:"
+  }
+}

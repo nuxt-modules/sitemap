@@ -5,6 +5,7 @@
     "test/**",
     "playground",
     "examples",
+    "benchmark",
     "src/runtime/server/routes/__sitemap__/nuxt-content-urls-v3.ts"
   ]
 }

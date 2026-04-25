@@ -9,6 +9,7 @@ export default antfu(
       'test/fixtures/**',
       'playground/**',
       'docs/**',
+      'benchmark/**',
     ],
     rules: {
       'no-use-before-define': 'off',
