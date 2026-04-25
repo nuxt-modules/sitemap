@@ -9,6 +9,7 @@ packages:
   - devtools
   - test/fixtures/**
   - playground
+  - benchmark
   - '!examples/**'
 overrides:
   '@vitejs/plugin-vue': ^6.0.6
@@ -30,6 +31,7 @@ catalog:
   '@nuxtjs/robots': ^6.0.7
   '@vue/test-utils': ^2.4.6
   '@vueuse/core': ^14.2.1
+  autocannon: ^8.0.0
   better-sqlite3: ^12.9.0
   bumpp: ^11.0.1
   consola: ^3.4.2
