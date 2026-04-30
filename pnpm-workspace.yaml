@@ -23,7 +23,7 @@ catalog:
   '@iconify-json/simple-icons': ^1.2.79
   '@nuxt/content': ^3.13.0
   '@nuxt/devtools-kit': 4.0.0-alpha.3
-  '@nuxt/kit': ^4.4.2
+  '@nuxt/kit': ^4.4.4
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.2
   '@nuxt/ui': ^4.7.0
@@ -41,7 +41,7 @@ catalog:
   execa: ^9.6.1
   fast-xml-parser: ^5.7.2
   happy-dom: ^20.9.0
-  nuxt: ^4.4.2
+  nuxt: ^4.4.4
   nuxt-i18n-micro: ^3.17.0
   nuxt-site-config: ^4.0.8
   nuxtseo-layer-devtools: ^5.1.3
