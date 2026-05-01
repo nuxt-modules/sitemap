@@ -1,3 +1,4 @@
+import type { H3Event } from 'h3'
 import type { NitroApp } from 'nitropack/types'
 import type {
   AlternativeEntry,
@@ -11,7 +12,10 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
-import { useRuntimeConfig } from 'nitropack/runtime'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
+import { getHeader } from 'h3'
+import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
 import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
 import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
@@ -19,6 +23,8 @@ import { preNormalizeEntry } from '../urlset/normalise'
 import { sortInPlace } from '../urlset/sort'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
+
+const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string
@@ -225,72 +231,32 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   return _urls
 }
 
-export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ urls: ResolvedSitemapUrl[], failedSources: Array<{ url: string, error: string }> }> {
-  // 0. resolve sources
-  // 1. normalise
-  // 2. filter
-  // 3. enhance
-  // 4. sort
-  // 5. chunking
-  // 6. nitro hooks
-  // 7. normalise and sort again
-  const {
-    sitemaps,
-    // enhancing
-    autoI18n,
-    isI18nMapped,
-    isMultiSitemap,
-    // sorting
-    sortEntries,
-    // chunking
-    defaultSitemapsChunkSize,
-  } = runtimeConfig
+export interface ResolvedSitemapUrlsResult {
+  urls: ResolvedSitemapUrl[]
+  failedSources: Array<{ url: string, error: string }>
+}
 
-  // Parse chunk information from the sitemap name
-  const chunkSize = defaultSitemapsChunkSize || undefined
-  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, chunkSize)
+// Chunk-agnostic computation: fetch sources, run hooks, normalise, filter, sort.
+// Returns the full sorted array; chunked sitemaps slice from this on the way out.
+// All chunks of the same base sitemap share one cache entry.
+export async function buildResolvedSitemapUrls(
+  effectiveSitemap: SitemapDefinition,
+  matchName: string,
+  isChunked: boolean,
+  resolvers: NitroUrlResolvers,
+  runtimeConfig: ModuleRuntimeConfig,
+  nitro?: NitroApp,
+): Promise<ResolvedSitemapUrlsResult> {
+  const { sitemaps, autoI18n, isI18nMapped, isMultiSitemap, sortEntries } = runtimeConfig
 
-  function maybeSort(urls: ResolvedSitemapUrl[]) {
-    return sortEntries ? sortInPlace(urls) : urls
-  }
-
-  function maybeSlice<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(urls: T): T {
-    return sliceUrlsForChunk(urls, sitemap.sitemapName, sitemaps, chunkSize) as T
-  }
-  if (autoI18n?.differentDomains) {
-    const domain = autoI18n.locales.find(e => e.language === sitemap.sitemapName || e.code === sitemap.sitemapName)?.domain
-    if (domain) {
-      const _tester = resolvers.canonicalUrlResolver
-      resolvers.canonicalUrlResolver = (path: string) => resolveSitePath(path, {
-        absolute: true,
-        withBase: false,
-        siteUrl: withHttps(domain),
-        trailingSlash: _tester('/test/').endsWith('/'),
-        base: '/',
-      })
-    }
-  }
-  // 0. resolve sources
-  // For chunked sitemaps, we need to use the base sitemap's sources
-  let effectiveSitemap = sitemap
-  const baseSitemapName = chunkInfo.baseSitemapName
-
-  // If this is a chunked sitemap, use the base sitemap config for sources
-  if (chunkInfo.isChunked && baseSitemapName !== sitemap.sitemapName && sitemaps[baseSitemapName]) {
-    effectiveSitemap = sitemaps[baseSitemapName]
-  }
-
-  // always fetch all sitemap data for the primary sitemap
-  // Note: globalSitemapSources() and childSitemapSources() return fresh copies
   let sourcesInput = effectiveSitemap.includeAppSources
     ? [...await globalSitemapSources(), ...await childSitemapSources(effectiveSitemap)]
     : await childSitemapSources(effectiveSitemap)
 
-  // Allow hook to modify sources before resolution
   if (nitro && resolvers.event) {
     const ctx: SitemapSourcesHookCtx = {
       event: resolvers.event,
-      sitemapName: baseSitemapName,
+      sitemapName: matchName,
       sources: sourcesInput,
     }
     await nitro.hooks.callHook('sitemap:sources', ctx)
@@ -299,7 +265,6 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
 
   const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
 
-  // Extract failed sources for display
   const failedSources = sources
     .filter(source => source.error && source._isFailure)
     .map(source => ({
@@ -309,18 +274,17 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
 
   const resolvedCtx: SitemapInputCtx = {
     urls: sources.flatMap(s => s.urls),
-    sitemapName: sitemap.sitemapName,
+    sitemapName: matchName,
     event: resolvers.event,
   }
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
+  const enhancedUrls = resolveSitemapEntries(effectiveSitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
 
   if (isMultiSitemap) {
     const sitemapNames = Object.keys(sitemaps).filter(k => k !== 'index')
     // @ts-expect-error loose typing
     const warnedSitemaps = nitro?._sitemapWarnedSitemaps || new Set<string>()
     for (const e of enhancedUrls) {
-      // Check if _sitemap matches any sitemap name directly OR via locale prefix (e.g., "en-US" matches "en-US-pages")
       const hasMatchingSitemap = typeof e._sitemap === 'string'
         && (sitemapNames.includes(e._sitemap) || (isI18nMapped && sitemapNames.some(name => name.startsWith(`${e._sitemap}-`))))
       if (typeof e._sitemap === 'string' && !hasMatchingSitemap) {
@@ -336,24 +300,99 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
     }
   }
 
-  // 3. filtered urls
   const filteredUrls = enhancedUrls.filter((e) => {
     if (e._sitemap === false)
       return false
-    if (isMultiSitemap && e._sitemap && sitemap.sitemapName) {
-      if (sitemap._isChunking)
-        return e._sitemap === baseSitemapName || (isI18nMapped && sitemap.sitemapName.startsWith(`${e._sitemap}-`))
-      // Match exact sitemap name OR locale-prefixed sitemap (e.g., "en-US" matches "en-US-pages")
-      return e._sitemap === sitemap.sitemapName || (isI18nMapped && sitemap.sitemapName.startsWith(`${e._sitemap}-`))
+    if (isMultiSitemap && e._sitemap && matchName) {
+      if (isChunked)
+        return e._sitemap === matchName
+      return e._sitemap === matchName || (isI18nMapped && matchName.startsWith(`${e._sitemap}-`))
     }
     return true
   })
-  // 4. sort
-  const sortedUrls = maybeSort(filteredUrls)
-  // 5. maybe slice for chunked
-  // if we're rendering a partial sitemap, slice the entries
-  const urls = maybeSlice(sortedUrls)
+
+  const urls = sortEntries ? sortInPlace(filteredUrls) : filteredUrls
   return { urls, failedSources }
+}
+
+export const buildResolvedSitemapUrlsCached = defineCachedFunction(
+  async (
+    _event: H3Event,
+    effectiveSitemap: SitemapDefinition,
+    matchName: string,
+    isChunked: boolean,
+    resolvers: NitroUrlResolvers,
+    runtimeConfig: ModuleRuntimeConfig,
+    nitro?: NitroApp,
+  ) => buildResolvedSitemapUrls(effectiveSitemap, matchName, isChunked, resolvers, runtimeConfig, nitro),
+  {
+    name: 'sitemap:resolved-urls',
+    group: 'sitemap',
+    base: 'sitemap',
+    maxAge: SERVER_CACHE_MAX_AGE,
+    getKey: (event, _effectiveSitemap, matchName, isChunked) => {
+      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
+      return `resolved-${isChunked ? 'chunked-' : ''}${matchName}-${proto}-${host}`
+    },
+    swr: true,
+  },
+)
+
+// Routes between Nitro's storage-backed cache (production) and direct execution. Chunks of the
+// same base sitemap share one cache entry so the source fetch + normalize + sort runs once per
+// `cacheMaxAgeSeconds` window. Edge-runtime safe: relies on Nitro's storage layer, no module
+// state. Dev and prerender skip the cache (prerender to avoid poisoning from early empty-source
+// reads; dev to keep iteration fast).
+export async function getResolvedSitemapUrls(
+  effectiveSitemap: SitemapDefinition,
+  matchName: string,
+  isChunked: boolean,
+  resolvers: NitroUrlResolvers,
+  runtimeConfig: ModuleRuntimeConfig,
+  nitro?: NitroApp,
+): Promise<ResolvedSitemapUrlsResult> {
+  const event = resolvers.event
+  const shouldCache = !import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
+  if (shouldCache && event) {
+    return buildResolvedSitemapUrlsCached(event, effectiveSitemap, matchName, isChunked, resolvers, runtimeConfig, nitro)
+  }
+  return buildResolvedSitemapUrls(effectiveSitemap, matchName, isChunked, resolvers, runtimeConfig, nitro)
+}
+
+export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<ResolvedSitemapUrlsResult> {
+  const { sitemaps, autoI18n, defaultSitemapsChunkSize } = runtimeConfig
+
+  const chunkSize = defaultSitemapsChunkSize || undefined
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, chunkSize)
+
+  if (autoI18n?.differentDomains) {
+    const domain = autoI18n.locales.find(e => e.language === sitemap.sitemapName || e.code === sitemap.sitemapName)?.domain
+    if (domain) {
+      const _tester = resolvers.canonicalUrlResolver
+      resolvers.canonicalUrlResolver = (path: string) => resolveSitePath(path, {
+        absolute: true,
+        withBase: false,
+        siteUrl: withHttps(domain),
+        trailingSlash: _tester('/test/').endsWith('/'),
+        base: '/',
+      })
+    }
+  }
+
+  // For chunked sitemaps the base sitemap config holds the sources; all chunks share one cache entry.
+  let effectiveSitemap = sitemap
+  const baseSitemapName = chunkInfo.baseSitemapName
+  if (chunkInfo.isChunked && baseSitemapName !== sitemap.sitemapName && sitemaps[baseSitemapName]) {
+    effectiveSitemap = sitemaps[baseSitemapName]
+  }
+
+  const matchName = chunkInfo.isChunked ? baseSitemapName : sitemap.sitemapName
+  const resolved = await getResolvedSitemapUrls(effectiveSitemap, matchName, chunkInfo.isChunked, resolvers, runtimeConfig, nitro)
+
+  // Slice last so all chunks of the same base reuse the cached sorted array.
+  const urls = sliceUrlsForChunk(resolved.urls, sitemap.sitemapName, sitemaps, chunkSize)
+  return { urls, failedSources: resolved.failedSources }
 }
 
 export { urlsToXml } from './xml'

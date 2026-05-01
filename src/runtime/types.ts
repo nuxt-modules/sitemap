@@ -342,6 +342,16 @@ export interface SitemapDefinition {
    */
   chunkSize?: number
   /**
+   * Pre-declare the number of chunks this sitemap will produce. When set, the sitemap index
+   * renders this many chunk entries without fetching the source data — useful at very large
+   * scale where the cold-start fetch is the bottleneck. Per-chunk renders still fetch on
+   * demand and slice. If the actual data produces fewer URLs than declared, tail chunks render
+   * empty; if more, the extras are unreachable. Update this when your data set grows.
+   *
+   * @example 100
+   */
+  chunkCount?: number
+  /**
    * @internal
    */
   _route?: string
