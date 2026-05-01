@@ -11,6 +11,8 @@ import type {
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { defu } from 'defu'
 import { createError, getHeader, getQuery, setHeader } from 'h3'
 import { defineCachedFunction, useNitroApp } from 'nitropack/runtime'
@@ -20,6 +22,10 @@ import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
+
+// Read at module init: defineCachedFunction takes a static maxAge. Falls back to 10 minutes
+// when caching is disabled in static config (still bypassed at request time via shouldCache).
+const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 interface SitemapNitroApp extends NitroApp {
   _sitemapWarned?: boolean
@@ -169,7 +175,7 @@ const buildSitemapXmlCached = defineCachedFunction(
   {
     name: 'sitemap:xml',
     group: 'sitemap',
-    maxAge: 60 * 10, // Default 10 minutes
+    maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap', // Use the sitemap storage
     getKey: (event: H3Event, definition: SitemapDefinition) => {
       // Include headers that could affect the output in the cache key

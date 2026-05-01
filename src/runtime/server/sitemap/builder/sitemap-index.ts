@@ -3,21 +3,18 @@ import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
-  ResolvedSitemapUrl,
   SitemapIndexEntry,
-  SitemapInputCtx,
-  SitemapSourcesHookCtx,
-  SitemapUrl,
 } from '../../../types'
-import { defu } from 'defu'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { getHeader } from 'h3'
-import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
+import { defineCachedFunction } from 'nitropack/runtime'
 import { joinURL, withQuery } from 'ufo'
 import { normaliseDate } from '../urlset/normalise'
-import { sortInPlace } from '../urlset/sort'
-import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
-import { resolveSitemapEntries } from './sitemap'
+import { getResolvedSitemapUrls } from './sitemap'
 import { escapeValueForXml } from './xml'
+
+const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 // Create cached wrapper for sitemap index building
 const buildSitemapIndexCached = defineCachedFunction(
@@ -27,7 +24,7 @@ const buildSitemapIndexCached = defineCachedFunction(
   {
     name: 'sitemap:index',
     group: 'sitemap',
-    maxAge: 60 * 10, // 10 minutes default
+    maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap', // Use the sitemap storage
     getKey: (event: H3Event) => {
       // Include headers that could affect the output in the cache key
@@ -42,24 +39,15 @@ const buildSitemapIndexCached = defineCachedFunction(
 async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ entries: SitemapIndexEntry[], failedSources: Array<{ url: string, error: string }> }> {
   const {
     sitemaps,
-    // enhancing
     autoLastmod,
-    // chunking
     defaultSitemapsChunkSize,
-    autoI18n,
-    isI18nMapped,
-    sortEntries,
     sitemapsPathPrefix,
   } = runtimeConfig
 
   if (!sitemaps)
     throw new Error('Attempting to build a sitemap index without required `sitemaps` configuration.')
 
-  function maybeSort(urls: ResolvedSitemapUrl[]) {
-    return sortEntries ? sortInPlace(urls) : urls
-  }
-
-  const chunks: Record<string | number, { urls: SitemapUrl[] }> = {}
+  const nonChunkedNames: string[] = []
   const allFailedSources: Array<{ url: string, error: string }> = []
 
   // Process all sitemaps to determine chunks
@@ -76,149 +64,72 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       sitemapConfig._chunkSize = sitemapConfig.chunkSize || (typeof sitemapConfig.chunks === 'number' ? sitemapConfig.chunks : (defaultSitemapsChunkSize || 1000))
     }
     else {
-      // Non-chunked sitemap
-      chunks[sitemapName] = chunks[sitemapName] || { urls: [] }
+      nonChunkedNames.push(sitemapName)
     }
   }
 
-  // Handle auto-chunking if enabled
+  // sitemap.org defines index <lastmod> as the file's modification time, not the max of URL
+  // lastmods inside it. Our default sort is by `loc`, so per-chunk URL lastmods were already
+  // misleading. Emit `new Date()` when autoLastmod is on, otherwise no <lastmod>. This avoids
+  // a slice/filter/sort pass per chunk and lets us count without holding URLs in memory.
+  const indexLastmod = autoLastmod ? normaliseDate(new Date()) : undefined
+  const entries: SitemapIndexEntry[] = []
+
+  // Auto-chunking: count URLs to know how many chunk entries to emit. Shares cache with the
+  // chunk handler (matchName 'sitemap', isChunked true) so the source fetch is one-shot.
   if (typeof sitemaps.chunks !== 'undefined') {
     const sitemap = sitemaps.chunks
-    // we need to figure out how many entries we're dealing with
-    // Note: globalSitemapSources() returns a fresh copy
-    let sourcesInput = await globalSitemapSources()
-
-    // Allow hook to modify sources before resolution
-    if (nitro && resolvers.event) {
-      const ctx: SitemapSourcesHookCtx = {
-        event: resolvers.event,
-        sitemapName: sitemap.sitemapName,
-        sources: sourcesInput,
+    const resolved = await getResolvedSitemapUrls(sitemap, 'sitemap', true, resolvers, runtimeConfig, nitro)
+    allFailedSources.push(...resolved.failedSources)
+    const chunkCount = Math.ceil(resolved.urls.length / (defaultSitemapsChunkSize as number))
+    for (let i = 0; i < chunkCount; i++) {
+      const entry: SitemapIndexEntry = {
+        _sitemapName: String(i),
+        sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${i}.xml`)),
       }
-      await nitro.hooks.callHook('sitemap:sources', ctx)
-      sourcesInput = ctx.sources
+      if (indexLastmod)
+        entry.lastmod = indexLastmod
+      entries.push(entry)
     }
-
-    const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
-
-    // Collect failed sources
-    const failedSources = sources
-      .filter(source => source.error && source._isFailure)
-      .map(source => ({
-        url: typeof source.fetch === 'string' ? source.fetch : (source.fetch?.[0] || 'unknown'),
-        error: source.error || 'Unknown error',
-      }))
-    allFailedSources.push(...failedSources)
-
-    const resolvedCtx: SitemapInputCtx = {
-      urls: sources.flatMap(s => s.urls),
-      sitemapName: sitemap.sitemapName,
-      event: resolvers.event,
-    }
-    await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-    const normalisedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
-    // 2. enhance
-    const enhancedUrls: ResolvedSitemapUrl[] = normalisedUrls
-      .map(e => defu(e, sitemap.defaults) as ResolvedSitemapUrl)
-    const sortedUrls = maybeSort(enhancedUrls)
-    // split into the max size which should be 1000
-    sortedUrls.forEach((url, i) => {
-      const chunkIndex = Math.floor(i / (defaultSitemapsChunkSize as number))
-      chunks[chunkIndex] = chunks[chunkIndex] || { urls: [] }
-      chunks[chunkIndex].urls.push(url)
-    })
   }
 
-  const entries: SitemapIndexEntry[] = []
-  // Process regular chunks
-  for (const name in chunks) {
-    const sitemap = chunks[name]!
+  // Non-chunked named sitemaps: just emit one entry each, no fetch.
+  for (const name of nonChunkedNames) {
     const entry: SitemapIndexEntry = {
       _sitemapName: name,
       sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${name}.xml`)),
     }
-    let lastmod = sitemap.urls
-      .filter(a => !!a?.lastmod)
-      .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
-      .sort((a?: Date, b?: Date) => (b?.getTime() || 0) - (a?.getTime() || 0))?.[0]
-    if (!lastmod && autoLastmod)
-      lastmod = new Date()
-
-    if (lastmod)
-      entry.lastmod = normaliseDate(lastmod)
+    if (indexLastmod)
+      entry.lastmod = indexLastmod
     entries.push(entry)
   }
 
-  // Process chunked named sitemaps
+  // Chunked named sitemaps. Skip the source fetch when `chunkCount` is declared upfront.
   for (const sitemapName in sitemaps) {
     const sitemapConfig = sitemaps[sitemapName]!
     if (sitemapName !== 'index' && sitemapConfig._isChunking) {
       const chunkSize = sitemapConfig._chunkSize || defaultSitemapsChunkSize || 1000
 
-      // We need to determine how many chunks this sitemap will have
-      // This requires knowing the total count of URLs, which we'll get from sources
-      // Note: globalSitemapSources() and childSitemapSources() return fresh copies
-      let sourcesInput = sitemapConfig.includeAppSources
-        ? [...await globalSitemapSources(), ...await childSitemapSources(sitemapConfig)]
-        : await childSitemapSources(sitemapConfig)
-
-      // Allow hook to modify sources before resolution
-      if (nitro && resolvers.event) {
-        const ctx: SitemapSourcesHookCtx = {
-          event: resolvers.event,
-          sitemapName: sitemapConfig.sitemapName,
-          sources: sourcesInput,
-        }
-        await nitro.hooks.callHook('sitemap:sources', ctx)
-        sourcesInput = ctx.sources
+      let chunkCount: number
+      if (typeof sitemapConfig.chunkCount === 'number' && sitemapConfig.chunkCount > 0) {
+        chunkCount = sitemapConfig.chunkCount
+      }
+      else {
+        const resolved = await getResolvedSitemapUrls(sitemapConfig, sitemapName, true, resolvers, runtimeConfig, nitro)
+        allFailedSources.push(...resolved.failedSources)
+        chunkCount = Math.ceil(resolved.urls.length / chunkSize)
       }
 
-      const sources = await resolveSitemapSources(sourcesInput, resolvers.event)
-
-      // Collect failed sources
-      const failedSources = sources
-        .filter(source => source.error && source._isFailure)
-        .map(source => ({
-          url: typeof source.fetch === 'string' ? source.fetch : (source.fetch?.[0] || 'unknown'),
-          error: source.error || 'Unknown error',
-        }))
-      allFailedSources.push(...failedSources)
-
-      const resolvedCtx: SitemapInputCtx = {
-        urls: sources.flatMap(s => s.urls),
-        sitemapName: sitemapConfig.sitemapName,
-        event: resolvers.event,
-      }
-      await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
-
-      const normalisedUrls = resolveSitemapEntries(sitemapConfig, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
-      const totalUrls = normalisedUrls.length
-      const chunkCount = Math.ceil(totalUrls / chunkSize)
-
-      // Store chunk count for validation in route handler
       sitemapConfig._chunkCount = chunkCount
 
-      // Create entries for each chunk
       for (let i = 0; i < chunkCount; i++) {
         const chunkName = `${sitemapName}-${i}`
         const entry: SitemapIndexEntry = {
           _sitemapName: chunkName,
           sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${chunkName}.xml`)),
         }
-
-        // Get the URLs for this chunk to find lastmod
-        const chunkUrls = normalisedUrls.slice(i * chunkSize, (i + 1) * chunkSize)
-        let lastmod = chunkUrls
-          .filter(a => !!a?.lastmod)
-          .map(a => typeof a.lastmod === 'string' ? new Date(a.lastmod) : a.lastmod)
-          .sort((a?: Date, b?: Date) => (b?.getTime() || 0) - (a?.getTime() || 0))?.[0]
-
-        if (!lastmod && autoLastmod)
-          lastmod = new Date()
-
-        if (lastmod)
-          entry.lastmod = normaliseDate(lastmod)
-
+        if (indexLastmod)
+          entry.lastmod = indexLastmod
         entries.push(entry)
       }
     }

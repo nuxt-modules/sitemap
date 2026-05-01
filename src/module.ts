@@ -818,7 +818,10 @@ export default defineNuxtModule<ModuleOptions>({
       cacheMaxAgeSeconds: runtimeConfig.cacheMaxAgeSeconds,
       debug: runtimeConfig.debug,
     }
-    const { cacheMaxAgeSeconds: _c, debug: _d, ...staticRuntimeConfig } = runtimeConfig
+    // cacheMaxAgeSeconds is duplicated: dynamic copy lets users override the HTTP cache header via
+    // env vars at runtime; static copy is read at server startup to size the in-memory cache layer
+    // (defineCachedFunction takes maxAge as a static option, not a runtime callback).
+    const { debug: _d, ...staticRuntimeConfig } = runtimeConfig
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = dynamicRuntimeConfig
     nuxt.hook('nitro:config', (nitroConfig) => {

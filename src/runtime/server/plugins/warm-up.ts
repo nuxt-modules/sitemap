@@ -1,17 +1,34 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
-import { withLeadingSlash } from 'ufo'
+import { joinURL, withLeadingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../utils'
 
 export default defineNitroPlugin((nitroApp) => {
-  const { sitemaps } = useSitemapRuntimeConfig()
+  const { sitemaps, sitemapsPathPrefix } = useSitemapRuntimeConfig()
   const queue: (() => Promise<Response>)[] = []
   const timeoutIds: NodeJS.Timeout[] = []
 
-  const sitemapsWithRoutes = Object.entries(sitemaps)
-    .filter(([, sitemap]) => sitemap._route)
+  const enqueue = (path: string) => {
+    queue.push(() => nitroApp.localFetch(withLeadingSlash(path), {}))
+  }
 
-  for (const [, sitemap] of sitemapsWithRoutes)
-    queue.push(() => nitroApp.localFetch(withLeadingSlash(sitemap._route), {}))
+  for (const [name, sitemap] of Object.entries(sitemaps)) {
+    if (!sitemap._route)
+      continue
+    if (name === 'index') {
+      enqueue(sitemap._route)
+      continue
+    }
+    // Chunked sitemaps don't expose the base route — the catch-all serves a non-chunked variant
+    // that bypasses chunk slicing. Warm chunk-0 instead so the shared resolved-URLs cache is
+    // populated with the correct filter pass; sibling chunk requests then hit that cache.
+    const def = sitemap as { chunks?: unknown, _isChunking?: boolean, _route: string }
+    if (def.chunks || def._isChunking) {
+      enqueue(joinURL(sitemapsPathPrefix || '/', `${name}-0.xml`))
+    }
+    else {
+      enqueue(sitemap._route)
+    }
+  }
 
   // run async
   const initialTimeout = setTimeout(() => {
