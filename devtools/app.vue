@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { navigateTo, useRoute } from '#imports'
 import { loadShiki } from 'nuxtseo-layer-devtools/composables/shiki'
 import { isProductionMode } from 'nuxtseo-layer-devtools/composables/state'
 import { computed, ref, watch } from 'vue'
+import { navigateTo, useRoute } from '#imports'
 import { data, productionData, productionRemoteDebugData, refreshProductionData, refreshSources } from './composables/state'
 import './composables/rpc'
 

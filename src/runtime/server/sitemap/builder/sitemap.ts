@@ -12,12 +12,12 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
-// @ts-expect-error virtual module
-import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { getHeader } from 'h3'
 import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
 import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
 import { preNormalizeEntry } from '../urlset/normalise'
 import { sortInPlace } from '../urlset/sort'

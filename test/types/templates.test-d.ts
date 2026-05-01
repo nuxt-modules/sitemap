@@ -1,7 +1,3 @@
-import type { PageMeta } from '#app'
-import type { sources as childSources } from '#sitemap-virtual/child-sources.mjs'
-import type { sources as globalSources } from '#sitemap-virtual/global-sources.mjs'
-import type { readSourcesFromFilesystem } from '#sitemap-virtual/read-sources.mjs'
 import type {
   SitemapIndexRenderCtx,
   SitemapInputCtx,
@@ -16,6 +12,10 @@ import type {
 import type { NitroRouteConfig, NitroRouteRules, NitroRuntimeHooks, PrerenderRoute } from 'nitropack'
 import type { NitroRouteConfig as NitroRouteConfigTypes, NitroRouteRules as NitroRouteRulesTypes, NitroRuntimeHooks as NitroRuntimeHooksTypes, PrerenderRoute as PrerenderRouteTypes } from 'nitropack/types'
 import type { RouteMeta } from 'vue-router'
+import type { PageMeta } from '#app'
+import type { sources as childSources } from '#sitemap-virtual/child-sources.mjs'
+import type { sources as globalSources } from '#sitemap-virtual/global-sources.mjs'
+import type { readSourcesFromFilesystem } from '#sitemap-virtual/read-sources.mjs'
 import { describe, expectTypeOf, it } from 'vitest'
 
 // Tests the actual generated type augmentations from .nuxt/types/nuxt-sitemap-augments.d.ts

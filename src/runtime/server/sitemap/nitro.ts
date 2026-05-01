@@ -7,16 +7,16 @@ import type {
   SitemapDefinition,
   SitemapRenderCtx,
 } from '../../types'
+import { defu } from 'defu'
+import { createError, getHeader, getQuery, setHeader } from 'h3'
+import { defineCachedFunction, useNitroApp } from 'nitropack/runtime'
+import { fixSlashes } from 'nuxt-site-config/urls'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
-import { defu } from 'defu'
-import { createError, getHeader, getQuery, setHeader } from 'h3'
-import { defineCachedFunction, useNitroApp } from 'nitropack/runtime'
-import { fixSlashes } from 'nuxt-site-config/urls'
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'

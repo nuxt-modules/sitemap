@@ -5,11 +5,11 @@ import type {
   NitroUrlResolvers,
   SitemapIndexEntry,
 } from '../../../types'
-// @ts-expect-error virtual module
-import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { getHeader } from 'h3'
 import { defineCachedFunction } from 'nitropack/runtime'
 import { joinURL, withQuery } from 'ufo'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normaliseDate } from '../urlset/normalise'
 import { getResolvedSitemapUrls } from './sitemap'
 import { escapeValueForXml } from './xml'

@@ -1,6 +1,6 @@
 import type { SitemapDefinition, SitemapSourceResolved } from '../../../types'
-import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
 import { defineEventHandler } from 'h3'
+import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
 import { validateSitemapUrl } from '../../sitemap/urlset/normalise'
 import {
   childSitemapSources,
