@@ -9,6 +9,7 @@ import { defu } from 'defu'
 import { extname } from 'pathe'
 import { withBase, withHttps } from 'ufo'
 import { createPathFilter } from '../runtime/utils-pure'
+import { expandCompactLocaleRoute } from './i18n'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
   try {
@@ -41,7 +42,6 @@ export interface NuxtPagesToSitemapEntriesOptions {
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
   isI18nMapped: boolean
-  isI18nMicro: boolean
   filter: CreateFilterOptions
   autoI18n: boolean
 }
@@ -69,19 +69,16 @@ function deepForEachPage(
     }
 
     let didCallback = false
-    if (opts.isI18nMicro) {
-      const localePattern = /\/:locale\(([^)]+)\)/
-      const match = localePattern.exec(currentPath || '')
-      if (match && match[1]) {
-        const locales = match[1].split('|')
-        locales.forEach((locale) => {
-          const subPage = { ...page }
-          const localizedPath = (currentPath || '').replace(localePattern, `/${locale}`)
-          subPage.name += opts.routesNameSeparator + locale
-          subPage.path = localizedPath
-          callback(subPage, localizedPath || '', depth)
-          didCallback = true
-        })
+    // Expand compacted i18n routes (`/:locale(en|fr)/about`) back into one entry per
+    // locale. Used by `nuxt-i18n-micro` and by `@nuxtjs/i18n` experimental compactRoutes.
+    const compacted = expandCompactLocaleRoute(currentPath || '', opts.normalisedLocales.map(l => l.code))
+    if (compacted) {
+      for (const { locale, path: localizedPath } of compacted) {
+        const subPage = { ...page }
+        subPage.name = `${page.name || ''}${opts.routesNameSeparator}${locale}`
+        subPage.path = localizedPath
+        callback(subPage, localizedPath, depth)
+        didCallback = true
       }
     }
     if (!didCallback) {
