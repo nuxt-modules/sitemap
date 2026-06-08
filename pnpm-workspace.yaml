@@ -1,3 +1,10 @@
+minimumReleaseAgeExclude:
+  - '@iconify-json/simple-icons@1.2.86'
+  - '@vue/language-core@3.3.4'
+  - nuxtseo-layer-devtools@5.1.4
+  - nuxtseo-shared@5.1.4
+  - semver@7.8.3
+  - vue-tsc@3.3.4
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -12,37 +19,37 @@ packages:
   - benchmark
   - '!examples/**'
 overrides:
-  '@vitejs/plugin-vue': ^6.0.6
-  vite: ^8.0.10
+  '@vitejs/plugin-vue': ^6.0.7
+  vite: ^8.0.16
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
-  '@antfu/eslint-config': ^8.2.0
-  '@arethetypeswrong/cli': ^0.18.2
-  '@iconify-json/carbon': ^1.2.20
-  '@iconify-json/simple-icons': ^1.2.80
-  '@nuxt/content': ^3.13.0
+  '@antfu/eslint-config': ^9.0.0
+  '@arethetypeswrong/cli': ^0.18.3
+  '@iconify-json/carbon': ^1.2.23
+  '@iconify-json/simple-icons': ^1.2.86
+  '@nuxt/content': ^3.14.0
   '@nuxt/devtools-kit': 4.0.0-alpha.3
-  '@nuxt/kit': ^4.4.4
+  '@nuxt/kit': ^4.4.7
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.3
-  '@nuxt/ui': ^4.7.1
-  '@nuxtjs/i18n': ^10.3.0
-  '@nuxtjs/robots': ^6.0.8
-  '@vue/test-utils': ^2.4.10
+  '@nuxt/ui': ^4.8.2
+  '@nuxtjs/i18n': ^10.4.0
+  '@nuxtjs/robots': ^6.0.9
+  '@vue/test-utils': ^2.4.11
   '@vueuse/core': ^14.3.0
   autocannon: ^8.0.0
-  better-sqlite3: ^12.9.0
-  bumpp: ^11.0.1
+  better-sqlite3: ^12.10.0
+  bumpp: ^11.1.0
   consola: ^3.4.2
   defu: ^6.1.7
-  eslint: ^10.2.1
-  eslint-plugin-harlanzw: ^0.12.1
+  eslint: ^10.4.1
+  eslint-plugin-harlanzw: ^0.17.0
   execa: ^9.6.1
-  fast-xml-parser: ^5.7.2
-  happy-dom: ^20.9.0
-  nuxt: ^4.4.4
-  nuxt-i18n-micro: ^3.17.5
+  fast-xml-parser: ^5.8.0
+  happy-dom: ^20.10.2
+  nuxt: ^4.4.7
+  nuxt-i18n-micro: ^3.18.2
   nuxt-site-config: ^4.0.8
   nuxtseo-layer-devtools: ^5.1.4
   nuxtseo-shared: ^5.1.4
@@ -50,19 +57,24 @@ catalog:
   pathe: ^2.0.3
   pkg-types: ^2.3.1
   radix3: ^1.1.2
-  semver: ^7.7.4
+  semver: ^7.8.3
   sirv: ^3.0.2
   std-env: ^4.1.0
   typescript: ^6.0.3
   ufo: ^1.6.4
   ultrahtml: ^1.6.0
-  vitest: ^4.1.5
-  vue: ^3.5.33
-  vue-router: ^5.0.6
-  vue-tsc: ^3.2.7
-  zod: ^4.4.1
+  vitest: ^4.1.8
+  vue: ^3.5.35
+  vue-router: ^5.1.0
+  vue-tsc: ^3.3.4
+  zod: ^4.4.3
 
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
 trustPolicyIgnoreAfter: 262800
+allowBuilds:
+  '@parcel/watcher': true
+  better-sqlite3: true
+  esbuild: true
+  vue-demi: true
