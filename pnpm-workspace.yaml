@@ -63,6 +63,7 @@ catalog:
   typescript: ^6.0.3
   ufo: ^1.6.4
   ultrahtml: ^1.6.0
+  unbuild: ^3.6.1
   vitest: ^4.1.8
   vue: ^3.5.35
   vue-router: ^5.1.0

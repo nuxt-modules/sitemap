@@ -51,7 +51,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "client:build": "nuxt generate devtools",
-    "prepack": "pnpm run build",
+    "prepack": "nuxt-module-build build",
     "devtools": "nuxt dev devtools --port 3030",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "dev": "nuxt dev playground",
@@ -112,7 +112,7 @@
     "sirv": "catalog:",
     "std-env": "catalog:",
     "typescript": "catalog:",
-    "unbuild": "^3.6.1",
+    "unbuild": "catalog:",
     "vitest": "catalog:",
     "vue-tsc": "catalog:",
     "zod": "catalog:"
