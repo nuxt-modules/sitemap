@@ -203,7 +203,6 @@ describe('page parser', () => {
       defaultLocale: 'en',
       normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
       strategy: 'no_prefix',
-      isI18nMicro: false,
       autoI18n: true,
     })).toMatchInlineSnapshot(`
       [
@@ -644,6 +643,110 @@ describe('page parser', () => {
     `)
   })
 
+  it('@nuxtjs/i18n compactRoutes (prefix_except_default)', () => {
+    // @nuxtjs/i18n experimental.compactRoutes emits an unprefixed default route plus a
+    // single compacted regex route for the non-default locales, keeping the base name.
+    expect(convertNuxtPagesToSitemapEntries([
+      {
+        name: 'about___en',
+        path: '/about',
+        file: 'pages/about.vue',
+        children: [],
+      },
+      {
+        name: 'about',
+        path: '/:locale(fr|de)/about',
+        file: 'pages/about.vue',
+        children: [],
+        meta: { __i18nCompact: true },
+      },
+    ], {
+      filter: {
+        include: [],
+        exclude: [],
+      },
+      isI18nMapped: true,
+      autoLastmod: false,
+      defaultLocale: 'en',
+      normalisedLocales: normalizeLocales({ locales: [
+        { code: 'en', iso: 'en_EN' },
+        { code: 'fr', iso: 'fr_FR' },
+        { code: 'de', iso: 'de_DE' },
+      ] }),
+      strategy: 'prefix_except_default',
+      autoI18n: true,
+    })).toMatchInlineSnapshot(`
+      [
+        {
+          "_sitemap": "en_EN",
+          "alternatives": [
+            {
+              "href": "/about",
+              "hreflang": "en_EN",
+            },
+            {
+              "href": "/fr/about",
+              "hreflang": "fr_FR",
+            },
+            {
+              "href": "/de/about",
+              "hreflang": "de_DE",
+            },
+            {
+              "href": "/about",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/about",
+        },
+        {
+          "_sitemap": "fr_FR",
+          "alternatives": [
+            {
+              "href": "/about",
+              "hreflang": "en_EN",
+            },
+            {
+              "href": "/fr/about",
+              "hreflang": "fr_FR",
+            },
+            {
+              "href": "/de/about",
+              "hreflang": "de_DE",
+            },
+            {
+              "href": "/about",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/fr/about",
+        },
+        {
+          "_sitemap": "de_DE",
+          "alternatives": [
+            {
+              "href": "/about",
+              "hreflang": "en_EN",
+            },
+            {
+              "href": "/fr/about",
+              "hreflang": "fr_FR",
+            },
+            {
+              "href": "/de/about",
+              "hreflang": "de_DE",
+            },
+            {
+              "href": "/about",
+              "hreflang": "x-default",
+            },
+          ],
+          "loc": "/de/about",
+        },
+      ]
+    `)
+  })
+
   it ('i18n micro', () => {
     expect(convertNuxtPagesToSitemapEntries([
       {
@@ -666,7 +769,6 @@ describe('page parser', () => {
         { code: 'ru', iso: 'ru_RU' },
       ] }),
       strategy: 'prefix_except_default',
-      isI18nMicro: true,
       autoI18n: true,
     })).toMatchInlineSnapshot(`
       [
@@ -713,7 +815,6 @@ describe('page parser', () => {
       defaultLocale: 'en',
       normalisedLocales: normalizeLocales({ locales: [{ code: 'en' }, { code: 'fr' }] }),
       strategy: 'no_prefix',
-      isI18nMicro: false,
       autoI18n: false,
     })
     // no entry should have alternatives when autoI18n is false
