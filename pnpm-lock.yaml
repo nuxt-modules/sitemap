@@ -123,6 +123,9 @@ catalogs:
     ultrahtml:
       specifier: ^1.6.0
       version: 1.6.0
+    unbuild:
+      specifier: ^3.6.1
+      version: 3.6.1
     vitest:
       specifier: ^4.1.8
       version: 4.1.8
@@ -260,7 +263,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
       unbuild:
-        specifier: ^3.6.1
+        specifier: 'catalog:'
         version: 3.6.1(typescript@6.0.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.35)(esbuild@0.28.0)(vue@3.5.35(typescript@6.0.3)))(vue-tsc@3.3.4(typescript@6.0.3))(vue@3.5.35(typescript@6.0.3))
       vitest:
         specifier: 'catalog:'
