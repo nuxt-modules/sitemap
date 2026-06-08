@@ -543,15 +543,6 @@ export default defineNuxtModule<ModuleOptions>({
         route: '/__sitemap__/nuxt-content-urls.json',
         handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),
       })
-      // On serverless (functions) @nuxt/content v3 restores its SQLite DB at runtime from a
-      // prerendered sql_dump.txt that lives in the CDN output, not in the function bundle, so a
-      // runtime content query 404s and yields no URLs (it degrades gracefully but silently).
-      // The query only succeeds at build, where content uses its local DB, so the sitemap must be
-      // prerendered to capture content URLs. Warn at build when we can detect the broken combo.
-      const serverlessPresets = new Set(['vercel', 'netlify', 'cloudflare', 'cloudflare-pages', 'cloudflare-module', 'aws-lambda', 'aws-amplify', 'firebase', 'edgio', 'zeabur'])
-      if (!prerenderSitemap && serverlessPresets.has(resolveNitroPreset())) {
-        logger.warn('`@nuxt/content` v3 URLs cannot be resolved at runtime on serverless, so they will be missing from your sitemap. Prerender the sitemap to include them: add `nitro: { prerender: { routes: [\'/sitemap.xml\'] } }` (or `/sitemap_index.xml` for multi-sitemaps). See https://nuxtseo.com/sitemap/guides/content')
-      }
       if (config.strictNuxtContentPaths) {
         logger.warn('You have set `strictNuxtContentPaths: true` but are using @nuxt/content v3. This is not required, please remove it.')
       }

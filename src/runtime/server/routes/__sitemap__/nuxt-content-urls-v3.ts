@@ -39,12 +39,12 @@ export default defineEventHandler(async (e) => {
           return { collection, entries: filter ? results.filter(filter) : results }
         })
         .catch((err) => {
-          // On serverless (Vercel/Netlify functions) @nuxt/content v3 restores its
-          // SQLite DB at runtime from a prerendered sql_dump.txt that isn't bundled
-          // into the function, so this query can throw. Degrade to an empty source
-          // for this collection instead of 500ing the entire sitemap. The query only
-          // succeeds at build, so prerender the sitemap to include these entries.
-          console.error(`[@nuxtjs/sitemap] Failed to query @nuxt/content collection "${collection}" for the sitemap; returning no URLs for it. On serverless the content DB is restored at runtime from a prerendered dump that isn't bundled into the function. Prerender the sitemap to include these URLs.`, err)
+          // On serverless (Vercel/Netlify functions) @nuxt/content restores its SQLite DB at
+          // runtime from a prerendered sql_dump.txt, but that asset is served from the static
+          // output and isn't readable inside the function, so the restore yields an empty DB and
+          // this query throws (see https://github.com/nuxt/content/issues/3805). Degrade to an
+          // empty source for this collection instead of 500ing the whole sitemap.
+          console.error(`[@nuxtjs/sitemap] Couldn't query @nuxt/content collection "${collection}" for the sitemap, so its URLs will be missing. On serverless the content DB is restored from a prerendered sql_dump.txt that isn't readable inside the function (nuxt/content#3805). Fix: prerender the sitemap so content URLs resolve at build, or configure a runtime database (D1/Turso/Postgres).`, err)
           return { collection, entries: [] as ContentEntry[] }
         }),
     )
