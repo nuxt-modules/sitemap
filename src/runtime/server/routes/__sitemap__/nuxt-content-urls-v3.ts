@@ -37,6 +37,15 @@ export default defineEventHandler(async (e) => {
           // apply runtime filter if available
           const filter = filters?.get(collection)
           return { collection, entries: filter ? results.filter(filter) : results }
+        })
+        .catch((err) => {
+          // On serverless (Vercel/Netlify functions) @nuxt/content v3 restores its
+          // SQLite DB at runtime from a prerendered sql_dump.txt that isn't bundled
+          // into the function, so this query can throw. Degrade to an empty source
+          // for this collection instead of 500ing the entire sitemap. Prerender the
+          // sitemap (or content URLs) to include these entries on serverless.
+          console.error(`[@nuxtjs/sitemap] Failed to query @nuxt/content collection "${collection}" for the sitemap; returning no URLs for it. On serverless the content DB is restored at runtime from a prerendered dump that may not be bundled into the function.`, err)
+          return { collection, entries: [] as ContentEntry[] }
         }),
     )
   }
