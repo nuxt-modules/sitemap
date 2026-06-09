@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { SitemapSourceResolved } from '../../src/runtime/types'
+import type { SitemapSourceResolved } from '../../lib/sitemap/types'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
-import { data } from '../composables/state'
+import { data } from '../../lib/sitemap/state'
 
 const props = defineProps<{ source: SitemapSourceResolved, showContext?: boolean }>()
 

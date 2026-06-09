@@ -1,5 +1,5 @@
-import type { ProductionDebugResponse } from '../../src/runtime/server/routes/__sitemap__/debug-production'
-import type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from '../../src/runtime/types'
+import type { ProductionDebugResponse } from './types'
+import type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from './types'
 import { appFetch } from 'nuxtseo-layer-devtools/composables/rpc'
 import { isProductionMode, productionUrl } from 'nuxtseo-layer-devtools/composables/state'
 import { ref, watch } from 'vue'
