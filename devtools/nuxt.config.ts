@@ -1,24 +1,7 @@
 import { resolve } from 'pathe'
 
+// Nuxt SEO devtools panel, shipped as a layer (Model C). Components flat-registered
+// so intra-panel references resolve by name.
 export default defineNuxtConfig({
-  extends: ['nuxtseo-layer-devtools'],
-
-  sitemap: false,
-
-  imports: {
-    autoImport: true,
-  },
-
-  nitro: {
-    prerender: {
-      routes: ['/', '/user-sources', '/app-sources', '/debug', '/docs'],
-    },
-    output: {
-      publicDir: resolve(__dirname, '../dist/devtools'),
-    },
-  },
-
-  app: {
-    baseURL: '/__nuxt-sitemap',
-  },
+  components: [{ path: resolve(__dirname, './components'), pathPrefix: false }],
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import Source from '../components/Source.vue'
-import { data } from '../composables/state'
+import Source from '../../components/sitemap/Source.vue'
+import { data } from '../../lib/sitemap/state'
 
 const appSources = computed(() => (data.value?.globalSources || []).filter(s => s.sourceType === 'app'))
 </script>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { SitemapDefinition, SitemapSourceResolved } from '../../src/runtime/types'
+import type { SitemapDefinition, SitemapSourceResolved } from '../../lib/sitemap/types'
 import { isProductionMode, productionUrl } from 'nuxtseo-layer-devtools/composables/state'
 import { joinURL } from 'ufo'
 import { computed } from 'vue'
-import Source from '../components/Source.vue'
-import { data, productionData, productionLoading, productionRemoteDebugData, refreshProductionData } from '../composables/state'
+import Source from '../../components/sitemap/Source.vue'
+import { data, productionData, productionLoading, productionRemoteDebugData, refreshProductionData } from '../../lib/sitemap/state'
 
 const appSourcesExcluded = computed(() => data.value?.runtimeConfig?.excludeAppSources || [])
 
