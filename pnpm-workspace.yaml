@@ -1,8 +1,6 @@
 minimumReleaseAgeExclude:
   - '@iconify-json/simple-icons@1.2.86'
   - '@vue/language-core@3.3.4'
-  - nuxtseo-layer-devtools@5.1.4
-  - nuxtseo-shared@5.1.4
   - semver@7.8.3
   - vue-tsc@3.3.4
   - nuxtseo-layer-devtools@5.2.0
