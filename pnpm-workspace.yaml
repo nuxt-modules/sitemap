@@ -51,8 +51,8 @@ catalog:
   nuxt: ^4.4.7
   nuxt-i18n-micro: ^3.18.2
   nuxt-site-config: ^4.0.8
-  nuxtseo-layer-devtools: ^5.2.0
-  nuxtseo-shared: ^5.2.0
+  nuxtseo-layer-devtools: ^5.2.4
+  nuxtseo-shared: ^5.2.4
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.1

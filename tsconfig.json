@@ -2,6 +2,7 @@
   "extends": "./.nuxt/tsconfig.json",
   "exclude": [
     "dist",
+    "devtools",
     "test/**",
     "playground",
     "examples",

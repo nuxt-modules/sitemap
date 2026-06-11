@@ -1,7 +1,6 @@
-import type { ProductionDebugResponse } from './types'
-import type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from './types'
+import type { ModuleRuntimeConfig, ProductionDebugResponse, SitemapDefinition, SitemapSourceResolved } from './types'
 import { appFetch } from 'nuxtseo-layer-devtools/composables/rpc'
-import { isProductionMode, productionUrl } from 'nuxtseo-layer-devtools/composables/state'
+import { isProductionMode, productionUrl, refreshTime } from 'nuxtseo-layer-devtools/composables/state'
 import { ref, watch } from 'vue'
 
 export const data = ref<{
@@ -20,7 +19,7 @@ export const productionLoading = ref(false)
 
 export async function refreshSources() {
   if (appFetch.value)
-    data.value = await appFetch.value('/__sitemap__/debug.json') as typeof data.value
+    data.value = await appFetch.value('/__sitemap__/debug.json').catch((err) => { console.error('Failed to fetch sitemap debug data:', err); return null }) as typeof data.value
 }
 
 export async function refreshProductionData() {
@@ -49,6 +48,11 @@ export async function refreshProductionData() {
   }) as ProductionDebugResponse | null
   productionLoading.value = false
 }
+
+// Re-fetch the (global) debug data when the host connects or a manual refresh fires
+watch([appFetch, refreshTime], () => {
+  refreshSources()
+})
 
 // Sync production URL from siteConfig when debug data loads
 watch(data, (val) => {
