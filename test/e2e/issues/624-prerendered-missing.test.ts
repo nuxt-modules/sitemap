@@ -36,5 +36,8 @@ describe.skipIf(process.env.CI)('issue-624', () => {
     expect(sitemap).toContain('<loc>https://nuxtseo.com/prerendered/a</loc>')
     // bug: _sitemap stripped, page is silently dropped (issue #624)
     expect(sitemap).toContain('<loc>https://nuxtseo.com/prerendered/b</loc>')
+    // regression guard: a prerendered redirect (its `_sitemap` is also undefined)
+    // must NOT be resurfaced by the missing-`_sitemap` fallback
+    expect(sitemap).not.toContain('<loc>https://nuxtseo.com/old</loc>')
   }, 1200000)
 })

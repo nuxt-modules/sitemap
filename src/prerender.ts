@@ -74,8 +74,10 @@ export async function readSourcesFromFilesystem(filename) {
       // extract alternatives from the html
       if (!route.fileName?.endsWith('.html') || !html || ['/200.html', '/404.html'].includes(route.route))
         return
-      // ignore redirects
+      // ignore redirects: mark explicitly excluded so the module's missing-`_sitemap`
+      // fallback (`r._sitemap || { loc }`) doesn't resurface redirect routes (#624)
       if (NuxtRedirectHtmlRegex.test(html)) {
+        route._sitemap = { loc: route.route, _sitemap: false }
         return
       }
 

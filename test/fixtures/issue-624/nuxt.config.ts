@@ -32,6 +32,8 @@ export default defineNuxtConfig({
   routeRules: {
     '/prerendered/**': { prerender: true },
     '/ssr': { prerender: false },
+    // a prerendered redirect: must NOT appear in the sitemap
+    '/old': { prerender: true, redirect: '/prerendered/a' },
   },
 
   nitro: {
