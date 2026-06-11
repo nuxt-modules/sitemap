@@ -18,8 +18,12 @@ export const productionData = ref<ProductionDebugResponse | null>(null)
 export const productionLoading = ref(false)
 
 export async function refreshSources() {
-  if (appFetch.value)
-    data.value = await appFetch.value('/__sitemap__/debug.json').catch((err) => { console.error('Failed to fetch sitemap debug data:', err); return null }) as typeof data.value
+  if (!appFetch.value)
+    return
+  data.value = await appFetch.value('/__sitemap__/debug.json').catch((err) => {
+    console.error('Failed to fetch sitemap debug data:', err)
+    return null
+  }) as typeof data.value
 }
 
 export async function refreshProductionData() {
