@@ -18,7 +18,7 @@ import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
-import { applyDynamicParams, createPathFilter, findPageMapping, logger, splitForLocales } from '../../../utils-pure'
+import { applyDynamicParams, createPathFilter, findPageMapping, logger, resolveI18nSitemapLocaleKey, splitForLocales } from '../../../utils-pure'
 import { preNormalizeEntry } from '../urlset/normalise'
 import { sortInPlace } from '../urlset/sort'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
@@ -280,13 +280,14 @@ export async function buildResolvedSitemapUrls(
   await nitro?.hooks.callHook('sitemap:input', resolvedCtx)
   const enhancedUrls = resolveSitemapEntries(effectiveSitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers, useRuntimeConfig().app.baseURL)
 
+  const localeSitemapKeys = isI18nMapped && autoI18n ? autoI18n.locales.map(l => l._sitemap) : []
   if (isMultiSitemap) {
     const sitemapNames = Object.keys(sitemaps).filter(k => k !== 'index')
     // @ts-expect-error loose typing
     const warnedSitemaps = nitro?._sitemapWarnedSitemaps || new Set<string>()
     for (const e of enhancedUrls) {
       const hasMatchingSitemap = typeof e._sitemap === 'string'
-        && (sitemapNames.includes(e._sitemap) || (isI18nMapped && sitemapNames.some(name => name.startsWith(`${e._sitemap}-`))))
+        && (sitemapNames.includes(e._sitemap) || (isI18nMapped && sitemapNames.some(name => resolveI18nSitemapLocaleKey(name, localeSitemapKeys) === e._sitemap)))
       if (typeof e._sitemap === 'string' && !hasMatchingSitemap) {
         if (!warnedSitemaps.has(e._sitemap)) {
           warnedSitemaps.add(e._sitemap)
@@ -306,7 +307,14 @@ export async function buildResolvedSitemapUrls(
     if (isMultiSitemap && e._sitemap && matchName) {
       if (isChunked)
         return e._sitemap === matchName
-      return e._sitemap === matchName || (isI18nMapped && matchName.startsWith(`${e._sitemap}-`))
+      if (e._sitemap === matchName)
+        return true
+      // i18n-mapped custom sitemaps are named `<localeSitemap>-<name>`; resolve the matchName
+      // back to its locale key (longest match) so prefix-sharing locales don't collide,
+      // e.g. a `zh` URL must not land in the `zh-Hant` sitemap.
+      if (isI18nMapped)
+        return e._sitemap === resolveI18nSitemapLocaleKey(matchName, localeSitemapKeys)
+      return false
     }
     return true
   })
