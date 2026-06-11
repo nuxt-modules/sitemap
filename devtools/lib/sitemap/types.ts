@@ -1,4 +1,2 @@
-export type ModuleRuntimeConfig = any
-export type SitemapDefinition = any
-export type SitemapSourceResolved = any
-export type ProductionDebugResponse = any
+export type { ProductionDebugResponse } from '../../../src/runtime/server/routes/__sitemap__/debug-production'
+export type { ModuleRuntimeConfig, SitemapDefinition, SitemapSourceResolved } from '../../../src/runtime/types'
