@@ -54,6 +54,26 @@ export function splitForLocales(path: string, locales: string[]): [string | null
   return [null, path]
 }
 
+/**
+ * Resolve which locale a multi-sitemap name belongs to.
+ *
+ * i18n-mapped sitemaps are named either `<localeSitemap>` (default) or
+ * `<localeSitemap>-<name>` (custom sitemaps). Locale `_sitemap` keys can share a
+ * prefix (e.g. `zh` and `zh-Hant`), so a naive `name.startsWith(`${key}-`)` check
+ * collides: `zh-Hant` would match the `zh` locale. Resolve by the longest matching
+ * key to disambiguate.
+ */
+export function resolveI18nSitemapLocaleKey(sitemapName: string, localeSitemapKeys: string[]): string | null {
+  let best: string | null = null
+  for (const key of localeSitemapKeys) {
+    if (sitemapName === key || sitemapName.startsWith(`${key}-`)) {
+      if (best === null || key.length > best.length)
+        best = key
+    }
+  }
+  return best
+}
+
 const StringifiedRegExpPattern = /\/(.*?)\/([gimsuy]*)$/
 
 /**
