@@ -887,10 +887,18 @@ export default defineNuxtModule<ModuleOptions>({
       const prerenderUrlsFinal = [
         ...prerenderedRoutes
           .filter(isValidPrerenderRoute)
-          // fall back to the route itself when prerender:generate left no `_sitemap`
-          // (empty contents / redirect HTML / nitro versions without `route.contents`),
-          // otherwise the route is dropped here yet still deduped out of the page source (#624)
-          .map(r => r._sitemap || { loc: r.route })
+          .map((r) => {
+            if (r._sitemap)
+              return r._sitemap
+            // prerender:generate left no `_sitemap` (empty contents / nitro versions
+            // without `route.contents`): fall back to the route itself, otherwise it is
+            // dropped here yet still deduped out of the page source (#624). Skip internal
+            // routes which are extensionless text/html but not real pages (same exclusion
+            // as `filterForValidPage`).
+            if (r.route.startsWith('/api/') || r.route.startsWith('/_'))
+              return undefined
+            return { loc: r.route }
+          })
           .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false)),
       ]
       if (config.debug) {

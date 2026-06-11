@@ -39,5 +39,8 @@ describe.skipIf(process.env.CI)('issue-624', () => {
     // regression guard: a prerendered redirect (its `_sitemap` is also undefined)
     // must NOT be resurfaced by the missing-`_sitemap` fallback
     expect(sitemap).not.toContain('<loc>https://nuxtseo.com/old</loc>')
+    // regression guard: an internal extensionless text/html route with no `_sitemap`
+    // must NOT be synthesized by the fallback
+    expect(sitemap).not.toContain('<loc>https://nuxtseo.com/_internal</loc>')
   }, 1200000)
 })

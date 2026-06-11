@@ -16,8 +16,19 @@ export default defineNuxtConfig({
     function (_options, nuxt) {
       nuxt.hook('nitro:init', (nitro) => {
         nitro.hooks.hook('prerender:route', (route: any) => {
+          // simulate the upstream condition: a valid text/html prerender with no `_sitemap`
           if (route.route === '/prerendered/b')
             delete route._sitemap
+          // inject an internal, extensionless text/html route with no `_sitemap`:
+          // the fallback must not synthesize it into the sitemap
+          if (route.route === '/') {
+            nitro._prerenderedRoutes!.push({
+              route: '/_internal',
+              fileName: '/_internal.html',
+              // @ts-expect-error partial prerender route for the test
+              contentType: 'text/html',
+            })
+          }
         })
       })
     },
