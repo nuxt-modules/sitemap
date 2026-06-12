@@ -65,7 +65,7 @@
     "prepare": "skilld prepare || true"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "zod": ">=4.4.3"
   },
   "peerDependenciesMeta": {
     "zod": {
