@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "8.2.0",
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm@11.5.3",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -50,8 +50,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "client:build": "node -e \"require('fs').cpSync('devtools','dist/devtools',{recursive:true})\"",
-    "prepack": "nuxt-module-build build",
+    "client:build": "node -e \"const { cpSync } = require('fs'); const { sep } = require('path'); cpSync('devtools','dist/devtools',{recursive:true,filter:src=>!src.split(sep).some(p=>['.data','.nuxt','node_modules'].includes(p))})\"",
+    "prepack": "nuxt-module-build build && npm run client:build",
     "build": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "dev": "nuxt dev playground",
     "prepare:fixtures": "nuxt prepare test/fixtures/basic && nuxt prepare test/fixtures/i18n && nuxt prepare test/fixtures/i18n-micro",

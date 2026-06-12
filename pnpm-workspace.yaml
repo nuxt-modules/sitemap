@@ -5,6 +5,16 @@ minimumReleaseAgeExclude:
   - vue-tsc@3.3.4
   - nuxtseo-layer-devtools
   - nuxtseo-shared
+  - '@vue/compiler-core@3.5.38'
+  - '@vue/compiler-dom@3.5.38'
+  - '@vue/compiler-sfc@3.5.38'
+  - '@vue/compiler-ssr@3.5.38'
+  - '@vue/reactivity@3.5.38'
+  - '@vue/runtime-core@3.5.38'
+  - '@vue/runtime-dom@3.5.38'
+  - '@vue/server-renderer@3.5.38'
+  - '@vue/shared@3.5.38'
+  - vue@3.5.38
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -27,7 +37,7 @@ catalog:
   '@antfu/eslint-config': ^9.0.0
   '@arethetypeswrong/cli': ^0.18.3
   '@nuxt/content': ^3.14.0
-  '@nuxt/devtools-kit': 4.0.0-alpha.3
+  '@nuxt/devtools-kit': 4.0.0-alpha.7
   '@nuxt/kit': ^4.4.8
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.3
@@ -47,7 +57,7 @@ catalog:
   happy-dom: ^20.10.2
   nuxt: ^4.4.8
   nuxt-i18n-micro: ^3.18.2
-  nuxt-site-config: ^4.0.8
+  nuxt-site-config: ^4.1.0
   nuxtseo-layer-devtools: ^5.3.0
   nuxtseo-shared: ^5.3.0
   ofetch: ^1.5.1
@@ -62,7 +72,7 @@ catalog:
   ultrahtml: ^1.6.0
   unbuild: ^3.6.1
   vitest: ^4.1.8
-  vue: ^3.5.35
+  vue: ^3.5.38
   vue-tsc: ^3.3.4
   zod: ^4.4.3
 
