@@ -3,6 +3,32 @@ import type { ResolvedSitemapUrl, SitemapUrl, VideoEntry } from '../runtime/type
 import { parseURL } from 'ufo'
 import { ELEMENT_NODE, parse, walkSync } from 'ultrahtml'
 
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARACTERS_RE = /[\x00-\x1F\x7F-\x9F]/g
+const HTML_ENTITIES: Record<string, string> = {
+  amp: '&',
+  apos: '\'',
+  gt: '>',
+  lt: '<',
+  quot: '"',
+}
+const HTML_ENTITY_RE = /&(?:#(\d+)|#x([\da-f]+)|amp|apos|gt|lt|quot);/gi
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(HTML_ENTITY_RE, (match, decimal: string | undefined, hexadecimal: string | undefined) => {
+    if (decimal || hexadecimal) {
+      const entity = decimal || hexadecimal || ''
+      const codePoint = Number.parseInt(entity, decimal ? 10 : 16)
+      if (Number.isFinite(codePoint) && codePoint >= 0 && codePoint <= 0x10FFFF) {
+        return String.fromCodePoint(codePoint)
+      }
+      return match
+    }
+
+    return HTML_ENTITIES[match.slice(1, -1).toLowerCase()] || match
+  })
+}
+
 // Validation helpers
 function isValidUrl(url: string): boolean {
   if (!url || typeof url !== 'string')
@@ -33,8 +59,7 @@ function isValidString(value: unknown): value is string {
 function sanitizeString(value: unknown): string {
   if (!isValidString(value))
     return ''
-  // eslint-disable-next-line no-control-regex
-  return String(value).trim().replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+  return decodeHtmlEntities(String(value).trim().replace(CONTROL_CHARACTERS_RE, '')).replace(CONTROL_CHARACTERS_RE, '')
 }
 
 function isValidDate(dateString: string): boolean {

@@ -96,6 +96,29 @@ describe('parseHtmlExtractSitemapMeta', () => {
     `)
   })
 
+  it('decodes HTML entities in image URLs', async () => {
+    const output = parseHtmlExtractSitemapMeta(`
+      <main>
+        <img src="/_vercel/image?url=%2Fimg%2Fportrait.webp&amp;w=768&amp;q=80" width="768" height="768" alt="portrait">
+      </main>
+    `, {
+      images: true,
+      resolveUrl(s) {
+        return s.startsWith('/') ? `https://example.com${s}` : s
+      },
+    })
+
+    expect(output).toMatchInlineSnapshot(`
+      {
+        "images": [
+          {
+            "loc": "https://example.com/_vercel/image?url=%2Fimg%2Fportrait.webp&w=768&q=80",
+          },
+        ],
+      }
+    `)
+  })
+
   it('video: ignores invalid markup', async () => {
     const mainTag = '<main>'
     const mainClosingTag = '</main>'
