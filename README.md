@@ -45,7 +45,7 @@ npx nuxi@latest module add sitemap
 > npx skilld add @nuxtjs/sitemap
 > ```
 
-💡 Need a complete SEO solution for Nuxt? Check out [Nuxt SEO](https://nuxtseo.com).
+💡 Generated your sitemap? Check which URLs Google has indexed with the free [Sitemap Validator](https://nuxtseo.com/tools/xml-sitemap-validator), or monitor indexing continuously with [Nuxt SEO Pro](https://nuxtseo.com/pro).
 
 ## Documentation
 
