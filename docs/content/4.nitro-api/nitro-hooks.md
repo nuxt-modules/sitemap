@@ -93,7 +93,7 @@ export default defineNitroPlugin((nitroApp) => {
 **Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered before the sitemap is sent to the client.
-It provides the sitemap as a XML string.
+It provides the sitemap as an XML string.
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
@@ -182,7 +182,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 Sometimes you'll want to include the videos from your markup automatically but exclude some of them based on the host.
 
-```ts
+```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
