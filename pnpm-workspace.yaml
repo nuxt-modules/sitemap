@@ -41,7 +41,7 @@ catalog:
   '@arethetypeswrong/cli': ^0.18.4
   '@nuxt/content': ^3.14.0
   '@nuxt/devtools-kit': 4.0.0-alpha.7
-  '@nuxt/kit': ^4.4.8
+  '@nuxt/kit': ^4.5.0
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.3
   '@nuxt/ui': ^4.9.0
@@ -58,7 +58,7 @@ catalog:
   execa: ^9.6.1
   fast-xml-parser: ^5.9.3
   happy-dom: ^20.10.6
-  nuxt: ^4.4.8
+  nuxt: ^4.5.0
   nuxt-i18n-micro: ^3.20.1
   nuxt-site-config: ^4.1.1
   nuxtseo-layer-devtools: ^5.3.1
