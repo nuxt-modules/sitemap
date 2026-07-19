@@ -7,7 +7,7 @@
 
 Nuxt Sitemap is a module for generating best-practice XML sitemaps that are consumed by the robots crawling your site.
 
-New to XML sitemaps or SEO? Check out the [Controlling Web Crawlers](https://nuxtseo.com/learn/controlling-crawlers) guide to learn more about why you might
+New to XML sitemaps or SEO? Check out the [Controlling Web Crawlers](https://nuxtseo.com/learn-seo/nuxt/controlling-crawlers) guide to learn more about why you might
 need these.
 
 <p align="center">
