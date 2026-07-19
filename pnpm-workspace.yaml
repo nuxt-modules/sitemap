@@ -18,6 +18,11 @@ minimumReleaseAgeExclude:
   - nuxt-site-config-kit@4.1.1
   - nuxt-site-config@4.1.1
   - site-config-stack@4.1.1
+  - '@nuxt/kit@4.5.0'
+  - '@nuxt/nitro-server@4.5.0'
+  - '@nuxt/schema@4.5.0'
+  - '@nuxt/vite-builder@4.5.0'
+  - nuxt@4.5.0
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -32,51 +37,51 @@ packages:
   - benchmark
   - '!examples/**'
 overrides:
-  '@vitejs/plugin-vue': ^6.0.7
-  vite: ^8.1.0
+  '@vitejs/plugin-vue': ^6.0.8
+  vite: ^8.1.5
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 catalog:
   '@antfu/eslint-config': ^9.1.0
-  '@arethetypeswrong/cli': ^0.18.4
-  '@nuxt/content': ^3.14.0
+  '@arethetypeswrong/cli': ^0.18.5
+  '@nuxt/content': ^3.15.0
   '@nuxt/devtools-kit': 4.0.0-alpha.7
-  '@nuxt/kit': ^4.4.8
+  '@nuxt/kit': ^4.5.0
   '@nuxt/module-builder': ^1.0.2
   '@nuxt/test-utils': ^4.0.3
-  '@nuxt/ui': ^4.9.0
-  '@nuxtjs/i18n': ^10.4.0
-  '@nuxtjs/robots': ^6.1.1
+  '@nuxt/ui': ^4.10.0
+  '@nuxtjs/i18n': ^10.4.1
+  '@nuxtjs/robots': ^6.1.2
   '@vue/test-utils': ^2.4.11
   autocannon: ^8.0.0
   better-sqlite3: ^12.11.1
   bumpp: ^11.1.0
   consola: ^3.4.2
   defu: ^6.1.7
-  eslint: ^10.5.0
+  eslint: ^10.7.0
   eslint-plugin-harlanzw: ^0.17.0
-  execa: ^9.6.1
-  fast-xml-parser: ^5.9.3
+  execa: ^10.0.0
+  fast-xml-parser: ^5.10.1
   happy-dom: ^20.10.6
-  nuxt: ^4.4.8
-  nuxt-i18n-micro: ^3.20.1
+  nuxt: ^4.5.0
+  nuxt-i18n-micro: ^3.21.4
   nuxt-site-config: ^4.1.1
-  nuxtseo-layer-devtools: ^5.3.1
-  nuxtseo-shared: ^5.3.1
+  nuxtseo-layer-devtools: ^5.3.2
+  nuxtseo-shared: ^5.3.2
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.1
   radix3: ^1.1.2
   semver: ^7.8.5
   sirv: ^3.0.2
-  std-env: ^4.1.0
+  std-env: ^4.2.0
   typescript: ^6.0.3
   ufo: ^1.6.4
-  ultrahtml: ^1.6.0
+  ultrahtml: ^1.7.0
   unbuild: ^3.6.1
-  vitest: ^4.1.9
-  vue: ^3.5.38
-  vue-tsc: ^3.3.5
+  vitest: ^4.1.10
+  vue: ^3.5.40
+  vue-tsc: ^3.3.7
   zod: ^4.4.3
 
 onlyBuiltDependencies:
