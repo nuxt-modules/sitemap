@@ -49,6 +49,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
 
   const runtimeAssetsPath = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/sitemap')
+  const localeCodes = options.autoI18n ? new Set(options.autoI18n.locales.map(l => l.code)) : undefined
 
   // Setup virtual module for reading sources - must be in nitro:config to be bundled
   nuxt.hooks.hook('nitro:config', (nitroConfig) => {
@@ -112,7 +113,7 @@ export async function readSourcesFromFilesystem(filename) {
       // we need to figure out which sitemap this belongs to
       if (options.autoI18n && Object.keys(options.sitemaps).length > 1) {
         const path = route.route
-        const match = splitForLocales(path, options.autoI18n.locales.map(l => l.code))
+        const match = splitForLocales(path, localeCodes!)
         // if it's missing a locale then we put it in the default locale sitemap
         const locale = match[0] || options.autoI18n.defaultLocale
         if (options.isI18nMapped) {

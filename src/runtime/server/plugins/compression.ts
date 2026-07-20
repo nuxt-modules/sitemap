@@ -12,7 +12,7 @@ function getPreferredEncoding(event: H3Event): 'gzip' | 'deflate' | null {
 }
 
 export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook('beforeResponse', async (event, response) => {
+  nitro.hooks.hook('beforeResponse', (event, response) => {
     if (!event.context._isSitemap || !response.body)
       return
 
@@ -21,8 +21,7 @@ export default defineNitroPlugin((nitro) => {
       return
 
     const body = typeof response.body === 'string' ? response.body : JSON.stringify(response.body)
-    const stream = new Blob([body]).stream().pipeThrough(new CompressionStream(encoding))
-    response.body = Buffer.from(await new Response(stream).arrayBuffer())
+    response.body = new Blob([body]).stream().pipeThrough(new CompressionStream(encoding))
     setResponseHeader(event, 'Content-Encoding', encoding)
   })
 })
