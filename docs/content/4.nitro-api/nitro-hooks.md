@@ -74,7 +74,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 Triggered once the final structure of the sitemap index is generated, provides the sitemaps as objects.
 
-In a sitemap index, `lastmod` is the modification time of the sitemap file, not the newest page inside it. Use this hook to add accurate dates to generated sitemap entries. For chunked sitemaps, fetch the metadata in one query and map it by filename:
+In a sitemap index, `lastmod` records when the sitemap file changed. Page modification dates belong to the URL entries inside that file. Use this hook to add accurate dates to generated sitemap entries. For chunked sitemaps, fetch the metadata in one query and map it by filename:
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
