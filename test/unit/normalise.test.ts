@@ -1,7 +1,40 @@
 import { describe, expect, it } from 'vitest'
-import { preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
+import { normaliseEntry, preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 
 describe('normalise', () => {
+  it('normalises without defaults without mutating the source entry', () => {
+    const source = preNormalizeEntry({
+      loc: '/page',
+      lastmod: '2024-01-01T12:30:00',
+      images: [{ loc: '/image.jpg' }],
+    })
+    const normalized = normaliseEntry(source)
+
+    expect(normalized).not.toBe(source)
+    expect(normalized.images).not.toBe(source.images)
+    expect(normalized.lastmod).toBe('2024-01-01T12:30:00Z')
+    expect(source.lastmod).toBe('2024-01-01T12:30:00')
+  })
+
+  it('reuses lastmod normalization while preserving valid and invalid results', () => {
+    const cache = {}
+    const valid = preNormalizeEntry({ loc: '/valid', lastmod: '2024-01-01T12:30:00' })
+    const repeated = preNormalizeEntry({ loc: '/repeated', lastmod: '2024-01-01T12:30:00' })
+    const invalid = preNormalizeEntry({ loc: '/invalid', lastmod: 'not-a-date' })
+    const repeatedInvalid = preNormalizeEntry({ loc: '/repeated-invalid', lastmod: 'not-a-date' })
+
+    expect(normaliseEntry(valid, undefined, undefined, cache).lastmod).toBe('2024-01-01T12:30:00Z')
+    expect(normaliseEntry(repeated, undefined, undefined, cache).lastmod).toBe('2024-01-01T12:30:00Z')
+    expect(normaliseEntry(invalid, undefined, undefined, cache).lastmod).toBeUndefined()
+    expect(normaliseEntry(repeatedInvalid, undefined, undefined, cache).lastmod).toBeUndefined()
+  })
+
+  it('applies configured defaults', () => {
+    const normalized = normaliseEntry(preNormalizeEntry('/page'), { changefreq: 'weekly', priority: 0.5 })
+    expect(normalized.changefreq).toBe('weekly')
+    expect(normalized.priority).toBe(0.5)
+  })
+
   it('query', async () => {
     const normalisedWithoutSlash = preNormalizeEntry({ loc: '/query?foo=bar' })
     expect(normalisedWithoutSlash).toMatchInlineSnapshot(`
@@ -31,6 +64,13 @@ describe('normalise', () => {
         "loc": "/query?foo=bar",
       }
     `)
+  })
+
+  it('removes a trailing slash before query strings and fragments', () => {
+    expect(preNormalizeEntry('/path/?foo=bar').loc).toBe('/path?foo=bar')
+    expect(preNormalizeEntry('/path/#section').loc).toBe('/path')
+    expect(preNormalizeEntry('/path/').loc).toBe('/path')
+    expect(preNormalizeEntry('/').loc).toBe('/')
   })
 
   it('encoding', () => {

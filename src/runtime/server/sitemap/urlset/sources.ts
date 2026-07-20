@@ -117,7 +117,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     if (typeof res === 'object') {
       urls = res.urls || res
     }
-    else if (typeof res === 'string' && parseURL(url).pathname.endsWith('.xml')) {
+    else if (typeof res === 'string' && isXmlRequest) {
       const result = await parseSitemapXml(res)
       urls = result.urls
     }
@@ -196,7 +196,7 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
 }
 
 export async function resolveSitemapSources(sources: SitemapSourceInput[], event?: H3Event) {
-  return (await Promise.all(
+  return await Promise.all(
     sources.map((source) => {
       const normalized = normalizeSourceInput(source)
       if ('urls' in normalized) {
@@ -214,5 +214,5 @@ export async function resolveSitemapSources(sources: SitemapSourceInput[], event
         error: 'Invalid source',
       }
     }),
-  )).flat()
+  )
 }

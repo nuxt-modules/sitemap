@@ -31,7 +31,10 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
   if (url.alternatives) {
     for (const alt of url.alternatives) {
       let attrs = ''
-      for (const [k, v] of Object.entries(alt)) attrs += ` ${k}="${xmlEscape(String(v))}"`
+      for (const k in alt) {
+        if (Object.hasOwn(alt, k))
+          attrs += ` ${k}="${xmlEscape(String(alt[k as keyof typeof alt]))}"`
+      }
       xml += `${I2}<xhtml:link rel="alternate"${attrs} />${NL}`
     }
   }

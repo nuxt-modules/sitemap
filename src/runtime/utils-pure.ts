@@ -2,7 +2,7 @@ import type { FilterInput } from './types'
 import { createConsola } from 'consola'
 import { createDefu } from 'defu'
 import { createFilter } from 'nuxtseo-shared/utils'
-import { parseURL, withLeadingSlash, withoutBase } from 'ufo'
+import { parseURL, withoutBase } from 'ufo'
 
 export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/utils'
 
@@ -12,6 +12,23 @@ export const logger = createConsola({
   },
 })
 
+const XML_ENTITIES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&apos;',
+}
+const XML_SPECIAL_CHARS_RE = /[&<>"']/g
+const HAS_XML_SPECIAL_CHARS_RE = /[&<>"']/
+
+export function xmlEscape(value: string | number | boolean | Date): string {
+  const input = String(value)
+  return HAS_XML_SPECIAL_CHARS_RE.test(input)
+    ? input.replace(XML_SPECIAL_CHARS_RE, char => XML_ENTITIES[char]!)
+    : input
+}
+
 const merger = createDefu((obj, key, value) => {
   // merge arrays using a set
   if (Array.isArray(obj[key]) && Array.isArray(value))
@@ -20,37 +37,45 @@ const merger = createDefu((obj, key, value) => {
   return obj[key]
 })
 
-export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K): T[] {
+export function mergeOnKey<T, K extends keyof T>(arr: T[], key: K, onMerge?: (key: T[K]) => void): T[] {
+  if (arr.length < 2)
+    return arr
+
   const seen = new Map<string, number>()
 
-  // Pre-allocate result array to avoid resizing
+  // Compact in place: all runtime callers pass a temporary array, so a second full-size result
+  // allocation only increases peak memory for large sitemaps.
   let resultLength = 0
-  const result: T[] = Array.from({ length: arr.length })
 
   for (const item of arr) {
     const k = item[key] as string
     if (seen.has(k)) {
       const existingIndex = seen.get(k)!
+      onMerge?.(item[key])
       // @ts-expect-error untyped
-      result[existingIndex] = merger(item, result[existingIndex])
+      arr[existingIndex] = merger(item, arr[existingIndex])
     }
     else {
       seen.set(k, resultLength)
-      result[resultLength++] = item
+      arr[resultLength++] = item
     }
   }
 
-  // Truncate in-place instead of creating a copy via slice
-  result.length = resultLength
-  return result
+  arr.length = resultLength
+  return arr
 }
 
-export function splitForLocales(path: string, locales: string[]): [string | null, string] {
+export function splitForLocales(path: string, locales: readonly string[] | Set<string>): [string | null, string] {
   // we only want to use the first path segment otherwise we can end up turning "/ending" into "/en/ding"
-  const prefix = withLeadingSlash(path).split('/')[1]
+  const start = path.charCodeAt(0) === 47 ? 1 : 0
+  const end = path.indexOf('/', start)
+  const prefix = path.slice(start, end === -1 ? path.length : end)
   // make sure prefix is a valid locale
-  if (prefix && locales.includes(prefix))
-    return [prefix, path.replace(`/${prefix}`, '')]
+  const hasLocale = locales instanceof Set ? locales.has(prefix) : locales.includes(prefix)
+  if (prefix && hasLocale) {
+    const prefixEnd = start + prefix.length
+    return [prefix, start === 1 ? path.slice(prefixEnd) : path]
+  }
   return [null, path]
 }
 
@@ -97,15 +122,17 @@ export function createPathFilter(options: { include?: (FilterInput | string | Re
     exclude: normalizeRuntimeFilters(options.exclude),
   })
   const hasBase = baseURL && baseURL !== '/'
-  return (loc: string) => {
-    let path = loc
-    try {
-      // e.loc is absolute here
-      path = parseURL(loc).pathname
-    }
-    catch {
-      // invalid URL
-      return false
+  return (loc: string, pathname?: string) => {
+    let path = pathname
+    if (typeof path !== 'string') {
+      try {
+        // e.loc is absolute here
+        path = parseURL(loc).pathname
+      }
+      catch {
+        // invalid URL
+        return false
+      }
     }
     if (hasBase)
       path = withoutBase(path, baseURL)
@@ -118,7 +145,7 @@ export interface PageMatch {
   paramSegments: string[]
 }
 
-export function findPageMapping(pathWithoutPrefix: string, pages: Record<string, Record<string, string | false>>): PageMatch | null {
+export function findPageMapping(pathWithoutPrefix: string, pages: Record<string, Record<string, string | false>>, sortedKeys?: string[]): PageMatch | null {
   const stripped = pathWithoutPrefix[0] === '/' ? pathWithoutPrefix.slice(1) : pathWithoutPrefix
   const pageKey = stripped.endsWith('/index') ? stripped.slice(0, -6) || 'index' : stripped || 'index'
 
@@ -128,8 +155,8 @@ export function findPageMapping(pathWithoutPrefix: string, pages: Record<string,
 
   // prefix matching for dynamic routes (e.g., 'posts/2' matches 'posts' key)
   // sort by length desc to match most specific first
-  const sortedKeys = Object.keys(pages).sort((a, b) => b.length - a.length)
-  for (const key of sortedKeys) {
+  const keys = sortedKeys || Object.keys(pages).sort((a, b) => b.length - a.length)
+  for (const key of keys) {
     if (pageKey.startsWith(`${key}/`)) {
       const paramPath = pageKey.slice(key.length + 1)
       return { mappings: pages[key]!, paramSegments: paramPath.split('/') }

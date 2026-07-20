@@ -75,6 +75,9 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
   const routeRuleMatcher = createNitroRouteRuleMatcher()
   const { autoI18n } = runtimeConfig
+  const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
+    ? new Set(autoI18n.locales.map(l => l.code))
+    : undefined
 
   // Process in place to avoid creating intermediate arrays
   let validCount = 0
@@ -89,8 +92,8 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
     let routeRules = routeRuleMatcher(path)
 
     // Apply top-level path without prefix
-    if (autoI18n?.locales && autoI18n?.strategy !== 'no_prefix') {
-      const match = splitForLocales(path, autoI18n.locales.map(l => l.code))
+    if (localeCodes) {
+      const match = splitForLocales(path, localeCodes)
       const pathWithoutPrefix = match[1]
       if (pathWithoutPrefix && pathWithoutPrefix !== path)
         routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
@@ -102,8 +105,16 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
     if (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
       continue
 
-    const hasRobotsDisabled = Object.entries(routeRules.headers || {})
-      .some(([name, value]) => name.toLowerCase() === 'x-robots-tag' && value.toLowerCase().includes('noindex'))
+    let hasRobotsDisabled = false
+    const headers = routeRules.headers
+    if (headers) {
+      for (const name in headers) {
+        if (name.toLowerCase() === 'x-robots-tag' && headers[name]!.toLowerCase().includes('noindex')) {
+          hasRobotsDisabled = true
+          break
+        }
+      }
+    }
 
     if (routeRules.redirect || hasRobotsDisabled)
       continue
@@ -129,14 +140,34 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   // we need to normalize any new urls otherwise they won't appear in the final sitemap
   // Note this is risky and users should be using the sitemap:input hook for additions
   if (resolvedCtx.urls.length !== locSize) {
-    resolvedCtx.urls = resolvedCtx.urls.map(e => preNormalizeEntry(e, resolvers))
+    for (let i = 0; i < resolvedCtx.urls.length; i++)
+      resolvedCtx.urls[i] = preNormalizeEntry(resolvedCtx.urls[i]!, resolvers)
   }
 
   const maybeSort = (urls: ResolvedSitemapUrl[]) => runtimeConfig.sortEntries ? sortInPlace(urls) : urls
   // final urls
-  const defaults = definition.defaults || {}
-  const normalizedPreDedupe = resolvedCtx.urls.map(e => normaliseEntry(e, defaults, resolvers))
-  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, '_key').map(e => normaliseEntry(e, defaults, resolvers)))
+  const defaults = definition.defaults
+  const normalizedPreDedupe = resolvedCtx.urls
+  // Repeated CMS/default timestamps are common and expensive to parse. Sample the leading entries
+  // so unique timestamp feeds avoid paying cache bookkeeping on every URL.
+  const firstLastmod = normalizedPreDedupe[0]?.lastmod ?? defaults?.lastmod
+  let cacheLastmod = normalizedPreDedupe.length > 1 && !!firstLastmod
+  for (let i = 1; cacheLastmod && i < Math.min(normalizedPreDedupe.length, 8); i++)
+    cacheLastmod = (normalizedPreDedupe[i]!.lastmod ?? defaults?.lastmod) === firstLastmod
+  const normaliseCache = cacheLastmod ? {} : undefined
+  for (let i = 0; i < normalizedPreDedupe.length; i++)
+    normalizedPreDedupe[i] = normaliseEntry(normalizedPreDedupe[i]!, defaults, resolvers, normaliseCache)
+  const duplicateKeys = new Set<string>()
+  const urls = mergeOnKey(normalizedPreDedupe, '_key', key => duplicateKeys.add(key))
+  // A merge can introduce duplicate alternatives/images/videos. Unique URLs are already fully
+  // normalized, so avoid cloning and resolving every nested entry a second time.
+  if (duplicateKeys.size) {
+    for (let i = 0; i < urls.length; i++) {
+      if (duplicateKeys.has(urls[i]!._key))
+        urls[i] = normaliseEntry(urls[i]!, defaults, resolvers, normaliseCache)
+    }
+  }
+  maybeSort(urls)
 
   // Check if this is a chunk request that would be empty
   if (definition._isChunking && definition.sitemapName.includes('-')) {

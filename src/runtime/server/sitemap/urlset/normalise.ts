@@ -57,7 +57,16 @@ function resolve(s: string | URL | undefined, resolvers?: NitroUrlResolvers): st
 function removeTrailingSlash(s: string) {
   // need to account for query strings and hashes
   // this assumes the URL is normalised
-  return s.replace(/\/(\?|#|$)/, '$1')
+  let pathEnd = s.length
+  const queryIndex = s.indexOf('?')
+  if (queryIndex !== -1)
+    pathEnd = queryIndex
+  const hashIndex = s.indexOf('#')
+  if (hashIndex !== -1 && hashIndex < pathEnd)
+    pathEnd = hashIndex
+  return pathEnd > 0 && s.charCodeAt(pathEnd - 1) === 47
+    ? s.slice(0, pathEnd - 1) + s.slice(pathEnd)
+    : s
 }
 
 export function preNormalizeEntry(_e: SitemapUrl | string, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
@@ -117,15 +126,28 @@ export function isEncoded(url: string) {
   }
 }
 
-export function normaliseEntry(_e: ResolvedSitemapUrl, defaults: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers): ResolvedSitemapUrl {
-  const e = defu(_e, defaults) as ResolvedSitemapUrl
+interface NormaliseCache {
+  lastmodInput?: string | Date
+  lastmodOutput?: string | false
+}
+
+export function normaliseEntry(_e: ResolvedSitemapUrl, defaults?: Omit<SitemapUrl, 'loc'>, resolvers?: NitroUrlResolvers, cache?: NormaliseCache): ResolvedSitemapUrl {
+  // `defu` recursively clones the entire entry even when no defaults exist. The shallow copy is
+  // sufficient here because every nested collection we normalize is cloned below.
+  const e = (defaults ? defu(_e, defaults) : { ..._e }) as ResolvedSitemapUrl
   if (import.meta.dev) {
     const warnings = validateSitemapUrl(e)
     if (warnings.length)
       e._warnings = (e._warnings || []).concat(warnings)
   }
   if (e.lastmod) {
-    const date = normaliseDate(e.lastmod)
+    const date = cache?.lastmodInput === e.lastmod
+      ? cache.lastmodOutput
+      : normaliseDate(e.lastmod)
+    if (cache && cache.lastmodInput !== e.lastmod) {
+      cache.lastmodInput = e.lastmod
+      cache.lastmodOutput = date
+    }
     if (date)
       e.lastmod = date
     else
