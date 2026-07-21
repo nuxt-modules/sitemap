@@ -1,5 +1,6 @@
 import { removeResponseHeader } from 'h3'
 import { defineNitroPlugin } from 'nitropack/runtime'
+import { logger } from '../../utils-pure'
 import { createNodeResponseStream, isReadableStream } from '../sitemap/stream'
 
 export default defineNitroPlugin((nitro) => {
@@ -15,7 +16,9 @@ export default defineNitroPlugin((nitro) => {
       return
     }
 
-    response.body = createNodeResponseStream(response.body)
+    response.body = createNodeResponseStream(response.body, (error) => {
+      logger.error('Failed to cancel sitemap response stream after the client disconnected.', error)
+    })
     removeResponseHeader(event, 'Content-Length')
   })
 })

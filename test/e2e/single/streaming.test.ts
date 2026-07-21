@@ -1,12 +1,33 @@
+import type { IncomingMessage } from 'node:http'
+import fs from 'node:fs'
+import { request } from 'node:http'
+import path from 'node:path'
 import { createResolver } from '@nuxt/kit'
-import { fetch, setup } from '@nuxt/test-utils'
-import { describe, expect, it } from 'vitest'
+import { fetch, setup, useTestContext } from '@nuxt/test-utils'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
+const cacheDir = resolve('../../fixtures/streaming/.data/sitemap-cache-test')
+
+beforeAll(() => {
+  fs.rmSync(cacheDir, { force: true, recursive: true })
+})
+
+afterAll(() => {
+  fs.rmSync(cacheDir, { force: true, recursive: true })
+})
 
 await setup({
   rootDir: resolve('../../fixtures/streaming'),
   dev: false,
+  nuxtConfig: {
+    sitemap: {
+      runtimeCacheStorage: {
+        driver: 'fs',
+        base: cacheDir,
+      },
+    },
+  },
 })
 
 describe('experimental sitemap streaming', () => {
@@ -47,6 +68,23 @@ describe('experimental sitemap streaming', () => {
     expect(await response.text()).toContain('https://streaming.example.com/page-1999')
   })
 
+  it('persists the finalized URL plan instead of serialized XML', async () => {
+    await fetch('/__sitemap__/pages.xml', {
+      headers: { 'Accept-Encoding': 'identity' },
+    })
+
+    await vi.waitFor(() => {
+      const cacheFiles = fs.readdirSync(cacheDir, { recursive: true })
+        .map(file => path.join(cacheDir, file))
+        .filter(file => fs.statSync(file).isFile())
+      expect(cacheFiles.length).toBeGreaterThan(0)
+
+      const cachedValues = cacheFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n')
+      expect(cachedValues).toContain('page-1999')
+      expect(cachedValues).not.toContain('<urlset')
+    })
+  })
+
   it('buffers only when an output hook accesses the XML string', async () => {
     const response = await fetch('/__sitemap__/posts.xml', {
       headers: {
@@ -74,5 +112,43 @@ describe('experimental sitemap streaming', () => {
 
     expect(response.status).toBe(200)
     expect(await response.text()).toContain('https://streaming.example.com/post')
+  })
+
+  it('stops pulling and cancels when a slow Node client disconnects', async () => {
+    const baseUrl = useTestContext().url
+    expect(baseUrl).toBeTruthy()
+
+    const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      const clientRequest = request(new URL('/api/slow-stream', baseUrl), {
+        headers: { 'Accept-Encoding': 'identity' },
+      }, resolve)
+      clientRequest.once('error', reject)
+      clientRequest.end()
+    })
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        response.once('data', () => {
+          response.pause()
+          resolve()
+        })
+        response.once('error', reject)
+      })
+
+      await vi.waitFor(async () => {
+        const state = await fetch('/api/stream-state').then(value => value.json()) as { pulls: number }
+        expect(state.pulls).toBeGreaterThan(0)
+        expect(state.pulls).toBeLessThan(16)
+      })
+
+      response.destroy()
+      await vi.waitFor(async () => {
+        const state = await fetch('/api/stream-state').then(value => value.json()) as { cancelled: boolean }
+        expect(state.cancelled).toBe(true)
+      })
+    }
+    finally {
+      response.destroy()
+    }
   })
 })

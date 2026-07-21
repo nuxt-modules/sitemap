@@ -121,7 +121,7 @@ export default defineNitroPlugin((nitroApp) => {
 Triggered before the sitemap is sent to the client.
 It provides the sitemap as an XML string.
 
-When `experimentalStreaming` is enabled, the XML string is created lazily. Reading or replacing `ctx.sitemap` keeps this hook fully backwards compatible but buffers that response. A hook that only observes the event or sitemap name without accessing `ctx.sitemap` preserves streaming serialization.
+When `experimentalStreaming` is enabled, the XML string is created lazily. Reading or replacing `ctx.sitemap` buffers the complete XML response. A hook that only observes the event or sitemap name preserves streaming serialization. With `debug` enabled, check `X-Sitemap-Render-Mode` for `stream` or `buffered-hook`.
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'

@@ -31,7 +31,10 @@ export function hasNonIdentityEncoding(value: unknown): boolean {
  * Web streams without waiting for `drain`; this adapter keeps production Node
  * responses pull-driven and forwards disconnects to the Web stream's `cancel()`.
  */
-export function createNodeResponseStream(source: ReadableStream<Uint8Array>): NodeResponseStream {
+export function createNodeResponseStream(
+  source: ReadableStream<Uint8Array>,
+  onCancelError: (error: unknown) => void,
+): NodeResponseStream {
   const reader = source.getReader()
   const endListeners = new Set<() => void>()
   const errorListeners = new Set<(error: unknown) => void>()
@@ -46,8 +49,7 @@ export function createNodeResponseStream(source: ReadableStream<Uint8Array>): No
       aborted = true
       releaseBackpressure?.()
       releaseBackpressure = undefined
-      // H3 cannot report cancellation errors after the response has disconnected.
-      void reader.cancel(reason)
+      void reader.cancel(reason).catch(onCancelError)
     },
     on(event: 'end' | 'error', listener: (() => void) | ((error: unknown) => void)) {
       if (event === 'end')

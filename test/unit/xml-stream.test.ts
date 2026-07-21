@@ -108,7 +108,7 @@ describe('streaming XML serializers', () => {
     let drain: (() => void) | undefined
     let ended = false
     const source = createChunkedXmlStream(['first', 'second'], 5)
-    const stream = createNodeResponseStream(source)
+    const stream = createNodeResponseStream(source, vi.fn())
 
     stream.on('end', () => {
       ended = true
@@ -142,7 +142,7 @@ describe('streaming XML serializers', () => {
         controller.enqueue(new Uint8Array([1]))
       },
     })
-    const stream = createNodeResponseStream(source)
+    const stream = createNodeResponseStream(source, vi.fn())
 
     stream.pipe({
       once() {},
@@ -154,6 +154,31 @@ describe('streaming XML serializers', () => {
     stream.abort(new Error('client disconnected'))
 
     await vi.waitFor(() => expect(cancelled).toBe(true))
+  })
+
+  it('reports cancellation failures after a Node response disconnects', async () => {
+    const cancelError = new Error('cancel failed')
+    const onCancelError = vi.fn()
+    const source = new ReadableStream<Uint8Array>({
+      cancel() {
+        throw cancelError
+      },
+      pull(controller) {
+        controller.enqueue(new Uint8Array([1]))
+      },
+    })
+    const stream = createNodeResponseStream(source, onCancelError)
+
+    stream.pipe({
+      once() {},
+      write() {
+        return false
+      },
+    })
+    await vi.waitFor(() => expect(source.locked).toBe(true))
+    stream.abort(new Error('client disconnected'))
+
+    await vi.waitFor(() => expect(onCancelError).toHaveBeenCalledWith(cancelError))
   })
 })
 
