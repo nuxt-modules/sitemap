@@ -167,9 +167,9 @@ describe('parseSitemapXml', () => {
     expect(result.urls).toMatchInlineSnapshot(`[]`)
   })
 
-  it('should throw error if no URLs are found', async () => {
+  it('should return an empty result for a well-formed empty urlset', async () => {
     const xml = '<urlset></urlset>'
-    await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
+    await expect(parseSitemapXml(xml)).resolves.toEqual({ urls: [], warnings: [] })
   })
 
   it('should handle malformed XML', async () => {
@@ -768,9 +768,9 @@ describe('parseSitemapXml', () => {
       await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
     })
 
-    it('should throw error for sitemap with no URL entries', async () => {
+    it('should return an empty result for a sitemap with no URL entries', async () => {
       const xml = '<urlset></urlset>'
-      await expect(() => parseSitemapXml(xml)).rejects.toThrow('XML does not contain a valid urlset element')
+      await expect(parseSitemapXml(xml)).resolves.toEqual({ urls: [], warnings: [] })
     })
 
     it('should return warnings for URLs missing loc', async () => {
