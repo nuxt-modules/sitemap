@@ -1,10 +1,11 @@
 import type { H3Event } from 'h3'
-import { appendHeader, createError, getRouterParam, sendRedirect, setHeader } from 'h3'
+import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect, setHeader } from 'h3'
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../utils'
-import { buildSitemapIndex, urlsToIndexXml } from './builder/sitemap-index'
-import { createSitemap, useNitroUrlResolvers } from './nitro'
+import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
+import { buildSitemapIndex } from './builder/sitemap-index'
+import { createSitemap, renderSitemapOutput, useNitroUrlResolvers } from './nitro'
 import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
 export async function sitemapXmlEventHandler(e: H3Event) {
@@ -38,9 +39,15 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
     ? { messages: failedSources.map(f => f.error), urls: failedSources.map(f => f.url) }
     : undefined
 
-  const output = urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo)
-  const ctx = { sitemap: output, sitemapName: 'sitemap', event: e }
-  await nitro.hooks.callHook('sitemap:output', ctx)
+  const output = await renderSitemapOutput(
+    nitro,
+    e,
+    'sitemap',
+    () => urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo),
+    () => urlsToIndexXmlStream(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo),
+    !!runtimeConfig.experimentalStreaming && !import.meta.prerender,
+    runtimeConfig.debug,
+  )
 
   setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
   if (runtimeConfig.cacheMaxAgeSeconds) {
@@ -57,12 +64,14 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
     setHeader(e, 'Cache-Control', `no-cache, no-store`)
   }
 
-  return ctx.sitemap
+  e.context._isSitemap = true
+  return output
 }
 
 export async function sitemapChildXmlEventHandler(e: H3Event) {
   // Only process .xml requests - pass through for other paths
-  if (!e.path.endsWith('.xml'))
+  const pathname = getRequestURL(e).pathname
+  if (!pathname.endsWith('.xml'))
     return
 
   const runtimeConfig = useSitemapRuntimeConfig(e)
@@ -70,8 +79,7 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
 
   let sitemapName = getRouterParam(e, 'sitemap')
   if (!sitemapName) {
-    const path = e.path
-    const match = path.match(/(?:\/__sitemap__\/)?(.+)\.xml$/)
+    const match = pathname.match(/(?:\/__sitemap__\/)?(.+)\.xml$/)
     if (match)
       sitemapName = match[1]
   }

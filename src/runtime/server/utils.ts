@@ -7,16 +7,6 @@ import { normalizeRuntimeFilters } from '../utils-pure'
 
 export * from '../utils-pure'
 
-// XML escape function for content inserted into XML/XSL
-export function xmlEscape(str: string | number | boolean | Date): string {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-}
-
 export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   // Static fields live in a virtual module; only env-overridable fields go through runtimeConfig.
   // we still need to clone so callers can mutate without affecting the shared module-scope copy

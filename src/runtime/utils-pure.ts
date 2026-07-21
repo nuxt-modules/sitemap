@@ -12,6 +12,16 @@ export const logger = createConsola({
   },
 })
 
+// XML escape function for content inserted into XML/XSL
+export function xmlEscape(str: string | number | boolean | Date): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 const merger = createDefu((obj, key, value) => {
   // merge arrays using a set
   if (Array.isArray(obj[key]) && Array.isArray(value))

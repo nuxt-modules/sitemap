@@ -5,6 +5,7 @@ import type {
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapDefinition,
+  SitemapOutputHookCtx,
   SitemapRenderCtx,
 } from '../../types'
 import { defu } from 'defu'
@@ -19,7 +20,8 @@ import { createSitePathResolver } from '#site-config/server/composables/utils'
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
-import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
+import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
+import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
 
@@ -48,8 +50,9 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
   }
 }
 
-// Shared sitemap building logic
-async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+// Shared sitemap resolution and normalization. This work must finish before response
+// streaming begins because hooks, filtering, deduplication, and sorting can affect any URL.
+async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp() as SitemapNitroApp
   if (import.meta.prerender) {
@@ -64,7 +67,10 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
       })
     }
   }
-  const { urls: sitemapUrls, failedSources } = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  const { urls: resolvedSitemapUrls, failedSources } = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro)
+  // URL resolution is cached separately and may hand concurrent requests the same
+  // array. Keep compaction and hooks local to this render plan.
+  const sitemapUrls = resolvedSitemapUrls.slice()
 
   if (import.meta.prerender && failedSources.length) {
     throw createError({
@@ -77,6 +83,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   const { autoI18n } = runtimeConfig
 
   // Process in place to avoid creating intermediate arrays
+  const sourceCount = sitemapUrls.length
   let validCount = 0
   for (let i = 0; i < sitemapUrls.length; i++) {
     const u = sitemapUrls[i]!
@@ -114,8 +121,8 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
   // Truncate array to valid entries only
   sitemapUrls.length = validCount
-  if (import.meta.dev && validCount === 0 && sitemapUrls.length > 0) {
-    logger.warn(`Sitemap had ${sitemapUrls.length} that were all filtered out. This may be due to a robots rules blocking these URLs from indexing. Check your /** route rules or robots.txt configuration.`)
+  if (import.meta.dev && validCount === 0 && sourceCount > 0) {
+    logger.warn(`Sitemap had ${sourceCount} URLs that were all filtered out. This may be due to a robots rules blocking these URLs from indexing. Check your /** route rules or robots.txt configuration.`)
   }
 
   // 6. nitro hooks
@@ -162,12 +169,83 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
         urls: failedSources.map(f => f.url),
       }
     : undefined
+  return { errorInfo, sitemapName, urls }
+}
+
+export async function renderSitemapOutput(
+  nitro: NitroApp,
+  event: H3Event,
+  sitemapName: string,
+  renderString: () => string,
+  renderStream: () => ReadableStream<Uint8Array>,
+  shouldStream: boolean,
+  debug: boolean,
+): Promise<string | ReadableStream<Uint8Array>> {
+  if (!shouldStream) {
+    const ctx: SitemapOutputHookCtx = { sitemap: renderString(), sitemapName, event }
+    await nitro.hooks.callHook('sitemap:output', ctx)
+    return ctx.sitemap
+  }
+
+  let buffered = false
+  let sitemap: string | undefined
+  const ctx = { sitemapName, event } as SitemapOutputHookCtx
+  Object.defineProperty(ctx, 'sitemap', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      buffered = true
+      sitemap ??= renderString()
+      return sitemap
+    },
+    set(value: string) {
+      buffered = true
+      sitemap = value
+    },
+  })
+
+  await nitro.hooks.callHook('sitemap:output', ctx)
+
+  if (debug)
+    setHeader(event, 'X-Sitemap-Render-Mode', buffered ? 'buffered-hook' : 'stream')
+
+  return buffered
+    ? createChunkedXmlStream([sitemap!])
+    : renderStream()
+}
+
+// Shared buffered sitemap building logic used by the legacy response and full XML cache.
+async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+  const { errorInfo, sitemapName, urls } = await buildSitemapRenderPlan(event, definition, resolvers, runtimeConfig)
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig, errorInfo)
 
   const ctx = { sitemap, sitemapName, event }
-  await nitro.hooks.callHook('sitemap:output', ctx)
+  await useNitroApp().hooks.callHook('sitemap:output', ctx)
   return ctx.sitemap
 }
+
+function getSitemapCacheKey(event: H3Event, definition: SitemapDefinition) {
+  // Include headers that can affect absolute URL generation in the cache key.
+  const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+  const proto = getHeader(event, 'x-forwarded-proto') || 'https'
+  const sitemapName = definition.sitemapName || 'default'
+  return `${sitemapName}-${proto}-${host}`
+}
+
+// Streaming responses cannot cache a serialized XML string without restoring the
+// full-response allocation. Cache the finalized URL plan instead, then serialize
+// and optionally compress it as a pull-driven stream for each response.
+const buildSitemapRenderPlanCached = defineCachedFunction(
+  buildSitemapRenderPlan,
+  {
+    name: 'sitemap:render-plan',
+    group: 'sitemap',
+    maxAge: SERVER_CACHE_MAX_AGE,
+    base: 'sitemap',
+    getKey: getSitemapCacheKey,
+    swr: true,
+  },
+)
 
 // Create cached function for building sitemap XML
 const buildSitemapXmlCached = defineCachedFunction(
@@ -177,28 +255,42 @@ const buildSitemapXmlCached = defineCachedFunction(
     group: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap', // Use the sitemap storage
-    getKey: (event: H3Event, definition: SitemapDefinition) => {
-      // Include headers that could affect the output in the cache key
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
-      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      const sitemapName = definition.sitemapName || 'default'
-      return `${sitemapName}-${proto}-${host}`
-    },
+    getKey: getSitemapCacheKey,
     swr: true, // Enable stale-while-revalidate
   },
 )
 
 export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
+  const shouldStream = !!runtimeConfig.experimentalStreaming && !import.meta.prerender
 
   // Choose between cached or direct generation.
   // Skip caching during prerender: the crawl may run before `prerender:done` has written
   // `global-sources.json`, so an early empty result would poison the cache and be returned
   // on the follow-up render, shipping an empty sitemap.
+  // A serialized XML cache necessarily buffers the entire response. Streaming mode caches
+  // the finalized render plan instead and serializes those resolved URLs on demand.
   const shouldCache = !import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
-  const xml = shouldCache
-    ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig)
-    : await buildSitemapXml(event, definition, resolvers, runtimeConfig)
+  let xml: string | ReadableStream<Uint8Array>
+  if (shouldStream) {
+    const { errorInfo, sitemapName, urls } = shouldCache
+      ? await buildSitemapRenderPlanCached(event, definition, resolvers, runtimeConfig)
+      : await buildSitemapRenderPlan(event, definition, resolvers, runtimeConfig)
+    xml = await renderSitemapOutput(
+      useNitroApp(),
+      event,
+      sitemapName,
+      () => urlsToXml(urls, resolvers, runtimeConfig, errorInfo),
+      () => urlsToXmlStream(urls, resolvers, runtimeConfig, errorInfo),
+      true,
+      runtimeConfig.debug,
+    )
+  }
+  else {
+    xml = shouldCache
+      ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig)
+      : await buildSitemapXml(event, definition, resolvers, runtimeConfig)
+  }
 
   // Set headers
   setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')

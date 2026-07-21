@@ -106,6 +106,7 @@ export default defineNuxtModule<ModuleOptions>({
     cacheMaxAgeSeconds: 60 * 10, // cache for 10 minutes
     minify: false,
     debug: false,
+    experimentalStreaming: false,
     defaultSitemapsChunkSize: 1000,
     autoLastmod: false,
     discoverImages: true,
@@ -440,13 +441,15 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     // skip experimental runtime plugins in zeroRuntime mode
-    if (config.zeroRuntime && (config.experimentalWarmUp || config.experimentalCompression))
-      logger.warn('`experimentalWarmUp` and `experimentalCompression` are ignored in zeroRuntime mode.')
+    if (config.zeroRuntime && (config.experimentalWarmUp || config.experimentalCompression || config.experimentalStreaming))
+      logger.warn('`experimentalWarmUp`, `experimentalCompression`, and `experimentalStreaming` are ignored in zeroRuntime mode.')
     if (!config.zeroRuntime) {
       if (config.experimentalWarmUp)
         addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
       if (config.experimentalCompression)
         addServerPlugin(resolve('./runtime/server/plugins/compression'))
+      if (config.experimentalStreaming || config.experimentalCompression)
+        addServerPlugin(resolve('./runtime/server/plugins/stream-transport'))
     }
 
     // @ts-expect-error untyped
@@ -782,6 +785,7 @@ export default defineNuxtModule<ModuleOptions>({
       isMultiSitemap: usingMultiSitemaps,
       excludeAppSources: config.excludeAppSources,
       cacheMaxAgeSeconds: nuxt.options.dev ? 0 : config.cacheMaxAgeSeconds,
+      experimentalStreaming: config.experimentalStreaming,
 
       autoLastmod: config.autoLastmod,
       defaultSitemapsChunkSize: config.defaultSitemapsChunkSize,
