@@ -1,4 +1,5 @@
 import type { SitemapWarning } from './parseSitemapXml'
+import { XMLParser } from 'fast-xml-parser'
 
 export interface SitemapIndexEntry {
   loc: string
@@ -31,7 +32,6 @@ export async function parseSitemapIndex(xml: string): Promise<SitemapIndexParseR
   if (!xml)
     throw new Error('Empty XML input provided')
 
-  const { XMLParser } = await import('fast-xml-parser')
   const parser = new XMLParser({
     isArray: (tagName: string) => tagName === 'sitemap',
     removeNSPrefix: true,
