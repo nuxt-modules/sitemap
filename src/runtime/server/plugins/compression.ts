@@ -5,6 +5,7 @@ import { logger } from '../../utils-pure'
 import { hasNonIdentityEncoding, isReadableStream, negotiateCompressionEncoding } from '../sitemap/stream'
 
 let warnedAboutCompressionStream = false
+const NODE_COMPRESSION_INPUT_BATCH_BYTES = 512 * 1024
 
 function toByteStream(body: unknown): ReadableStream<Uint8Array> {
   if (isReadableStream(body))
@@ -16,6 +17,32 @@ function toByteStream(body: unknown): ReadableStream<Uint8Array> {
     ? body
     : JSON.stringify(body)
   return new Blob([value as BlobPart]).stream()
+}
+
+function createNodeCompressionInputStream(source: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = source.getReader()
+  let bytesRead = 0
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (bytesRead >= NODE_COMPRESSION_INPUT_BATCH_BYTES) {
+        bytesRead = 0
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
+      }
+
+      const result = await reader.read()
+      if (result.done) {
+        controller.close()
+        return
+      }
+
+      bytesRead += result.value.byteLength
+      controller.enqueue(result.value)
+    },
+    cancel(reason) {
+      return reader.cancel(reason)
+    },
+  })
 }
 
 function addVaryAcceptEncoding(event: H3Event) {
@@ -49,7 +76,13 @@ export default defineNitroPlugin((nitro) => {
     }
 
     const compression = new CompressionStream(encoding) as unknown as TransformStream<Uint8Array, Uint8Array>
-    response.body = toByteStream(response.body).pipeThrough(compression)
+    const source = toByteStream(response.body)
+    // Node's CompressionStream can drain synchronous input before exposing output.
+    // Yield in bounded batches so socket backpressure and cancellation reach the source.
+    const compressionInput = event.node.res?.socket
+      ? createNodeCompressionInputStream(source)
+      : source
+    response.body = compressionInput.pipeThrough(compression)
     removeResponseHeader(event, 'Content-Length')
     setResponseHeader(event, 'Content-Encoding', encoding)
   })

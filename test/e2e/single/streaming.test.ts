@@ -114,19 +114,24 @@ describe('experimental sitemap streaming', () => {
     expect(await response.text()).toContain('https://streaming.example.com/post')
   })
 
-  it('stops pulling and cancels when a slow Node client disconnects', async () => {
+  it.each([
+    { acceptEncoding: 'identity', contentEncoding: null, maxPulls: 16 },
+    { acceptEncoding: 'gzip', contentEncoding: 'gzip', maxPulls: 64 },
+  ])('stops pulling and cancels $acceptEncoding when a slow Node client disconnects', async ({ acceptEncoding, contentEncoding, maxPulls }) => {
     const baseUrl = useTestContext().url
     expect(baseUrl).toBeTruthy()
 
     const response = await new Promise<IncomingMessage>((resolve, reject) => {
       const clientRequest = request(new URL('/api/slow-stream', baseUrl), {
-        headers: { 'Accept-Encoding': 'identity' },
+        headers: { 'Accept-Encoding': acceptEncoding },
       }, resolve)
       clientRequest.once('error', reject)
       clientRequest.end()
     })
 
     try {
+      expect(response.headers['content-encoding'] || null).toBe(contentEncoding)
+
       await new Promise<void>((resolve, reject) => {
         response.once('data', () => {
           response.pause()
@@ -138,7 +143,7 @@ describe('experimental sitemap streaming', () => {
       await vi.waitFor(async () => {
         const state = await fetch('/api/stream-state').then(value => value.json()) as { pulls: number }
         expect(state.pulls).toBeGreaterThan(0)
-        expect(state.pulls).toBeLessThan(16)
+        expect(state.pulls).toBeLessThan(maxPulls)
       })
 
       response.destroy()
