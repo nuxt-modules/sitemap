@@ -1,6 +1,6 @@
 import type { ResolvedSitemapUrl } from '../../src/runtime/types'
 import { bench, describe } from 'vitest'
-import { urlsToXml } from '../../src/runtime/server/sitemap/builder/xml'
+import { urlsToXml, urlsToXmlStream } from '../../src/runtime/server/sitemap/builder/xml'
 
 const resolvers = {
   canonicalUrlResolver: (url: string) => `https://example.com${url}`,
@@ -60,6 +60,14 @@ describe('xml generation', () => {
     urlsToXml(simpleUrls, resolvers, config)
   }, { iterations: 100 })
 
+  bench('1000 simple urls (buffered response)', async () => {
+    await new Response(urlsToXml(simpleUrls, resolvers, config)).arrayBuffer()
+  }, { iterations: 100 })
+
+  bench('1000 simple urls (streamed)', async () => {
+    await new Response(urlsToXmlStream(simpleUrls, resolvers, config)).arrayBuffer()
+  }, { iterations: 100 })
+
   bench('1000 urls with images', () => {
     urlsToXml(urlsWithImages, resolvers, config)
   }, { iterations: 100 })
@@ -70,6 +78,14 @@ describe('xml generation', () => {
 
   bench('1000 mixed urls', () => {
     urlsToXml(mixedUrls, resolvers, config)
+  }, { iterations: 100 })
+
+  bench('1000 mixed urls (buffered response)', async () => {
+    await new Response(urlsToXml(mixedUrls, resolvers, config)).arrayBuffer()
+  }, { iterations: 100 })
+
+  bench('1000 mixed urls (streamed)', async () => {
+    await new Response(urlsToXmlStream(mixedUrls, resolvers, config)).arrayBuffer()
   }, { iterations: 100 })
 
   bench('1000 simple urls (minified)', () => {

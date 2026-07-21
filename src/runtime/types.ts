@@ -148,11 +148,22 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   experimentalWarmUp?: boolean
   /**
-   * Send the Sitemap as a compressed stream supporting gzip, brolti, etc.
+   * Compress sitemap responses with gzip or deflate when supported by the client.
    *
-   * @experimental Will be enabled by default in v5 (if stable)
+   * @experimental This option may change in a future release.
    */
   experimentalCompression?: boolean
+  /**
+   * Serialize dynamic sitemap responses as a pull-driven stream instead of building
+   * the complete XML string in memory first. Prerendered sitemaps remain buffered.
+   *
+   * Accessing `ctx.sitemap` in the `sitemap:output` hook buffers that response for
+   * backwards compatibility.
+   *
+   * @default false
+   * @experimental This option may change in a future release.
+   */
+  experimentalStreaming?: boolean
   /**
    * When enabled, sitemap generation only runs during prerendering.
    * The sitemap building code is tree-shaken from the runtime bundle.
@@ -233,7 +244,7 @@ export interface AutoI18nConfig {
   pages?: Record<string, Record<string, string | false>>
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify'> {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify' | 'experimentalStreaming'> {
   version: string
   isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>

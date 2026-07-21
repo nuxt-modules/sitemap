@@ -412,4 +412,4 @@ export async function buildSitemapUrls(sitemap: SitemapDefinition, resolvers: Ni
   return { urls, failedSources: resolved.failedSources }
 }
 
-export { urlsToXml } from './xml'
+export { urlsToXml, urlsToXmlStream } from './xml'

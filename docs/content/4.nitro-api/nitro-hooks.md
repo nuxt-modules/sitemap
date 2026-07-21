@@ -43,6 +43,8 @@ export default defineNitroPlugin((nitroApp) => {
 
 Triggered once the final structure of the XML is generated, provides the URLs as objects.
 
+With `experimentalStreaming` and production caching enabled, the finalized URL plan is cached. This hook runs on a plan cache miss or stale-while-revalidate refresh rather than on every sitemap response.
+
 For new URLs it's recommended to use `sitemap:input` instead. Use this hook for modifying entries or removing them.
 
 ```ts [server/plugins/sitemap.ts]
@@ -118,6 +120,8 @@ export default defineNitroPlugin((nitroApp) => {
 
 Triggered before the sitemap is sent to the client.
 It provides the sitemap as an XML string.
+
+When `experimentalStreaming` is enabled, the XML string is created lazily. Reading or replacing `ctx.sitemap` buffers the complete XML response. A hook that only observes the event or sitemap name preserves streaming serialization. With `debug` enabled, check `X-Sitemap-Render-Mode` for `stream` or `buffered-hook`.
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
