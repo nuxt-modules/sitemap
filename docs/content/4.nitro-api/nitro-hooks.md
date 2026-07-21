@@ -76,15 +76,39 @@ export default defineNitroPlugin((nitroApp) => {
 
 Triggered once the final structure of the sitemap index is generated, provides the sitemaps as objects.
 
+In a sitemap index, `lastmod` records when the sitemap file changed. Page modification dates belong to the URL entries inside that file. Use this hook to add accurate dates to generated sitemap entries. For chunked sitemaps, fetch the metadata in one query and map it by filename:
+
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook('sitemap:index-resolved', async (ctx) => {
-    // add a new sitemap to the index
-    ctx.sitemaps.push({
+  nitroApp.hooks.hook('sitemap:index-resolved', async ({ sitemaps }) => {
+    // Your application should return W3C date strings keyed by sitemap filename.
+    const lastmodByFile = await getSitemapLastmods()
+
+    for (const entry of sitemaps) {
+      const filename = new URL(entry.sitemap).pathname.split('/').pop()!
+      const lastmod = lastmodByFile[filename]
+
+      if (lastmod)
+        entry.lastmod = lastmod
+    }
+  })
+})
+```
+
+Avoid fetching the generated sitemap files from this hook. Query the database or metadata store that records when they changed instead.
+
+The hook can also add another sitemap to the index:
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:index-resolved', ({ sitemaps }) => {
+    sitemaps.push({
       sitemap: 'https://mysite.com/my-sitemap.xml',
-      lastmod: new Date().toISOString(),
+      lastmod: '2026-07-20',
     })
   })
 })

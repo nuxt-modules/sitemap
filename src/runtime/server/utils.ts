@@ -9,14 +9,18 @@ export * from '../utils-pure'
 
 export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   // Static fields live in a virtual module; only env-overridable fields go through runtimeConfig.
-  // we still need to clone so callers can mutate without affecting the shared module-scope copy
-  const clone = JSON.parse(JSON.stringify(staticConfig)) as ModuleRuntimeConfig
-  for (const k in clone.sitemaps) {
-    const sitemap = clone.sitemaps[k]!
-    sitemap.include = normalizeRuntimeFilters(sitemap.include)
-    sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude)
-    clone.sitemaps[k] = sitemap
-  }
-  Object.assign(clone, useRuntimeConfig(e).sitemap)
-  return Object.freeze(clone)
+  // Only sitemap definitions are mutated by the index builder, so shallow-copy those instead of
+  // serializing and parsing the entire static config (including i18n pages) on every request.
+  const sitemaps = Object.fromEntries(
+    Object.entries(staticConfig.sitemaps as ModuleRuntimeConfig['sitemaps']).map(([name, sitemap]) => [name, {
+      ...sitemap,
+      include: normalizeRuntimeFilters('include' in sitemap ? sitemap.include : undefined),
+      exclude: normalizeRuntimeFilters('exclude' in sitemap ? sitemap.exclude : undefined),
+    }]),
+  ) as ModuleRuntimeConfig['sitemaps']
+  return Object.freeze({
+    ...staticConfig,
+    sitemaps,
+    ...useRuntimeConfig(e).sitemap,
+  }) as ModuleRuntimeConfig
 }
