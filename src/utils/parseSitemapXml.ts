@@ -1,4 +1,6 @@
 import type { AlternativeEntry, GoogleNewsEntry, ImageEntry, SitemapStrict, SitemapUrl, SitemapUrlInput, VideoEntry } from '../runtime/types'
+import type { SitemapIndexEntry } from './parseSitemapIndex'
+import { XMLParser } from 'fast-xml-parser'
 
 interface ParsedUrl {
   loc?: string
@@ -66,14 +68,6 @@ interface ParsedNews {
   }
 }
 
-interface ParsedUrlset {
-  url?: ParsedUrl | ParsedUrl[]
-}
-
-interface ParsedRoot {
-  urlset?: ParsedUrlset
-}
-
 export interface SitemapWarning {
   type: 'validation'
   message: string
@@ -87,6 +81,50 @@ export interface SitemapWarning {
 export interface SitemapParseResult {
   urls: SitemapUrlInput[]
   warnings: SitemapWarning[]
+}
+
+export type SitemapXmlChunk = string | Uint8Array
+
+export type SitemapXmlInput
+  = SitemapXmlChunk
+    | Iterable<SitemapXmlChunk>
+    | AsyncIterable<SitemapXmlChunk>
+    | ReadableStream<SitemapXmlChunk>
+
+export interface SitemapStreamOptions {
+  maxEntryBytes?: number
+  maxBufferBytes?: number
+}
+
+export type SitemapXmlStreamEvent
+  = { _tag: 'url', url: SitemapUrlInput }
+    | { _tag: 'warning', warning: SitemapWarning }
+
+export type SitemapIndexStreamEvent
+  = { _tag: 'sitemap', sitemap: SitemapIndexEntry }
+    | { _tag: 'warning', warning: SitemapWarning }
+
+export type SitemapKind = 'urlset' | 'index'
+
+export type SitemapStreamEvent
+  = { _tag: 'kind', kind: SitemapKind }
+    | SitemapXmlStreamEvent
+    | SitemapIndexStreamEvent
+
+const DEFAULT_MAX_ENTRY_BYTES = 1024 * 1024
+const ARRAY_TAGS = new Set(['url', 'image', 'video', 'link', 'tag', 'price'])
+const CHANGE_FREQUENCIES: ReadonlySet<string> = new Set(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'])
+const SIMPLE_URL_FIELDS: ReadonlySet<string> = new Set(['loc', 'lastmod', 'changefreq', 'priority'])
+
+function createUrlParser(): XMLParser {
+  return new XMLParser({
+    isArray: (tagName: string): boolean => ARRAY_TAGS.has(tagName),
+    removeNSPrefix: true,
+    parseAttributeValue: false,
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    trimValues: true,
+  })
 }
 
 function isValidString(value: unknown): value is string {
@@ -134,8 +172,7 @@ function extractUrlFromParsedElement(
   }
 
   if (isValidString(urlElement.changefreq)) {
-    const validFreqs = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']
-    if (validFreqs.includes(urlElement.changefreq)) {
+    if (CHANGE_FREQUENCIES.has(urlElement.changefreq)) {
       urlObj.changefreq = urlElement.changefreq as SitemapStrict['changefreq']
     }
     else {
@@ -170,25 +207,22 @@ function extractUrlFromParsedElement(
   // Handle images
   if (urlElement.image) {
     const images = Array.isArray(urlElement.image) ? urlElement.image : [urlElement.image]
-    const validImages: ImageEntry[] = images
-      .map((img: ParsedImage): ImageEntry | null => {
-        if (isValidString(img.loc)) {
-          return { loc: img.loc }
-        }
-        else {
-          warnings.push({
-            type: 'validation',
-            message: 'Image missing required loc element',
-            context: { url: urlElement.loc, field: 'image.loc' },
-          })
-          return null
-        }
-      })
-      .filter((img): img is ImageEntry => img !== null)
-
-    if (validImages.length > 0) {
-      urlObj.images = validImages
+    const validImages: ImageEntry[] = []
+    for (const image of images) {
+      if (isValidString(image.loc)) {
+        validImages.push({ loc: image.loc })
+      }
+      else {
+        warnings.push({
+          type: 'validation',
+          message: 'Image missing required loc element',
+          context: { url: urlElement.loc, field: 'image.loc' },
+        })
+      }
     }
+
+    if (validImages.length > 0)
+      urlObj.images = validImages
   }
 
   // Handle videos
@@ -492,65 +526,761 @@ function extractUrlFromParsedElement(
     }
   }
 
-  // Filter out undefined values and empty arrays - Object.fromEntries loses type info so cast is necessary
-  return Object.fromEntries(
-    Object.entries(urlObj).filter(([_, value]) =>
-      value != null && (!Array.isArray(value) || value.length > 0),
-    ),
-  ) as unknown as SitemapUrl
+  return urlObj as SitemapUrl
+}
+
+interface ParsedTag {
+  name: string
+  closing: boolean
+  selfClosing: boolean
+}
+
+function parseTag(xml: string, start: number, end: number): ParsedTag | null {
+  let cursor = start + 1
+  while (cursor < end && isXmlWhitespace(xml.charCodeAt(cursor)))
+    cursor++
+
+  const closing = xml.charCodeAt(cursor) === 47
+  if (closing)
+    cursor++
+
+  if (cursor >= end || xml.charCodeAt(cursor) === 33 || xml.charCodeAt(cursor) === 63)
+    return null
+
+  const nameStart = cursor
+  while (cursor < end) {
+    const code = xml.charCodeAt(cursor)
+    if (isXmlWhitespace(code) || code === 47)
+      break
+    cursor++
+  }
+  if (cursor === nameStart)
+    return null
+
+  const qualifiedName = xml.slice(nameStart, cursor)
+  const colon = qualifiedName.lastIndexOf(':')
+  let tail = end - 1
+  while (tail > start && isXmlWhitespace(xml.charCodeAt(tail)))
+    tail--
+
+  return {
+    name: colon === -1 ? qualifiedName : qualifiedName.slice(colon + 1),
+    closing,
+    selfClosing: !closing && xml.charCodeAt(tail) === 47,
+  }
+}
+
+const URLSET_OPEN = 1
+const URLSET_CLOSE = 2
+const URLSET_SELF_CLOSING = 3
+const URL_OPEN = 4
+const URL_SELF_CLOSING = 5
+const URL_CLOSE = 6
+const SITEMAP_INDEX_OPEN = 7
+const SITEMAP_INDEX_CLOSE = 8
+const SITEMAP_INDEX_SELF_CLOSING = 9
+const SITEMAP_OPEN = 10
+const SITEMAP_SELF_CLOSING = 11
+const SITEMAP_CLOSE = 12
+
+function parseBoundaryTag(xml: string, start: number, end: number): number {
+  let cursor = start + 1
+  while (cursor < end && isXmlWhitespace(xml.charCodeAt(cursor)))
+    cursor++
+
+  const closing = xml.charCodeAt(cursor) === 47
+  if (closing)
+    cursor++
+  if (cursor >= end || xml.charCodeAt(cursor) === 33 || xml.charCodeAt(cursor) === 63)
+    return 0
+
+  let localNameStart = cursor
+  while (cursor < end) {
+    const code = xml.charCodeAt(cursor)
+    if (isXmlWhitespace(code) || code === 47)
+      break
+    if (code === 58)
+      localNameStart = cursor + 1
+    cursor++
+  }
+  const localNameLength = cursor - localNameStart
+  let tail = end - 1
+  while (tail > start && isXmlWhitespace(xml.charCodeAt(tail)))
+    tail--
+  const selfClosing = !closing && xml.charCodeAt(tail) === 47
+
+  if (localNameLength === 3 && xml.startsWith('url', localNameStart)) {
+    if (closing)
+      return URL_CLOSE
+    return selfClosing ? URL_SELF_CLOSING : URL_OPEN
+  }
+  if (localNameLength === 6 && xml.startsWith('urlset', localNameStart)) {
+    if (closing)
+      return URLSET_CLOSE
+    return selfClosing ? URLSET_SELF_CLOSING : URLSET_OPEN
+  }
+  if (localNameLength === 12 && xml.startsWith('sitemapindex', localNameStart)) {
+    if (closing)
+      return SITEMAP_INDEX_CLOSE
+    return selfClosing ? SITEMAP_INDEX_SELF_CLOSING : SITEMAP_INDEX_OPEN
+  }
+  if (localNameLength === 7 && xml.startsWith('sitemap', localNameStart)) {
+    if (closing)
+      return SITEMAP_CLOSE
+    return selfClosing ? SITEMAP_SELF_CLOSING : SITEMAP_OPEN
+  }
+  return 0
+}
+
+function isXmlWhitespace(code: number): boolean {
+  return code === 32 || code === 9 || code === 10 || code === 13
+}
+
+function findMarkupEnd(xml: string, start: number): number {
+  if (xml.startsWith('<!--', start)) {
+    const end = xml.indexOf('-->', start + 4)
+    return end === -1 ? -1 : end + 2
+  }
+  if (xml.startsWith('<![CDATA[', start)) {
+    const end = xml.indexOf(']]>', start + 9)
+    return end === -1 ? -1 : end + 2
+  }
+  if (xml.startsWith('<?', start)) {
+    const end = xml.indexOf('?>', start + 2)
+    return end === -1 ? -1 : end + 1
+  }
+
+  let quote = 0
+  for (let cursor = start + 1; cursor < xml.length; cursor++) {
+    const code = xml.charCodeAt(cursor)
+    if (quote) {
+      if (code === quote)
+        quote = 0
+    }
+    else if (code === 34 || code === 39) {
+      quote = code
+    }
+    else if (code === 62) {
+      return cursor
+    }
+  }
+  return -1
+}
+
+function isAsyncIterable(input: SitemapXmlInput): input is AsyncIterable<SitemapXmlChunk> {
+  return typeof input === 'object' && input !== null && Symbol.asyncIterator in input
+}
+
+function isIterable(input: SitemapXmlInput): input is Iterable<SitemapXmlChunk> {
+  return typeof input === 'object' && input !== null && Symbol.iterator in input
+}
+
+function isReadableStream(input: SitemapXmlInput): input is ReadableStream<SitemapXmlChunk> {
+  return typeof input === 'object' && input !== null && 'getReader' in input
+}
+
+async function* iterateInput(input: SitemapXmlInput): AsyncGenerator<SitemapXmlChunk> {
+  if (typeof input === 'string' || input instanceof Uint8Array) {
+    yield input
+    return
+  }
+  if (isReadableStream(input)) {
+    const reader = input.getReader()
+    let completed = false
+    try {
+      while (true) {
+        const result = await reader.read()
+        if (result.done) {
+          completed = true
+          return
+        }
+        yield result.value
+      }
+    }
+    finally {
+      if (!completed)
+        await reader.cancel()
+      reader.releaseLock()
+    }
+  }
+  if (isAsyncIterable(input)) {
+    yield* input
+    return
+  }
+  if (isIterable(input)) {
+    yield* input
+    return
+  }
+  throw new TypeError('Sitemap XML input must be a string, Uint8Array, iterable, or ReadableStream')
+}
+
+async function* decodeInput(input: SitemapXmlInput): AsyncGenerator<string> {
+  let decoder = new TextDecoder()
+  let decodingBytes = false
+  for await (const chunk of iterateInput(input)) {
+    if (typeof chunk === 'string') {
+      if (decodingBytes) {
+        const tail = decoder.decode()
+        if (tail)
+          yield tail
+        decoder = new TextDecoder()
+        decodingBytes = false
+      }
+      if (chunk)
+        yield chunk
+    }
+    else if (chunk instanceof Uint8Array) {
+      decodingBytes = true
+      const text = decoder.decode(chunk, { stream: true })
+      if (text)
+        yield text
+    }
+    else {
+      throw new TypeError('Sitemap XML chunks must be strings or Uint8Array values')
+    }
+  }
+  if (decodingBytes) {
+    const tail = decoder.decode()
+    if (tail)
+      yield tail
+  }
+}
+
+function utf8ByteLength(value: string): number {
+  let bytes = 0
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index)
+    if (code < 0x80) {
+      bytes++
+    }
+    else if (code < 0x800) {
+      bytes += 2
+    }
+    else if (code >= 0xD800 && code <= 0xDBFF && index + 1 < value.length) {
+      const next = value.charCodeAt(index + 1)
+      if (next >= 0xDC00 && next <= 0xDFFF) {
+        bytes += 4
+        index++
+      }
+      else {
+        bytes += 3
+      }
+    }
+    else {
+      bytes += 3
+    }
+  }
+  return bytes
+}
+
+function exceedsUtf8ByteLimit(value: string, limit: number): boolean {
+  if (value.length > limit)
+    return true
+  return value.length > Math.floor(limit / 3) && utf8ByteLength(value) > limit
+}
+
+function resolveMaxEntryBytes(options: SitemapStreamOptions): number {
+  const value = options.maxEntryBytes ?? DEFAULT_MAX_ENTRY_BYTES
+  if (!Number.isSafeInteger(value) || value < 1)
+    throw new TypeError('maxEntryBytes must be a positive safe integer')
+  return value
+}
+
+function resolveMaxBufferBytes(options: SitemapStreamOptions): number {
+  const value = options.maxBufferBytes ?? DEFAULT_MAX_ENTRY_BYTES
+  if (!Number.isSafeInteger(value) || value < 1)
+    throw new TypeError('maxBufferBytes must be a positive safe integer')
+  return value
+}
+
+function decodeXmlEntities(value: string): string {
+  const firstEntity = value.indexOf('&')
+  if (firstEntity === -1)
+    return value
+
+  let decoded = value.slice(0, firstEntity)
+  let cursor = firstEntity
+  while (cursor < value.length) {
+    if (value.charCodeAt(cursor) !== 38) {
+      decoded += value[cursor]
+      cursor++
+      continue
+    }
+
+    const end = value.indexOf(';', cursor + 1)
+    if (end === -1) {
+      decoded += value.slice(cursor)
+      break
+    }
+    const entity = value.slice(cursor + 1, end)
+    if (entity === 'amp') {
+      decoded += '&'
+    }
+    else if (entity === 'lt') {
+      decoded += '<'
+    }
+    else if (entity === 'gt') {
+      decoded += '>'
+    }
+    else if (entity === 'quot') {
+      decoded += '"'
+    }
+    else if (entity === 'apos') {
+      decoded += '\''
+    }
+    else if (entity.charCodeAt(0) === 35) {
+      const hex = entity.charCodeAt(1) === 120 || entity.charCodeAt(1) === 88
+      const codePoint = Number.parseInt(entity.slice(hex ? 2 : 1), hex ? 16 : 10)
+      decoded += Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10FFFF && !(codePoint >= 0xD800 && codePoint <= 0xDFFF)
+        ? String.fromCodePoint(codePoint)
+        : value.slice(cursor, end + 1)
+    }
+    else {
+      decoded += value.slice(cursor, end + 1)
+    }
+    cursor = end + 1
+  }
+  return decoded
+}
+
+function decodeElementContent(value: string): string | null {
+  const firstMarkup = value.indexOf('<')
+  if (firstMarkup === -1)
+    return decodeXmlEntities(value.trim())
+
+  let decoded = ''
+  let cursor = 0
+  while (cursor < value.length) {
+    const markupStart = value.indexOf('<', cursor)
+    if (markupStart === -1) {
+      decoded += decodeXmlEntities(value.slice(cursor))
+      break
+    }
+    decoded += decodeXmlEntities(value.slice(cursor, markupStart))
+    if (value.startsWith('<![CDATA[', markupStart)) {
+      const end = value.indexOf(']]>', markupStart + 9)
+      if (end === -1)
+        return null
+      decoded += value.slice(markupStart + 9, end)
+      cursor = end + 3
+    }
+    else if (value.startsWith('<!--', markupStart)) {
+      const end = value.indexOf('-->', markupStart + 4)
+      if (end === -1)
+        return null
+      cursor = end + 3
+    }
+    else {
+      return null
+    }
+  }
+  return decoded.trim()
+}
+
+function parseCommonUrlEntry(xml: string): ParsedUrl | null {
+  if (!xml.startsWith('<url>'))
+    return null
+
+  const parsed: ParsedUrl = {}
+  let seenFields = 0
+  let cursor = 5
+  while (cursor < xml.length) {
+    while (cursor < xml.length && isXmlWhitespace(xml.charCodeAt(cursor)))
+      cursor++
+    if (xml.startsWith('</url>', cursor)) {
+      cursor += 6
+      while (cursor < xml.length && isXmlWhitespace(xml.charCodeAt(cursor)))
+        cursor++
+      return cursor === xml.length ? parsed : null
+    }
+
+    let name: 'loc' | 'lastmod' | 'changefreq' | 'priority'
+    let fieldBit: number
+    if (xml.startsWith('<loc>', cursor)) {
+      name = 'loc'
+      fieldBit = 1
+    }
+    else if (xml.startsWith('<lastmod>', cursor)) {
+      name = 'lastmod'
+      fieldBit = 2
+    }
+    else if (xml.startsWith('<changefreq>', cursor)) {
+      name = 'changefreq'
+      fieldBit = 4
+    }
+    else if (xml.startsWith('<priority>', cursor)) {
+      name = 'priority'
+      fieldBit = 8
+    }
+    else {
+      return null
+    }
+    if (seenFields & fieldBit)
+      return null
+    seenFields |= fieldBit
+
+    const contentStart = cursor + name.length + 2
+    const closingTag = `</${name}>`
+    const contentEnd = xml.indexOf(closingTag, contentStart)
+    if (contentEnd === -1 || xml.indexOf('<', contentStart) !== contentEnd)
+      return null
+    parsed[name] = decodeXmlEntities(xml.slice(contentStart, contentEnd).trim())
+    cursor = contentEnd + closingTag.length
+  }
+  return null
+}
+
+function parseSimpleUrlEntry(xml: string): ParsedUrl | null {
+  const parsed: ParsedUrl = {}
+  const seenFields = new Set<string>()
+  let scanIndex = 0
+  let depth = 0
+  let field: string | undefined
+  let contentStart = 0
+  let closedUrl = false
+
+  while (true) {
+    const markupStart = xml.indexOf('<', scanIndex)
+    if (markupStart === -1)
+      break
+    const markupEnd = findMarkupEnd(xml, markupStart)
+    if (markupEnd === -1)
+      return null
+    const tag = parseTag(xml, markupStart, markupEnd)
+    scanIndex = markupEnd + 1
+    if (!tag)
+      continue
+
+    if (!tag.closing) {
+      if (depth === 0 && tag.name === 'url') {
+        if (tag.selfClosing)
+          return {}
+        depth = 1
+        continue
+      }
+      if (depth !== 1 || !SIMPLE_URL_FIELDS.has(tag.name) || seenFields.has(tag.name))
+        return null
+
+      seenFields.add(tag.name)
+      if (tag.selfClosing) {
+        parsed[tag.name as keyof Pick<ParsedUrl, 'loc' | 'lastmod' | 'changefreq' | 'priority'>] = ''
+        continue
+      }
+      field = tag.name
+      contentStart = markupEnd + 1
+      depth = 2
+      continue
+    }
+
+    if (depth === 2 && field === tag.name) {
+      const value = decodeElementContent(xml.slice(contentStart, markupStart))
+      if (value === null)
+        return null
+      parsed[field as keyof Pick<ParsedUrl, 'loc' | 'lastmod' | 'changefreq' | 'priority'>] = value
+      field = undefined
+      depth = 1
+    }
+    else if (depth === 1 && tag.name === 'url') {
+      closedUrl = true
+      depth = 0
+    }
+    else {
+      return null
+    }
+  }
+
+  return closedUrl && depth === 0 ? parsed : null
+}
+
+function parseUrlEntry(parser: XMLParser, xml: string): ParsedUrl {
+  const simple = parseCommonUrlEntry(xml) ?? parseSimpleUrlEntry(xml)
+  if (simple)
+    return simple
+
+  try {
+    const parsed = parser.parse(xml) as { url?: ParsedUrl | ParsedUrl[] }
+    const value = Array.isArray(parsed?.url) ? parsed.url[0] : parsed?.url
+    return value && typeof value === 'object' ? value : {}
+  }
+  catch (error) {
+    throw new Error(`Failed to parse XML: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function parseSitemapEntry(parser: XMLParser, xml: string, warnings: SitemapWarning[]): SitemapIndexEntry | null {
+  let parsed: { sitemap?: { loc?: string, lastmod?: string } }
+  try {
+    parsed = parser.parse(xml) as typeof parsed
+  }
+  catch (error) {
+    throw new Error(`Failed to parse XML: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const loc = typeof parsed.sitemap?.loc === 'string' ? parsed.sitemap.loc.trim() : ''
+  if (!loc) {
+    warnings.push({
+      type: 'validation',
+      message: 'Sitemap entry missing required loc element',
+    })
+    return null
+  }
+  if (!URL.canParse(loc)) {
+    warnings.push({
+      type: 'validation',
+      message: 'Sitemap entry has invalid URL',
+      context: { url: loc },
+    })
+    return null
+  }
+
+  const entry: SitemapIndexEntry = { loc }
+  if (typeof parsed.sitemap?.lastmod === 'string' && parsed.sitemap.lastmod.trim())
+    entry.lastmod = parsed.sitemap.lastmod.trim()
+  return entry
+}
+
+export async function* parseSitemapStream(
+  input: SitemapXmlInput,
+  options: SitemapStreamOptions = {},
+): AsyncGenerator<SitemapStreamEvent> {
+  const maxEntryBytes = resolveMaxEntryBytes(options)
+  const maxBufferBytes = resolveMaxBufferBytes(options)
+  const parser = createUrlParser()
+  let buffer = ''
+  let scanIndex = 0
+  let entryStart = -1
+  let sawInput = false
+  let kind: SitemapKind | undefined
+  let insideRoot = false
+  let closedRoot = false
+  let entryCount = 0
+  let validUrlCount = 0
+
+  for await (const chunk of decodeInput(input)) {
+    sawInput = true
+    buffer += chunk
+
+    while (true) {
+      const markupStart = buffer.indexOf('<', scanIndex)
+      if (markupStart === -1) {
+        scanIndex = buffer.length
+        break
+      }
+
+      const markupEnd = findMarkupEnd(buffer, markupStart)
+      if (markupEnd === -1) {
+        scanIndex = markupStart
+        break
+      }
+
+      const tag = parseBoundaryTag(buffer, markupStart, markupEnd)
+      if (!kind && tag === 0) {
+        const root = parseTag(buffer, markupStart, markupEnd)
+        if (root && !root.closing)
+          throw new Error('XML does not contain a valid sitemap element')
+      }
+      let record: string | undefined
+      if (!kind && (tag === URLSET_OPEN || tag === URLSET_SELF_CLOSING)) {
+        kind = 'urlset'
+        insideRoot = tag === URLSET_OPEN
+        closedRoot = tag === URLSET_SELF_CLOSING
+        yield { _tag: 'kind', kind }
+      }
+      else if (!kind && (tag === SITEMAP_INDEX_OPEN || tag === SITEMAP_INDEX_SELF_CLOSING)) {
+        kind = 'index'
+        insideRoot = tag === SITEMAP_INDEX_OPEN
+        closedRoot = tag === SITEMAP_INDEX_SELF_CLOSING
+        yield { _tag: 'kind', kind }
+      }
+      else if (entryStart === -1 && (
+        (kind === 'urlset' && tag === URLSET_CLOSE)
+        || (kind === 'index' && tag === SITEMAP_INDEX_CLOSE)
+      )) {
+        insideRoot = false
+        closedRoot = true
+      }
+
+      const openingEntry = kind === 'urlset'
+        ? tag === URL_OPEN || tag === URL_SELF_CLOSING
+        : tag === SITEMAP_OPEN || tag === SITEMAP_SELF_CLOSING
+      const closingEntry = kind === 'urlset' ? tag === URL_CLOSE : tag === SITEMAP_CLOSE
+      const selfClosingEntry = tag === URL_SELF_CLOSING || tag === SITEMAP_SELF_CLOSING
+
+      if (insideRoot && openingEntry && entryStart === -1) {
+        entryStart = markupStart
+        if (selfClosingEntry)
+          record = buffer.slice(entryStart, markupEnd + 1)
+      }
+      else if (closingEntry && entryStart !== -1) {
+        record = buffer.slice(entryStart, markupEnd + 1)
+      }
+
+      if (!record) {
+        scanIndex = markupEnd + 1
+        continue
+      }
+
+      if (exceedsUtf8ByteLimit(record, maxEntryBytes))
+        throw new Error(`Sitemap entry exceeds maxEntryBytes of ${maxEntryBytes}`)
+
+      entryCount++
+      const warnings: SitemapWarning[] = []
+      scanIndex = markupEnd + 1
+      entryStart = -1
+
+      const entry = kind === 'urlset'
+        ? extractUrlFromParsedElement(parseUrlEntry(parser, record), warnings)
+        : parseSitemapEntry(parser, record, warnings)
+      for (const warning of warnings)
+        yield { _tag: 'warning', warning }
+      if (kind === 'urlset' && entry) {
+        validUrlCount++
+        yield { _tag: 'url', url: entry as SitemapUrlInput }
+      }
+      else if (kind === 'index' && entry) {
+        yield { _tag: 'sitemap', sitemap: entry as SitemapIndexEntry }
+      }
+    }
+
+    if (entryStart !== -1) {
+      if (buffer.length - entryStart > maxEntryBytes)
+        throw new Error(`Sitemap entry exceeds maxEntryBytes of ${maxEntryBytes}`)
+      if (entryStart > 0) {
+        buffer = buffer.slice(entryStart)
+        scanIndex -= entryStart
+        entryStart = 0
+      }
+    }
+    else if (scanIndex > 0) {
+      buffer = buffer.slice(scanIndex)
+      scanIndex = 0
+    }
+    if (entryStart === -1 && exceedsUtf8ByteLimit(buffer, maxBufferBytes))
+      throw new Error(`Sitemap XML buffer exceeds maxBufferBytes of ${maxBufferBytes}`)
+  }
+
+  if (!sawInput)
+    throw new Error('Empty XML input provided')
+  if (entryStart !== -1)
+    throw new Error(`Failed to parse XML: Unclosed ${kind === 'index' ? 'sitemap' : 'url'} element`)
+  if (!kind)
+    throw new Error('XML does not contain a valid sitemap element')
+  if (!closedRoot)
+    throw new Error(`Failed to parse XML: Unclosed ${kind === 'index' ? 'sitemapindex' : 'urlset'} element`)
+  if (kind === 'urlset' && entryCount > 0 && validUrlCount === 0) {
+    yield {
+      _tag: 'warning',
+      warning: {
+        type: 'validation',
+        message: 'No valid URLs found in sitemap after validation',
+      },
+    }
+  }
+}
+
+export async function* parseSitemapXmlStream(
+  input: SitemapXmlInput,
+  options: SitemapStreamOptions = {},
+): AsyncGenerator<SitemapXmlStreamEvent> {
+  for await (const event of parseSitemapStream(input, options)) {
+    if (event._tag === 'kind') {
+      if (event.kind !== 'urlset')
+        throw new Error('XML does not contain a valid urlset element')
+      continue
+    }
+    if (event._tag === 'sitemap')
+      continue
+    yield event
+  }
+}
+
+export async function* parseSitemapIndexStream(
+  input: SitemapXmlInput,
+  options: SitemapStreamOptions = {},
+): AsyncGenerator<SitemapIndexStreamEvent> {
+  for await (const event of parseSitemapStream(input, options)) {
+    if (event._tag === 'kind') {
+      if (event.kind !== 'index')
+        throw new Error('XML does not contain a valid sitemapindex element')
+      continue
+    }
+    if (event._tag === 'url')
+      continue
+    yield event
+  }
 }
 
 export async function parseSitemapXml(xml: string): Promise<SitemapParseResult> {
-  const warnings: SitemapWarning[] = []
-
-  if (!xml) {
+  if (!xml)
     throw new Error('Empty XML input provided')
+
+  const urls: SitemapUrlInput[] = []
+  const warnings: SitemapWarning[] = []
+  const parser = createUrlParser()
+  let scanIndex = 0
+  let entryStart = -1
+  let sawUrlset = false
+  let insideUrlset = false
+  let closedUrlset = false
+  let entryCount = 0
+
+  while (true) {
+    const markupStart = xml.indexOf('<', scanIndex)
+    if (markupStart === -1)
+      break
+    const markupEnd = findMarkupEnd(xml, markupStart)
+    if (markupEnd === -1)
+      break
+
+    const tag = parseBoundaryTag(xml, markupStart, markupEnd)
+    let record: string | undefined
+    if (tag === URLSET_OPEN) {
+      sawUrlset = true
+      insideUrlset = true
+    }
+    else if (tag === URLSET_SELF_CLOSING) {
+      sawUrlset = true
+      insideUrlset = false
+      closedUrlset = true
+    }
+    else if (tag === URLSET_CLOSE && entryStart === -1) {
+      insideUrlset = false
+      closedUrlset = true
+    }
+
+    if (insideUrlset && (tag === URL_OPEN || tag === URL_SELF_CLOSING) && entryStart === -1) {
+      entryStart = markupStart
+      if (tag === URL_SELF_CLOSING)
+        record = xml.slice(entryStart, markupEnd + 1)
+    }
+    else if (tag === URL_CLOSE && entryStart !== -1) {
+      record = xml.slice(entryStart, markupEnd + 1)
+    }
+    scanIndex = markupEnd + 1
+
+    if (!record)
+      continue
+    if (exceedsUtf8ByteLimit(record, DEFAULT_MAX_ENTRY_BYTES))
+      throw new Error(`Sitemap URL entry exceeds maxEntryBytes of ${DEFAULT_MAX_ENTRY_BYTES}`)
+
+    entryCount++
+    entryStart = -1
+    const url = extractUrlFromParsedElement(parseUrlEntry(parser, record), warnings)
+    if (url)
+      urls.push(url)
   }
-  const { XMLParser } = await import('fast-xml-parser')
-  const parser = new XMLParser({
-    isArray: (tagName: string): boolean =>
-      ['url', 'image', 'video', 'link', 'tag', 'price'].includes(tagName),
-    removeNSPrefix: true,
-    parseAttributeValue: false,
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    trimValues: true,
-  })
 
-  try {
-    const parsed = parser.parse(xml) as ParsedRoot
-
-    if (!parsed?.urlset) {
-      throw new Error('XML does not contain a valid urlset element')
-    }
-
-    if (!parsed.urlset.url) {
-      throw new Error('Sitemap contains no URL entries')
-    }
-
-    const urls = Array.isArray(parsed.urlset.url) ? parsed.urlset.url : [parsed.urlset.url]
-
-    const validUrls = urls
-      .map((url: ParsedUrl) => extractUrlFromParsedElement(url, warnings))
-      .filter((url): url is SitemapUrlInput => url !== null)
-
-    if (validUrls.length === 0 && urls.length > 0) {
-      warnings.push({
-        type: 'validation',
-        message: 'No valid URLs found in sitemap after validation',
-      })
-    }
-
-    return { urls: validUrls, warnings }
+  if (entryStart !== -1)
+    throw new Error('Failed to parse XML: Unclosed url element')
+  if (!sawUrlset)
+    throw new Error('XML does not contain a valid urlset element')
+  if (!closedUrlset)
+    throw new Error('Failed to parse XML: Unclosed urlset element')
+  if (entryCount > 0 && urls.length === 0) {
+    warnings.push({
+      type: 'validation',
+      message: 'No valid URLs found in sitemap after validation',
+    })
   }
-  catch (error) {
-    if (error instanceof Error && (
-      error.message === 'Empty XML input provided'
-      || error.message === 'XML does not contain a valid urlset element'
-      || error.message === 'Sitemap contains no URL entries'
-    )) {
-      throw error
-    }
-    throw new Error(`Failed to parse XML: ${error instanceof Error ? error.message : String(error)}`)
-  }
+  return { urls, warnings }
 }
