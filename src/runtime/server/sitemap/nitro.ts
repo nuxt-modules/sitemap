@@ -79,7 +79,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
     })
   }
 
-  const routeRuleMatcher = createNitroRouteRuleMatcher(useRuntimeConfig(event), event)
+  const routeRuleMatcher = createNitroRouteRuleMatcher(useRuntimeConfig(event))
   const { autoI18n } = runtimeConfig
   const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
     ? new Set(autoI18n.locales.map(l => l.code))
