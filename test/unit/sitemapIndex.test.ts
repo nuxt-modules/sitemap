@@ -147,4 +147,18 @@ describe('parseSitemapIndex', () => {
 
     await expect(parseSitemapIndex(xml)).rejects.toThrow('XML does not contain a valid sitemapindex element')
   })
+
+  it('tolerates a leading UTF-8 byte-order mark before the XML declaration', async () => {
+    const BOM = String.fromCharCode(0xFEFF)
+    const xml = `${BOM}<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://example.com/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>`
+
+    const { entries, warnings } = await parseSitemapIndex(xml)
+    expect(entries).toEqual([{ loc: 'https://example.com/sitemap.xml' }])
+    expect(warnings).toEqual([])
+  })
 })

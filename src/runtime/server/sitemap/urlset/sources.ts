@@ -12,6 +12,7 @@ import { defu } from 'defu'
 import { getRequestHost } from 'h3'
 import { parseURL } from 'ufo'
 import { logger } from '../../../utils-pure'
+import { decodeSitemapResponseBytes } from './gzip'
 
 export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceBase | SitemapSourceResolved {
   // string -> { fetch: string, context: { name: 'hook' } }
@@ -73,7 +74,11 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
   try {
     let isMaybeErrorResponse = false
-    const isXmlRequest = parseURL(url).pathname.endsWith('.xml')
+    const pathname = parseURL(url).pathname.toLowerCase()
+    // A `.gz` source (or a `.xml.gz` one) is still an XML sitemap once decompressed;
+    // fetch it as bytes rather than assuming JSON.
+    const isGzUrl = pathname.endsWith('.gz')
+    const isXmlRequest = pathname.endsWith('.xml') || isGzUrl
 
     // Merge external source headers with request headers
     const mergedHeaders = defu(
@@ -86,7 +91,10 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
 
     const fetchOptions = {
       ...options,
-      responseType: isXmlRequest ? 'text' : 'json',
+      // Fetch XML sources as raw bytes so we can detect and decompress a gzip body
+      // (either a `.gz` URL, or a server that serves gzip without Content-Encoding)
+      // before it's mangled by a UTF-8 text decode.
+      responseType: isXmlRequest ? 'arrayBuffer' : 'json',
       signal: timeoutController.signal,
       headers: mergedHeaders,
       // Use ofetch's built-in retry for external sources
@@ -114,12 +122,23 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       }
     }
     let urls = []
-    if (typeof res === 'object') {
-      urls = res.urls || res
-    }
-    else if (typeof res === 'string' && isXmlRequest) {
-      const result = await parseSitemapXml(res)
+    if (isXmlRequest) {
+      const bytes = res instanceof Uint8Array ? res : new Uint8Array(res as ArrayBuffer)
+      const text = await decodeSitemapResponseBytes(bytes)
+      if (text.startsWith('<!DOCTYPE html>')) {
+        return {
+          ...input,
+          context,
+          urls: [],
+          timeTakenMs,
+          error: 'Received HTML response instead of XML',
+        }
+      }
+      const result = await parseSitemapXml(text)
       urls = result.urls
+    }
+    else if (typeof res === 'object') {
+      urls = res.urls || res
     }
     return {
       ...input,

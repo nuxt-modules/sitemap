@@ -195,13 +195,24 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults?: Omit<SitemapUr
 }
 
 const IS_VALID_W3C_DATE = [
-  /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/,
+  /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/,
+  /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)$/,
+  /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)$/,
   /^\d{4}-[01]\d-[0-3]\d$/,
   /^\d{4}-[01]\d$/,
   /^\d{4}$/,
 ]
 export function isValidW3CDate(d: string) {
-  return IS_VALID_W3C_DATE.some(r => r.test(d))
+  if (!IS_VALID_W3C_DATE.some(r => r.test(d)))
+    return false
+  // The shape regex alone accepts impossible dates (e.g. month 13, Feb 30);
+  // reject those explicitly rather than silently normalising garbage.
+  const [year, month, day] = d.slice(0, 10).split('-').map(Number)
+  if (month !== undefined && (month < 1 || month > 12))
+    return false
+  if (day !== undefined && (day < 1 || day > new Date(year!, month!, 0).getDate()))
+    return false
+  return true
 }
 
 export function normaliseDate(date: string | Date): string
