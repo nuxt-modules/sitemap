@@ -25,11 +25,12 @@ import {
   hasNuxtModule,
   hasNuxtModuleCompatibility,
   resolveModule,
-  useLogger,
 } from '@nuxt/kit'
 import { defu } from 'defu'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { isPathFile } from 'nuxt-site-config/urls'
+import { useModuleLogger } from 'nuxtseo-shared/kit'
+import { serializeFilters } from 'nuxtseo-shared/utils'
 import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
@@ -37,7 +38,6 @@ import { setupDevToolsUI } from './devtools'
 import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { registerTypeTemplates } from './templates'
-import { normalizeFilters } from './utils-internal/filter'
 import {
   generatePathForI18nPages,
   normalizeLocales,
@@ -132,8 +132,7 @@ export default defineNuxtModule<ModuleOptions>({
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     const { name, version } = await readPackageJSON(resolve('../package.json'))
-    const logger = useLogger(name)
-    logger.level = (config.debug || nuxt.options.debug) ? 4 : 3
+    const logger = useModuleLogger(name!, config, nuxt)
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
       return
@@ -143,6 +142,9 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
+    nuxt.options.nitro.externals = nuxt.options.nitro.externals || {}
+    nuxt.options.nitro.externals.inline = nuxt.options.nitro.externals.inline || []
+    nuxt.options.nitro.externals.inline.push('nuxtseo-shared')
     nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
     nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
     config.xslColumns = config.xslColumns || [
@@ -775,8 +777,8 @@ export default defineNuxtModule<ModuleOptions>({
       const sitemap = sitemaps[sitemapName]!
       // we need to normalize the RegExp to a string because of the useRuntimeConfig can't jsonify it
       // note: this needs to occur after i18n has extended the rules
-      sitemap.include = normalizeFilters(sitemap.include)
-      sitemap.exclude = normalizeFilters(sitemap.exclude)
+      sitemap.include = serializeFilters(sitemap.include || [], '@nuxtjs/sitemap') as FilterInput[]
+      sitemap.exclude = serializeFilters(sitemap.exclude || [], '@nuxtjs/sitemap') as FilterInput[]
     }
 
     const runtimeConfig: ModuleRuntimeConfig = {
@@ -916,8 +918,8 @@ export default defineNuxtModule<ModuleOptions>({
         routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
         normalisedLocales,
         filter: {
-          include: normalizeFilters(config.include) as (string | RegExp)[],
-          exclude: normalizeFilters(config.exclude) as (string | RegExp)[],
+          include: serializeFilters(config.include || [], '@nuxtjs/sitemap') as (string | RegExp)[],
+          exclude: serializeFilters(config.exclude || [], '@nuxtjs/sitemap') as (string | RegExp)[],
         },
         autoI18n: !!resolvedAutoI18n,
       })

@@ -5,6 +5,7 @@ minimumReleaseAgeExclude:
   - vue-tsc@3.3.4
   - nuxtseo-layer-devtools
   - nuxtseo-shared
+  - nuxtseo-shared@5.3.4
   - '@vue/compiler-core@3.5.38'
   - '@vue/compiler-dom@3.5.38'
   - '@vue/compiler-sfc@3.5.38'
@@ -66,7 +67,7 @@ catalog:
   nuxt-i18n-micro: ^3.21.4
   nuxt-site-config: ^4.1.2
   nuxtseo-layer-devtools: ^5.3.3
-  nuxtseo-shared: ^5.3.3
+  nuxtseo-shared: ^5.3.4
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.1

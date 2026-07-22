@@ -1,8 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { ConsolaInstance } from 'consola'
 import type { NuxtPage } from 'nuxt/schema'
-import type { AutoI18nConfig, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
-import type { CreateFilterOptions } from '../runtime/utils-pure'
+import type { AutoI18nConfig, FilterInput, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { statSync } from 'node:fs'
 import { useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -42,7 +41,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   defaultLocale: string
   strategy: 'no_prefix' | 'prefix_except_default' | 'prefix' | 'prefix_and_default'
   isI18nMapped: boolean
-  filter: CreateFilterOptions
+  filter: { include?: FilterInput[], exclude?: FilterInput[] }
   autoI18n: boolean
 }
 
