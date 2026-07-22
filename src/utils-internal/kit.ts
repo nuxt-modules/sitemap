@@ -1,1 +1,1 @@
-export { createNitroPromise, createPagesPromise, detectTarget, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from 'nuxtseo-shared/kit'
+export { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from 'nuxtseo-shared/kit'

@@ -73,27 +73,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
   // a slice/filter/sort pass per chunk and lets us count without holding URLs in memory.
   const indexLastmod = autoLastmod ? normaliseDate(new Date()) : undefined
   const entries: SitemapIndexEntry[] = []
-
-  // Auto-chunking: count URLs to know how many chunk entries to emit. Shares cache with the
-  // chunk handler (matchName 'sitemap', isChunked true) so the source fetch is one-shot.
-  if (typeof sitemaps.chunks !== 'undefined') {
-    const sitemap = sitemaps.chunks
-    const resolved = await getResolvedSitemapUrls(sitemap, 'sitemap', true, resolvers, runtimeConfig, nitro)
-    allFailedSources.push(...resolved.failedSources)
-    const chunkCount = Math.ceil(resolved.urls.length / (defaultSitemapsChunkSize as number))
-    for (let i = 0; i < chunkCount; i++) {
-      const entry: SitemapIndexEntry = {
-        _sitemapName: String(i),
-        sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${i}.xml`)),
-      }
-      if (indexLastmod)
-        entry.lastmod = indexLastmod
-      entries.push(entry)
-    }
-  }
-
-  // Non-chunked named sitemaps: just emit one entry each, no fetch.
-  for (const name of nonChunkedNames) {
+  const pushEntry = (name: string) => {
     const entry: SitemapIndexEntry = {
       _sitemapName: name,
       sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${name}.xml`)),
@@ -102,6 +82,21 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       entry.lastmod = indexLastmod
     entries.push(entry)
   }
+
+  // Auto-chunking: count URLs to know how many chunk entries to emit. Shares cache with the
+  // chunk handler (matchName 'sitemap', isChunked true) so the source fetch is one-shot.
+  if (typeof sitemaps.chunks !== 'undefined') {
+    const sitemap = sitemaps.chunks
+    const resolved = await getResolvedSitemapUrls(sitemap, 'sitemap', true, resolvers, runtimeConfig, nitro)
+    allFailedSources.push(...resolved.failedSources)
+    const chunkCount = Math.ceil(resolved.urls.length / (defaultSitemapsChunkSize as number))
+    for (let i = 0; i < chunkCount; i++)
+      pushEntry(String(i))
+  }
+
+  // Non-chunked named sitemaps: just emit one entry each, no fetch.
+  for (const name of nonChunkedNames)
+    pushEntry(name)
 
   // Chunked named sitemaps. Skip the source fetch when `chunkCount` is declared upfront.
   for (const sitemapName in sitemaps) {
@@ -121,16 +116,8 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
       sitemapConfig._chunkCount = chunkCount
 
-      for (let i = 0; i < chunkCount; i++) {
-        const chunkName = `${sitemapName}-${i}`
-        const entry: SitemapIndexEntry = {
-          _sitemapName: chunkName,
-          sitemap: resolvers.canonicalUrlResolver(joinURL(sitemapsPathPrefix || '', `/${chunkName}.xml`)),
-        }
-        if (indexLastmod)
-          entry.lastmod = indexLastmod
-        entries.push(entry)
-      }
+      for (let i = 0; i < chunkCount; i++)
+        pushEntry(`${sitemapName}-${i}`)
     }
   }
 

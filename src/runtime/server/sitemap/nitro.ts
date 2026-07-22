@@ -291,6 +291,24 @@ const buildSitemapXmlCached = defineCachedFunction(
   },
 )
 
+export function setSitemapResponseHeaders(event: H3Event, runtimeConfig: ModuleRuntimeConfig) {
+  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
+  if (runtimeConfig.cacheMaxAgeSeconds) {
+    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
+    const now = new Date()
+    setHeader(event, 'X-Sitemap-Generated', now.toISOString())
+    setHeader(event, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
+    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
+    setHeader(event, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
+    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
+    setHeader(event, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
+  }
+  else {
+    setHeader(event, 'Cache-Control', `no-cache, no-store`)
+  }
+  event.context._isSitemap = true
+}
+
 export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
   const shouldStream = !!runtimeConfig.experimentalStreaming && !import.meta.prerender
@@ -323,27 +341,6 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
       : await buildSitemapXml(event, definition, resolvers, runtimeConfig)
   }
 
-  // Set headers
-  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (runtimeConfig.cacheMaxAgeSeconds) {
-    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
-
-    // Add debug headers when caching is enabled
-    const now = new Date()
-    setHeader(event, 'X-Sitemap-Generated', now.toISOString())
-    setHeader(event, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
-
-    // Calculate expiry time
-    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
-    setHeader(event, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
-
-    // Calculate remaining time
-    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
-    setHeader(event, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
-  }
-  else {
-    setHeader(event, 'Cache-Control', `no-cache, no-store`)
-  }
-  event.context._isSitemap = true
+  setSitemapResponseHeaders(event, runtimeConfig)
   return xml
 }

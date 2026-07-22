@@ -29,6 +29,17 @@ export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
   ) => void
 }
 
+function registerCollectionHooks(options: DefineSitemapSchemaOptions | undefined, callerName: string) {
+  if (!options?.filter && !options?.onUrl)
+    return
+  if (!options.name)
+    throw new Error(`[sitemap] \`name\` is required when using \`filter\` or \`onUrl\` in ${callerName}()`)
+  if (options.filter)
+    collectionFilters.set(options.name, options.filter)
+  if (options.onUrl)
+    collectionOnUrlFns.set(options.name, options.onUrl)
+}
+
 const { defineSchema, asCollection, schema } = createContentSchemaFactory({
   fieldName: 'sitemap',
   label: 'sitemap',
@@ -38,14 +49,7 @@ const { defineSchema, asCollection, schema } = createContentSchemaFactory({
     if ('type' in options || 'source' in options)
       throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
     warnIfZodMismatch(options?.z)
-    if (options?.filter || options?.onUrl) {
-      if (!options.name)
-        throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in defineSitemapSchema()')
-      if (options.filter)
-        collectionFilters.set(options.name, options.filter)
-      if (options.onUrl)
-        collectionOnUrlFns.set(options.name, options.onUrl)
-    }
+    registerCollectionHooks(options, 'defineSitemapSchema')
   },
 }, z)
 
