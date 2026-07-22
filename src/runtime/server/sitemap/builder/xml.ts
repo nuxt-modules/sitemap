@@ -129,12 +129,11 @@ function buildUrlXml(url: ResolvedSitemapUrl, NL: string, I1: string, I2: string
   return xml
 }
 
-export function* renderSitemapXmlChunks(
-  urls: ResolvedSitemapUrl[],
+function resolveXmlRenderContext(
   resolvers: NitroUrlResolvers,
-  { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>,
+  { xsl, minify }: Pick<ModuleRuntimeConfig, 'xsl' | 'minify'>,
   errorInfo?: { messages: string[], urls: string[] },
-): Generator<string> {
+) {
   let xslHref = xsl ? resolvers.relativeBaseUrlResolver(xsl) : false
 
   if (xslHref && errorInfo?.messages.length) {
@@ -146,10 +145,24 @@ export function* renderSitemapXmlChunks(
   }
 
   const NL = minify ? '' : '\n'
-  const I1 = minify ? '' : '    '
-  const I2 = minify ? '' : '        '
-  const I3 = minify ? '' : '            '
-  const I4 = minify ? '' : '                '
+  return {
+    xslHref,
+    NL,
+    I1: minify ? '' : '    ',
+    I2: minify ? '' : '        ',
+    I3: minify ? '' : '            ',
+    I4: minify ? '' : '                ',
+  }
+}
+
+export function* renderSitemapXmlChunks(
+  urls: ResolvedSitemapUrl[],
+  resolvers: NitroUrlResolvers,
+  config: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>,
+  errorInfo?: { messages: string[], urls: string[] },
+): Generator<string> {
+  const { version, credits } = config
+  const { xslHref, NL, I1, I2, I3, I4 } = resolveXmlRenderContext(resolvers, config, errorInfo)
 
   yield xslHref
     ? `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="${escapeValueForXml(xslHref)}"?>${NL}`
@@ -171,24 +184,11 @@ export function* renderSitemapXmlChunks(
 export function urlsToXml(
   urls: ResolvedSitemapUrl[],
   resolvers: NitroUrlResolvers,
-  { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>,
+  config: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>,
   errorInfo?: { messages: string[], urls: string[] },
 ): string {
-  let xslHref = xsl ? resolvers.relativeBaseUrlResolver(xsl) : false
-
-  if (xslHref && errorInfo?.messages.length) {
-    xslHref = withQuery(xslHref, {
-      errors: 'true',
-      error_messages: errorInfo.messages,
-      error_urls: errorInfo.urls,
-    })
-  }
-
-  const NL = minify ? '' : '\n'
-  const I1 = minify ? '' : '    '
-  const I2 = minify ? '' : '        '
-  const I3 = minify ? '' : '            '
-  const I4 = minify ? '' : '                '
+  const { version, credits } = config
+  const { xslHref, NL, I1, I2, I3, I4 } = resolveXmlRenderContext(resolvers, config, errorInfo)
 
   let xml = xslHref
     ? `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="${escapeValueForXml(xslHref)}"?>${NL}`

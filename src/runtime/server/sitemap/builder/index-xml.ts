@@ -3,6 +3,18 @@ import { withQuery } from 'ufo'
 import { createChunkedXmlStream } from '../stream'
 import { escapeValueForXml } from './xml'
 
+function resolveIndexXslHref(resolvers: NitroUrlResolvers, xsl: string, errorInfo?: { messages: string[], urls: string[] }) {
+  let relativeBaseUrl = resolvers.relativeBaseUrlResolver?.(xsl) ?? xsl
+  if (errorInfo && errorInfo.messages.length > 0) {
+    relativeBaseUrl = withQuery(relativeBaseUrl, {
+      errors: 'true',
+      error_messages: errorInfo.messages,
+      error_urls: errorInfo.urls,
+    })
+  }
+  return relativeBaseUrl
+}
+
 export function* renderSitemapIndexXmlChunks(sitemaps: SitemapIndexEntry[], resolvers: NitroUrlResolvers, { version, xsl, credits, minify }: Pick<ModuleRuntimeConfig, 'version' | 'xsl' | 'credits' | 'minify'>, errorInfo?: { messages: string[], urls: string[] }): Generator<string> {
   const NL = minify ? '' : '\n'
   const I1 = minify ? '' : '    '
@@ -11,14 +23,7 @@ export function* renderSitemapIndexXmlChunks(sitemaps: SitemapIndexEntry[], reso
   yield '<?xml version="1.0" encoding="UTF-8"?>'
 
   if (xsl) {
-    let relativeBaseUrl = resolvers.relativeBaseUrlResolver?.(xsl) ?? xsl
-    if (errorInfo && errorInfo.messages.length > 0) {
-      relativeBaseUrl = withQuery(relativeBaseUrl, {
-        errors: 'true',
-        error_messages: errorInfo.messages,
-        error_urls: errorInfo.urls,
-      })
-    }
+    const relativeBaseUrl = resolveIndexXslHref(resolvers, xsl, errorInfo)
     yield `${NL}<?xml-stylesheet type="text/xsl" href="${escapeValueForXml(relativeBaseUrl)}"?>`
   }
 
@@ -55,14 +60,7 @@ export function urlsToIndexXml(sitemaps: SitemapIndexEntry[], resolvers: NitroUr
   const xmlParts = ['<?xml version="1.0" encoding="UTF-8"?>']
 
   if (xsl) {
-    let relativeBaseUrl = resolvers.relativeBaseUrlResolver?.(xsl) ?? xsl
-    if (errorInfo && errorInfo.messages.length > 0) {
-      relativeBaseUrl = withQuery(relativeBaseUrl, {
-        errors: 'true',
-        error_messages: errorInfo.messages,
-        error_urls: errorInfo.urls,
-      })
-    }
+    const relativeBaseUrl = resolveIndexXslHref(resolvers, xsl, errorInfo)
     xmlParts.push(`<?xml-stylesheet type="text/xsl" href="${escapeValueForXml(relativeBaseUrl)}"?>`)
   }
 

@@ -1,11 +1,11 @@
 import type { H3Event } from 'h3'
-import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect, setHeader } from 'h3'
+import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect } from 'h3'
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
-import { createSitemap, renderSitemapOutput, useNitroUrlResolvers } from './nitro'
+import { createSitemap, renderSitemapOutput, setSitemapResponseHeaders, useNitroUrlResolvers } from './nitro'
 import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
 export async function sitemapXmlEventHandler(e: H3Event) {
@@ -49,22 +49,7 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
     runtimeConfig.debug,
   )
 
-  setHeader(e, 'Content-Type', 'text/xml; charset=UTF-8')
-  if (runtimeConfig.cacheMaxAgeSeconds) {
-    setHeader(e, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
-    const now = new Date()
-    setHeader(e, 'X-Sitemap-Generated', now.toISOString())
-    setHeader(e, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
-    const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
-    setHeader(e, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
-    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
-    setHeader(e, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
-  }
-  else {
-    setHeader(e, 'Cache-Control', `no-cache, no-store`)
-  }
-
-  e.context._isSitemap = true
+  setSitemapResponseHeaders(e, runtimeConfig)
   return output
 }
 

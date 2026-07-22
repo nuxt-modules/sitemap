@@ -234,8 +234,5 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
     })
     .map(([k]) => k)
     .filter(filterForValidPage)
-  // don't support files
-  const prerenderUrls = (nuxt.options.nitro.prerender?.routes || [])
-    .filter(filterForValidPage) as string[]
-  return { routeRules, prerenderUrls }
+  return { routeRules }
 }
