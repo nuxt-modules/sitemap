@@ -1,6 +1,7 @@
 import type { SitemapWarning } from '@nuxtjs/sitemap/utils'
 import { isSitemapIndex, parseSitemapIndex, parseSitemapXml } from '@nuxtjs/sitemap/utils'
 import { defineEventHandler, getQuery } from 'h3'
+import { decodeSitemapResponseBytes } from '../../sitemap/urlset/gzip'
 
 export interface ProductionSitemapEntry {
   loc: string
@@ -20,12 +21,15 @@ export interface ProductionDebugResponse {
 
 async function fetchXml(url: string): Promise<string> {
   const response = await fetch(url, {
-    headers: { Accept: 'application/xml, text/xml' },
+    headers: { Accept: 'application/xml, text/xml, application/gzip' },
     signal: AbortSignal.timeout(15000),
   })
   if (!response.ok)
     throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-  return response.text()
+  // Fetch as bytes so a gzipped sitemap (`.xml.gz`, or gzip served without a
+  // Content-Encoding header) decompresses instead of decoding into mojibake —
+  // same handling as fetchDataSource in the urlset pipeline.
+  return decodeSitemapResponseBytes(new Uint8Array(await response.arrayBuffer()))
 }
 
 export default defineEventHandler(async (e): Promise<ProductionDebugResponse | Record<string, any>> => {
