@@ -70,6 +70,10 @@ declare module 'nuxt/app' {
 export {}
 `
     },
+  }, {
+    nitro: true,
+    node: true,
+    nuxt: true,
   })
 
   // Type definitions for virtual modules
