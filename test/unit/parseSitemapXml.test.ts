@@ -936,4 +936,14 @@ describe('parseSitemapXml', () => {
       expect(warningTypes).toContain('validation')
     })
   })
+
+  it('tolerates a leading UTF-8 byte-order mark before the XML declaration', async () => {
+    const BOM = String.fromCharCode(0xFEFF)
+    const xml = `${BOM}<?xml version="1.0" encoding="UTF-8"?>
+<urlset>
+  <url><loc>http://example.com/</loc></url>
+</urlset>`
+    const result = await parseSitemapXml(xml)
+    expect(result.urls).toEqual([{ loc: 'http://example.com/' }])
+  })
 })
