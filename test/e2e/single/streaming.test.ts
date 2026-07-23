@@ -55,6 +55,14 @@ describe('experimental sitemap streaming', () => {
   })
 
   it('compresses without buffering the stream', async () => {
+    await vi.waitFor(() => {
+      const cached = fs.readdirSync(cacheDir, { recursive: true })
+        .map(file => path.join(cacheDir, file))
+        .filter(file => fs.statSync(file).isFile())
+        .some(file => fs.readFileSync(file, 'utf8').includes('page-1999'))
+      expect(cached).toBe(true)
+    })
+
     const response = await fetch('/__sitemap__/pages.xml', {
       headers: { 'Accept-Encoding': 'deflate;q=0.5, gzip;q=1' },
     })
