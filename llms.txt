@@ -1,0 +1,44 @@
+# Nuxt Sitemap
+
+> Nuxt Sitemap is a module for generating best-practice XML sitemaps for Nuxt sites, automatically kept in sync with your routes, content, and i18n setup, and consumed by search engine and AI crawlers.
+
+Nuxt Sitemap builds a single `/sitemap.xml` or split multi-sitemaps (`/posts-sitemap.xml`, `/pages-sitemap.xml`, etc.) from your app's routes, Nuxt Content collections, and any custom URL sources you register. It handles `lastmod`, image/video discovery, i18n alternate links, chunking for large sites, and integrates with Nuxt DevTools for debugging.
+
+## Getting started
+
+- [Introduction](https://nuxtseo.com/sitemap/getting-started/introduction.md): what the module does and why sitemaps matter for crawlers
+- [Installation](https://nuxtseo.com/sitemap/getting-started/installation.md): adding `@nuxtjs/sitemap` to a Nuxt project
+- [Data Sources](https://nuxtseo.com/sitemap/getting-started/data-sources.md): where sitemap URLs are pulled from (routes, content, custom sources)
+- [Troubleshooting](https://nuxtseo.com/sitemap/getting-started/troubleshooting.md): common setup issues
+
+## Guides
+
+- [Dynamic URLs](https://nuxtseo.com/sitemap/guides/dynamic-urls.md): adding runtime-generated URLs to the sitemap
+- [Filtering URLs](https://nuxtseo.com/sitemap/guides/filtering-urls.md): excluding routes from the sitemap
+- [Multi Sitemaps](https://nuxtseo.com/sitemap/guides/multi-sitemaps.md): splitting output into multiple sitemap files
+- [I18n](https://nuxtseo.com/sitemap/guides/i18n.md): sitemap behavior with Nuxt I18n
+- [Content](https://nuxtseo.com/sitemap/guides/content.md): integrating with Nuxt Content collections
+- [Prerendering](https://nuxtseo.com/sitemap/guides/prerendering.md): static-site generation behavior
+- [Best Practices](https://nuxtseo.com/sitemap/guides/best-practices.md): recommended sitemap conventions
+- [Submitting Sitemap](https://nuxtseo.com/sitemap/guides/submitting-sitemap.md): telling search engines and crawlers where your sitemap lives
+- [Zero Runtime](https://nuxtseo.com/sitemap/guides/zero-runtime.md): build-time-only sitemap generation
+
+## Advanced
+
+- [Loc Data](https://nuxtseo.com/sitemap/advanced/loc-data.md): per-URL metadata
+- [Images & Videos](https://nuxtseo.com/sitemap/advanced/images-videos.md): media sitemap extensions
+- [Performance](https://nuxtseo.com/sitemap/advanced/performance.md): handling large sites
+- [Chunking Sources](https://nuxtseo.com/sitemap/advanced/chunking-sources.md): splitting large URL sources
+- [Customising UI](https://nuxtseo.com/sitemap/advanced/customising-ui.md): the XML stylesheet and DevTools panel
+
+## API
+
+- [Config](https://nuxtseo.com/sitemap/api/config.md): full module configuration reference
+- [Nuxt Hooks](https://nuxtseo.com/sitemap/api/nuxt-hooks.md): build-time hooks
+- [XML Parsing](https://nuxtseo.com/sitemap/api/xml-parsing.md): output format details
+
+## Optional
+
+- [Nitro API](https://nuxtseo.com/sitemap/nitro-api/nitro-hooks.md): runtime hooks for server-rendered sitemaps
+- [Releases](https://github.com/nuxt-modules/sitemap/releases): changelog
+- [Nuxt SEO](https://nuxtseo.com): the broader module suite this package belongs to
