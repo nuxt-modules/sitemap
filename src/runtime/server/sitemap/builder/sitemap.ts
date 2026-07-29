@@ -359,8 +359,7 @@ export const buildResolvedSitemapUrlsCached = defineCachedFunction(
 // Routes between Nitro's storage-backed cache (production) and direct execution. Chunks of the
 // same base sitemap share one cache entry so the source fetch + normalize + sort runs once per
 // `cacheMaxAgeSeconds` window. Edge-runtime safe: relies on Nitro's storage layer, no module
-// state. Dev and prerender skip the cache (prerender to avoid poisoning from early empty-source
-// reads; dev to keep iteration fast).
+// state. Dev and prerender skip the cache so updated sources remain visible.
 export async function getResolvedSitemapUrls(
   effectiveSitemap: SitemapDefinition,
   matchName: string,
