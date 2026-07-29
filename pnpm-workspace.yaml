@@ -57,7 +57,7 @@ catalog:
   '@vue/test-utils': ^2.4.11
   autocannon: ^8.0.0
   better-sqlite3: ^13.0.1
-  bumpp: ^12.0.0
+  bumpp: ^12.1.0
   consola: ^3.4.2
   defu: ^6.1.7
   eslint: ^10.8.0
