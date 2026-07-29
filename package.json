@@ -51,7 +51,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "client:build": "node -e \"const { cpSync } = require('fs'); const { sep } = require('path'); cpSync('devtools','dist/devtools',{recursive:true,filter:src=>!src.split(sep).some(p=>['.data','.nuxt','node_modules'].includes(p))})\"",
-    "prepack": "pnpm --filter sitemapd build && nuxt-module-build build && npm run client:build",
+    "prepack": "nuxt-module-build build && npm run client:build",
     "build": "pnpm --filter sitemapd build && nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
     "dev": "nuxt dev playground",
     "prepare:fixtures": "nuxt prepare test/fixtures/basic && nuxt prepare test/fixtures/i18n && nuxt prepare test/fixtures/i18n-micro",
