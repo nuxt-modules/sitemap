@@ -35,7 +35,10 @@ export async function refreshProductionData() {
   // Try fetching the full debug endpoint from production first (proxied through local server)
   const remoteDebug = await appFetch.value('/__sitemap__/debug-production.json', {
     query: { url: productionUrl.value, mode: 'debug' },
-  }).catch(() => null) as (typeof data.value & { error?: string }) | null
+  }).catch(() => {
+    // Production debug is optional; use the public sitemap XML fallback below.
+    return null
+  }) as (typeof data.value & { error?: string }) | null
   if (remoteDebug && !remoteDebug.error && remoteDebug.sitemaps && !Array.isArray(remoteDebug.sitemaps)) {
     // Response has object sitemaps (debug.json format) rather than array (XML fallback format)
     productionRemoteDebugData.value = remoteDebug

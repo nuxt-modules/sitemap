@@ -1,12 +1,11 @@
-import type { SitemapWarning } from '@nuxtjs/sitemap/utils'
-import { isSitemapIndex, parseSitemapIndex, parseSitemapXml } from '@nuxtjs/sitemap/utils'
+import type { SitemapIssue } from 'sitemapd/parse'
 import { defineEventHandler, getQuery } from 'h3'
-import { decodeSitemapResponseBytes } from '../../sitemap/urlset/gzip'
+import { collectSitemap } from 'sitemapd/parse'
 
 export interface ProductionSitemapEntry {
   loc: string
   urlCount: number
-  warnings: SitemapWarning[]
+  warnings: SitemapIssue[]
   error?: string
   lastmod?: string
 }
@@ -15,21 +14,18 @@ export interface ProductionDebugResponse {
   url: string
   isIndex: boolean
   sitemaps: ProductionSitemapEntry[]
-  warnings: SitemapWarning[]
+  warnings: SitemapIssue[]
   error?: string
 }
 
-async function fetchXml(url: string): Promise<string> {
+async function fetchSitemapBody(url: string): Promise<Uint8Array> {
   const response = await fetch(url, {
     headers: { Accept: 'application/xml, text/xml, application/gzip' },
     signal: AbortSignal.timeout(15000),
   })
   if (!response.ok)
     throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-  // Fetch as bytes so a gzipped sitemap (`.xml.gz`, or gzip served without a
-  // Content-Encoding header) decompresses instead of decoding into mojibake —
-  // same handling as fetchDataSource in the urlset pipeline.
-  return decodeSitemapResponseBytes(new Uint8Array(await response.arrayBuffer()))
+  return new Uint8Array(await response.arrayBuffer())
 }
 
 export default defineEventHandler(async (e): Promise<ProductionDebugResponse | Record<string, any>> => {
@@ -43,9 +39,15 @@ export default defineEventHandler(async (e): Promise<ProductionDebugResponse | R
     const response = await fetch(debugUrl, {
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(10000),
-    }).catch(() => null)
+    }).catch(() => {
+      // Production debug is optional; use the public sitemap XML fallback below.
+      return null
+    })
     if (response?.ok) {
-      const json = await response.json().catch(() => null)
+      const json = await response.json().catch(() => {
+        // An invalid optional debug response can safely use the XML fallback.
+        return null
+      })
       if (json?.sitemaps)
         return json
     }
@@ -55,54 +57,66 @@ export default defineEventHandler(async (e): Promise<ProductionDebugResponse | R
   // Determine the sitemap URL to fetch
   const sitemapUrl = url.endsWith('/') ? `${url}sitemap.xml` : url
 
-  const xml = await fetchXml(sitemapUrl).catch((err: Error) => {
+  const body = await fetchSitemapBody(sitemapUrl).catch((err: Error) => {
     return err
   })
 
-  if (xml instanceof Error)
-    return { url: sitemapUrl, isIndex: false, sitemaps: [], warnings: [], error: `Failed to fetch sitemap: ${xml.message}` }
+  if (body instanceof Error)
+    return { url: sitemapUrl, isIndex: false, sitemaps: [], warnings: [], error: `Failed to fetch sitemap: ${body.message}` }
 
-  if (isSitemapIndex(xml)) {
-    const { entries, warnings } = await parseSitemapIndex(xml)
+  const parsed = await collectSitemap(body)
+  if (parsed._tag !== 'document') {
+    return {
+      url: sitemapUrl,
+      isIndex: false,
+      sitemaps: [],
+      warnings: parsed.issues,
+      error: parsed.issues.map(issue => issue.message).join('; ') || 'Invalid sitemap document',
+    }
+  }
+
+  if (parsed.document._tag === 'index') {
+    const { entries } = parsed.document
     const sitemaps: ProductionSitemapEntry[] = await Promise.all(
       entries.map(async (entry) => {
-        const childXml = await fetchXml(entry.loc).catch((err: Error) => err)
-        if (childXml instanceof Error) {
+        const childBody = await fetchSitemapBody(entry.loc).catch((err: Error) => err)
+        if (childBody instanceof Error) {
           return {
             loc: entry.loc,
             urlCount: 0,
             warnings: [],
-            error: childXml.message,
+            error: childBody.message,
             lastmod: entry.lastmod,
           }
         }
-        const result = await parseSitemapXml(childXml).catch((err: Error) => ({
-          urls: [],
-          warnings: [{ type: 'validation' as const, message: err.message }],
-        }))
+        const result = await collectSitemap(childBody)
+        if (result._tag !== 'document' || result.document._tag !== 'urlset') {
+          return {
+            loc: entry.loc,
+            urlCount: 0,
+            warnings: result.issues,
+            error: result.issues.map(issue => issue.message).join('; ') || 'Child is not a URL set',
+            lastmod: entry.lastmod,
+          }
+        }
         return {
           loc: entry.loc,
-          urlCount: result.urls.length,
-          warnings: result.warnings,
+          urlCount: result.document.entries.length,
+          warnings: result.issues,
           lastmod: entry.lastmod,
         }
       }),
     )
-    return { url: sitemapUrl, isIndex: true, sitemaps, warnings }
+    return { url: sitemapUrl, isIndex: true, sitemaps, warnings: parsed.issues }
   }
 
-  // Single sitemap
-  const result = await parseSitemapXml(xml).catch((err: Error) => ({
-    urls: [],
-    warnings: [{ type: 'validation' as const, message: err.message }],
-  }))
   return {
     url: sitemapUrl,
     isIndex: false,
     sitemaps: [{
       loc: sitemapUrl,
-      urlCount: result.urls.length,
-      warnings: result.warnings,
+      urlCount: parsed.document.entries.length,
+      warnings: parsed.issues,
     }],
     warnings: [],
   }

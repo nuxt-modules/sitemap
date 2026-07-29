@@ -1,6 +1,3 @@
-export type * from '../runtime/types'
-export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
-export { collectSitemap, parseSitemap } from 'sitemapd/parse'
 export type {
   CollectSitemapResult,
   ParseSitemapOptions,
@@ -12,7 +9,9 @@ export type {
   SitemapInput,
   SitemapIssue,
   SitemapIssueCode,
-  SitemapParseEvent,
   SitemapReference,
   SitemapUrlRecord,
-} from 'sitemapd/parse'
+} from './parse'
+export { createSitemapReader } from './reader'
+export { parseRobotsSitemaps } from './robots'
+export type * from './types'

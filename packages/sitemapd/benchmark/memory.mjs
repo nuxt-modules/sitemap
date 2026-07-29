@@ -1,5 +1,6 @@
+/* eslint-disable antfu/no-import-dist, no-console */
 import { memoryUsage } from 'node:process'
-import { parseSitemapXmlStream } from '../../src/utils/parseSitemapXml'
+import { parseSitemap } from '../dist/parse.mjs'
 
 const totalUrls = Number.parseInt(process.argv[2] || '1000000', 10)
 const urlsPerChunk = 1000
@@ -22,7 +23,10 @@ let peakHeap = heapAtStart
 let parsedUrls = 0
 const startedAt = performance.now()
 
-for await (const event of parseSitemapXmlStream(generateSitemap())) {
+for await (const event of parseSitemap(generateSitemap(), {
+  maxDecodedBytes: 100 * 1024 * 1024,
+  maxEntries: totalUrls,
+})) {
   if (event._tag !== 'url')
     continue
   parsedUrls++

@@ -137,7 +137,7 @@ const totalProductionWarnings = computed(() =>
                   target="_blank"
                   class="link-external"
                 >
-                  Learn more
+                  Learn more about large sitemaps
                 </a>
               </DevtoolsAlert>
             </template>
@@ -320,7 +320,7 @@ const totalProductionWarnings = computed(() =>
                 target="_blank"
                 class="link-external"
               >
-                Learn more
+                Learn more about large sitemaps
               </a>
             </DevtoolsAlert>
           </template>

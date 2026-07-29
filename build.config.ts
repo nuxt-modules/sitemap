@@ -24,5 +24,6 @@ export default defineBuildConfig({
     // Content subpath export
     '@nuxt/content',
     'zod',
+    'sitemapd',
   ],
 })

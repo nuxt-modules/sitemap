@@ -4,10 +4,87 @@ on:
   push:
     tags:
       - 'v*'
+      - 'sitemapd-v*'
+
+concurrency:
+  group: release-${{ github.ref }}
 
 jobs:
   release:
+    if: startsWith(github.ref_name, 'v')
     permissions:
       contents: write
       id-token: write
     uses: harlan-zw/nuxt-seo/.github/workflows/reusable-release.yml@main
+
+  release-sitemapd:
+    if: startsWith(github.ref_name, 'sitemapd-v')
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Validate release tag
+        shell: bash
+        run: |
+          package_version="$(node -p "require('./packages/sitemapd/package.json').version")"
+          expected_tag="sitemapd-v${package_version}"
+          if [[ "$GITHUB_REF_NAME" != "$expected_tag" ]]; then
+            echo "::error title=Release tag mismatch::Expected ${expected_tag}, received ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Select npm tag
+        id: npm
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#sitemapd-v}"
+          case "$version" in
+            *-alpha*) npm_tag="alpha" ;;
+            *-beta*) npm_tag="beta" ;;
+            *-rc*) npm_tag="rc" ;;
+            *) npm_tag="" ;;
+          esac
+          echo "tag=${npm_tag}" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter sitemapd typecheck
+      - run: pnpm --filter sitemapd test
+      - run: pnpm --filter sitemapd test:attw
+
+      - name: Publish stable release
+        if: steps.npm.outputs.tag == ''
+        run: pnpm --filter sitemapd publish --access public --no-git-checks --provenance
+
+      - name: Publish prerelease
+        if: steps.npm.outputs.tag != ''
+        run: pnpm --filter sitemapd publish --access public --no-git-checks --provenance --tag "${{ steps.npm.outputs.tag }}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#sitemapd-v}"
+          previous_tag="$(git tag --list 'sitemapd-v*' --sort=-version:refname | grep -Fvx "$GITHUB_REF_NAME" | head -n 1 || true)"
+          release_flags=(--latest=false)
+          if [[ -n "${{ steps.npm.outputs.tag }}" ]]; then
+            release_flags+=(--prerelease)
+          fi
+          if [[ -n "$previous_tag" ]]; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --notes-start-tag "$previous_tag" --title "sitemapd v${version}" "${release_flags[@]}"
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "sitemapd v${version}" "${release_flags[@]}"
+          fi

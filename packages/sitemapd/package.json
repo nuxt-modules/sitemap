@@ -1,0 +1,110 @@
+{
+  "name": "sitemapd",
+  "type": "module",
+  "version": "0.2.0",
+  "description": "Runtime-neutral sitemap parsing and bounded traversal",
+  "author": {
+    "name": "Harlan Wilton",
+    "email": "harlan@harlanzw.com",
+    "url": "https://harlanzw.com/"
+  },
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/harlan-zw",
+  "homepage": "https://github.com/nuxt-modules/sitemap/tree/main/packages/sitemapd#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt-modules/sitemap.git",
+    "directory": "packages/sitemapd"
+  },
+  "bugs": {
+    "url": "https://github.com/nuxt-modules/sitemap/issues"
+  },
+  "keywords": [
+    "sitemap",
+    "xml",
+    "rss",
+    "atom",
+    "crawler"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./parse": "./src/parse/index.ts",
+    "./fetch": "./src/fetch/index.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.ts"
+      ],
+      "parse": [
+        "./src/parse/index.ts"
+      ],
+      "fetch": [
+        "./src/fetch/index.ts"
+      ]
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./parse": {
+        "types": "./dist/parse.d.mts",
+        "import": "./dist/parse.mjs"
+      },
+      "./fetch": {
+        "types": "./dist/fetch.d.mts",
+        "import": "./dist/fetch.mjs"
+      }
+    },
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "typesVersions": {
+      "*": {
+        ".": [
+          "./dist/index.d.mts"
+        ],
+        "parse": [
+          "./dist/parse.d.mts"
+        ],
+        "fetch": [
+          "./dist/fetch.d.mts"
+        ]
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bench": "vitest bench",
+    "bench:memory": "node --expose-gc benchmark/memory.mjs",
+    "test:attw": "node scripts/check-attw.mjs",
+    "prepack": "pnpm run build",
+    "release": "pnpm build && bumpp --git-check --commit \"chore(sitemapd): release v%s\" --tag \"sitemapd-v%s\""
+  },
+  "dependencies": {
+    "fast-xml-parser": "catalog:"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "bumpp": "catalog:",
+    "typescript": "catalog:",
+    "unbuild": "catalog:",
+    "vitest": "catalog:"
+  }
+}

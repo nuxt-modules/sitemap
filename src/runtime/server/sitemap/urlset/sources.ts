@@ -1,18 +1,59 @@
 import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
+import type { SitemapUrlRecord } from 'sitemapd/parse'
 import type {
+  Changefreq,
   ModuleRuntimeConfig,
   SitemapSourceBase,
   SitemapSourceInput,
   SitemapSourceResolved,
+  SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
-import { parseSitemapXml } from '@nuxtjs/sitemap/utils'
 import { defu } from 'defu'
 import { getRequestHost } from 'h3'
+import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
 import { logger } from '../../../utils-pure'
-import { decodeSitemapResponseBytes } from './gzip'
+
+const changeFrequencies = new Set<Changefreq>([
+  'always',
+  'hourly',
+  'daily',
+  'weekly',
+  'monthly',
+  'yearly',
+  'never',
+])
+
+function readerEntryToSitemapInput(entry: SitemapUrlRecord): SitemapUrl {
+  const priority = entry.priority === undefined ? undefined : Number.parseFloat(entry.priority)
+  const changefreq = entry.changefreq && changeFrequencies.has(entry.changefreq as Changefreq)
+    ? entry.changefreq as Changefreq
+    : undefined
+  return {
+    loc: entry.loc,
+    ...(entry.lastmod ? { lastmod: entry.lastmod } : {}),
+    ...(changefreq ? { changefreq } : {}),
+    ...(priority !== undefined && Number.isFinite(priority) ? { priority: priority as SitemapUrl['priority'] } : {}),
+    ...(entry.extensions?.alternatives
+      ? { alternatives: entry.extensions.alternatives.map(({ hreflang, href }) => ({ hreflang: hreflang!, href })) }
+      : {}),
+    ...(entry.extensions?.images
+      ? {
+          images: entry.extensions.images.map(image => ({
+            loc: image.loc,
+            ...(image.caption ? { caption: image.caption } : {}),
+            ...(image.geoLocation ? { geo_location: image.geoLocation } : {}),
+            ...(image.title ? { title: image.title } : {}),
+            ...(image.license ? { license: image.license } : {}),
+          })),
+        }
+      : {}),
+    ...(entry.extensions?.videos ? { videos: entry.extensions.videos as unknown as SitemapUrl['videos'] } : {}),
+    ...(entry.extensions?.news ? { news: entry.extensions.news as unknown as SitemapUrl['news'] } : {}),
+  }
+}
 
 export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceBase | SitemapSourceResolved {
   // string -> { fetch: string, context: { name: 'hook' } }
@@ -124,18 +165,12 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     let urls = []
     if (isXmlRequest) {
       const bytes = res instanceof Uint8Array ? res : new Uint8Array(res as ArrayBuffer)
-      const text = await decodeSitemapResponseBytes(bytes)
-      if (text.startsWith('<!DOCTYPE html>')) {
-        return {
-          ...input,
-          context,
-          urls: [],
-          timeTakenMs,
-          error: 'Received HTML response instead of XML',
-        }
-      }
-      const result = await parseSitemapXml(text)
-      urls = result.urls
+      const result = await collectSitemap(bytes)
+      if (result._tag !== 'document')
+        throw new Error(result.issues.map(issue => issue.message).join('; ') || 'Invalid sitemap document')
+      if (result.document._tag !== 'urlset')
+        throw new Error('Sitemap URL source must be a URL set, not a sitemap index')
+      urls = result.document.entries.map(readerEntryToSitemapInput)
     }
     else if (typeof res === 'object') {
       urls = res.urls || res
