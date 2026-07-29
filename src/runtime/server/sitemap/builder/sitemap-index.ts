@@ -133,8 +133,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
 
 export async function buildSitemapIndex(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) {
   // Check if should use cached version.
-  // Skip caching during prerender: sources are written to disk by `prerender:done`, so
-  // an early crawl would otherwise poison the cache with an empty result.
+  // Skip caching during prerender so the final filesystem source handoff is visible.
   if (!import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0 && resolvers.event) {
     return buildSitemapIndexCached(resolvers.event, resolvers, runtimeConfig, nitro)
   }

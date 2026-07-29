@@ -1064,23 +1064,17 @@ export async function readSourcesFromFilesystem() {
 `
       }
 
-      // Skip virtual templates when prerendering - sources are written to filesystem instead
-      // In dev mode, always generate sources even if prerenderSitemap is true (e.g. zeroRuntime)
-      if (prerenderSitemap && !nuxt.options.dev) {
-        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
-        nitroConfig.virtual[`#sitemap-virtual/child-sources.mjs`] = `export const sources = {}`
+      // Virtual templates provide the initial build-time sources. During
+      // prerender, the filesystem handoff replaces them with the final sources
+      // after all routes have been crawled.
+      nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = async () => {
+        const globalSources = await generateGlobalSources()
+        return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
       }
-      else {
-        // Virtual templates generate sources data - will be cached in storage on first use
-        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = async () => {
-          const globalSources = await generateGlobalSources()
-          return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
-        }
 
-        nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
-          const childSources = await generateChildSources()
-          return `export const sources = ${JSON.stringify(childSources, null, 4)}`
-        }
+      nitroConfig.virtual![`#sitemap-virtual/child-sources.mjs`] = async () => {
+        const childSources = await generateChildSources()
+        return `export const sources = ${JSON.stringify(childSources, null, 4)}`
       }
     })
 

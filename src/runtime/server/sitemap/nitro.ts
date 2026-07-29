@@ -314,9 +314,8 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   const shouldStream = !!runtimeConfig.experimentalStreaming && !import.meta.prerender
 
   // Choose between cached or direct generation.
-  // Skip caching during prerender: the crawl may run before `prerender:done` has written
-  // `global-sources.json`, so an early empty result would poison the cache and be returned
-  // on the follow-up render, shipping an empty sitemap.
+  // Skip caching during prerender so the final filesystem source handoff can replace
+  // the initial build-time sources after the crawl.
   // A serialized XML cache necessarily buffers the entire response. Streaming mode caches
   // the finalized render plan instead and serializes those resolved URLs on demand.
   const shouldCache = !import.meta.dev && !import.meta.prerender && typeof runtimeConfig.cacheMaxAgeSeconds === 'number' && runtimeConfig.cacheMaxAgeSeconds > 0
