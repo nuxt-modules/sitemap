@@ -1,16 +1,11 @@
 import type { FilterInput } from './types'
-import { createConsola } from 'consola'
 import { createDefu } from 'defu'
-import { createFilter } from 'nuxtseo-shared/utils'
+import { createFilter, createModuleLogger } from 'nuxtseo-shared/utils'
 import { parseURL, withoutBase } from 'ufo'
 
 export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/utils'
 
-export const logger = createConsola({
-  defaults: {
-    tag: '@nuxt/sitemap',
-  },
-})
+export const logger = createModuleLogger('@nuxt/sitemap')
 
 const XML_ENTITIES: Record<string, string> = {
   '&': '&amp;',

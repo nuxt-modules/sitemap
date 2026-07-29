@@ -10,8 +10,9 @@ import type {
 } from '../../types'
 import { defu } from 'defu'
 import { createError, getHeader, getQuery, setHeader } from 'h3'
-import { defineCachedFunction, useNitroApp } from 'nitropack/runtime'
+import { defineCachedFunction, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { fixSlashes } from 'nuxt-site-config/urls'
+import { createNitroRouteRuleMatcher } from 'nuxtseo-shared/server'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
@@ -19,7 +20,6 @@ import { createSitePathResolver } from '#site-config/server/composables/utils'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
-import { createNitroRouteRuleMatcher } from '../kit'
 import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
 import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
@@ -79,7 +79,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
     })
   }
 
-  const routeRuleMatcher = createNitroRouteRuleMatcher()
+  const routeRuleMatcher = createNitroRouteRuleMatcher(useRuntimeConfig(event))
   const { autoI18n } = runtimeConfig
   const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
     ? new Set(autoI18n.locales.map(l => l.code))
