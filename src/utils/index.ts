@@ -1,4 +1,25 @@
 export type * from '../runtime/types'
+export {
+  isSitemapIndex,
+  parseSitemapIndex,
+  parseSitemapIndexStream,
+  parseSitemapStream,
+  parseSitemapXml,
+  parseSitemapXmlStream,
+} from './legacySitemap'
+export type {
+  SitemapIndexEntry,
+  SitemapIndexParseResult,
+  SitemapIndexStreamEvent,
+  SitemapKind,
+  SitemapParseResult,
+  SitemapStreamEvent,
+  SitemapStreamOptions,
+  SitemapWarning,
+  SitemapXmlChunk,
+  SitemapXmlInput,
+  SitemapXmlStreamEvent,
+} from './legacySitemap'
 export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
 export { createSitemapReader } from 'sitemapd'
 export type {

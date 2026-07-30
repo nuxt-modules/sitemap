@@ -1,8 +1,11 @@
 import type {
   FetchDocumentLoaderOptions,
   SitemapDocumentLoader,
+  SitemapIndexStreamEvent,
   SitemapParseEvent,
   SitemapReader,
+  SitemapStreamEvent,
+  SitemapXmlStreamEvent,
 } from '../../src/utils'
 import { describe, expectTypeOf, it } from 'vitest'
 import {
@@ -11,6 +14,11 @@ import {
   createSitemapReader,
   parseHtmlExtractSitemapMeta,
   parseSitemap,
+  parseSitemapIndex,
+  parseSitemapIndexStream,
+  parseSitemapStream,
+  parseSitemapXml,
+  parseSitemapXmlStream,
 } from '../../src/utils'
 
 describe('stream parsing utilities', () => {
@@ -21,8 +29,13 @@ describe('stream parsing utilities', () => {
 
   it('preserves the existing utility exports', () => {
     expectTypeOf(collectSitemap).toBeFunction()
+    expectTypeOf(parseSitemapIndex).toBeFunction()
+    expectTypeOf(parseSitemapIndexStream('')).toMatchTypeOf<AsyncIterable<SitemapIndexStreamEvent>>()
     expectTypeOf(parseHtmlExtractSitemapMeta).toBeFunction()
     expectTypeOf(parseSitemap).toBeFunction()
+    expectTypeOf(parseSitemapStream('')).toMatchTypeOf<AsyncIterable<SitemapStreamEvent>>()
+    expectTypeOf(parseSitemapXml).toBeFunction()
+    expectTypeOf(parseSitemapXmlStream('')).toMatchTypeOf<AsyncIterable<SitemapXmlStreamEvent>>()
   })
 
   it('re-exports the reader and Fetch adapter', () => {
