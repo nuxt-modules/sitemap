@@ -124,7 +124,7 @@ export function createFetchDocumentLoader(
       return {
         _tag: 'body',
         url: request.url,
-        body: read.bytes,
+        body: read.chunks,
       }
     }
     return {

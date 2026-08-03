@@ -18,13 +18,36 @@ export type ParsedSitemap
     | { _tag: 'unsupported' }
     | { _tag: 'malformed', detail: string }
 
+export type XmlRecordTag = 'url' | 'sitemap' | 'item' | 'entry'
+
+const ARRAY_TAGS = new Set([
+  'url',
+  'sitemap',
+  'item',
+  'entry',
+  'image:image',
+  'video:video',
+  'xhtml:link',
+  'link',
+  'media:content',
+  'media:thumbnail',
+])
+const LOC_OPEN = '<loc>'
+const LOC_CLOSE = '</loc>'
+const LASTMOD_OPEN = '<lastmod>'
+const LASTMOD_CLOSE = '</lastmod>'
+const CHANGEFREQ_OPEN = '<changefreq>'
+const CHANGEFREQ_CLOSE = '</changefreq>'
+const PRIORITY_OPEN = '<priority>'
+const PRIORITY_CLOSE = '</priority>'
+
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
   parseAttributeValue: false,
   parseTagValue: false,
   trimValues: true,
-  isArray: name => ['url', 'sitemap', 'item', 'entry', 'image:image', 'video:video', 'xhtml:link', 'link', 'media:content', 'media:thumbnail'].includes(name),
+  isArray: name => ARRAY_TAGS.has(name),
 })
 
 function localName(name: string): string {
@@ -35,8 +58,13 @@ function child(node: unknown, name: string): unknown {
   if (!node || typeof node !== 'object')
     return undefined
   const record = node as XmlNode
-  const key = Object.keys(record).find(candidate => localName(candidate) === name)
-  return key ? record[key] : undefined
+  if (name in record)
+    return record[name]
+  for (const key in record) {
+    if (localName(key) === name)
+      return record[key]
+  }
+  return undefined
 }
 
 function many(node: unknown, name: string): unknown[] {
@@ -99,6 +127,117 @@ function issueForLoc(loc: string | undefined, entryIndex: number): SitemapIssue 
     }
   }
   return undefined
+}
+
+function simpleText(value: string | undefined): string | undefined {
+  const trimmed = value?.trim()
+  return trimmed || undefined
+}
+
+function hasInvalidXmlText(value: string): boolean {
+  if (value.includes(']]>'))
+    return true
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index)
+    if (code <= 0x08 || code === 0x0B || code === 0x0C || (code >= 0x0E && code <= 0x1F) || code >= 0xFFFE)
+      return true
+  }
+  return false
+}
+
+function skipXmlWhitespace(input: string, start: number): number {
+  let cursor = start
+  while (cursor < input.length) {
+    const code = input.charCodeAt(cursor)
+    if (code !== 0x20 && code !== 0x09 && code !== 0x0A && code !== 0x0D)
+      break
+    cursor++
+  }
+  return cursor
+}
+
+function simpleFieldEnd(input: string, start: number, open: string, close: string): number {
+  if (!input.startsWith(open, start))
+    return -1
+  const valueStart = start + open.length
+  const end = input.indexOf(close, valueStart)
+  if (end === -1)
+    return -1
+  const value = input.slice(valueStart, end)
+  return value.includes('<') || value.includes('&') || value.includes('\r') || hasInvalidXmlText(value) ? -1 : end
+}
+
+// Keep the high volume, schema ordered case allocation light. Any XML feature
+// that needs decoding or structural validation falls through to parseDocument.
+function parseSimpleRecord(xml: string, recordTag: XmlRecordTag): ParsedSitemap | undefined {
+  if (recordTag !== 'url' && recordTag !== 'sitemap')
+    return undefined
+  const recordOpen = recordTag === 'url' ? '<url>' : '<sitemap>'
+  const recordClose = recordTag === 'url' ? '</url>' : '</sitemap>'
+  if (!xml.startsWith(recordOpen))
+    return undefined
+
+  let cursor = skipXmlWhitespace(xml, recordOpen.length)
+  const locEnd = simpleFieldEnd(xml, cursor, LOC_OPEN, LOC_CLOSE)
+  if (locEnd === -1)
+    return undefined
+  const loc = simpleText(xml.slice(cursor + LOC_OPEN.length, locEnd))
+  cursor = skipXmlWhitespace(xml, locEnd + LOC_CLOSE.length)
+
+  let lastmod: string | undefined
+  if (xml.startsWith(LASTMOD_OPEN, cursor)) {
+    const lastmodEnd = simpleFieldEnd(xml, cursor, LASTMOD_OPEN, LASTMOD_CLOSE)
+    if (lastmodEnd === -1)
+      return undefined
+    lastmod = simpleText(xml.slice(cursor + LASTMOD_OPEN.length, lastmodEnd))
+    cursor = skipXmlWhitespace(xml, lastmodEnd + LASTMOD_CLOSE.length)
+  }
+
+  let changefreq: string | undefined
+  if (recordTag === 'url' && xml.startsWith(CHANGEFREQ_OPEN, cursor)) {
+    const changefreqEnd = simpleFieldEnd(xml, cursor, CHANGEFREQ_OPEN, CHANGEFREQ_CLOSE)
+    if (changefreqEnd === -1)
+      return undefined
+    changefreq = simpleText(xml.slice(cursor + CHANGEFREQ_OPEN.length, changefreqEnd))
+    cursor = skipXmlWhitespace(xml, changefreqEnd + CHANGEFREQ_CLOSE.length)
+  }
+
+  let priority: string | undefined
+  if (recordTag === 'url' && xml.startsWith(PRIORITY_OPEN, cursor)) {
+    const priorityEnd = simpleFieldEnd(xml, cursor, PRIORITY_OPEN, PRIORITY_CLOSE)
+    if (priorityEnd === -1)
+      return undefined
+    priority = simpleText(xml.slice(cursor + PRIORITY_OPEN.length, priorityEnd))
+    cursor = skipXmlWhitespace(xml, priorityEnd + PRIORITY_CLOSE.length)
+  }
+
+  if (!xml.startsWith(recordClose, cursor) || cursor + recordClose.length !== xml.length)
+    return undefined
+
+  const locIssue = issueForLoc(loc, 0)
+  const issues = locIssue ? [locIssue] : []
+  if (recordTag === 'sitemap') {
+    return {
+      _tag: 'index',
+      format: 'xml',
+      entries: loc ? [{ loc, ...(lastmod ? { lastmod } : {}) }] : [],
+      issues,
+    }
+  }
+
+  return {
+    _tag: 'urlset',
+    format: 'xml',
+    entries: loc
+      ? [{
+          loc,
+          ...(lastmod ? { lastmod } : {}),
+          ...(changefreq ? { changefreq } : {}),
+          ...(priority ? { priority } : {}),
+        }]
+      : [],
+    issues,
+  }
 }
 
 function imageEntries(node: unknown): SitemapImage[] {
@@ -170,6 +309,18 @@ function localizeRecord(value: unknown): unknown {
 }
 
 function extensions(node: unknown): SitemapExtensions | undefined {
+  if (!node || typeof node !== 'object')
+    return undefined
+  let hasExtension = false
+  for (const key in node as XmlNode) {
+    const name = localName(key)
+    if (name === 'image' || name === 'link' || name === 'content' || name === 'thumbnail' || name === 'video' || name === 'news') {
+      hasExtension = true
+      break
+    }
+  }
+  if (!hasExtension)
+    return undefined
   const images = imageEntries(node)
   const alternateEntries = alternatives(node)
   const mediaEntries = media(node)
@@ -277,16 +428,13 @@ function parseAtom(root: unknown): Extract<ParsedSitemap, { _tag: 'urlset' }> {
   return { _tag: 'urlset', format: 'atom1', entries, issues }
 }
 
-export function parseXml(xml: string): ParsedSitemap {
-  if (!xml.trimStart().startsWith('<'))
-    return { _tag: 'unsupported' }
+function parseDocument(xml: string): { _tag: 'document', document: XmlNode } | Extract<ParsedSitemap, { _tag: 'malformed' }> {
   const validation = XMLValidator.validate(xml)
   if (validation !== true)
     return { _tag: 'malformed', detail: validation.err.msg }
 
-  let document: XmlNode
   try {
-    document = parser.parse(xml) as XmlNode
+    return { _tag: 'document', document: parser.parse(xml) as XmlNode }
   }
   catch (error) {
     return {
@@ -294,8 +442,49 @@ export function parseXml(xml: string): ParsedSitemap {
       detail: error instanceof Error ? error.message : String(error),
     }
   }
+}
 
-  const rootEntry = Object.entries(document).find(([name]) => !name.startsWith('?'))
+export function parseXmlRecord(xml: string, recordTag: XmlRecordTag): ParsedSitemap {
+  const simple = parseSimpleRecord(xml, recordTag)
+  if (simple)
+    return simple
+  const parsed = parseDocument(xml)
+  if (parsed._tag === 'malformed')
+    return parsed
+
+  const rootEntry = Object.entries(parsed.document).find(([name]) => !name.startsWith('?'))
+  if (!rootEntry || localName(rootEntry[0]).toLowerCase() !== recordTag) {
+    return recordTag === 'sitemap'
+      ? { _tag: 'index', format: 'xml', entries: [], issues: [] }
+      : {
+          _tag: 'urlset',
+          format: recordTag === 'item' ? 'rss2' : recordTag === 'entry' ? 'atom1' : 'xml',
+          entries: [],
+          issues: [],
+        }
+  }
+
+  const root = rootEntry[1]
+  switch (recordTag) {
+    case 'url':
+      return parseUrlset({ url: root })
+    case 'sitemap':
+      return parseIndex({ sitemap: root })
+    case 'item':
+      return parseRss({ channel: { item: root } })
+    case 'entry':
+      return parseAtom({ entry: root })
+  }
+}
+
+export function parseXml(xml: string): ParsedSitemap {
+  if (!xml.trimStart().startsWith('<'))
+    return { _tag: 'unsupported' }
+  const parsed = parseDocument(xml)
+  if (parsed._tag === 'malformed')
+    return parsed
+
+  const rootEntry = Object.entries(parsed.document).find(([name]) => !name.startsWith('?'))
   if (!rootEntry)
     return { _tag: 'unsupported' }
   const [rootName, root] = rootEntry

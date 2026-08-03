@@ -81,6 +81,22 @@ describe('canonical sitemap parser', () => {
     })
   })
 
+  it('parses plain records and normalizes XML line endings', async () => {
+    await expect(collectSitemap(
+      '<urlset><url><loc>https://example.com/plain</loc><lastmod>2026-\r\n08-01</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url></urlset>',
+    )).resolves.toMatchObject({
+      _tag: 'document',
+      document: {
+        entries: [{
+          loc: 'https://example.com/plain',
+          lastmod: '2026-\n08-01',
+          changefreq: 'daily',
+          priority: '0.8',
+        }],
+      },
+    })
+  })
+
   it('parses namespace-prefixed roots and records', async () => {
     await expect(collectSitemap(
       '<sm:urlset xmlns:sm="http://www.sitemaps.org/schemas/sitemap/0.9"><sm:url><sm:loc>https://example.com/prefixed</sm:loc></sm:url></sm:urlset>',
@@ -210,6 +226,14 @@ describe('canonical sitemap parser', () => {
     await expect(collectSitemap(new Uint8Array([0xC3, 0x28]))).resolves.toMatchObject({
       _tag: 'failure',
       completeness: { _tag: 'failed', reason: 'invalid_utf8' },
+    })
+  })
+
+  it('counts string input in UTF-8 bytes', async () => {
+    const input = '<urlset><url><loc>https://example.com/😀</loc></url></urlset>'
+    await expect(collectSitemap(input)).resolves.toMatchObject({
+      _tag: 'document',
+      summary: { bytesRead: new TextEncoder().encode(input).byteLength },
     })
   })
 

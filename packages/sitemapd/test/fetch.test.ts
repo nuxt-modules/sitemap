@@ -59,6 +59,41 @@ describe('fetch loader adapter', () => {
     expect(cancelled).toBe(true)
   })
 
+  it('retains response chunks when enforcing the wire cap', async () => {
+    const first = new Uint8Array([1, 2])
+    const second = new Uint8Array([3, 4])
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(first)
+        controller.enqueue(second)
+        controller.close()
+      },
+    })
+    const loader = createFetchDocumentLoader({
+      fetch: async () => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers(),
+        body,
+      }),
+    })
+    const loaded = await loader({
+      url: 'https://example.com/sitemap.xml',
+      resource: 'sitemap',
+      source: 'root',
+      depth: 0,
+      maxWireBytes: 10,
+    })
+
+    expect(loaded).toMatchObject({ _tag: 'body' })
+    if (loaded._tag !== 'body')
+      return
+    expect(loaded.body).toEqual([first, second])
+    expect((loaded.body as Uint8Array[])[0]).toBe(first)
+    expect((loaded.body as Uint8Array[])[1]).toBe(second)
+  })
+
   it.each([
     { status: 302, location: null },
     { status: 302, location: 'http://[' },

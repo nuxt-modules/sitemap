@@ -17,7 +17,7 @@ import {
   decodedTextChunks,
   isSitemapInputFailure,
 } from './input'
-import { parseXml } from './xml'
+import { parseXmlRecord } from './xml'
 
 export type * from './types'
 
@@ -57,6 +57,13 @@ interface ExtractedMalformed {
 }
 
 type Extracted = ExtractedRecord | ExtractedClose | ExtractedSkip | ExtractedMalformed
+
+const RECORD_OPEN_PATTERNS: Record<RootState['recordTag'], RegExp> = {
+  url: /^<((?:[\w.-]+:)?url)\b/i,
+  sitemap: /^<((?:[\w.-]+:)?sitemap)\b/i,
+  item: /^<((?:[\w.-]+:)?item)\b/i,
+  entry: /^<((?:[\w.-]+:)?entry)\b/i,
+}
 
 function parseLimit(value: number | undefined, fallback: number, name: string): number {
   if (value === undefined)
@@ -99,6 +106,17 @@ function findMarkupEnd(input: string, start: number): number {
       return index
   }
   return -1
+}
+
+function isXmlWhitespace(character: string | undefined): boolean {
+  return character === ' ' || character === '\t' || character === '\n' || character === '\r'
+}
+
+function isSelfClosingMarkup(markup: string): boolean {
+  let cursor = markup.length - 2
+  while (cursor >= 0 && isXmlWhitespace(markup[cursor]))
+    cursor--
+  return markup[cursor] === '/'
 }
 
 function trimMarkupPrefix(input: string): string {
@@ -308,8 +326,14 @@ function extractRecord(
     return undefined
   }
 
-  const opening = new RegExp(`^<((?:[\\w.-]+:)?${root.recordTag})\\b`, 'i').exec(source)
-  if (!opening) {
+  const directOpen = `<${root.recordTag}`
+  const directBoundary = source[directOpen.length]
+  const directName = source.startsWith(directOpen)
+    && (directBoundary === '>' || directBoundary === '/' || isXmlWhitespace(directBoundary))
+    ? root.recordTag
+    : undefined
+  const qualifiedName = directName ?? RECORD_OPEN_PATTERNS[root.recordTag].exec(source)?.[1]
+  if (!qualifiedName) {
     if (source.length === 0)
       return undefined
     if (root.name === 'rss' || root.name === 'feed')
@@ -321,14 +345,14 @@ function extractRecord(
   const openingEnd = findMarkupEnd(source, 0)
   if (openingEnd === -1)
     return undefined
-  if (/\/\s*>$/.test(source.slice(0, openingEnd + 1))) {
+  if (isSelfClosingMarkup(source.slice(0, openingEnd + 1))) {
     return {
       _tag: 'record',
       record: source.slice(0, openingEnd + 1),
       rest: source.slice(openingEnd + 1),
     }
   }
-  const close = `</${opening[1]}>`
+  const close = `</${qualifiedName}>`
   const closeIndex = findRecordClose(source, close, openingEnd + 1)
   if (closeIndex === -1) {
     if (new TextEncoder().encode(source).byteLength > maxEntryBytes) {
@@ -371,21 +395,27 @@ function escapeRegExp(value: string): string {
  * Behaviour is unchanged; only the complexity is. Same file, 8.8MB: ~0.55s.
  */
 function findRecordClose(input: string, close: string, start: number): number {
-  const closePattern = new RegExp(escapeRegExp(close), 'gi')
+  let closePattern: RegExp | undefined
   let cursor = start
   while (true) {
-    closePattern.lastIndex = cursor
-    const match = closePattern.exec(input)
-    if (!match)
-      return -1
-    const closeIndex = match.index
+    let closeIndex = input.indexOf(close, cursor)
+    if (closeIndex === -1) {
+      closePattern ||= new RegExp(escapeRegExp(close), 'gi')
+      closePattern.lastIndex = cursor
+      const match = closePattern.exec(input)
+      if (!match)
+        return -1
+      closeIndex = match.index
+    }
     const window = input.slice(cursor, closeIndex)
     const commentIndexRel = window.indexOf('<!--')
     const cdataIndexRel = window.indexOf('<![CDATA[')
-    const hiddenIndexRel = [commentIndexRel, cdataIndexRel]
-      .filter(index => index !== -1)
-      .sort((left, right) => left - right)[0]
-    if (hiddenIndexRel === undefined)
+    const hiddenIndexRel = commentIndexRel === -1
+      ? cdataIndexRel
+      : cdataIndexRel === -1
+        ? commentIndexRel
+        : Math.min(commentIndexRel, cdataIndexRel)
+    if (hiddenIndexRel === -1)
       return closeIndex
     const marker = hiddenIndexRel === commentIndexRel ? '-->' : ']]>'
     const hiddenEnd = input.indexOf(marker, cursor + hiddenIndexRel)
@@ -403,10 +433,7 @@ function parseRecord(
   issues: SitemapIssue[]
   malformed?: string
 } {
-  const wrapped = root.name === 'rss'
-    ? `${root.openTag}<channel>${record}</channel></${root.qualifiedName}>`
-    : `${root.openTag}${record}</${root.qualifiedName}>`
-  const parsed = parseXml(wrapped)
+  const parsed = parseXmlRecord(record, root.recordTag)
   if (parsed._tag === 'malformed')
     return { issues: [], malformed: parsed.detail }
   if (parsed._tag === 'unsupported')
@@ -518,7 +545,7 @@ export async function* parseSitemap(
         root = detected
         buffer = afterRootOpen(buffer, root)
         yield { _tag: 'document', format: root.format, kind: root.kind }
-        if (/\/\s*>$/.test(root.openTag)) {
+        if (isSelfClosingMarkup(root.openTag)) {
           closed = true
           continue
         }
