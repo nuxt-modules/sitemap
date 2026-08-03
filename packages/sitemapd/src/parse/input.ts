@@ -2,7 +2,7 @@ import type { SitemapChunk, SitemapInput } from './types'
 
 interface ReadInputSuccess {
   _tag: 'success'
-  bytes: Uint8Array
+  chunks: readonly Uint8Array[]
   bytesRead: number
 }
 
@@ -144,11 +144,56 @@ function gzipPrefix(chunks: readonly Uint8Array[]): boolean {
   return first.length >= 2 && first[0] === 0x1F && first[1] === 0x8B
 }
 
+function utf8ByteLength(input: string): number | undefined {
+  let bytes = 0
+  for (let index = 0; index < input.length; index++) {
+    const code = input.charCodeAt(index)
+    if (code <= 0x7F) {
+      bytes++
+    }
+    else if (code <= 0x7FF) {
+      bytes += 2
+    }
+    else if (code >= 0xD800 && code <= 0xDBFF) {
+      const next = input.charCodeAt(index + 1)
+      if (next < 0xDC00 || next > 0xDFFF)
+        return undefined
+      bytes += 4
+      index++
+    }
+    else if (code >= 0xDC00 && code <= 0xDFFF) {
+      return undefined
+    }
+    else {
+      bytes += 3
+    }
+  }
+  return bytes
+}
+
 export async function* decodedTextChunks(
   input: SitemapInput,
   maxDecodedBytes: number,
   stats: SitemapInputStats,
 ): AsyncGenerator<string> {
+  // A direct string cannot be gzip compressed. Preserve the byte limit without
+  // allocating an encoded copy and decoding it back into the same text.
+  if (typeof input === 'string') {
+    const bytes = utf8ByteLength(input)
+    if (bytes !== undefined) {
+      stats.bytesRead = bytes
+      if (bytes > maxDecodedBytes) {
+        throw inputFailure(
+          'decoded_limit',
+          `Sitemap exceeds ${maxDecodedBytes} decoded bytes`,
+        )
+      }
+      if (input)
+        yield input
+      return
+    }
+  }
+
   const iterator = byteChunks(input)[Symbol.asyncIterator]()
   const initial: Uint8Array[] = []
   let prefixBytes = 0
@@ -215,11 +260,5 @@ export async function readInput(input: SitemapInput, maxBytes: number): Promise<
       return { _tag: 'limit', bytesRead }
     collected.push(bytes)
   }
-  const output = new Uint8Array(bytesRead)
-  let offset = 0
-  for (const chunk of collected) {
-    output.set(chunk, offset)
-    offset += chunk.byteLength
-  }
-  return { _tag: 'success', bytes: output, bytesRead }
+  return { _tag: 'success', chunks: collected, bytesRead }
 }

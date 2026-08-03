@@ -4,16 +4,20 @@ import { parseSitemap } from '../dist/parse.mjs'
 
 const totalUrls = Number.parseInt(process.argv[2] || '1000000', 10)
 const urlsPerChunk = 1000
+let generatedBytes = 0
 
 async function* generateSitemap() {
+  generatedBytes += '<urlset>'.length
   yield '<urlset>'
   for (let offset = 0; offset < totalUrls; offset += urlsPerChunk) {
     let chunk = ''
     const end = Math.min(offset + urlsPerChunk, totalUrls)
     for (let index = offset; index < end; index++)
       chunk += `<url><loc>https://example.com/${index}</loc></url>`
+    generatedBytes += chunk.length
     yield chunk
   }
+  generatedBytes += '</urlset>'.length
   yield '</urlset>'
 }
 
@@ -40,5 +44,6 @@ console.log({
   heapGrowthMiB: Number(((memoryUsage().heapUsed - heapAtStart) / 1024 / 1024).toFixed(2)),
   parsedUrls,
   peakHeapGrowthMiB: Number(((peakHeap - heapAtStart) / 1024 / 1024).toFixed(2)),
+  rawMiB: Number((generatedBytes / 1024 / 1024).toFixed(2)),
   urlsPerSecond: Math.round(parsedUrls / (elapsedMs / 1000)),
 })
