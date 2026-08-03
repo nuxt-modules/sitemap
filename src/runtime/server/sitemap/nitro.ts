@@ -1,20 +1,20 @@
-import type { H3Event } from 'h3'
-import type { NitroApp } from 'nitropack/types'
+import type { H3Event } from '#nuxtseo/h3'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   ResolvedSitemapUrl,
   SitemapDefinition,
+  SitemapItemDefaults,
   SitemapOutputHookCtx,
   SitemapRenderCtx,
 } from '../../types'
 import { defu } from 'defu'
-import { createError, getHeader, getQuery, setHeader } from 'h3'
-import { defineCachedFunction, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { createNitroRouteRuleMatcher } from 'nuxtseo-shared/server'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
+import { createError, getHeader, getQuery, setHeader } from '#nuxtseo/h3'
+import { defineCachedFunction, useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
 import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 // @ts-expect-error virtual module
@@ -25,12 +25,21 @@ import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
 
+type NitroApp = ReturnType<typeof useNitroApp>
+
 // Read at module init: defineCachedFunction takes a static maxAge. Falls back to 10 minutes
 // when caching is disabled in static config (still bypassed at request time via shouldCache).
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 interface SitemapNitroApp extends NitroApp {
   _sitemapWarned?: boolean
+}
+
+interface SitemapRouteRules {
+  headers?: Record<string, string>
+  redirect?: unknown
+  robots?: unknown
+  sitemap?: SitemapItemDefaults | false
 }
 
 export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
@@ -79,7 +88,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
     })
   }
 
-  const routeRuleMatcher = createNitroRouteRuleMatcher(useRuntimeConfig(event))
+  const routeRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>(useRuntimeConfig(event))
   const { autoI18n } = runtimeConfig
   const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
     ? new Set(autoI18n.locales.map(l => l.code))

@@ -1,6 +1,6 @@
 import type { SitemapIssue } from 'sitemapd/parse'
-import { defineEventHandler, getQuery } from 'h3'
 import { collectSitemap } from 'sitemapd/parse'
+import { defineEventHandler, getQuery } from '#nuxtseo/h3'
 
 export interface ProductionSitemapEntry {
   loc: string

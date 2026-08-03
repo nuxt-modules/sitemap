@@ -1,6 +1,6 @@
-import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
 import type { SitemapUrlRecord } from 'sitemapd/parse'
+import type { H3Event } from '#nuxtseo/h3'
 import type {
   Changefreq,
   ModuleRuntimeConfig,
@@ -11,9 +11,10 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { defu } from 'defu'
-import { getRequestHost } from 'h3'
+import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
+import { getRequestHost } from '#nuxtseo/h3'
 import { logger } from '../../../utils-pure'
 
 const changeFrequencies = new Set<Changefreq>([

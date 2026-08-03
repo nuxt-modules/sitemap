@@ -1,6 +1,6 @@
 import { queryCollection } from '@nuxt/content/server'
-import { defineEventHandler } from 'h3'
 import manifest from '#content/manifest'
+import { defineEventHandler } from '#nuxtseo/h3'
 import { filters } from '#sitemap/content-filters'
 import { onUrlFns } from '#sitemap/content-on-url'
 

@@ -1,5 +1,5 @@
 import type { SitemapDefinition, SitemapSourceResolved } from '../../../types'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from '#nuxtseo/h3'
 import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
 import { validateSitemapUrl } from '../../sitemap/urlset/normalise'
 import {

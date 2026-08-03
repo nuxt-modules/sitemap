@@ -1,6 +1,6 @@
-import type { H3Event } from 'h3'
+import type { H3Event } from '#nuxtseo/h3'
 import type { ModuleRuntimeConfig } from '../types'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { useRuntimeConfig } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normalizeRuntimeFilters } from '../utils-pure'

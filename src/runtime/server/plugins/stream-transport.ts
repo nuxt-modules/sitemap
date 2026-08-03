@@ -1,5 +1,5 @@
-import { removeResponseHeader } from 'h3'
-import { defineNitroPlugin } from 'nitropack/runtime'
+import { removeResponseHeader } from '#nuxtseo/h3'
+import { defineNitroPlugin } from '#nuxtseo/nitro'
 import { logger } from '../../utils-pure'
 import { createNodeResponseStream, isReadableStream } from '../sitemap/stream'
 

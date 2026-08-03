@@ -1,19 +1,19 @@
-import type { H3Event } from 'h3'
-import type { NitroApp } from 'nitropack/types'
+import type { H3Event } from '#nuxtseo/h3'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   SitemapIndexEntry,
 } from '../../../types'
-import { getHeader } from 'h3'
-import { defineCachedFunction } from 'nitropack/runtime'
 import { joinURL } from 'ufo'
+import { getHeader } from '#nuxtseo/h3'
+import { defineCachedFunction } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normaliseDate } from '../urlset/normalise'
 import { getResolvedSitemapUrls } from './sitemap'
 
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
+type NitroApp = ReturnType<typeof import('#nuxtseo/nitro').useNitroApp>
 
 // Create cached wrapper for sitemap index building
 const buildSitemapIndexCached = defineCachedFunction(

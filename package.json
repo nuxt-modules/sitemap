@@ -59,8 +59,9 @@
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground && pnpm run client:build",
     "release": "pnpm build && bumpp -x \"npx changelogen --output=CHANGELOG.md\"",
     "release:sitemapd": "pnpm --filter sitemapd release",
-    "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw",
+    "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw && pnpm run test:nuxt5",
     "test:unit": "vitest --project=unit",
+    "test:nuxt5": "pnpm pack --out test/fixtures/nuxt5/module.tgz && pnpm --dir test/fixtures/nuxt5 install --frozen-lockfile && pnpm --dir test/fixtures/nuxt5 test",
     "test:attw": "attw --pack && pnpm --filter sitemapd test:attw",
     "typecheck": "pnpm --filter sitemapd typecheck && nuxt typecheck",
     "prepare": "skilld prepare || true"

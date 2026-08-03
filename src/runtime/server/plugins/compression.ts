@@ -1,6 +1,6 @@
-import type { H3Event } from 'h3'
-import { appendResponseHeader, getRequestHeader, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
-import { defineNitroPlugin } from 'nitropack/runtime'
+import type { H3Event } from '#nuxtseo/h3'
+import { appendResponseHeader, getRequestHeader, getResponseHeader, removeResponseHeader, setResponseHeader } from '#nuxtseo/h3'
+import { defineNitroPlugin } from '#nuxtseo/nitro'
 import { logger } from '../../utils-pure'
 import { hasNonIdentityEncoding, isReadableStream, negotiateCompressionEncoding } from '../sitemap/stream'
 
