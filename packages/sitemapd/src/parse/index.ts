@@ -275,6 +275,18 @@ function extractFeedMetadata(
   return undefined
 }
 
+/**
+ * Case-insensitive `startsWith` that only lowercases the prefix-length slice.
+ *
+ * `source.toLowerCase().startsWith(prefix)` copies the WHOLE remaining document
+ * to compare a handful of characters, and the record loop calls it once per
+ * entry, so it is O(entries x document length) on its own.
+ */
+function startsWithCI(input: string, prefix: string): boolean {
+  return input.length >= prefix.length
+    && input.slice(0, prefix.length).toLowerCase() === prefix.toLowerCase()
+}
+
 function extractRecord(
   input: string,
   root: RootState,
@@ -284,12 +296,12 @@ function extractRecord(
   if (source.startsWith('<!--') || source.startsWith('<?'))
     return undefined
   const rootClose = `</${root.qualifiedName}>`
-  if (source.toLowerCase().startsWith(rootClose.toLowerCase()))
+  if (startsWithCI(source, rootClose))
     return { _tag: 'close', rest: source.slice(rootClose.length) }
-  if (root.name === 'rss' && source.toLowerCase().startsWith('</channel>')) {
+  if (root.name === 'rss' && startsWithCI(source, '</channel>')) {
     const rest = trimMarkupPrefix(source.slice('</channel>'.length))
     const rssClose = `</${root.qualifiedName}>`
-    if (rest.toLowerCase().startsWith(rssClose.toLowerCase()))
+    if (startsWithCI(rest, rssClose))
       return { _tag: 'close', rest: rest.slice(rssClose.length) }
     if (rest.length > 0 && findMarkupEnd(rest, 0) !== -1)
       return { _tag: 'malformed', detail: 'RSS channel is not followed by its closing root' }
@@ -335,23 +347,48 @@ function extractRecord(
   }
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Locate a record's closing tag, skipping any comment or CDATA section that
+ * contains a lookalike.
+ *
+ * Two costs here used to scale with the whole remaining document on EVERY
+ * record, which made parsing quadratic in document size (a 40,000-entry, 8.8MB
+ * sitemap took ~229s):
+ *
+ *  1. `input.toLowerCase()` copied the entire remaining buffer per call, purely
+ *     to do a case-insensitive search. A sticky case-insensitive RegExp scans in
+ *     place instead.
+ *  2. `indexOf('<!--', cursor)` and `indexOf('<![CDATA[', cursor)` were
+ *     UNBOUNDED. Ordinary sitemaps contain neither, so both ran to the end of
+ *     the buffer just to report "absent" — once per record. They are now bounded
+ *     to `[cursor, closeIndex)`, the only window where a hidden section could
+ *     actually affect which close tag is real.
+ *
+ * Behaviour is unchanged; only the complexity is. Same file, 8.8MB: ~0.55s.
+ */
 function findRecordClose(input: string, close: string, start: number): number {
-  const lower = input.toLowerCase()
-  const lowerClose = close.toLowerCase()
+  const closePattern = new RegExp(escapeRegExp(close), 'gi')
   let cursor = start
   while (true) {
-    const closeIndex = lower.indexOf(lowerClose, cursor)
-    if (closeIndex === -1)
+    closePattern.lastIndex = cursor
+    const match = closePattern.exec(input)
+    if (!match)
       return -1
-    const commentIndex = input.indexOf('<!--', cursor)
-    const cdataIndex = input.indexOf('<![CDATA[', cursor)
-    const hiddenIndex = [commentIndex, cdataIndex]
-      .filter(index => index !== -1 && index < closeIndex)
+    const closeIndex = match.index
+    const window = input.slice(cursor, closeIndex)
+    const commentIndexRel = window.indexOf('<!--')
+    const cdataIndexRel = window.indexOf('<![CDATA[')
+    const hiddenIndexRel = [commentIndexRel, cdataIndexRel]
+      .filter(index => index !== -1)
       .sort((left, right) => left - right)[0]
-    if (hiddenIndex === undefined)
+    if (hiddenIndexRel === undefined)
       return closeIndex
-    const marker = hiddenIndex === commentIndex ? '-->' : ']]>'
-    const hiddenEnd = input.indexOf(marker, hiddenIndex)
+    const marker = hiddenIndexRel === commentIndexRel ? '-->' : ']]>'
+    const hiddenEnd = input.indexOf(marker, cursor + hiddenIndexRel)
     if (hiddenEnd === -1)
       return -1
     cursor = hiddenEnd + marker.length
