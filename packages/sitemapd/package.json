@@ -1,7 +1,7 @@
 {
   "name": "sitemapd",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Runtime-neutral sitemap parsing and bounded traversal",
   "author": {
     "name": "Harlan Wilton",
@@ -95,7 +95,7 @@
     "bench:memory": "node --expose-gc benchmark/memory.mjs",
     "test:attw": "node scripts/check-attw.mjs",
     "prepack": "pnpm run build",
-    "release": "pnpm build && bumpp --git-check --commit \"chore(sitemapd): release v%s\" --tag \"sitemapd-v%s\""
+    "release": "pnpm build && bumpp --commit \"chore(sitemapd): release v%s\" --tag \"sitemapd-v%s\""
   },
   "dependencies": {
     "fast-xml-parser": "catalog:"
