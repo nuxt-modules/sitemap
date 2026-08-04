@@ -61,7 +61,7 @@
     "release:sitemapd": "pnpm --filter sitemapd release",
     "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw && pnpm run test:nuxt5",
     "test:unit": "vitest --project=unit",
-    "test:nuxt5": "pnpm pack --out test/fixtures/nuxt5/module.tgz && pnpm --dir test/fixtures/nuxt5 install --frozen-lockfile && pnpm --dir test/fixtures/nuxt5 test",
+    "test:nuxt5": "pnpm pack --out test/fixtures/nuxt5/module.tgz && pnpm install --dir test/fixtures/nuxt5 --no-frozen-lockfile --update-checksums && pnpm --dir test/fixtures/nuxt5 test",
     "test:attw": "attw --pack && pnpm --filter sitemapd test:attw",
     "typecheck": "pnpm --filter sitemapd typecheck && nuxt typecheck",
     "prepare": "skilld prepare || true"

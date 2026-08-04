@@ -142,7 +142,6 @@ export default defineNuxtModule<ModuleOptions>({
     config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
-    nuxt.options.nitro.alias.ofetch ||= resolveModule('ofetch', { url: new URL(import.meta.url) })
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
     nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
