@@ -1,5 +1,5 @@
-import { defineNitroPlugin } from 'nitropack/runtime'
 import { joinURL, withLeadingSlash } from 'ufo'
+import { defineNitroPlugin } from '#nuxtseo/nitro'
 import { useSitemapRuntimeConfig } from '../utils'
 
 export default defineNitroPlugin((nitroApp) => {

@@ -380,30 +380,30 @@ export interface SitemapDefinition {
   _chunkCount?: number
 }
 
-interface NitroBaseHook {
-  event: H3Event
+interface NitroBaseHook<Event = H3Event> {
+  event: Event
 }
 
-export interface SitemapIndexRenderCtx extends NitroBaseHook {
+export interface SitemapIndexRenderCtx<Event = H3Event> extends NitroBaseHook<Event> {
   sitemaps: SitemapIndexEntry[]
 }
 
-export interface SitemapRenderCtx extends NitroBaseHook {
+export interface SitemapRenderCtx<Event = H3Event> extends NitroBaseHook<Event> {
   sitemapName: string
   urls: ResolvedSitemapUrl[]
 }
 
-export interface SitemapInputCtx extends NitroBaseHook {
+export interface SitemapInputCtx<Event = H3Event> extends NitroBaseHook<Event> {
   sitemapName: string
   urls: SitemapUrlInput[]
 }
 
-export interface SitemapOutputHookCtx extends NitroBaseHook {
+export interface SitemapOutputHookCtx<Event = H3Event> extends NitroBaseHook<Event> {
   sitemapName: string
   sitemap: string
 }
 
-export interface SitemapSourcesHookCtx extends NitroBaseHook {
+export interface SitemapSourcesHookCtx<Event = H3Event> extends NitroBaseHook<Event> {
   sitemapName: string
   sources: SitemapSourceInput[]
 }

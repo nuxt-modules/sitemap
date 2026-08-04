@@ -1,5 +1,4 @@
-import type { H3Event } from 'h3'
-import type { NitroApp } from 'nitropack/types'
+import type { H3Event } from '#nuxtseo/h3'
 import type {
   AlternativeEntry,
   AutoI18nConfig,
@@ -12,10 +11,10 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
-import { getHeader } from 'h3'
-import { defineCachedFunction, useRuntimeConfig } from 'nitropack/runtime'
 import { resolveSitePath } from 'nuxt-site-config/urls'
 import { joinURL, withHttps } from 'ufo'
+import { getHeader } from '#nuxtseo/h3'
+import { defineCachedFunction, useRuntimeConfig } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { applyDynamicParams, createPathFilter, findPageMapping, logger, resolveI18nSitemapLocaleKey, splitForLocales } from '../../../utils-pure'
@@ -25,6 +24,7 @@ import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
+type NitroApp = ReturnType<typeof import('#nuxtseo/nitro').useNitroApp>
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
   _pathWithoutPrefix: string

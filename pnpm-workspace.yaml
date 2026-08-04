@@ -5,7 +5,6 @@ minimumReleaseAgeExclude:
   - vue-tsc@3.3.4
   - nuxtseo-layer-devtools
   - nuxtseo-shared
-  - nuxtseo-shared@5.3.4
   - '@vue/compiler-core@3.5.38'
   - '@vue/compiler-dom@3.5.38'
   - '@vue/compiler-sfc@3.5.38'
@@ -16,9 +15,9 @@ minimumReleaseAgeExclude:
   - '@vue/server-renderer@3.5.38'
   - '@vue/shared@3.5.38'
   - vue@3.5.38
-  - nuxt-site-config-kit@4.1.1
-  - nuxt-site-config@4.1.1
-  - site-config-stack@4.1.1
+  - nuxt-site-config-kit@4.1.4
+  - nuxt-site-config@4.1.4
+  - site-config-stack@4.1.4
   - '@nuxt/kit@4.5.0'
   - '@nuxt/nitro-server@4.5.0'
   - '@nuxt/schema@4.5.0'
@@ -35,6 +34,7 @@ packages:
   - packages/*
   - devtools
   - test/fixtures/**
+  - '!test/fixtures/nuxt5'
   - playground
   - benchmark
   - '!examples/**'
@@ -66,9 +66,9 @@ catalog:
   happy-dom: ^20.11.1
   nuxt: ^4.5.1
   nuxt-i18n-micro: ^3.26.0
-  nuxt-site-config: ^4.1.2
+  nuxt-site-config: ^4.1.4
   nuxtseo-layer-devtools: ^5.3.6
-  nuxtseo-shared: ^5.3.6
+  nuxtseo-shared: ^5.3.8
   ofetch: ^1.5.1
   pathe: ^2.0.3
   pkg-types: ^2.3.1

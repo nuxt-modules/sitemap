@@ -1,6 +1,6 @@
-import type { H3Event } from 'h3'
 import type { FetchError } from 'ofetch'
 import type { SitemapUrlRecord } from 'sitemapd/parse'
+import type { H3Event } from '#nuxtseo/h3'
 import type {
   Changefreq,
   ModuleRuntimeConfig,
@@ -11,9 +11,11 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { defu } from 'defu'
-import { getRequestHost } from 'h3'
+import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
+import { getRequestHost } from '#nuxtseo/h3'
+import { fetchWithEvent } from '#nuxtseo/nitro'
 import { logger } from '../../../utils-pure'
 
 const changeFrequencies = new Set<Changefreq>([
@@ -75,7 +77,7 @@ async function tryFetchWithFallback(url: string, options: any, event?: H3Event):
       // Strategy 1: Use globalThis.$fetch (original approach)
       () => globalThis.$fetch(url, options),
       // Strategy 2: If event is available, try using event context even for external URLs
-      event ? () => event.$fetch(url, options) : null,
+      event ? () => fetchWithEvent(event, url, options) : null,
       // Strategy 3: Use native fetch as last resort
       () => $fetch(url, options),
     ].filter(Boolean)
@@ -94,8 +96,7 @@ async function tryFetchWithFallback(url: string, options: any, event?: H3Event):
   }
 
   // For internal URLs, use the original logic
-  const fetchContainer = (url.startsWith('/') && event) ? event : globalThis
-  return await fetchContainer.$fetch(url, options)
+  return event ? await fetchWithEvent(event, url, options) : await globalThis.$fetch(url, options)
 }
 
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {

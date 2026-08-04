@@ -29,7 +29,7 @@ import {
 import { defu } from 'defu'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { isPathFile } from 'nuxt-site-config/urls'
-import { useModuleLogger } from 'nuxtseo-shared/kit'
+import { setupNitroRuntimeCompatibility, useModuleLogger } from 'nuxtseo-shared/kit'
 import { serializeFilters } from 'nuxtseo-shared/utils'
 import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
@@ -137,10 +137,12 @@ export default defineNuxtModule<ModuleOptions>({
       logger.debug('The module is disabled, skipping setup.')
       return
     }
+    const nitroCompatibility = setupNitroRuntimeCompatibility(nuxt)
     // /_nuxt/
     config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
+    nuxt.options.nitro.alias.ofetch ||= resolveModule('ofetch', { url: new URL(import.meta.url) })
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
     nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
@@ -378,7 +380,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
     })
 
-    registerTypeTemplates()
+    registerTypeTemplates(nitroCompatibility)
     // check if the user provided route /api/_sitemap-urls exists
     const prerenderedRoutes = (nuxt.options.nitro.prerender?.routes || []) as string[]
     let prerenderSitemap = isNuxtGenerate() || includesSitemapRoot(config.sitemapName, prerenderedRoutes)

@@ -1,7 +1,6 @@
-import type { NitroApp } from 'nitropack/types'
 import type { SitemapUrl } from '../../types'
 import { defu } from 'defu'
-import { defineNitroPlugin } from 'nitropack/runtime'
+import { defineNitroPlugin } from '#nuxtseo/nitro'
 import { useSitemapRuntimeConfig } from '../utils'
 
 interface NuxtContentDocument {
@@ -19,7 +18,7 @@ interface NuxtContentDocument {
   updatedAt?: string | Date
 }
 
-export default defineNitroPlugin((nitroApp: NitroApp) => {
+export default defineNitroPlugin((nitroApp) => {
   const { discoverImages, isNuxtContentDocumentDriven } = useSitemapRuntimeConfig()
   // @ts-expect-error untyped hook
   nitroApp.hooks.hook('content:file:afterParse', async (content: NuxtContentDocument) => {
