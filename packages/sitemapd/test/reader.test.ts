@@ -289,7 +289,127 @@ describe('sitemap reader', () => {
       reasons: ['document_limit'],
       documentsAttempted: 2,
       documentsRead: 2,
+      frontier: [{
+        url: 'https://example.com/c.xml',
+        depth: 0,
+        source: 'root',
+      }],
     })
+  })
+
+  it('preserves depth when a frontier resumes', async () => {
+    const loaded: string[] = []
+    const documents = new Map([
+      [
+        'https://example.com/root.xml',
+        '<sitemapindex><sitemap><loc>https://example.com/level-1.xml</loc></sitemap></sitemapindex>',
+      ],
+      [
+        'https://example.com/level-1.xml',
+        '<sitemapindex><sitemap><loc>https://example.com/level-2.xml</loc></sitemap></sitemapindex>',
+      ],
+      ['https://example.com/level-2.xml', '<urlset></urlset>'],
+    ])
+    const reader = createSitemapReader({
+      loadDocument: async ({ url }) => {
+        loaded.push(url)
+        return {
+          _tag: 'body',
+          url,
+          body: encoder.encode(documents.get(url) ?? '<urlset></urlset>'),
+        }
+      },
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+    })
+
+    const first = await reader.walk('https://example.com/root.xml', {
+      maxDepth: 1,
+      maxDocuments: 1,
+      retention: 'none',
+    })
+    expect(first).toMatchObject({
+      _tag: 'partial',
+      reasons: ['document_limit'],
+      frontier: [{
+        url: 'https://example.com/level-1.xml',
+        depth: 1,
+        source: 'index_child',
+        parentUrl: 'https://example.com/root.xml',
+      }],
+    })
+    if (first._tag !== 'partial')
+      throw new Error('Expected a resumable partial walk')
+
+    const second = await reader.walk(first.frontier, {
+      maxDepth: 1,
+      seenDocuments: ['https://example.com/root.xml'],
+      retention: 'none',
+    })
+    expect(second).toMatchObject({
+      _tag: 'partial',
+      reasons: ['depth_limit'],
+      documentsRead: 1,
+      frontier: [],
+    })
+    expect(loaded).toEqual([
+      'https://example.com/root.xml',
+      'https://example.com/level-1.xml',
+    ])
+  })
+
+  it('does not re-read a document seen before resuming', async () => {
+    const loaded: string[] = []
+    const documents = new Map([
+      [
+        'https://example.com/root.xml',
+        '<sitemapindex><sitemap><loc>https://example.com/shared.xml</loc></sitemap><sitemap><loc>https://example.com/branch.xml</loc></sitemap></sitemapindex>',
+      ],
+      [
+        'https://example.com/branch.xml',
+        '<sitemapindex><sitemap><loc>https://example.com/shared.xml</loc></sitemap></sitemapindex>',
+      ],
+      ['https://example.com/shared.xml', '<urlset></urlset>'],
+    ])
+    const reader = createSitemapReader({
+      loadDocument: async ({ url }) => {
+        loaded.push(url)
+        return {
+          _tag: 'body',
+          url,
+          body: encoder.encode(documents.get(url) ?? '<urlset></urlset>'),
+        }
+      },
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+    })
+
+    const first = await reader.walk('https://example.com/root.xml', {
+      maxDocuments: 2,
+      retention: 'none',
+    })
+    expect(first).toMatchObject({
+      _tag: 'partial',
+      frontier: [{ url: 'https://example.com/branch.xml' }],
+    })
+    if (first._tag !== 'partial')
+      throw new Error('Expected a resumable partial walk')
+
+    const second = await reader.walk(first.frontier, {
+      seenDocuments: [
+        'https://example.com/root.xml',
+        'https://example.com/shared.xml',
+      ],
+      retention: 'none',
+    })
+    expect(second).toMatchObject({
+      _tag: 'complete',
+      documentsAttempted: 1,
+      documentsRead: 1,
+    })
+    expect(loaded).toEqual([
+      'https://example.com/root.xml',
+      'https://example.com/shared.xml',
+      'https://example.com/branch.xml',
+    ])
   })
 
   it('does not visit or retain a document that exceeds the aggregate URL budget', async () => {
@@ -410,6 +530,10 @@ describe('sitemap reader', () => {
       documentsAttempted: 2,
       documentsRead: 0,
       failures: [],
+      frontier: [
+        { url: 'https://example.com/a.xml', depth: 0, source: 'root' },
+        { url: 'https://example.com/b.xml', depth: 0, source: 'root' },
+      ],
     })
   })
 

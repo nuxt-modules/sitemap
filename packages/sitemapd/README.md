@@ -63,3 +63,27 @@ and returns a partial result with the `cancelled` reason. A visitor rejection or
 an unexpected loader or authorizer exception aborts active reads and rejects
 `walk()` with the original error. Tagged read failures remain values in the
 walk result.
+
+Partial results expose a breadth-first `frontier`. Pass that frontier into a
+later `walk()` together with the previously committed document URLs to continue
+without resetting depth or reading a document twice:
+
+```ts
+const first = await reader.walk(roots, {
+  maxDocuments: 40,
+  retention: 'none',
+})
+
+if (first._tag === 'partial' && first.frontier.length > 0) {
+  const resumed = await reader.walk(first.frontier, {
+    seenDocuments: committedDocumentUrls,
+    maxDocuments: 40,
+    retention: 'none',
+  })
+}
+```
+
+The frontier contains only scheduler work that remained eligible. Children
+blocked by `maxDepth` are excluded, so resuming cannot bypass the original depth
+limit. Read failures remain tagged values; the host decides whether to add a
+failed entry to a later frontier.
