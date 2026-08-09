@@ -1,6 +1,6 @@
 import type { SitemapSourceResolved } from '#sitemap'
 import { bench, describe } from 'vitest'
-import { resolveSitemapEntries } from '../../src/runtime/server/sitemap/builder/sitemap'
+import { resolveSitemapEntries } from '../../src/runtime/server/sitemap/builder/entries'
 
 const sources: SitemapSourceResolved[] = [
   {

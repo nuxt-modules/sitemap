@@ -3,7 +3,7 @@ import type { AlternativeEntry, AutoI18nConfig, FilterInput } from './types'
 import { createDefu } from 'defu'
 import { computeLocaleAlternates, resolveLocaleFromRoute } from 'nuxtseo-shared/i18n-runtime'
 import { createFilter, createModuleLogger } from 'nuxtseo-shared/utils'
-import { joinURL, parseURL, withHttps, withoutBase } from 'ufo'
+import { joinURL, parseURL, withHttps, withLeadingSlash, withoutBase } from 'ufo'
 
 export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/utils'
 
@@ -87,6 +87,15 @@ function toRuntimeI18nConfig(i18n: AutoI18nConfig): RuntimeI18nConfig {
     ...i18n,
     // Sitemap transforms keep the unprefixed default URL alongside Nuxt's prefixed route.
     strategy: i18n.strategy === 'prefix_and_default' ? 'prefix_except_default' : i18n.strategy,
+    pages: i18n.pages && Object.fromEntries(
+      Object.entries(i18n.pages).map(([pageName, pageLocales]) => [
+        pageName,
+        Object.fromEntries(i18n.locales.map((locale) => {
+          const configuredPath = pageLocales[locale.code]
+          return [locale.code, configuredPath === undefined ? withLeadingSlash(pageName) : configuredPath]
+        })),
+      ]),
+    ),
     locales: i18n.locales.map(locale => ({
       ...locale,
       hreflang: locale._hreflang,
@@ -179,6 +188,6 @@ export function createPathFilter(options: { include?: (FilterInput | string | Re
     }
     if (hasBase)
       path = withoutBase(path, baseURL)
-    return urlFilter(path)
+    return urlFilter(withLeadingSlash(path))
   }
 }

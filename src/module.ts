@@ -40,8 +40,8 @@ import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { registerTypeTemplates } from './templates'
 import {
   generatePathForI18nPages,
-  mapPathForI18nPages,
   normalizeLocales,
+  resolveI18nFilterPaths,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from './utils-internal/kit'
@@ -734,16 +734,11 @@ export default defineNuxtModule<ModuleOptions>({
         if (['index', 'chunks'].includes(sitemapName))
           continue
         const sitemap = sitemaps[sitemapName]!
-        function mapToI18nPages(path: FilterInput): FilterInput[] {
-          if (typeof path !== 'string')
-            return [path]
-          return mapPathForI18nPages(path, i18n) || [path]
-        }
-        sitemap.include = (sitemap.include || []).flatMap(path => mapToI18nPages(path))
-        sitemap.exclude = (sitemap.exclude || []).flatMap(path => mapToI18nPages(path))
+        sitemap.include = (sitemap.include || []).flatMap(path => resolveI18nFilterPaths(path, i18n))
+        sitemap.exclude = (sitemap.exclude || []).flatMap(path => resolveI18nFilterPaths(path, i18n))
       }
     }
-    if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
+    else if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
       const i18n = resolvedAutoI18n
       for (const sitemapName in sitemaps) {
         if (['index', 'chunks'].includes(sitemapName))

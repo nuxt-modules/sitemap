@@ -46,4 +46,40 @@ describe('i18n dynamic routes', () => {
       },
     ])
   })
+
+  it('uses the route path for locales omitted from a page map', () => {
+    const entries = resolveI18nRouteEntries('/about', {
+      ...autoI18n,
+      pages: {
+        about: {
+          fr: '/a-propos',
+        },
+      },
+    })
+
+    expect(entries.map(entry => entry.loc)).toEqual([
+      '/about',
+      '/fr/a-propos',
+    ])
+  })
+
+  it('falls back to strategy paths for unmatched routes', () => {
+    expect(resolveI18nRouteEntries('/contact', autoI18n).map(entry => entry.loc)).toEqual([
+      '/contact',
+      '/fr/contact',
+    ])
+  })
+
+  it('preserves query strings in localized entries and alternatives', () => {
+    const entries = resolveI18nRouteEntries('/products/electronics/laptop-123?preview=true', autoI18n)
+
+    expect(entries.map(entry => entry.loc)).toEqual([
+      '/products/electronics/laptop-123?preview=true',
+      '/fr/produits/laptop-123/electronics?preview=true',
+    ])
+    expect(entries[0]?.alternatives).toContainEqual({
+      href: '/fr/produits/laptop-123/electronics?preview=true',
+      hreflang: 'fr-FR',
+    })
+  })
 })

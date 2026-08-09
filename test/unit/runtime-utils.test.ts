@@ -25,6 +25,12 @@ describe('runtime utils', () => {
     expect(filter('https://wrong.example/included', '/base/excluded/page')).toBe(false)
   })
 
+  it('normalizes relative pathnames before filtering', () => {
+    const filter = createPathFilter({ exclude: ['/fr/a-propos'] })
+
+    expect(filter('https://example.com/fr/a-propos', 'fr/a-propos')).toBe(false)
+  })
+
   it('compacts merged entries in place', () => {
     const entries = [
       { key: 'a', values: ['first'] },
