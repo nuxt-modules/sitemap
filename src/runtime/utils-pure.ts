@@ -1,7 +1,9 @@
-import type { FilterInput } from './types'
+import type { LocaleAlternate, RuntimeI18nConfig } from 'nuxtseo-shared/i18n-runtime'
+import type { AlternativeEntry, AutoI18nConfig, FilterInput } from './types'
 import { createDefu } from 'defu'
+import { computeLocaleAlternates, resolveLocaleFromRoute } from 'nuxtseo-shared/i18n-runtime'
 import { createFilter, createModuleLogger } from 'nuxtseo-shared/utils'
-import { parseURL, withoutBase } from 'ufo'
+import { joinURL, parseURL, withHttps, withLeadingSlash, withoutBase } from 'ufo'
 
 export { createFilter, type CreateFilterOptions } from 'nuxtseo-shared/utils'
 
@@ -74,6 +76,61 @@ export function splitForLocales(path: string, locales: readonly string[] | Set<s
   return [null, path]
 }
 
+export interface ResolvedI18nRouteEntry {
+  locale: AutoI18nConfig['locales'][number]
+  loc: string
+  alternatives: AlternativeEntry[]
+}
+
+function toRuntimeI18nConfig(i18n: AutoI18nConfig): RuntimeI18nConfig {
+  return {
+    ...i18n,
+    // Sitemap transforms keep the unprefixed default URL alongside Nuxt's prefixed route.
+    strategy: i18n.strategy === 'prefix_and_default' ? 'prefix_except_default' : i18n.strategy,
+    pages: i18n.pages && Object.fromEntries(
+      Object.entries(i18n.pages).map(([pageName, pageLocales]) => [
+        pageName,
+        Object.fromEntries(i18n.locales.map((locale) => {
+          const configuredPath = pageLocales[locale.code]
+          return [locale.code, configuredPath === undefined ? withLeadingSlash(pageName) : configuredPath]
+        })),
+      ]),
+    ),
+    locales: i18n.locales.map(locale => ({
+      ...locale,
+      hreflang: locale._hreflang,
+    })),
+  }
+}
+
+function localeAlternateHref(alternate: LocaleAlternate): string {
+  return alternate.domain
+    ? joinURL(withHttps(alternate.domain), alternate.path)
+    : alternate.path
+}
+
+export function resolveI18nRouteEntries(route: string, i18n: AutoI18nConfig, includeHref: (href: string) => boolean = () => true): ResolvedI18nRouteEntry[] {
+  const runtimeConfig = toRuntimeI18nConfig(i18n)
+  const currentLocale = resolveLocaleFromRoute(route, runtimeConfig).locale
+  const alternates = computeLocaleAlternates(route, runtimeConfig, { locale: currentLocale })
+  const localizedAlternates = alternates.map(alternate => ({
+    alternate,
+    href: localeAlternateHref(alternate),
+  }))
+  const defaultHref = localizedAlternates.find(({ alternate }) => alternate.code === i18n.defaultLocale)?.href
+  const sitemapAlternatives: AlternativeEntry[] = [
+    ...(defaultHref && includeHref(defaultHref) ? [{ hreflang: 'x-default', href: defaultHref }] : []),
+    ...localizedAlternates
+      .filter(({ href }) => includeHref(href))
+      .map(({ alternate, href }) => ({ hreflang: alternate.hreflang, href })),
+  ]
+
+  return localizedAlternates.flatMap(({ alternate, href }) => {
+    const locale = i18n.locales.find(locale => locale.code === alternate.code)
+    return locale ? [{ locale, loc: href, alternatives: sitemapAlternatives }] : []
+  })
+}
+
 /**
  * Resolve which locale a multi-sitemap name belongs to.
  *
@@ -131,39 +188,6 @@ export function createPathFilter(options: { include?: (FilterInput | string | Re
     }
     if (hasBase)
       path = withoutBase(path, baseURL)
-    return urlFilter(path)
+    return urlFilter(withLeadingSlash(path))
   }
-}
-
-export interface PageMatch {
-  mappings: Record<string, string | false>
-  paramSegments: string[]
-}
-
-export function findPageMapping(pathWithoutPrefix: string, pages: Record<string, Record<string, string | false>>, sortedKeys?: string[]): PageMatch | null {
-  const stripped = pathWithoutPrefix[0] === '/' ? pathWithoutPrefix.slice(1) : pathWithoutPrefix
-  const pageKey = stripped.endsWith('/index') ? stripped.slice(0, -6) || 'index' : stripped || 'index'
-
-  // exact match
-  if (pages[pageKey])
-    return { mappings: pages[pageKey], paramSegments: [] }
-
-  // prefix matching for dynamic routes (e.g., 'posts/2' matches 'posts' key)
-  // sort by length desc to match most specific first
-  const keys = sortedKeys || Object.keys(pages).sort((a, b) => b.length - a.length)
-  for (const key of keys) {
-    if (pageKey.startsWith(`${key}/`)) {
-      const paramPath = pageKey.slice(key.length + 1)
-      return { mappings: pages[key]!, paramSegments: paramPath.split('/') }
-    }
-  }
-
-  return null
-}
-
-export function applyDynamicParams(customPath: string, paramSegments: string[]): string {
-  if (!paramSegments.length)
-    return customPath
-  let i = 0
-  return customPath.replace(/\[[^\]]+\]/g, () => paramSegments[i++] || '')
 }

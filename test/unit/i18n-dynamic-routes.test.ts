@@ -1,61 +1,85 @@
+import type { AutoI18nConfig } from '../../src/runtime/types'
 import { describe, expect, it } from 'vitest'
-import { applyDynamicParams, findPageMapping } from '../../src/runtime/utils-pure'
+import { resolveI18nRouteEntries } from '../../src/runtime/utils-pure'
+
+const autoI18n = {
+  defaultLocale: 'en',
+  strategy: 'prefix_except_default',
+  locales: [
+    { code: 'en', _hreflang: 'en-US', _sitemap: 'en-US' },
+    { code: 'fr', _hreflang: 'fr-FR', _sitemap: 'fr-FR' },
+  ],
+  pages: {
+    product: {
+      en: '/products/[category]/[id]',
+      fr: '/produits/[id]/[category]',
+    },
+  },
+} satisfies AutoI18nConfig
 
 describe('i18n dynamic routes', () => {
-  const pages = {
-    'about': { en: '/about', fr: '/a-propos' },
-    'posts': { en: '/posts/[slug]', fr: '/article/[slug]', es: '/articulo/[slug]' },
-    'products': { en: '/products/[category]/[id]', fr: '/produits/[category]/[id]' },
-    'blog/posts': { en: '/blog/posts/[slug]', fr: '/blog/articles/[slug]' },
-  }
+  it('maps reordered dynamic parameters by name', () => {
+    const entries = resolveI18nRouteEntries('/products/electronics/laptop-123', autoI18n)
 
-  describe('findPageMapping', () => {
-    it('exact match for static route', () => {
-      const result = findPageMapping('/about', pages)
-      expect(result).toEqual({ mappings: pages.about, paramSegments: [] })
-    })
-
-    it('prefix match for single param route', () => {
-      const result = findPageMapping('/posts/my-slug', pages)
-      expect(result).toEqual({ mappings: pages.posts, paramSegments: ['my-slug'] })
-    })
-
-    it('prefix match for multi param route', () => {
-      const result = findPageMapping('/products/electronics/laptop-123', pages)
-      expect(result).toEqual({ mappings: pages.products, paramSegments: ['electronics', 'laptop-123'] })
-    })
-
-    it('matches most specific key first', () => {
-      const result = findPageMapping('/blog/posts/hello', pages)
-      expect(result).toEqual({ mappings: pages['blog/posts'], paramSegments: ['hello'] })
-    })
-
-    it('returns null for no match', () => {
-      const result = findPageMapping('/unknown/path', pages)
-      expect(result).toBeNull()
-    })
-
-    it('handles path without leading slash', () => {
-      const result = findPageMapping('posts/test', pages)
-      expect(result).toEqual({ mappings: pages.posts, paramSegments: ['test'] })
-    })
+    expect(entries.map(entry => ({
+      loc: entry.loc,
+      sitemap: entry.locale._sitemap,
+      alternatives: entry.alternatives,
+    }))).toEqual([
+      {
+        loc: '/products/electronics/laptop-123',
+        sitemap: 'en-US',
+        alternatives: [
+          { href: '/products/electronics/laptop-123', hreflang: 'x-default' },
+          { href: '/products/electronics/laptop-123', hreflang: 'en-US' },
+          { href: '/fr/produits/laptop-123/electronics', hreflang: 'fr-FR' },
+        ],
+      },
+      {
+        loc: '/fr/produits/laptop-123/electronics',
+        sitemap: 'fr-FR',
+        alternatives: [
+          { href: '/products/electronics/laptop-123', hreflang: 'x-default' },
+          { href: '/products/electronics/laptop-123', hreflang: 'en-US' },
+          { href: '/fr/produits/laptop-123/electronics', hreflang: 'fr-FR' },
+        ],
+      },
+    ])
   })
 
-  describe('applyDynamicParams', () => {
-    it('replaces single param', () => {
-      expect(applyDynamicParams('/article/[slug]', ['my-post'])).toBe('/article/my-post')
+  it('uses the route path for locales omitted from a page map', () => {
+    const entries = resolveI18nRouteEntries('/about', {
+      ...autoI18n,
+      pages: {
+        about: {
+          fr: '/a-propos',
+        },
+      },
     })
 
-    it('replaces multiple params', () => {
-      expect(applyDynamicParams('/produits/[category]/[id]', ['tech', 'item-1'])).toBe('/produits/tech/item-1')
-    })
+    expect(entries.map(entry => entry.loc)).toEqual([
+      '/about',
+      '/fr/a-propos',
+    ])
+  })
 
-    it('returns path unchanged when no params', () => {
-      expect(applyDynamicParams('/about', [])).toBe('/about')
-    })
+  it('falls back to strategy paths for unmatched routes', () => {
+    expect(resolveI18nRouteEntries('/contact', autoI18n).map(entry => entry.loc)).toEqual([
+      '/contact',
+      '/fr/contact',
+    ])
+  })
 
-    it('handles missing params gracefully', () => {
-      expect(applyDynamicParams('/[a]/[b]/[c]', ['x', 'y'])).toBe('/x/y/')
+  it('preserves query strings in localized entries and alternatives', () => {
+    const entries = resolveI18nRouteEntries('/products/electronics/laptop-123?preview=true', autoI18n)
+
+    expect(entries.map(entry => entry.loc)).toEqual([
+      '/products/electronics/laptop-123?preview=true',
+      '/fr/produits/laptop-123/electronics?preview=true',
+    ])
+    expect(entries[0]?.alternatives).toContainEqual({
+      href: '/fr/produits/laptop-123/electronics?preview=true',
+      hreflang: 'fr-FR',
     })
   })
 })

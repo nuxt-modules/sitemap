@@ -33,7 +33,7 @@ import { setupNitroRuntimeCompatibility, useModuleLogger } from 'nuxtseo-shared/
 import { serializeFilters } from 'nuxtseo-shared/utils'
 import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { setupDevToolsUI } from './devtools'
 import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
@@ -41,6 +41,7 @@ import { registerTypeTemplates } from './templates'
 import {
   generatePathForI18nPages,
   normalizeLocales,
+  resolveI18nFilterPaths,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from './utils-internal/kit'
@@ -728,40 +729,16 @@ export default defineNuxtModule<ModuleOptions>({
     // for each sitemap, we need to transform the include and exclude
     // if the include or exclude has a URL without a locale prefix, then we insert all locale prefixes
     if (resolvedAutoI18n && usingI18nPages && !hasDisabledAutoI18n) {
-      const pages = nuxtI18nConfig?.pages || {} as Record<string, Record<string, string>>
+      const i18n = resolvedAutoI18n
       for (const sitemapName in sitemaps) {
         if (['index', 'chunks'].includes(sitemapName))
           continue
         const sitemap = sitemaps[sitemapName]!
-        function mapToI18nPages(path: FilterInput): FilterInput[] {
-          if (typeof path !== 'string')
-            return [path]
-          const withoutSlashes = withoutTrailingSlash(withoutLeadingSlash(path)).replace('/index', '')
-          if (pages && withoutSlashes in pages) {
-            const pageLocales = pages[withoutSlashes]
-            if (pageLocales) {
-              return Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({
-                localeCode,
-                pageLocales: pageLocales[localeCode] as string,
-                nuxtI18nConfig,
-                normalisedLocales,
-              })))
-            }
-          }
-          let match = [path]
-          // alternatively see if the path matches the default locale within
-          Object.values(pages).forEach((pageLocales) => {
-            // @ts-expect-error untyped
-            if (pageLocales && nuxtI18nConfig.defaultLocale in pageLocales && pageLocales[nuxtI18nConfig.defaultLocale] === path)
-              match = Object.keys(pageLocales).map(localeCode => withLeadingSlash(generatePathForI18nPages({ localeCode, pageLocales: pageLocales[localeCode], nuxtI18nConfig, normalisedLocales })))
-          })
-          return match
-        }
-        sitemap.include = (sitemap.include || []).flatMap(path => mapToI18nPages(path))
-        sitemap.exclude = (sitemap.exclude || []).flatMap(path => mapToI18nPages(path))
+        sitemap.include = (sitemap.include || []).flatMap(path => resolveI18nFilterPaths(path, i18n))
+        sitemap.exclude = (sitemap.exclude || []).flatMap(path => resolveI18nFilterPaths(path, i18n))
       }
     }
-    if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
+    else if (resolvedAutoI18n && resolvedAutoI18n.locales && resolvedAutoI18n.strategy !== 'no_prefix') {
       const i18n = resolvedAutoI18n
       for (const sitemapName in sitemaps) {
         if (['index', 'chunks'].includes(sitemapName))
