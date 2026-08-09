@@ -89,8 +89,29 @@ export interface SitemapWalkOptions extends SitemapReadOptions {
   maxUrls?: number
   concurrency?: number
   retention?: 'all' | 'none'
+  /** Documents committed by an earlier bounded round. */
+  seenDocuments?: readonly string[]
   onDocument?: SitemapWalkDocumentVisitor
 }
+
+export type SitemapWalkEntry
+  = | {
+    url: string
+    depth: 0
+    source: 'root'
+    parentUrl?: never
+  }
+  | {
+    url: string
+    depth: number
+    source: 'index_child'
+    parentUrl: string
+  }
+
+export type SitemapWalkInput
+  = | string
+    | readonly string[]
+    | readonly SitemapWalkEntry[]
 
 export interface SitemapWalkDocument {
   requestedUrl: string
@@ -106,9 +127,7 @@ export type SitemapWalkDocumentVisitor = (
   document: SitemapWalkDocument,
 ) => void | Promise<void>
 
-export interface SitemapWalkFailure {
-  url: string
-  depth: number
+export type SitemapWalkFailure = SitemapWalkEntry & {
   result: Exclude<SitemapReadResult, { _tag: 'ok' }>
 }
 
@@ -126,6 +145,8 @@ interface SitemapWalkBaseData {
   documentsAttempted: number
   documentsRead: number
   failures: SitemapWalkFailure[]
+  /** Breadth-first work not committed before this bounded round stopped. */
+  frontier: SitemapWalkEntry[]
 }
 
 type SitemapWalkStatus
@@ -156,15 +177,15 @@ export interface SitemapReader {
   read: (url: string, options?: SitemapReadOptions) => Promise<SitemapReadResult>
   walk: {
     (
-      roots: string | readonly string[],
+      input: SitemapWalkInput,
       options: SitemapWalkOptions & { retention: 'none' },
     ): Promise<SitemapWalkNonRetainedResult>
     (
-      roots: string | readonly string[],
+      input: SitemapWalkInput,
       options?: SitemapWalkOptions & { retention?: 'all' },
     ): Promise<SitemapWalkRetainedResult>
     (
-      roots: string | readonly string[],
+      input: SitemapWalkInput,
       options?: SitemapWalkOptions,
     ): Promise<SitemapWalkResult>
   }

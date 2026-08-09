@@ -1,13 +1,14 @@
 import type { SitemapReference, SitemapUrlRecord } from './parse'
 import type {
   SitemapLoadRequest,
-  SitemapLoadSource,
   SitemapReader,
   SitemapReaderOptions,
   SitemapReadOptions,
   SitemapReadResult,
   SitemapWalkDocument,
+  SitemapWalkEntry,
   SitemapWalkFailure,
+  SitemapWalkInput,
   SitemapWalkNonRetainedResult,
   SitemapWalkOptions,
   SitemapWalkPartialReason,
@@ -40,6 +41,27 @@ function parseConcurrency(value: number | undefined): number {
 
 function unique<T>(values: T[]): T[] {
   return [...new Set(values)]
+}
+
+function parseWalkInput(input: SitemapWalkInput): SitemapWalkEntry[] {
+  if (typeof input === 'string') {
+    return [{ url: input, depth: 0, source: 'root' }]
+  }
+  if (input.every((entry): entry is string => typeof entry === 'string')) {
+    return input.map(url => ({ url, depth: 0, source: 'root' }))
+  }
+  return input.map((entry) => {
+    if (entry.source === 'root') {
+      if (entry.depth !== 0 || entry.parentUrl !== undefined)
+        throw new TypeError('A root walk entry must have depth 0 and no parentUrl')
+      return { url: entry.url, depth: 0, source: 'root' }
+    }
+    if (!Number.isSafeInteger(entry.depth) || entry.depth < 1)
+      throw new RangeError('An index child walk entry must have a positive safe depth')
+    if (!entry.parentUrl)
+      throw new TypeError('An index child walk entry requires parentUrl')
+    return { ...entry }
+  })
 }
 
 export function createSitemapReader(options: SitemapReaderOptions): SitemapReader {
@@ -151,19 +173,19 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
   }
 
   function walk(
-    roots: string | readonly string[],
+    input: SitemapWalkInput,
     walkOptions: SitemapWalkOptions & { retention: 'none' },
   ): Promise<SitemapWalkNonRetainedResult>
   function walk(
-    roots: string | readonly string[],
+    input: SitemapWalkInput,
     walkOptions?: SitemapWalkOptions & { retention?: 'all' },
   ): Promise<SitemapWalkRetainedResult>
   function walk(
-    roots: string | readonly string[],
+    input: SitemapWalkInput,
     walkOptions?: SitemapWalkOptions,
   ): Promise<SitemapWalkResult>
   async function walk(
-    roots: string | readonly string[],
+    input: SitemapWalkInput,
     walkOptions: SitemapWalkOptions = {},
   ): Promise<SitemapWalkResult> {
     const maxDepth = parseLimit(
@@ -183,12 +205,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
     )
     const concurrency = parseConcurrency(walkOptions.concurrency)
     const retainEntries = walkOptions.retention !== 'none'
-    interface QueueItem {
-      url: string
-      depth: number
-      source: SitemapLoadSource
-      parentUrl?: string
-    }
+    type QueueItem = SitemapWalkEntry
     type Settlement
       = | {
         _tag: 'result'
@@ -202,12 +219,8 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
         item: QueueItem
         error: unknown
       }
-    const queue: QueueItem[] = (typeof roots === 'string' ? [roots] : [...roots]).map(url => ({
-      url,
-      depth: 0,
-      source: 'root',
-    }))
-    const seenDocuments = new Set<string>()
+    const queue: QueueItem[] = parseWalkInput(input)
+    const seenDocuments = new Set(walkOptions.seenDocuments ?? [])
     const seenUrls = retainEntries ? new Set<string>() : null
     const entries: SitemapUrlRecord[] = []
     const references: SitemapReference[] = []
@@ -215,6 +228,8 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
     const reasons: SitemapWalkPartialReason[] = []
     const active = new Map<number, Promise<Settlement>>()
     const settled = new Map<number, Settlement>()
+    const scheduled = new Map<number, QueueItem>()
+    const interrupted: QueueItem[] = []
     const controller = new AbortController()
     const callerSignal = walkOptions.signal
     const abortFromCaller = () => {
@@ -241,13 +256,24 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
     const hasQueuedDocument = (): boolean =>
       queue.some(item => !seenDocuments.has(item.url))
 
-    const stopAndDrain = async (reason: unknown): Promise<void> => {
+    const stopAndDrain = async (
+      reason: unknown,
+      preserveFrontier: boolean = false,
+    ): Promise<void> => {
       schedulingStopped = true
       if (!controller.signal.aborted)
         controller.abort(reason)
+      if (preserveFrontier) {
+        interrupted.push(
+          ...[...scheduled.entries()]
+            .sort(([left], [right]) => left - right)
+            .map(([, item]) => item),
+        )
+      }
       const pending = [...active.values()]
       active.clear()
       settled.clear()
+      scheduled.clear()
       await Promise.all(pending)
     }
 
@@ -268,6 +294,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
         if (!next)
           return
         if (documentsAttempted >= maxDocuments) {
+          queue.unshift(next)
           reasons.push('document_limit')
           schedulingStopped = true
           return
@@ -296,6 +323,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
           }),
         )
         active.set(sequence, promise)
+        scheduled.set(sequence, next)
       }
     }
 
@@ -333,6 +361,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
           await stopAndDrain(
             callerSignal.reason
             ?? new DOMException('Sitemap traversal was cancelled', 'AbortError'),
+            true,
           )
           break
         }
@@ -349,6 +378,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
         }
 
         settled.delete(nextCommit)
+        scheduled.delete(nextCommit)
         nextCommit++
         if (next._tag === 'thrown') {
           await stopAndDrain(next.error)
@@ -357,7 +387,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
 
         const { item, result } = next
         if (result._tag !== 'ok') {
-          failures.push({ url: item.url, depth: item.depth, result })
+          failures.push({ ...item, result })
           reasons.push('read_failure')
           continue
         }
@@ -393,6 +423,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
           reasons.push('url_limit')
           await stopAndDrain(
             new DOMException('Sitemap traversal reached its URL limit', 'AbortError'),
+            true,
           )
           break
         }
@@ -414,6 +445,7 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
           reasons.push('url_limit')
           await stopAndDrain(
             new DOMException('Sitemap traversal reached its URL limit', 'AbortError'),
+            true,
           )
           break
         }
@@ -441,6 +473,23 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
       documentsAttempted,
       documentsRead,
       failures,
+      frontier: (() => {
+        const urls = new Set<string>()
+        const result: SitemapWalkEntry[] = []
+        for (const entry of interrupted) {
+          if (urls.has(entry.url))
+            continue
+          urls.add(entry.url)
+          result.push(entry)
+        }
+        for (const entry of queue) {
+          if (seenDocuments.has(entry.url) || urls.has(entry.url))
+            continue
+          urls.add(entry.url)
+          result.push(entry)
+        }
+        return result
+      })(),
     } as const
     const partialReasons = unique(reasons)
     return partialReasons.length > 0
