@@ -1,7 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { ConsolaInstance } from 'consola'
 import type { NuxtPage } from 'nuxt/schema'
-import type { AutoI18nConfig, FilterInput, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+import type { AppSourceContext, AutoI18nConfig, FilterInput, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { statSync } from 'node:fs'
 import { useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -234,4 +234,28 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
     .map(([k]) => k)
     .filter(filterForValidPage)
   return { routeRules }
+}
+
+/**
+ * Resolve the app sources to exclude, honouring exclusions added after this module set up.
+ *
+ * `defineNuxtModule` hands `setup` a fresh object from `defu(...)` and never writes it
+ * back to `nuxt.options.sitemap`, so a module that loads after this one cannot reach
+ * the config we resolved. App sources are built lazily, well after every module has
+ * set up, so the two lists are unioned at that point instead.
+ */
+export function resolveExcludedAppSources(
+  resolved: true | AppSourceContext[],
+  authored: unknown,
+): true | AppSourceContext[] {
+  if (resolved === true || authored === true)
+    return true
+  if (!Array.isArray(authored))
+    return resolved
+  const excluded = [...resolved]
+  for (const source of authored) {
+    if (typeof source === 'string' && !excluded.includes(source as AppSourceContext))
+      excluded.push(source as AppSourceContext)
+  }
+  return excluded
 }
