@@ -45,7 +45,7 @@ import {
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from './utils-internal/kit'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveExcludedAppSources, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -862,6 +862,12 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     const generateGlobalSources = async () => {
+      // Read the authored config again, so a module that set up after this one can
+      // still exclude an app source. See resolveExcludedAppSources.
+      const excludedAppSources = resolveExcludedAppSources(
+        config.excludeAppSources,
+        (nuxt.options as { sitemap?: { excludeAppSources?: unknown } }).sitemap?.excludeAppSources,
+      )
       const { routeRules } = generateExtraRoutesFromNuxtConfig()
       const nitro = await nitroPromise
       const prerenderedRoutes = nitro._prerenderedRoutes || []
@@ -951,7 +957,7 @@ export default defineNuxtModule<ModuleOptions>({
           s.sourceType = 'user'
           return s
         }),
-        ...(config.excludeAppSources === true
+        ...(excludedAppSources === true
           ? []
           : <typeof appGlobalSources>[
             ...appGlobalSources,
@@ -987,7 +993,7 @@ export default defineNuxtModule<ModuleOptions>({
             },
           ])
           .filter(s =>
-            !(config.excludeAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
+            !(excludedAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
             && (!!s.urls?.length || !!s.fetch))
           .map((s) => {
             s.sourceType = 'app'
