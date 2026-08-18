@@ -120,9 +120,9 @@ const prerenderSourceFetches = new Map<string, Promise<SourceFetchResult>>()
 function useSourceFetchMemo(event?: H3Event): Map<string, Promise<SourceFetchResult>> | undefined {
   if (import.meta.prerender)
     return prerenderSourceFetches
-  if (!event)
+  const context = event?.context as Record<string, unknown> | undefined
+  if (!context)
     return undefined
-  const context = event.context as Record<string, unknown>
   const existing = context[SOURCE_FETCH_MEMO_KEY] as Map<string, Promise<SourceFetchResult>> | undefined
   if (existing)
     return existing

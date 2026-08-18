@@ -15,9 +15,14 @@ vi.mock('ofetch', async importOriginal => ({
 }))
 vi.mock('#nuxtseo/h3', () => ({
   getRequestHost: vi.fn(),
+  getHeader: vi.fn(),
 }))
 vi.mock('#nuxtseo/nitro', () => ({
   fetchWithEvent: fetchWithEventMock,
+  defineCachedFunction: (fn: unknown) => fn,
+}))
+vi.mock('#sitemap-virtual/static-config.mjs', () => ({
+  default: { cacheMaxAgeSeconds: 600 },
 }))
 vi.mock('#sitemap-virtual/global-sources.mjs', () => ({
   sources: [],
