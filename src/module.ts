@@ -45,7 +45,7 @@ import {
   resolveI18nFilterPaths,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset } from './utils-internal/kit'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
@@ -492,6 +492,7 @@ export default defineNuxtModule<ModuleOptions>({
     const isNuxtContentV2 = contentProvider._tag === 'NuxtContent' && contentProvider.version === 2
     const isComarkContent = contentProvider._tag === 'Comark'
     const nuxtV3Collections = new Set<string>()
+    setupContentRuntime(contentProvider, nuxt)
 
     // Both @nuxt/content v3 and comark-content fire this hook with the same context
     // shape, so the frontmatter mapping is written once. They differ in one place:
@@ -586,7 +587,7 @@ export default defineNuxtModule<ModuleOptions>({
       addContentCallbackVirtuals()
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),
+        handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
       })
       if (config.strictNuxtContentPaths) {
         logger.warn('You have set `strictNuxtContentPaths: true` but are using @nuxt/content v3. This is not required, please remove it.')
@@ -607,7 +608,7 @@ export default defineNuxtModule<ModuleOptions>({
       addContentCallbackVirtuals()
       addServerHandler({
         route: COMARK_CONTENT_SITEMAP_ROUTE,
-        handler: resolve('./runtime/server/routes/__sitemap__/comark-content-urls'),
+        handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
       })
       if (config.strictNuxtContentPaths) {
         logger.warn('You have set `strictNuxtContentPaths: true` but are using comark-content. This is not required, please remove it.')
