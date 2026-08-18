@@ -1,1 +1,2 @@
-export { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from 'nuxtseo-shared/kit'
+export type { ContentProvider } from 'nuxtseo-shared/kit'
+export { COMARK_CONTENT_MODULE, createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, resolveNuxtContentVersion } from 'nuxtseo-shared/kit'
