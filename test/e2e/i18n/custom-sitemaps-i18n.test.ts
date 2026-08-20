@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest'
 const { resolve } = createResolver(import.meta.url)
 
 // Test for issue #486: Automatic I18n Multi Sitemap + custom sitemaps not working
-// Test for issue #617: custom sitemap config (sources, urls, defaults) lost during i18n expansion
+// Regression for harlan-zw/nuxt-seo#617: custom sitemap config
+// (sources, urls, defaults) lost during i18n expansion
 await setup({
   rootDir: resolve('../../fixtures/i18n'),
   nuxtConfig: {
@@ -15,13 +16,13 @@ await setup({
           // This should be expanded to per-locale sitemaps (en-US, es-ES, fr-FR)
           includeAppSources: true,
           exclude: ['/secret/**'],
-          // #617: dynamic sources must be preserved on each generated locale sitemap
+          // dynamic sources must be preserved on each generated locale sitemap
           sources: ['/api/sitemap-urls'],
-          // #617: statically configured urls must be preserved too
+          // statically configured urls must be preserved too
           urls: [
             { loc: '/static-config-page', _i18nTransform: true },
           ],
-          // #617: URL defaults must be preserved on each generated locale sitemap
+          // URL defaults must be preserved on each generated locale sitemap
           defaults: {
             priority: 0.7,
             changefreq: 'weekly',
@@ -78,7 +79,7 @@ describe('i18n with custom sitemaps (#486)', () => {
   })
 }, 60000)
 
-describe('i18n with custom sitemaps preserves config (#617)', () => {
+describe('i18n with custom sitemaps preserves config', () => {
   it('locale sitemap inherits dynamic `sources` from custom sitemap', async () => {
     const enSitemap = await $fetch('/__sitemap__/en-US-pages.xml')
 
