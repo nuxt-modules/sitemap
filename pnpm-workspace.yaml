@@ -24,6 +24,7 @@ minimumReleaseAgeExclude:
   - '@nuxt/vite-builder@4.5.0'
   - nuxt@4.5.0
   - '@harlan-zw/comark-content@0.1.3'
+  - eslint-plugin-harlanzw@0.19.2
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -63,7 +64,7 @@ catalog:
   consola: ^3.4.2
   defu: ^6.1.7
   eslint: ^10.8.1
-  eslint-plugin-harlanzw: ^0.17.1
+  eslint-plugin-harlanzw: ^0.19.2
   fast-xml-parser: ^5.10.1
   happy-dom: ^20.11.2
   nuxt: ^4.5.2
