@@ -91,6 +91,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
     "@arethetypeswrong/cli": "catalog:",
+    "@harlan-zw/comark-content": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/devtools-kit": "catalog:",
     "@nuxt/module-builder": "catalog:",
