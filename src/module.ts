@@ -357,14 +357,11 @@ export default defineNuxtModule<ModuleOptions>({
         const hasCustomI18nSitemaps = i18nSitemaps.length > 0
         if (hasCustomI18nSitemaps) {
           for (const { name, cfg } of i18nSitemaps) {
-            // Carry the user's config (sources, urls, defaults, chunks, filters, ...) over to each
-            // generated locale sitemap. `sitemapName` and the internal `_`-prefixed keys are derived
-            // per sitemap during normalisation below, so they must not be inherited from the source.
+            // Identity and chunk state are derived after locale expansion.
             const { sitemapName: _sitemapName, _route, _isChunking, _chunkSize, _chunkCount, ...inheritedConfig } = cfg
             for (const locale of resolvedAutoI18n.locales) {
               newSitemaps[`${locale._sitemap}-${name}`] = {
                 ...inheritedConfig,
-                // the generated sitemap is always app-source driven, regardless of the input value
                 includeAppSources: true,
               }
             }
