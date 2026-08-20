@@ -208,7 +208,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   _urlWarnings?: { loc: string, message: string }[]
 }
 
-export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | 'nuxt-i18n-micro:pages' | '@nuxt/content@v2:urls' | '@nuxt/content@v3:urls'
+export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | 'nuxt-i18n-micro:pages' | '@nuxt/content@v2:urls' | '@nuxt/content@v3:urls' | '@harlan-zw/comark-content:urls'
 
 export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 

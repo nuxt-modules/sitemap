@@ -3,7 +3,7 @@ import type { ConsolaInstance } from 'consola'
 import type { Nitro, PrerenderRoute } from 'nitropack'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { readFileSync } from 'node:fs'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { useNuxt } from '@nuxt/kit'
 import { colors } from 'consola/utils'
@@ -70,6 +70,18 @@ export async function readSourcesFromFilesystem(filename) {
   })
 
   nuxt.hooks.hook('nitro:init', async (nitro) => {
+    // `global-sources.json` and `child-sources.json` are written at `prerender:done`
+    // and read back while the sitemap routes prerender. They live under
+    // `node_modules/.cache`, which build hosts such as Vercel restore between builds,
+    // so a leftover pair from the previous build is readable before this build
+    // rewrites it. That serves the previous build's sources, which is how a source
+    // removed from the config (a content module swap, an `excludeAppSources` entry)
+    // survives into a build that no longer registers its route and 404s. Clear them
+    // first so a read before `prerender:done` falls back to this build's virtual module.
+    await Promise.all([
+      rm(join(runtimeAssetsPath, 'global-sources.json'), { force: true }),
+      rm(join(runtimeAssetsPath, 'child-sources.json'), { force: true }),
+    ])
     nitro.hooks.hook('prerender:generate', async (route) => {
       const html = route.contents
       // extract alternatives from the html
