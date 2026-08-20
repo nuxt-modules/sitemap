@@ -357,11 +357,12 @@ export default defineNuxtModule<ModuleOptions>({
         const hasCustomI18nSitemaps = i18nSitemaps.length > 0
         if (hasCustomI18nSitemaps) {
           for (const { name, cfg } of i18nSitemaps) {
+            // Identity and chunk state are derived after locale expansion.
+            const { sitemapName: _sitemapName, _route, _isChunking, _chunkSize, _chunkCount, ...inheritedConfig } = cfg
             for (const locale of resolvedAutoI18n.locales) {
               newSitemaps[`${locale._sitemap}-${name}`] = {
+                ...inheritedConfig,
                 includeAppSources: true,
-                ...(cfg.exclude?.length && { exclude: cfg.exclude }),
-                ...(cfg.include?.length && { include: cfg.include }),
               }
             }
           }
