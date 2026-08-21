@@ -7,6 +7,7 @@ import type {
   SitemapSourceBase,
   SitemapSourceResolved,
   SitemapSourcesHookCtx,
+  SitemapsResolvedCtx,
   SitemapUrl,
 } from '@nuxtjs/sitemap'
 import type { NitroRouteConfig, NitroRouteRules, NitroRuntimeHooks, PrerenderRoute } from 'nitropack'
@@ -46,6 +47,8 @@ describe('nitropack augmentations', () => {
       .toEqualTypeOf<(ctx: SitemapOutputHookCtx) => void | Promise<void>>()
     expectTypeOf<NitroRuntimeHooks['sitemap:sources']>()
       .toEqualTypeOf<(ctx: SitemapSourcesHookCtx) => void | Promise<void>>()
+    expectTypeOf<NitroRuntimeHooks['sitemap:sitemaps-resolved']>()
+      .toEqualTypeOf<(ctx: SitemapsResolvedCtx) => void | Promise<void>>()
   })
 })
 

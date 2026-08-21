@@ -14,8 +14,10 @@ import { defu } from 'defu'
 import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
-import { getRequestHost } from '#nuxtseo/h3'
-import { fetchWithEvent } from '#nuxtseo/nitro'
+import { getHeader, getRequestHost } from '#nuxtseo/h3'
+import { defineCachedFunction, fetchWithEvent } from '#nuxtseo/nitro'
+// @ts-expect-error virtual module
+import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger } from '../../../utils-pure'
 
 const changeFrequencies = new Set<Changefreq>([
@@ -99,10 +101,110 @@ async function tryFetchWithFallback(url: string, options: any, event?: H3Event):
   return event ? await fetchWithEvent(event, url, options) : await globalThis.$fetch(url, options)
 }
 
+interface SourceFetchResult {
+  urls: SitemapUrlInput[]
+  timeTakenMs?: number
+  error?: string
+  _isFailure?: boolean
+}
+
+const SOURCE_FETCH_MEMO_KEY = '_sitemapSourceFetches'
+const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
+
+// Prerendering issues one request per sitemap, so an event-scoped memo cannot span them. A build
+// resolves a fixed data set, so a process-wide memo is correct for the length of the build.
+// The Map is created behind the `import.meta.prerender` define so a runtime bundle folds the
+// initializer to `undefined` and tree-shakes both the Map and its retained promises out.
+const prerenderSourceFetches = import.meta.prerender
+  ? new Map<string, Promise<SourceFetchResult>>()
+  : undefined
+
+// Several named sitemaps can list the same source URL. Memoize so the endpoint is fetched once
+// instead of once per sitemap. Request scoped at runtime, build scoped while prerendering.
+function useSourceFetchMemo(event?: H3Event): Map<string, Promise<SourceFetchResult>> | undefined {
+  if (import.meta.prerender)
+    return prerenderSourceFetches
+  const context = event?.context as Record<string, unknown> | undefined
+  if (!context)
+    return undefined
+  const existing = context[SOURCE_FETCH_MEMO_KEY] as Map<string, Promise<SourceFetchResult>> | undefined
+  if (existing)
+    return existing
+  const memo = new Map<string, Promise<SourceFetchResult>>()
+  context[SOURCE_FETCH_MEMO_KEY] = memo
+  return memo
+}
+
+// Keyed by source URL rather than by sitemap name, so sitemaps sharing a source share one entry.
+// Host is part of the key because an internal source resolves against the incoming host.
+// Nitro stores custom keys verbatim in the cache driver, so the source key is hashed: fetch
+// options may carry Authorization headers, and those must not reach redis or KV in plaintext.
+function hashCacheKey(key: string): string {
+  let h1 = 0xDEADBEEF
+  let h2 = 0x41C6CE57
+  for (let i = 0; i < key.length; i++) {
+    const ch = key.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36)
+}
+
+const fetchSourceUrlsCached = defineCachedFunction(
+  (event: H3Event, _key: string, url: string, options: any) => fetchSourceUrls(url, options, event),
+  {
+    name: 'sitemap:source-urls',
+    group: 'sitemap',
+    base: 'sitemap',
+    maxAge: SERVER_CACHE_MAX_AGE,
+    getKey: (event: H3Event, key: string) => {
+      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
+      return `source-${proto}-${host}-${hashCacheKey(key)}`
+    },
+    swr: true,
+    // A failed fetch must never be served again, otherwise one outage empties the sitemap for a
+    // whole cache window.
+    validate: (entry) => {
+      const value = entry.value as SourceFetchResult | undefined
+      return value !== undefined && !value._isFailure
+    },
+  },
+)
+
+function isSourceCacheEnabled(): boolean {
+  if (import.meta.dev || import.meta.prerender)
+    return false
+  const cacheMaxAgeSeconds = staticConfig.cacheMaxAgeSeconds as number | false
+  return typeof cacheMaxAgeSeconds === 'number' && cacheMaxAgeSeconds > 0
+}
+
 export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
   const options = typeof input.fetch === 'string' ? {} : input.fetch![1]
+
+  const memo = useSourceFetchMemo(event)
+  const key = `${url}::${JSON.stringify(options || {})}`
+  let request = memo?.get(key)
+  if (!request) {
+    request = event && isSourceCacheEnabled()
+      ? fetchSourceUrlsCached(event, key, url, options)
+      : fetchSourceUrls(url, options, event)
+    memo?.set(key, request)
+  }
+  const result = await request
+  // Let the next sitemap retry a failed source instead of inheriting the failure.
+  if (result._isFailure)
+    memo?.delete(key)
+  // The urls array and its entries are shared between sitemaps. They are copied during
+  // normalisation, but hook consumers of `sitemap:input` must not mutate entries in place.
+  return { ...input, context, ...result }
+}
+
+async function fetchSourceUrls(url: string, options: any, event?: H3Event): Promise<SourceFetchResult> {
   const start = Date.now()
 
   // Get external source configuration
@@ -156,11 +258,12 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     const timeTakenMs = Date.now() - start
     if (isMaybeErrorResponse) {
       return {
-        ...input,
-        context,
         urls: [],
         timeTakenMs,
         error: 'Received HTML response instead of JSON',
+        // An HTML page is usually an outage or an auth wall, both transient. Treat it like a
+        // failed fetch so the empty result is never cached.
+        _isFailure: true,
       }
     }
     let urls = []
@@ -177,8 +280,6 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
       urls = res.urls || res
     }
     return {
-      ...input,
-      context,
       timeTakenMs,
       urls: urls as SitemapUrlInput[],
     }
@@ -204,8 +305,6 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
     }
 
     return {
-      ...input,
-      context,
       urls: [],
       error: error.message,
       _isFailure: true, // Mark as failure to prevent caching
@@ -233,6 +332,20 @@ export async function globalSitemapSources() {
 }
 
 export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
+  // Runtime-registered sitemaps (sitemap:sitemaps-resolved hook) carry their sources inline;
+  // static definitions have sources stripped at build time and live in the virtual module.
+  if (definition?.sources?.length)
+    return [...definition.sources]
+
+  // Runtime definitions may provide urls directly, matching the `urls` config of static sitemaps
+  if (definition?.urls) {
+    const urls = typeof definition.urls === 'function' ? await definition.urls() : definition.urls
+    return [{
+      context: { name: `sitemaps:${definition.sitemapName}:urls`, description: 'Set with the sitemap definition `urls`.' },
+      urls,
+    }]
+  }
+
   if (!definition?._hasSourceChunk)
     return []
 
