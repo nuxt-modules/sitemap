@@ -17,7 +17,7 @@ export default defineNitroPlugin((nitroApp) => {
     sitemaps.featured = {
       sitemapName: 'featured',
       urls: () => ['/featured/a', '/featured/b', '/featured/c'],
-      exclude: ['/featured/b'],
+      exclude: ['/featured/b', { regex: '/^\\/featured\\/c/' }],
     }
 
     // static sitemaps can be removed at runtime: delete the key

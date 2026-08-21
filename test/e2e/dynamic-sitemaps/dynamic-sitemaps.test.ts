@@ -96,9 +96,10 @@ describe('sitemap:sitemaps-resolved hook', () => {
 
     const chunk = await $fetch('/__sitemap__/featured.xml')
     expect(chunk).toContain('<loc>https://nuxtseo.com/featured/a</loc>')
-    expect(chunk).toContain('<loc>https://nuxtseo.com/featured/c</loc>')
-    // excluded by the definition's exclude filter
+    // excluded by the definition's exclude filter (string form)
     expect(chunk).not.toContain('<loc>https://nuxtseo.com/featured/b</loc>')
+    // excluded by the definition's exclude filter (regex form)
+    expect(chunk).not.toContain('<loc>https://nuxtseo.com/featured/c</loc>')
   })
 
   it('shows runtime-registered sitemaps in the debug endpoint', async () => {

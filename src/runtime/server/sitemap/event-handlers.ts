@@ -86,7 +86,8 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
 
   const chunkInfo = parseChunkInfo(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize)
   const isAutoChunked = typeof sitemaps.chunks !== 'undefined' && !Number.isNaN(Number(sitemapName))
-  const sitemapExists = sitemapName in sitemaps || chunkInfo.baseSitemapName in sitemaps || isAutoChunked
+  // hasOwn: `in` would also match Object.prototype keys like "toString"
+  const sitemapExists = Object.hasOwn(sitemaps, sitemapName) || Object.hasOwn(sitemaps, chunkInfo.baseSitemapName) || isAutoChunked
 
   if (!sitemapExists)
     throw createError({ statusCode: 404, message: `Sitemap "${sitemapName}" not found.` })

@@ -124,12 +124,21 @@ definitions onto `ctx.sitemaps` to register them at runtime.
 Registered sitemaps are served, listed in the sitemap index, and receive the other hooks,
 exactly like sitemaps defined in your `nuxt.config`. Definitions accept the same fields:
 `sources`, `urls` (a function works too), `include`, `exclude`, `defaults`, and
-`chunks` / `chunkSize`. Other module settings such as `autoLastmod` or `sortEntries` stay
-global; they apply to registered sitemaps the same way as static ones.
+`chunks` / `chunkSize`. If both `sources` and `urls` are set, `sources` wins. Other module
+settings such as `autoLastmod` or `sortEntries` stay global; they apply to registered
+sitemaps the same way as static ones.
 
 Use this hook when the set of sitemaps depends on data that changes while the server runs, for example
 per-market catalogs chunked by stable database ID ranges. Define chunk boundaries that don't shift when
 rows are deleted, so each chunk's `lastmod` stays reliable.
+
+::callout{icon="i-lucide-info" to="/docs/sitemap/api/config#sitemapsPathPrefix"}
+Registered sitemaps need the default `sitemapsPathPrefix`. With a prefix of `/` or `false`, routes only exist for sitemap names known at build time.
+::
+
+The `ctx.event` belongs to the request that triggered the hook. With caching enabled in production,
+concurrent requests to the same host may share a resolved config, so keep registration independent
+of request headers.
 
 The hook runs against a fresh copy of the sitemap config each time, so register every
 sitemap you want on each run:
@@ -186,6 +195,9 @@ export default defineNitroPlugin((nitroApp) => {
 In production with `cacheMaxAgeSeconds` set, the merged sitemap config is cached for the same window
 as the rendered sitemaps. Registered and removed sitemaps appear on the next cache refresh. In
 development the hook runs on every request.
+
+The config cache and the sitemap index cache refresh independently. After a removal, the index can
+list a sitemap whose route already 404s for up to one `cacheMaxAgeSeconds` window.
 
 ## `'sitemap:output'`{lang="ts"}
 

@@ -242,7 +242,7 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   if (definition?.urls) {
     const urls = typeof definition.urls === 'function' ? await definition.urls() : definition.urls
     return [{
-      context: { name: `sitemaps:${definition.sitemapName}:urls`, description: 'Set with the `sitemap.urls` config.' },
+      context: { name: `sitemaps:${definition.sitemapName}:urls`, description: 'Set with the sitemap definition `urls`.' },
       urls,
     }]
   }
