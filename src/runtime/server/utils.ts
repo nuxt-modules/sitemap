@@ -14,21 +14,28 @@ type NitroApp = ReturnType<typeof useNitroApp>
 // when caching is disabled in static config (still bypassed at request time via shouldCache).
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
-export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
-  // Static fields live in a virtual module; only env-overridable fields go through runtimeConfig.
+// Event-overridable fields only; the rest of the config comes from the static virtual module.
+function dynamicRuntimeConfig(e?: H3Event) {
+  return useRuntimeConfig(e).sitemap as Partial<ModuleRuntimeConfig> | undefined
+}
+
+function copyStaticSitemaps(): ModuleRuntimeConfig['sitemaps'] {
   // Only sitemap definitions are mutated by the index builder, so shallow-copy those instead of
   // serializing and parsing the entire static config (including i18n pages) on every request.
-  const sitemaps = Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(staticConfig.sitemaps as ModuleRuntimeConfig['sitemaps']).map(([name, sitemap]) => [name, {
       ...sitemap,
       include: normalizeRuntimeFilters('include' in sitemap ? sitemap.include : undefined),
       exclude: normalizeRuntimeFilters('exclude' in sitemap ? sitemap.exclude : undefined),
     }]),
   ) as ModuleRuntimeConfig['sitemaps']
+}
+
+export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
   return Object.freeze({
     ...staticConfig,
-    sitemaps,
-    ...useRuntimeConfig(e).sitemap,
+    sitemaps: copyStaticSitemaps(),
+    ...dynamicRuntimeConfig(e),
   }) as ModuleRuntimeConfig
 }
 
@@ -45,36 +52,36 @@ function serializeFilters(filters?: FilterInput[]): FilterInput[] | undefined {
   })
 }
 
-// Runs the sitemap:sitemaps-resolved hook so apps can register sitemaps at runtime. The
-// merged config drives the sitemap index, child sitemap routing, and the sitemap:sources
-// hook, so registered sitemaps behave exactly like static ones.
-async function resolveSitemapRuntimeConfig(base: ModuleRuntimeConfig, e: H3Event, nitro: NitroApp): Promise<ModuleRuntimeConfig> {
-  const ctx: SitemapsResolvedCtx = { sitemaps: base.sitemaps, event: e }
+// Runs the sitemap:sitemaps-resolved hook so apps can register sitemaps at runtime. Returns the
+// sitemaps record only: definitions are small (static sources are stripped at build time), while
+// the surrounding config can embed large i18n page maps that must stay out of cache storage.
+async function resolveSitemapSitemaps(e: H3Event, nitro: NitroApp): Promise<ModuleRuntimeConfig['sitemaps']> {
+  const ctx: SitemapsResolvedCtx = { sitemaps: copyStaticSitemaps(), event: e }
   await nitro.hooks.callHook('sitemap:sitemaps-resolved', ctx)
   const sitemaps = { ...ctx.sitemaps } as ModuleRuntimeConfig['sitemaps']
   for (const name of Object.keys(sitemaps)) {
     const sitemap = { ...sitemaps[name]! } as ModuleRuntimeConfig['sitemaps'][string]
-    // Resolve url functions so the merged config stays JSON-serializable for cache storage
+    // Resolve url functions so the record stays JSON-serializable for cache storage
     if (typeof sitemap.urls === 'function')
       sitemap.urls = await sitemap.urls()
     sitemap.include = serializeFilters(sitemap.include)
     sitemap.exclude = serializeFilters(sitemap.exclude)
     sitemaps[name] = sitemap
   }
-  return Object.freeze({ ...base, sitemaps })
+  return sitemaps
 }
 
-// Registration hooks commonly query a database. Cache the merged config for the same window
+// Registration hooks commonly query a database. Cache the resolved record for the same window
 // as the rendered XML so the hook cost stays proportional to cacheMaxAgeSeconds.
-const resolveSitemapRuntimeConfigCached = defineCachedFunction(
-  resolveSitemapRuntimeConfig,
+const resolveSitemapSitemapsCached = defineCachedFunction(
+  resolveSitemapSitemaps,
   {
-    name: 'sitemap:runtime-config',
+    name: 'sitemap:runtime-sitemaps',
     group: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap',
-    // nitro calls getKey with the full fn args (base, event, nitro); key on the event
-    getKey: (_base: unknown, e?: H3Event) => {
+    // nitro calls getKey with the full fn args (event, nitro)
+    getKey: (e?: H3Event) => {
       const host = (e && (getHeader(e, 'host') || getHeader(e, 'x-forwarded-host'))) || ''
       const proto = (e && getHeader(e, 'x-forwarded-proto')) || 'https'
       return `runtime-sitemaps-${proto}-${host}`
@@ -84,12 +91,17 @@ const resolveSitemapRuntimeConfigCached = defineCachedFunction(
 )
 
 export async function useResolvedSitemapRuntimeConfig(e: H3Event): Promise<ModuleRuntimeConfig> {
-  const base = useSitemapRuntimeConfig(e)
-  const nitro = useNitroApp()
+  // Cheap gate before any config work: dynamic copy first (env-overridable), static fallback.
+  const maxAge = dynamicRuntimeConfig(e)?.cacheMaxAgeSeconds ?? staticConfig.cacheMaxAgeSeconds
   // Dev and prerender always re-run the hook so newly registered sitemaps are visible
-  // immediately; production caches the merged config for the cacheMaxAgeSeconds window.
-  const shouldCache = !import.meta.dev && !import.meta.prerender && typeof base.cacheMaxAgeSeconds === 'number' && base.cacheMaxAgeSeconds > 0
-  if (shouldCache)
-    return resolveSitemapRuntimeConfigCached(base, e, nitro)
-  return resolveSitemapRuntimeConfig(base, e, nitro)
+  // immediately; production caches the resolved record for the cacheMaxAgeSeconds window.
+  const shouldCache = !import.meta.dev && !import.meta.prerender && typeof maxAge === 'number' && maxAge > 0
+  const sitemaps = shouldCache
+    ? await resolveSitemapSitemapsCached(e, useNitroApp())
+    : await resolveSitemapSitemaps(e, useNitroApp())
+  return Object.freeze({
+    ...staticConfig,
+    sitemaps,
+    ...dynamicRuntimeConfig(e),
+  }) as ModuleRuntimeConfig
 }
