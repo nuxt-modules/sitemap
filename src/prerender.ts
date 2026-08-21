@@ -243,11 +243,13 @@ async function loadPrerenderServer(nitro: Nitro): Promise<{ fetch: PrerenderFetc
       return new Response(body, responseInit)
     },
     async close() {
+      // the worker is a build-time throwaway: bound the graceful close so a
+      // prerender server with hanging close hooks cannot hang the generate
       try {
-        await callWorker({ _tag: 'Close' })
+        await raceWithTimeout([callWorker({ _tag: 'Close' })], 3_000, 'The Nitro prerender server did not close in time')
       }
       catch {
-        // the worker already exited, there is nothing left to close
+        // the worker already exited or its close hooks hung; terminate below
       }
       await worker.terminate()
     },
