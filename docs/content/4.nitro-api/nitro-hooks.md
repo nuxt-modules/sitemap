@@ -114,6 +114,36 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
+## `'sitemap:sitemaps-resolved'`{lang="ts"}
+
+**Type:** `async (ctx: { event: H3Event; sitemaps: Record<string, SitemapDefinition> }) => void | Promise<void>`{lang="ts"}
+
+Runs before the sitemap index is built and before child sitemaps are served. Add definitions to `ctx.sitemaps` to register sitemaps at runtime, or delete a key to remove one (static definitions included).
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:sitemaps-resolved', async ({ sitemaps }) => {
+    sitemaps['games-0'] = {
+      sitemapName: 'games-0',
+      sources: ['/api/__sitemap__/games?chunk=0'],
+    }
+  })
+})
+```
+
+Constraints:
+
+- the hook starts from a fresh copy of the sitemap config on every run: register every sitemap you want each time, removal is just not registering it
+- definitions take the same fields as `nuxt.config` (`sources`, `urls` including functions, `include`, `exclude`, `defaults`, `chunks` / `chunkSize`); if both `sources` and `urls` are set, `sources` wins
+- other module settings (`autoLastmod`, `sortEntries`, ...) stay global
+- registered sitemaps need the default `sitemapsPathPrefix`; with `/` or `false`, routes only exist for build-time names
+- with `cacheMaxAgeSeconds` set in production, the resolved sitemap list is cached for the same window as the sitemaps themselves; dev and prerender run the hook per request
+- `ctx.event` belongs to whichever request triggered the hook; with caching on, requests to the same host share one resolved config, so keep registration independent of request headers
+
+See the [runtime registration guide](/docs/sitemap/advanced/chunking-sources) for chunking strategies, removal, and caching behavior.
+
 ## `'sitemap:output'`{lang="ts"}
 
 **Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}

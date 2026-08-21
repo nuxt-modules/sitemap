@@ -233,6 +233,20 @@ export async function globalSitemapSources() {
 }
 
 export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
+  // Runtime-registered sitemaps (sitemap:sitemaps-resolved hook) carry their sources inline;
+  // static definitions have sources stripped at build time and live in the virtual module.
+  if (definition?.sources?.length)
+    return [...definition.sources]
+
+  // Runtime definitions may provide urls directly, matching the `urls` config of static sitemaps
+  if (definition?.urls) {
+    const urls = typeof definition.urls === 'function' ? await definition.urls() : definition.urls
+    return [{
+      context: { name: `sitemaps:${definition.sitemapName}:urls`, description: 'Set with the sitemap definition `urls`.' },
+      urls,
+    }]
+  }
+
   if (!definition?._hasSourceChunk)
     return []
 
