@@ -7,7 +7,7 @@ import {
   globalSitemapSources,
   resolveSitemapSources,
 } from '../../sitemap/urlset/sources'
-import { useSitemapRuntimeConfig } from '../../utils'
+import { useResolvedSitemapRuntimeConfig } from '../../utils'
 
 function attachUrlWarnings(sources: SitemapSourceResolved[]) {
   for (const source of sources) {
@@ -29,7 +29,7 @@ function attachUrlWarnings(sources: SitemapSourceResolved[]) {
 }
 
 export default defineEventHandler(async (e) => {
-  const _runtimeConfig = useSitemapRuntimeConfig()
+  const _runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const siteConfig = getSiteConfig(e)
   const { sitemaps: _sitemaps } = _runtimeConfig
   const runtimeConfig = { ..._runtimeConfig }

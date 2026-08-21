@@ -233,6 +233,11 @@ export async function globalSitemapSources() {
 }
 
 export async function childSitemapSources(definition: ModuleRuntimeConfig['sitemaps'][string]) {
+  // Runtime-registered sitemaps (sitemap:sitemaps-resolved hook) carry their sources inline;
+  // static definitions have sources stripped at build time and live in the virtual module.
+  if (definition?.sources?.length)
+    return [...definition.sources]
+
   if (!definition?._hasSourceChunk)
     return []
 

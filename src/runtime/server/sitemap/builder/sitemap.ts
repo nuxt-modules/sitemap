@@ -89,7 +89,7 @@ export async function buildResolvedSitemapUrls(
       if (typeof e._sitemap === 'string' && !hasMatchingSitemap) {
         if (!warnedSitemaps.has(e._sitemap)) {
           warnedSitemaps.add(e._sitemap)
-          logger.error(`Sitemap \`${e._sitemap}\` not found in sitemap config. Available sitemaps: ${sitemapNames.join(', ')}. Entry \`${e.loc}\` will be omitted.`)
+          logger.error(`Sitemap \`${e._sitemap}\` not found in sitemap config. Available sitemaps: ${sitemapNames.join(', ')}. Either add it to the sitemap config or register it with the sitemap:sitemaps-resolved hook. Entry \`${e.loc}\` will be omitted.`)
         }
       }
     }

@@ -114,6 +114,43 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
+## `'sitemap:sitemaps-resolved'`{lang="ts"}
+
+**Type:** `async (ctx: { event: H3Event; sitemaps: Record<string, SitemapDefinition> }) => void | Promise<void>`{lang="ts"}
+
+Triggered before the sitemap index is built and before child sitemaps are served. Push new sitemap
+definitions onto `ctx.sitemaps` to register them at runtime.
+
+Registered sitemaps are served, listed in the sitemap index, and receive the other hooks,
+exactly like sitemaps defined in your `nuxt.config`.
+
+Use this hook when the set of sitemaps depends on data that changes while the server runs, for example
+per-market catalogs chunked by stable database ID ranges. Define chunk boundaries that don't shift when
+rows are deleted, so each chunk's `lastmod` stays reliable.
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:sitemaps-resolved', async ({ sitemaps }) => {
+    // For example, one sitemap per stable ID range of games per market
+    for (let chunk = 0; chunk < gameChunkCount(); chunk++) {
+      const name = `games-${chunk}`
+      if (!(name in sitemaps)) {
+        sitemaps[name] = {
+          sitemapName: name,
+          sources: [`/api/__sitemap__/games?chunk=${chunk}`],
+        }
+      }
+    }
+  })
+})
+```
+
+In production with `cacheMaxAgeSeconds` set, the merged sitemap config is cached for the same window
+as the rendered sitemaps. New chunks appear on the next cache refresh. In development the hook runs on
+every request.
+
 ## `'sitemap:output'`{lang="ts"}
 
 **Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}

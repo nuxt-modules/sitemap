@@ -408,6 +408,18 @@ export interface SitemapSourcesHookCtx<Event = H3Event> extends NitroBaseHook<Ev
   sources: SitemapSourceInput[]
 }
 
+export interface SitemapsResolvedCtx<Event = H3Event> extends NitroBaseHook<Event> {
+  /**
+   * The sitemaps config about to be used to build the sitemap index and serve child
+   * sitemaps. Static definitions from nuxt.config are already present.
+   *
+   * Push or modify definitions here to register sitemaps at runtime, for example when
+   * the data set grows while the server is running. Registered sitemaps are served,
+   * listed in the sitemap index, and receive the `sitemap:sources` hook like static ones.
+   */
+  sitemaps: ModuleRuntimeConfig['sitemaps']
+}
+
 export type Changefreq
   = | 'always'
     | 'hourly'
@@ -431,6 +443,10 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
+  /**
+   * Route this URL to a specific sitemap. The name must exist in the sitemap config,
+   * either set in `nuxt.config` or registered with the `sitemap:sitemaps-resolved` hook.
+   */
   _sitemap?: string | false
   /**
    * Mark the URL as already encoded.

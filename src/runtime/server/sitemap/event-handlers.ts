@@ -2,14 +2,14 @@ import type { H3Event } from '#nuxtseo/h3'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect } from '#nuxtseo/h3'
 import { useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
-import { useSitemapRuntimeConfig } from '../utils'
+import { useResolvedSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
 import { createSitemap, renderSitemapOutput, setSitemapResponseHeaders, useNitroUrlResolvers } from './nitro'
 import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
 export async function sitemapXmlEventHandler(e: H3Event) {
-  const runtimeConfig = useSitemapRuntimeConfig()
+  const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
   if ('index' in sitemaps)
     return sendRedirect(e, withBase('/sitemap_index.xml', useRuntimeConfig().app.baseURL), import.meta.dev ? 302 : 301)
@@ -18,7 +18,7 @@ export async function sitemapXmlEventHandler(e: H3Event) {
 }
 
 export async function sitemapIndexXmlEventHandler(e: H3Event) {
-  const runtimeConfig = useSitemapRuntimeConfig()
+  const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const nitro = useNitroApp()
   const resolvers = useNitroUrlResolvers(e)
   const { entries: sitemaps, failedSources } = await buildSitemapIndex(resolvers, runtimeConfig, nitro)
@@ -59,7 +59,7 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   if (!pathname.endsWith('.xml'))
     return
 
-  const runtimeConfig = useSitemapRuntimeConfig(e)
+  const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
   let sitemapName = getRouterParam(e, 'sitemap')
