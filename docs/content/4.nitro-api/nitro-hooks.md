@@ -146,8 +146,6 @@ See the [runtime registration guide](/docs/sitemap/advanced/chunking-sources) fo
 
 ## `'sitemap:output'`{lang="ts"}
 
-## `'sitemap:output'`{lang="ts"}
-
 **Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered before the sitemap is sent to the client.
