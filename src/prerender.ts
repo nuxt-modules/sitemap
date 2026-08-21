@@ -2,9 +2,12 @@ import type { Nuxt } from '@nuxt/schema'
 import type { ConsolaInstance } from 'consola'
 import type { Nitro, PrerenderRoute } from 'nitropack'
 import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
+import { once } from 'node:events'
 import { readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { MessageChannel, Worker } from 'node:worker_threads'
 import { useNuxt } from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
@@ -70,6 +73,10 @@ export async function readSourcesFromFilesystem(filename) {
   })
 
   nuxt.hooks.hook('nitro:init', async (nitro) => {
+    let prerendererNitro = nitro
+    nitro.hooks.hook('prerender:init', (prerenderer) => {
+      prerendererNitro = prerenderer
+    })
     // `global-sources.json` and `child-sources.json` are written at `prerender:done`
     // and read back while the sitemap routes prerender. They live under
     // `node_modules/.cache`, which build hosts such as Vercel restore between builds,
@@ -149,13 +156,119 @@ export async function readSourcesFromFilesystem(filename) {
       const sitemapEntry = options.isMultiSitemap
         ? '/sitemap_index.xml' // this route adds prerender hints for child sitemaps
         : `/${Object.keys(options.sitemaps)[0]}`
-      const sitemaps = await prerenderSitemapsFromEntry(nitro, sitemapEntry)
-      await nuxt.hooks.callHook('sitemap:prerender:done' as any, { options, sitemaps })
+      const prerenderServer = await loadPrerenderServer(prerendererNitro)
+      await prerenderSitemapsFromEntry(nitro, prerenderServer.fetch, sitemapEntry)
+        .then(sitemaps => nuxt.hooks.callHook('sitemap:prerender:done' as any, { options, sitemaps }))
+        .finally(prerenderServer.close)
     })
   })
 }
 
-async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
+type PrerenderFetch = (input: string, headers: Record<string, string>) => Promise<Response>
+
+// CommonJS + dynamic import so the eval worker runs on every Node version
+const PrerenderWorkerCode = `
+const { parentPort, workerData } = require('node:worker_threads')
+
+;(async () => {
+  const serverEntry = await import(workerData.entry)
+  const server = serverEntry.default
+  const localFetch = serverEntry.localFetch
+  const fetch = typeof server?.fetch === 'function'
+    ? (input, headers) => server.fetch(new Request(new URL(input, 'http://localhost'), { headers }))
+    : typeof localFetch === 'function'
+      // older nitropack exposes an ofetch instance: a bare call returns parsed data, .raw returns the response
+      ? (input, headers) => (localFetch.raw ?? localFetch)(input, { headers })
+      : undefined
+  const close = typeof server?.close === 'function'
+    ? () => server.close()
+    : typeof serverEntry.closePrerenderer === 'function'
+      ? () => serverEntry.closePrerenderer()
+      : async () => {}
+
+  parentPort.postMessage(fetch ? { _tag: 'Ready' } : { _tag: 'Err', message: 'Nitro prerender server does not expose a fetch handler' })
+  parentPort.on('message', ({ _tag, input, headers, port }) => {
+    const task = _tag === 'Fetch'
+      ? fetch(input, headers).then(async response => ({
+          _tag: 'Ok',
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers],
+          body: await response.arrayBuffer(),
+        }))
+      : close().then(() => ({ _tag: 'Ok' }))
+    task.catch(error => ({ _tag: 'Err', message: error instanceof Error ? error.message : String(error) }))
+      .then(result => port.postMessage(result, result.body ? [result.body] : []))
+  })
+})().catch(error => parentPort.postMessage({ _tag: 'Err', message: error instanceof Error ? error.message : String(error) }))
+`
+
+function raceWithTimeout<T>(promises: Promise<T>[], ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms)
+  })
+  return Promise.race([...promises, timeout]).finally(() => clearTimeout(timer))
+}
+
+async function loadPrerenderServer(nitro: Nitro): Promise<{ fetch: PrerenderFetch, close: () => Promise<void> }> {
+  const entryFileNames = nitro.options.rollupConfig?.output?.entryFileNames
+  const serverFilename = typeof entryFileNames === 'string' ? entryFileNames : 'index.mjs'
+  const worker = new Worker(PrerenderWorkerCode, {
+    eval: true,
+    workerData: { entry: pathToFileURL(resolve(nitro.options.output.serverDir, serverFilename)).href },
+  })
+  const workerDead = new Promise<never>((_, reject) => {
+    worker.once('exit', code => reject(new Error(`The Nitro prerender server worker exited unexpectedly (code ${code})`)))
+    worker.once('error', error => reject(error))
+  })
+  // the worker outlives individual calls; keep the rejection handled between calls
+  workerDead.catch(() => {
+    // rejection is observed by whichever callWorker or ready race is in flight
+  })
+  try {
+    const [ready] = await raceWithTimeout([once(worker, 'message'), workerDead], 60_000, 'The Nitro prerender server did not become ready in time')
+    if (ready._tag === 'Err')
+      throw new Error(ready.message)
+  }
+  catch (error) {
+    await worker.terminate()
+    throw error
+  }
+
+  const callWorker = async (message: Record<string, unknown>) => {
+    const { port1, port2 } = new MessageChannel()
+    worker.postMessage({ ...message, port: port2 }, [port2])
+    try {
+      const [result] = await Promise.race([once(port1, 'message'), workerDead])
+      if (result._tag === 'Err')
+        throw new Error(result.message)
+      return result
+    }
+    finally {
+      port1.close()
+    }
+  }
+  return {
+    async fetch(input, headers) {
+      const { _tag, body, ...responseInit } = await callWorker({ _tag: 'Fetch', input, headers })
+      return new Response(body, responseInit)
+    },
+    async close() {
+      // the worker is a build-time throwaway: bound the graceful close so a
+      // prerender server with hanging close hooks cannot hang the generate
+      try {
+        await raceWithTimeout([callWorker({ _tag: 'Close' })], 3_000, 'The Nitro prerender server did not close in time')
+      }
+      catch {
+        // the worker already exited or its close hooks hung; terminate below
+      }
+      await worker.terminate()
+    },
+  }
+}
+
+async function prerenderSitemapsFromEntry(nitro: Nitro, fetch: PrerenderFetch, entry: string) {
   const sitemaps: { name: string, get content(): string }[] = []
   const queue = [entry]
   const processed = new Set<string>()
@@ -164,7 +277,7 @@ async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
     if (processed.has(route))
       continue
     processed.add(route)
-    const { filePath, prerenderUrls } = await prerenderRoute(nitro, route)
+    const { filePath, prerenderUrls } = await prerenderRoute(nitro, fetch, route)
     sitemaps.push({
       name: route,
       get content() {
@@ -176,19 +289,14 @@ async function prerenderSitemapsFromEntry(nitro: Nitro, entry: string) {
   return sitemaps
 }
 
-export async function prerenderRoute(nitro: Nitro, route: string) {
+export async function prerenderRoute(nitro: Nitro, fetch: PrerenderFetch, route: string) {
   const start = Date.now()
   const _route: PrerenderRoute = { route, fileName: route }
   const encodedRoute = encodeURI(route)
   const fetchUrl = withBase(encodedRoute, nitro.options.baseURL)
-  const res = await globalThis.$fetch.raw(
-    fetchUrl,
-    {
-      headers: { 'x-nitro-prerender': encodedRoute },
-      retry: nitro.options.prerender.retry,
-      retryDelay: nitro.options.prerender.retryDelay,
-    },
-  )
+  const res = await fetch(fetchUrl, { 'x-nitro-prerender': encodedRoute })
+  if (!res.ok)
+    throw new Error(`Failed to prerender '${fetchUrl}': ${res.status} ${res.statusText}`)
   const header = (res.headers.get('x-nitro-prerender') || '') as string
   const prerenderUrls = header
     .split(',')
@@ -196,12 +304,7 @@ export async function prerenderRoute(nitro: Nitro, route: string) {
     .filter(Boolean)
   const filePath = join(nitro.options.output.publicDir, _route.fileName!)
   await mkdir(dirname(filePath), { recursive: true })
-  const data = res._data
-  if (data === undefined)
-    throw new Error(`No data returned from '${fetchUrl}'`)
-  const content = filePath.endsWith('json') || typeof data === 'object'
-    ? JSON.stringify(data)
-    : data as string
+  const content = await res.text()
   await writeFile(filePath, content, 'utf8')
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
