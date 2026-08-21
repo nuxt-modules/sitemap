@@ -10,6 +10,7 @@ import { defineCachedFunction } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normaliseDate } from '../urlset/normalise'
+import { parseChunkInfo } from '../utils/chunk'
 import { getResolvedSitemapUrls } from './sitemap'
 
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
@@ -63,7 +64,11 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
       sitemapConfig._chunkSize = sitemapConfig.chunkSize || (typeof sitemapConfig.chunks === 'number' ? sitemapConfig.chunks : (defaultSitemapsChunkSize || 1000))
     }
     else {
-      nonChunkedNames.push(sitemapName)
+      // A hook may register chunk names (name-<index>) as standalone definitions while the base
+      // sitemap also chunk-emits them. Skip the standalone copy so the index lists each once.
+      const chunkInfo = parseChunkInfo(sitemapName, sitemaps, defaultSitemapsChunkSize || undefined)
+      if (!chunkInfo.isChunked)
+        nonChunkedNames.push(sitemapName)
     }
   }
 

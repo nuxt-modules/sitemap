@@ -34,6 +34,7 @@ import { serializeFilters } from 'nuxtseo-shared/utils'
 import { dirname } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
+import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-sources'
 import { setupDevToolsUI } from './devtools'
 import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
@@ -44,8 +45,8 @@ import {
   resolveI18nFilterPaths,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveNitroPreset, resolveNuxtContentVersion } from './utils-internal/kit'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveUrls } from './utils-internal/nuxtSitemap'
+import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveExcludedAppSources, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -72,6 +73,33 @@ declare module '@nuxt/schema' {
   interface NuxtHooks extends ModuleHooks {}
 }
 
+const IMAGE_TAGS = new Set(['image', 'img', 'nuxtimg', 'nuxt-img'])
+
+type ContentBodyNode = [string, Record<string, any>, ...ContentBodyNode[]]
+
+/**
+ * Image locations declared in a parsed Markdown body.
+ *
+ * @nuxt/content holds its nodes under `value`, comark under `nodes`; both use the
+ * same `[tag, attrs, ...children]` node. @nuxt/content lifts a raw `<img>` to the
+ * top level, comark keeps it nested inside the paragraph that wrote it, so this
+ * walks the tree rather than scanning one level.
+ */
+function discoverContentImages(body: { value?: ContentBodyNode[], nodes?: ContentBodyNode[] } | undefined): NonNullable<SitemapUrl['images']> {
+  const images: NonNullable<SitemapUrl['images']> = []
+  const walk = (nodes: ContentBodyNode[] | undefined) => {
+    for (const node of nodes || []) {
+      if (!Array.isArray(node) || typeof node[0] !== 'string')
+        continue
+      if (IMAGE_TAGS.has(node[0]) && node[1]?.src)
+        images.push({ loc: node[1].src })
+      walk(node.slice(2) as ContentBodyNode[])
+    }
+  }
+  walk(body?.value ?? body?.nodes)
+  return images
+}
+
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/sitemap',
@@ -94,6 +122,10 @@ export default defineNuxtModule<ModuleOptions>({
     },
     '@nuxt/content': {
       version: '>=2',
+      optional: true,
+    },
+    '@harlan-zw/comark-content': {
+      version: '>=0.1.2',
       optional: true,
     },
     '@nuxtjs/robots': {
@@ -325,11 +357,12 @@ export default defineNuxtModule<ModuleOptions>({
         const hasCustomI18nSitemaps = i18nSitemaps.length > 0
         if (hasCustomI18nSitemaps) {
           for (const { name, cfg } of i18nSitemaps) {
+            // Identity and chunk state are derived after locale expansion.
+            const { sitemapName: _sitemapName, _route, _isChunking, _chunkSize, _chunkCount, ...inheritedConfig } = cfg
             for (const locale of resolvedAutoI18n.locales) {
               newSitemaps[`${locale._sitemap}-${name}`] = {
+                ...inheritedConfig,
                 includeAppSources: true,
-                ...(cfg.exclude?.length && { exclude: cfg.exclude }),
-                ...(cfg.include?.length && { include: cfg.include }),
               }
             }
           }
@@ -455,22 +488,20 @@ export default defineNuxtModule<ModuleOptions>({
 
     // @ts-expect-error untyped
     const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
-    const contentVersion = await resolveNuxtContentVersion()
-    const isNuxtContentV3 = contentVersion && contentVersion.version === 3
+    const contentProvider = await resolveContentProvider(nuxt)
+    const isNuxtContentV3 = contentProvider._tag === 'NuxtContent' && contentProvider.version === 3
+    const isNuxtContentV2 = contentProvider._tag === 'NuxtContent' && contentProvider.version === 2
+    const isComarkContent = contentProvider._tag === 'Comark'
     const nuxtV3Collections = new Set<string>()
-    const isNuxtContentV2 = contentVersion && contentVersion.version === 2
-    if (isNuxtContentV3) {
-      // check if content was loaded first
-      if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {
-        logger.warn('You have loaded `@nuxt/content` before `@nuxtjs/sitemap`, this may cause issues with the integration. Please ensure `@nuxtjs/sitemap` is loaded first.')
-      }
-      // // exclude /__nuxt_content
-      config.exclude!.push('/__nuxt_content/**')
-      const needsCustomAlias = await hasNuxtModuleCompatibility('@nuxt/content', '<3.6.0')
-      if (needsCustomAlias) {
-        nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
-        nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
-      }
+    setupContentRuntime(contentProvider, nuxt)
+
+    // Both @nuxt/content v3 and comark-content fire this hook with the same context
+    // shape, so the frontmatter mapping is written once. They differ in one place:
+    // @nuxt/content declares a `sitemap` collection field only when the user added
+    // `defineSitemapSchema()`, and that opt in is what gates the source. comark has
+    // no schema-derived field list, so every page collection is in by default and the
+    // collection opts out with `sitemap: false` in `defineCollection()` instead.
+    const registerContentSitemapHook = (options: { requireCollectionField: boolean }) => {
       nuxt.hooks.hook('content:file:afterParse' as any, (ctx: FileAfterParseHook) => {
         try {
           const content = ctx.content as any as {
@@ -485,7 +516,7 @@ export default defineNuxtModule<ModuleOptions>({
             ctx.content.sitemap = null
             return
           }
-          if (!ctx.collection.fields || !('sitemap' in ctx.collection.fields)) {
+          if (options.requireCollectionField && (!ctx.collection.fields || !('sitemap' in ctx.collection.fields))) {
             ctx.content.sitemap = null
             return
           }
@@ -498,17 +529,10 @@ export default defineNuxtModule<ModuleOptions>({
             ctx.content.sitemap = null
             return
           }
-          // add any top level images
+          // add any images the body declares
           const images: SitemapUrl['images'] = []
-          if (config.discoverImages) {
-            images.push(...(content.body?.value
-              ?.filter(c =>
-                ['image', 'img', 'nuxtimg', 'nuxt-img'].includes(c[0]),
-              )
-              .filter(c => c[1]?.src)
-              .map(c => ({ loc: c[1].src })) || []),
-            )
-          }
+          if (config.discoverImages)
+            images.push(...discoverContentImages(content.body))
           // Note: videos only supported through prerendering for simpler logic
 
           const lastmod = content.seo?.articleModifiedTime || content.updatedAt
@@ -525,8 +549,11 @@ export default defineNuxtModule<ModuleOptions>({
           logger.warn(`Failed to process sitemap data for content file (collection: ${ctx.collection?.name}, path: ${ctx.content?.path}), skipping.`, e)
         }
       })
+    }
 
-      // inject filter functions and loc prefixes as virtual modules
+    // Filter and onUrl callbacks registered by `defineSitemapSchema()` reach the
+    // runtime as source, so both content providers read the same virtual modules.
+    const addContentCallbackVirtuals = () => {
       nuxt.hook('nitro:config', (nitroConfig) => {
         const filterEntries: string[] = []
         if (globalThis.__sitemapCollectionFilters) {
@@ -543,9 +570,25 @@ export default defineNuxtModule<ModuleOptions>({
         nitroConfig.virtual['#sitemap/content-filters'] = `export const filters = new Map()\n${filterEntries.join('\n')}`
         nitroConfig.virtual['#sitemap/content-on-url'] = `export const onUrlFns = new Map()\n${onUrlEntries.join('\n')}`
       })
+    }
+
+    if (isNuxtContentV3) {
+      // check if content was loaded first
+      if (nuxt.options._installedModules.some(m => m.meta.name === 'Content')) {
+        logger.warn('You have loaded `@nuxt/content` before `@nuxtjs/sitemap`, this may cause issues with the integration. Please ensure `@nuxtjs/sitemap` is loaded first.')
+      }
+      // // exclude /__nuxt_content
+      config.exclude!.push('/__nuxt_content/**')
+      const needsCustomAlias = await hasNuxtModuleCompatibility('@nuxt/content', '<3.6.0')
+      if (needsCustomAlias) {
+        nuxt.options.alias['#sitemap/content-v3-nitro-path'] = resolve(dirname(resolveModule('@nuxt/content')), 'runtime/nitro')
+        nuxt.options.alias['@nuxt/content/nitro'] = resolve('./runtime/server/content-compat')
+      }
+      registerContentSitemapHook({ requireCollectionField: true })
+      addContentCallbackVirtuals()
       addServerHandler({
         route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v3'),
+        handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
       })
       if (config.strictNuxtContentPaths) {
         logger.warn('You have set `strictNuxtContentPaths: true` but are using @nuxt/content v3. This is not required, please remove it.')
@@ -559,6 +602,27 @@ export default defineNuxtModule<ModuleOptions>({
             : ['No collections found. Make sure your content collections have a `path` field.'],
         },
         fetch: '/__sitemap__/nuxt-content-urls.json',
+      })
+    }
+    else if (isComarkContent) {
+      registerContentSitemapHook({ requireCollectionField: false })
+      addContentCallbackVirtuals()
+      addServerHandler({
+        route: COMARK_CONTENT_SITEMAP_ROUTE,
+        handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
+      })
+      if (config.strictNuxtContentPaths) {
+        logger.warn('You have set `strictNuxtContentPaths: true` but are using comark-content. This is not required, please remove it.')
+      }
+      appGlobalSources.push({
+        context: {
+          name: COMARK_CONTENT_SOURCE,
+          description: 'Generated from your markdown files.',
+          tips: nuxtV3Collections.size
+            ? [`Parsing the following collections: ${Array.from(nuxtV3Collections).join(', ')}`]
+            : ['No collections found. Set `sitemap: false` on a collection to keep it out.'],
+        },
+        fetch: COMARK_CONTENT_SITEMAP_ROUTE,
       })
     }
     else if (isNuxtContentV2) {
@@ -862,6 +926,12 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     const generateGlobalSources = async () => {
+      // Read the authored config again, so a module that set up after this one can
+      // still exclude an app source. See resolveExcludedAppSources.
+      const excludedAppSources = resolveExcludedAppSources(
+        config.excludeAppSources,
+        (nuxt.options as { sitemap?: { excludeAppSources?: unknown } }).sitemap?.excludeAppSources,
+      )
       const { routeRules } = generateExtraRoutesFromNuxtConfig()
       const nitro = await nitroPromise
       const prerenderedRoutes = nitro._prerenderedRoutes || []
@@ -951,7 +1021,7 @@ export default defineNuxtModule<ModuleOptions>({
           s.sourceType = 'user'
           return s
         }),
-        ...(config.excludeAppSources === true
+        ...(excludedAppSources === true
           ? []
           : <typeof appGlobalSources>[
             ...appGlobalSources,
@@ -987,7 +1057,7 @@ export default defineNuxtModule<ModuleOptions>({
             },
           ])
           .filter(s =>
-            !(config.excludeAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
+            !(excludedAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
             && (!!s.urls?.length || !!s.fetch))
           .map((s) => {
             s.sourceType = 'app'

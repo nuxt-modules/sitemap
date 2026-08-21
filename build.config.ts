@@ -23,6 +23,8 @@ export default defineBuildConfig({
     '#imports',
     // Content subpath export
     '@nuxt/content',
+    '@harlan-zw/comark-content',
+    '@harlan-zw/comark-content/server',
     'zod',
     'sitemapd',
   ],

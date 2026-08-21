@@ -1,7 +1,7 @@
 {
   "name": "@nuxtjs/sitemap",
   "type": "module",
-  "version": "8.3.4",
+  "version": "8.4.0",
   "packageManager": "pnpm@11.20.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
@@ -91,6 +91,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
     "@arethetypeswrong/cli": "catalog:",
+    "@harlan-zw/comark-content": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/devtools-kit": "catalog:",
     "@nuxt/module-builder": "catalog:",
