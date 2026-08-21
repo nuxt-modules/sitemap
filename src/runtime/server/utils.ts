@@ -39,6 +39,15 @@ async function resolveSitemapRuntimeConfig(e: H3Event, nitro: NitroApp): Promise
   const config = useSitemapRuntimeConfig(e)
   const ctx: SitemapsResolvedCtx = { sitemaps: config.sitemaps, event: e }
   await nitro.hooks.callHook('sitemap:sitemaps-resolved', ctx)
+  // Normalise filters of hook-provided definitions the same way static ones are. Idempotent.
+  for (const name of Object.keys(ctx.sitemaps)) {
+    const sitemap = ctx.sitemaps[name]!
+    ctx.sitemaps[name] = {
+      ...sitemap,
+      include: normalizeRuntimeFilters('include' in sitemap ? sitemap.include : undefined),
+      exclude: normalizeRuntimeFilters('exclude' in sitemap ? sitemap.exclude : undefined),
+    }
+  }
   return Object.freeze({ ...config, sitemaps: ctx.sitemaps })
 }
 

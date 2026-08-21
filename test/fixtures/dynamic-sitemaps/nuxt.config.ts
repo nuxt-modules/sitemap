@@ -19,6 +19,10 @@ export default defineNuxtConfig({
         urls: ['/about', '/contact'],
         excludeAppSources: true,
       },
+      legacy: {
+        urls: ['/legacy/page'],
+        excludeAppSources: true,
+      },
     },
   },
 })

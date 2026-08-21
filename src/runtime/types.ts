@@ -247,7 +247,7 @@ export interface AutoI18nConfig {
 export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify' | 'experimentalStreaming'> {
   version: string
   isNuxtContentDocumentDriven: boolean
-  sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, Omit<SitemapDefinition, 'urls'> & { _hasSourceChunk?: boolean }>
+  sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, SitemapDefinition & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
   hasDisabledAutoI18n?: boolean
   isMultiSitemap: boolean
@@ -413,9 +413,12 @@ export interface SitemapsResolvedCtx<Event = H3Event> extends NitroBaseHook<Even
    * The sitemaps config about to be used to build the sitemap index and serve child
    * sitemaps. Static definitions from nuxt.config are already present.
    *
-   * Push or modify definitions here to register sitemaps at runtime, for example when
-   * the data set grows while the server is running. Registered sitemaps are served,
-   * listed in the sitemap index, and receive the `sitemap:sources` hook like static ones.
+   * Push definitions here to register sitemaps at runtime, for example when the data set
+   * grows while the server is running. Delete a key to remove its sitemap from the index
+   * and stop serving it. Registered sitemaps accept the same fields as nuxt.config
+   * definitions (`sources`, `urls`, `include`, `exclude`, `defaults`, `chunks`) and are
+   * served, listed in the sitemap index, and passed the `sitemap:sources` hook like
+   * static ones.
    */
   sitemaps: ModuleRuntimeConfig['sitemaps']
 }

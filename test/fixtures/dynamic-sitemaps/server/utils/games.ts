@@ -21,6 +21,10 @@ export function gameChunkCount(): number {
   return Math.ceil(games.length / CHUNK_SIZE)
 }
 
+export function gameCount(): number {
+  return games.length
+}
+
 export function addGames(count: number): number {
   for (let i = 0; i < count; i++) {
     const id = games.length + 1
@@ -30,5 +34,10 @@ export function addGames(count: number): number {
       lastmod: new Date().toISOString(),
     })
   }
+  return games.length
+}
+
+export function removeGames(count: number): number {
+  games.splice(Math.max(0, games.length - count), count)
   return games.length
 }

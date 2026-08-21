@@ -1,5 +1,5 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
-import { gameChunkCount, gamesInRange } from '../utils/games'
+import { gameChunkCount, gameCount, gamesInRange } from '../utils/games'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:sitemaps-resolved', ({ sitemaps }) => {
@@ -12,6 +12,17 @@ export default defineNitroPlugin((nitroApp) => {
         }
       }
     }
+
+    // runtime definitions accept the same fields as nuxt.config ones
+    sitemaps.featured = {
+      sitemapName: 'featured',
+      urls: () => ['/featured/a', '/featured/b', '/featured/c'],
+      exclude: ['/featured/b'],
+    }
+
+    // static sitemaps can be removed at runtime: delete the key
+    if (gameCount() < 10)
+      delete sitemaps.legacy
   })
 
   // reliable per-chunk lastmod: the most recent game in each chunk

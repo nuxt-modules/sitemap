@@ -238,6 +238,15 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   if (definition?.sources?.length)
     return [...definition.sources]
 
+  // Runtime definitions may provide urls directly, matching the `urls` config of static sitemaps
+  if (definition?.urls) {
+    const urls = typeof definition.urls === 'function' ? await definition.urls() : definition.urls
+    return [{
+      context: { name: `sitemaps:${definition.sitemapName}:urls`, description: 'Set with the `sitemap.urls` config.' },
+      urls,
+    }]
+  }
+
   if (!definition?._hasSourceChunk)
     return []
 

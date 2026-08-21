@@ -122,11 +122,17 @@ Triggered before the sitemap index is built and before child sitemaps are served
 definitions onto `ctx.sitemaps` to register them at runtime.
 
 Registered sitemaps are served, listed in the sitemap index, and receive the other hooks,
-exactly like sitemaps defined in your `nuxt.config`.
+exactly like sitemaps defined in your `nuxt.config`. Definitions accept the same fields:
+`sources`, `urls` (a function works too), `include`, `exclude`, `defaults`, and
+`chunks` / `chunkSize`. Other module settings such as `autoLastmod` or `sortEntries` stay
+global; they apply to registered sitemaps the same way as static ones.
 
 Use this hook when the set of sitemaps depends on data that changes while the server runs, for example
 per-market catalogs chunked by stable database ID ranges. Define chunk boundaries that don't shift when
 rows are deleted, so each chunk's `lastmod` stays reliable.
+
+The hook runs against a fresh copy of the sitemap config each time, so register every
+sitemap you want on each run:
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
@@ -147,9 +153,39 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
+### Removing sitemaps
+
+Delete a key to stop listing and serving that sitemap, including static ones from your
+`nuxt.config`. Chunks that no longer have data disappear from the index and their route
+returns a 404:
+
+```ts [server/plugins/sitemap.ts]
+import { defineNitroPlugin } from 'nitropack/runtime'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('sitemap:sitemaps-resolved', async ({ sitemaps }) => {
+    for (let chunk = 0; chunk < gameChunkCount(); chunk++) {
+      const name = `games-${chunk}`
+      // chunk no longer has any games, stop serving it
+      if (isChunkEmpty(chunk))
+        continue
+
+      if (!(name in sitemaps)) {
+        sitemaps[name] = { sitemapName: name, sources: [`/api/__sitemap__/games?chunk=${chunk}`] }
+      }
+    }
+
+    // static sitemaps can be removed as well
+    delete sitemaps.legacyPages
+  })
+})
+```
+
+### Caching
+
 In production with `cacheMaxAgeSeconds` set, the merged sitemap config is cached for the same window
-as the rendered sitemaps. New chunks appear on the next cache refresh. In development the hook runs on
-every request.
+as the rendered sitemaps. Registered and removed sitemaps appear on the next cache refresh. In
+development the hook runs on every request.
 
 ## `'sitemap:output'`{lang="ts"}
 
