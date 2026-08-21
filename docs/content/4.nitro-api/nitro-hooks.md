@@ -118,37 +118,21 @@ export default defineNitroPlugin((nitroApp) => {
 
 **Type:** `async (ctx: { event: H3Event; sitemaps: Record<string, SitemapDefinition> }) => void | Promise<void>`{lang="ts"}
 
-Triggered before the sitemap index is built and before child sitemaps are served. Push new sitemap
-definitions onto `ctx.sitemaps` to register them at runtime.
+Runs before the sitemap index is built and before any child sitemap is served. Use it to
+register sitemaps while your server is running.
 
-Registered sitemaps are served, listed in the sitemap index, and receive the other hooks,
-exactly like sitemaps defined in your `nuxt.config`. Definitions accept the same fields:
-`sources`, `urls` (a function works too), `include`, `exclude`, `defaults`, and
-`chunks` / `chunkSize`. If both `sources` and `urls` are set, `sources` wins. Other module
-settings such as `autoLastmod` or `sortEntries` stay global; they apply to registered
-sitemaps the same way as static ones.
-
-Use this hook when the set of sitemaps depends on data that changes while the server runs, for example
-per-market catalogs chunked by stable database ID ranges. Define chunk boundaries that don't shift when
-rows are deleted, so each chunk's `lastmod` stays reliable.
-
-::callout{icon="i-lucide-info" to="/docs/sitemap/api/config#sitemapsPathPrefix"}
-Registered sitemaps need the default `sitemapsPathPrefix`. With a prefix of `/` or `false`, routes only exist for sitemap names known at build time.
-::
-
-The `ctx.event` belongs to the request that triggered the hook. With caching enabled in production,
-concurrent requests to the same host may share a resolved config, so keep registration independent
-of request headers.
-
-The hook runs against a fresh copy of the sitemap config each time, so register every
-sitemap you want on each run:
+Sitemaps normally come from `nuxt.config`, so the list is fixed when you build. That's a
+problem when the list depends on your data: a store with 20 markets and thousands of games
+can't know at build time how many sitemap files it will eventually need. This hook closes
+that gap. Add a definition to `ctx.sitemaps` and it works like any other sitemap: it's
+served at its own URL, listed in the index, and passed the other hooks.
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:sitemaps-resolved', async ({ sitemaps }) => {
-    // For example, one sitemap per stable ID range of games per market
+    // One sitemap per market, chunked by stable ID ranges from the database
     for (let chunk = 0; chunk < gameChunkCount(); chunk++) {
       const name = `games-${chunk}`
       if (!(name in sitemaps)) {
@@ -162,11 +146,38 @@ export default defineNitroPlugin((nitroApp) => {
 })
 ```
 
+Two things worth knowing before you start.
+
+First, the hook starts from a fresh copy of the sitemap config on every run. Don't try to
+be incremental. Register everything you want each time; skip what you don't.
+
+Second, chunk by stable ID ranges, not by position. If chunk 2 holds games 10001 to 15000,
+it should always hold those games. Delete game 10002 and chunk 2 keeps its boundaries, so
+its `lastmod` only changes when its own content changes. Positional chunks shift on every
+delete, which makes their `lastmod` meaningless.
+
+Definitions take the same fields as `nuxt.config`: `sources`, `urls` (a function works
+too), `include`, `exclude`, `defaults`, and `chunks` / `chunkSize`. If you set both
+`sources` and `urls`, `sources` wins. Everything else, like `autoLastmod` and
+`sortEntries`, stays global.
+
+::callout{icon="i-lucide-info" to="/docs/sitemap/api/config#sitemapsPathPrefix"}
+Registered sitemaps need the default `sitemapsPathPrefix`. With a prefix of `/` or `false`, routes only exist for sitemap names known at build time.
+::
+
+One subtle point on `ctx.event`: it belongs to whichever request triggered the hook. With
+caching on in production, requests to the same host share one resolved config, so another
+request's event may have decided what's in your cache. Keep registration independent of
+request headers.
+
 ### Removing sitemaps
 
-Delete a key to stop listing and serving that sitemap, including static ones from your
-`nuxt.config`. Chunks that no longer have data disappear from the index and their route
-returns a 404:
+Deleting a key works for static sitemaps too, not just registered ones. The sitemap leaves
+the index and its route returns a 404.
+
+The fresh-copy behavior makes removal easy: just stop registering a sitemap and it's gone
+on the next run. An empty chunk needs no special handling. `delete` is for the sitemaps
+you declared in config and no longer want:
 
 ```ts [server/plugins/sitemap.ts]
 import { defineNitroPlugin } from 'nitropack/runtime'
@@ -175,7 +186,7 @@ export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('sitemap:sitemaps-resolved', async ({ sitemaps }) => {
     for (let chunk = 0; chunk < gameChunkCount(); chunk++) {
       const name = `games-${chunk}`
-      // chunk no longer has any games, stop serving it
+      // Empty chunks disappear on their own: don't register them
       if (isChunkEmpty(chunk))
         continue
 
@@ -184,7 +195,7 @@ export default defineNitroPlugin((nitroApp) => {
       }
     }
 
-    // static sitemaps can be removed as well
+    // Static sitemaps need an explicit delete
     delete sitemaps.legacyPages
   })
 })
@@ -192,12 +203,16 @@ export default defineNitroPlugin((nitroApp) => {
 
 ### Caching
 
-In production with `cacheMaxAgeSeconds` set, the merged sitemap config is cached for the same window
-as the rendered sitemaps. Registered and removed sitemaps appear on the next cache refresh. In
-development the hook runs on every request.
+In development the hook runs on every request, so changes show up immediately.
 
-The config cache and the sitemap index cache refresh independently. After a removal, the index can
-list a sitemap whose route already 404s for up to one `cacheMaxAgeSeconds` window.
+In production with `cacheMaxAgeSeconds` set, the resolved sitemap list is cached for the
+same window as the sitemaps themselves. Register or remove freely; the change lands on the
+next refresh, on the same schedule your sitemap content already follows.
+
+Keep one timing detail in mind after a removal: the sitemap list and the sitemap index
+refresh on their own schedules. For up to one cache window, the index may still list a
+sitemap whose route already returns a 404. Crawlers retry; if the window feels too long
+for your traffic, lower `cacheMaxAgeSeconds`.
 
 ## `'sitemap:output'`{lang="ts"}
 
