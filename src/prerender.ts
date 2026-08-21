@@ -154,69 +154,102 @@ export async function readSourcesFromFilesystem(filename) {
 
 type PrerenderFetch = (input: string, headers: Record<string, string>) => Promise<Response>
 
+// CommonJS + dynamic import so the eval worker runs on every Node version
 const PrerenderWorkerCode = `
-import { parentPort, workerData } from 'node:worker_threads'
+const { parentPort, workerData } = require('node:worker_threads')
 
-const module = await import(workerData.entry)
-const server = module.default
-const fetch = typeof server?.fetch === 'function'
-  ? (input, headers) => server.fetch(new Request(new URL(input, 'http://localhost'), { headers }))
-  : typeof module.localFetch === 'function'
-    ? (input, headers) => module.localFetch(input, { headers })
-    : undefined
-const close = typeof server?.close === 'function'
-  ? () => server.close()
-  : typeof module.closePrerenderer === 'function'
-    ? () => module.closePrerenderer()
-    : async () => {}
+;(async () => {
+  const serverEntry = await import(workerData.entry)
+  const server = serverEntry.default
+  const localFetch = serverEntry.localFetch
+  const fetch = typeof server?.fetch === 'function'
+    ? (input, headers) => server.fetch(new Request(new URL(input, 'http://localhost'), { headers }))
+    : typeof localFetch === 'function'
+      // older nitropack exposes an ofetch instance: a bare call returns parsed data, .raw returns the response
+      ? (input, headers) => (localFetch.raw ?? localFetch)(input, { headers })
+      : undefined
+  const close = typeof server?.close === 'function'
+    ? () => server.close()
+    : typeof serverEntry.closePrerenderer === 'function'
+      ? () => serverEntry.closePrerenderer()
+      : async () => {}
 
-parentPort.postMessage(fetch ? { _tag: 'Ready' } : { _tag: 'Err', message: 'Nitro prerender server does not expose a fetch handler' })
-parentPort.on('message', ({ _tag, input, headers, port }) => {
-  const task = _tag === 'Fetch'
-    ? fetch(input, headers).then(async response => ({
-        _tag: 'Ok',
-        status: response.status,
-        statusText: response.statusText,
-        headers: [...response.headers],
-        body: await response.arrayBuffer(),
-      }))
-    : close().then(() => ({ _tag: 'Ok' }))
-  task.catch(error => ({ _tag: 'Err', message: error instanceof Error ? error.message : String(error) }))
-    .then(result => port.postMessage(result, result.body ? [result.body] : []))
-})
+  parentPort.postMessage(fetch ? { _tag: 'Ready' } : { _tag: 'Err', message: 'Nitro prerender server does not expose a fetch handler' })
+  parentPort.on('message', ({ _tag, input, headers, port }) => {
+    const task = _tag === 'Fetch'
+      ? fetch(input, headers).then(async response => ({
+          _tag: 'Ok',
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers],
+          body: await response.arrayBuffer(),
+        }))
+      : close().then(() => ({ _tag: 'Ok' }))
+    task.catch(error => ({ _tag: 'Err', message: error instanceof Error ? error.message : String(error) }))
+      .then(result => port.postMessage(result, result.body ? [result.body] : []))
+  })
+})().catch(error => parentPort.postMessage({ _tag: 'Err', message: error instanceof Error ? error.message : String(error) }))
 `
+
+function raceWithTimeout<T>(promises: Promise<T>[], ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms)
+  })
+  return Promise.race([...promises, timeout]).finally(() => clearTimeout(timer))
+}
 
 async function loadPrerenderServer(nitro: Nitro): Promise<{ fetch: PrerenderFetch, close: () => Promise<void> }> {
   const entryFileNames = nitro.options.rollupConfig?.output?.entryFileNames
   const serverFilename = typeof entryFileNames === 'string' ? entryFileNames : 'index.mjs'
-  const worker = new Worker(new URL(`data:text/javascript,${encodeURIComponent(PrerenderWorkerCode)}`), {
+  const worker = new Worker(PrerenderWorkerCode, {
+    eval: true,
     workerData: { entry: pathToFileURL(resolve(nitro.options.output.serverDir, serverFilename)).href },
   })
-  const [ready] = await Promise.race([
-    once(worker, 'message'),
-    once(worker, 'error').then(([error]) => Promise.reject(error)),
-  ])
-  if (ready._tag === 'Err') {
+  const workerDead = new Promise<never>((_, reject) => {
+    worker.once('exit', code => reject(new Error(`The Nitro prerender server worker exited unexpectedly (code ${code})`)))
+    worker.once('error', error => reject(error))
+  })
+  // the worker outlives individual calls; keep the rejection handled between calls
+  workerDead.catch(() => {
+    // rejection is observed by whichever callWorker or ready race is in flight
+  })
+  try {
+    const [ready] = await raceWithTimeout([once(worker, 'message'), workerDead], 60_000, 'The Nitro prerender server did not become ready in time')
+    if (ready._tag === 'Err')
+      throw new Error(ready.message)
+  }
+  catch (error) {
     await worker.terminate()
-    throw new Error(ready.message)
+    throw error
   }
 
   const callWorker = async (message: Record<string, unknown>) => {
     const { port1, port2 } = new MessageChannel()
     worker.postMessage({ ...message, port: port2 }, [port2])
-    const [result] = await once(port1, 'message')
-    port1.close()
-    if (result._tag === 'Err')
-      throw new Error(result.message)
-    return result
+    try {
+      const [result] = await Promise.race([once(port1, 'message'), workerDead])
+      if (result._tag === 'Err')
+        throw new Error(result.message)
+      return result
+    }
+    finally {
+      port1.close()
+    }
   }
   return {
     async fetch(input, headers) {
-      const result = await callWorker({ _tag: 'Fetch', input, headers })
-      return new Response(result.body, result)
+      const { _tag, body, ...responseInit } = await callWorker({ _tag: 'Fetch', input, headers })
+      return new Response(body, responseInit)
     },
     async close() {
-      await callWorker({ _tag: 'Close' }).finally(() => worker.terminate())
+      try {
+        await callWorker({ _tag: 'Close' })
+      }
+      catch {
+        // the worker already exited, there is nothing left to close
+      }
+      await worker.terminate()
     },
   }
 }
