@@ -113,7 +113,11 @@ const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false)
 
 // Prerendering issues one request per sitemap, so an event-scoped memo cannot span them. A build
 // resolves a fixed data set, so a process-wide memo is correct for the length of the build.
-const prerenderSourceFetches = new Map<string, Promise<SourceFetchResult>>()
+// The Map is created behind the `import.meta.prerender` define so a runtime bundle folds the
+// initializer to `undefined` and tree-shakes both the Map and its retained promises out.
+const prerenderSourceFetches = import.meta.prerender
+  ? new Map<string, Promise<SourceFetchResult>>()
+  : undefined
 
 // Several named sitemaps can list the same source URL. Memoize so the endpoint is fetched once
 // instead of once per sitemap. Request scoped at runtime, build scoped while prerendering.
