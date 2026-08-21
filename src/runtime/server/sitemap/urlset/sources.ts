@@ -133,6 +133,21 @@ function useSourceFetchMemo(event?: H3Event): Map<string, Promise<SourceFetchRes
 
 // Keyed by source URL rather than by sitemap name, so sitemaps sharing a source share one entry.
 // Host is part of the key because an internal source resolves against the incoming host.
+// Nitro stores custom keys verbatim in the cache driver, so the source key is hashed: fetch
+// options may carry Authorization headers, and those must not reach redis or KV in plaintext.
+function hashCacheKey(key: string): string {
+  let h1 = 0xDEADBEEF
+  let h2 = 0x41C6CE57
+  for (let i = 0; i < key.length; i++) {
+    const ch = key.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36)
+}
+
 const fetchSourceUrlsCached = defineCachedFunction(
   (event: H3Event, _key: string, url: string, options: any) => fetchSourceUrls(url, options, event),
   {
@@ -143,12 +158,15 @@ const fetchSourceUrlsCached = defineCachedFunction(
     getKey: (event: H3Event, key: string) => {
       const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      return `source-${proto}-${host}-${key}`
+      return `source-${proto}-${host}-${hashCacheKey(key)}`
     },
     swr: true,
     // A failed fetch must never be served again, otherwise one outage empties the sitemap for a
     // whole cache window.
-    validate: entry => !(entry.value as SourceFetchResult | undefined)?._isFailure,
+    validate: (entry) => {
+      const value = entry.value as SourceFetchResult | undefined
+      return value !== undefined && !value._isFailure
+    },
   },
 )
 
@@ -177,7 +195,8 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   // Let the next sitemap retry a failed source instead of inheriting the failure.
   if (result._isFailure)
     memo?.delete(key)
-  // Entries are copied before they are normalized, so sharing the array between sitemaps is safe.
+  // The urls array and its entries are shared between sitemaps. They are copied during
+  // normalisation, but hook consumers of `sitemap:input` must not mutate entries in place.
   return { ...input, context, ...result }
 }
 
@@ -238,6 +257,9 @@ async function fetchSourceUrls(url: string, options: any, event?: H3Event): Prom
         urls: [],
         timeTakenMs,
         error: 'Received HTML response instead of JSON',
+        // An HTML page is usually an outage or an auth wall, both transient. Treat it like a
+        // failed fetch so the empty result is never cached.
+        _isFailure: true,
       }
     }
     let urls = []

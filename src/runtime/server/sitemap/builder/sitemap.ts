@@ -143,6 +143,12 @@ export const buildResolvedSitemapUrlsCached = defineCachedFunction(
       return `resolved-${isChunked ? 'chunked-' : ''}${matchName}-${proto}-${host}`
     },
     swr: true,
+    // A build with failed sources is never cached: one outage must not pin an empty sitemap
+    // for a whole cache window. The next request retries the sources instead.
+    validate: (entry) => {
+      const value = entry.value as ResolvedSitemapUrlsResult | undefined
+      return value !== undefined && !(value.failedSources?.length)
+    },
   },
 )
 
