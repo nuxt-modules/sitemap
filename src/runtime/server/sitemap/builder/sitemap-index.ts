@@ -94,7 +94,7 @@ async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeCo
     const sitemap = sitemaps.chunks
     const resolved = await getResolvedSitemapUrls(sitemap, 'sitemap', true, resolvers, runtimeConfig, nitro)
     allFailedSources.push(...resolved.failedSources)
-    const chunkCount = Math.ceil(resolved.urls.length / (defaultSitemapsChunkSize as number))
+    const chunkCount = Math.ceil(resolved.urls.length / (defaultSitemapsChunkSize || 1000))
     for (let i = 0; i < chunkCount; i++)
       pushEntry(String(i))
   }
