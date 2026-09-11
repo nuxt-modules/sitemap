@@ -66,4 +66,40 @@ describe('multi domain locales', () => {
         expect(loc.host).toBe(host)
     }
   })
+
+  it('resolves each forwarded domain its own runtime-registered sitemaps behind a rewriting proxy', async () => {
+    const fetchIndex = (host: string) => new Promise<string>((resolve, reject) => {
+      get(url('/sitemap_index.xml'), { headers: { 'host': 'proxy.internal', 'x-forwarded-host': host } }, (response) => {
+        let body = ''
+        response.setEncoding('utf8')
+        response.on('data', chunk => body += chunk)
+        response.on('end', () => resolve(body))
+        response.on('error', reject)
+      }).on('error', reject)
+    })
+    const english = await fetchIndex('english-brand.com')
+    const german = await fetchIndex('german-brand.de')
+    expect(english).toContain('/__sitemap__/host-flag-english-brand.com.xml')
+    expect(english).not.toContain('/__sitemap__/host-flag-german-brand.de.xml')
+    expect(german).toContain('/__sitemap__/host-flag-german-brand.de.xml')
+    expect(german).not.toContain('/__sitemap__/host-flag-english-brand.com.xml')
+  })
+
+  it('serves each forwarded domain its own fetched source URLs behind a rewriting proxy', async () => {
+    const fetchSitemap = (host: string) => new Promise<string>((resolve, reject) => {
+      get(url('/__sitemap__/host-echo.xml'), { headers: { 'host': 'proxy.internal', 'x-forwarded-host': host } }, (response) => {
+        let body = ''
+        response.setEncoding('utf8')
+        response.on('data', chunk => body += chunk)
+        response.on('end', () => resolve(body))
+        response.on('error', reject)
+      }).on('error', reject)
+    })
+    const english = await fetchSitemap('english-brand.com')
+    const german = await fetchSitemap('german-brand.de')
+    expect(english).toContain('/echo-english-brand.com</loc>')
+    expect(english).not.toContain('/echo-german-brand.de')
+    expect(german).toContain('/echo-german-brand.de</loc>')
+    expect(german).not.toContain('/echo-english-brand.com')
+  })
 })
