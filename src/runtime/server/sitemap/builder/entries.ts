@@ -57,8 +57,10 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         continue
       if (sitemapLocale && sitemapLocale !== locale?._sitemap)
         continue
-      if (e._i18nGenerated && e.alternatives?.length) {
+      if (e.alternatives?.some(alternative => alternative._i18nGenerated === alternative.href.toString())) {
         const alternatives = e.alternatives.filter((alternative) => {
+          if (alternative._i18nGenerated !== alternative.href.toString())
+            return true
           if (alternative.hreflang === 'x-default')
             return false
           const alternateLocale = autoI18n.locales.find(l => l._hreflang === alternative.hreflang)
@@ -73,7 +75,9 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         })
         const defaultHreflang = autoI18n.locales.find(l => l.code === autoI18n.defaultLocale)?._hreflang
         const defaultAlternative = alternatives.find(a => a.hreflang === defaultHreflang)
-        e.alternatives = defaultAlternative ? [...alternatives, { ...defaultAlternative, hreflang: 'x-default' }] : alternatives
+        e.alternatives = defaultAlternative && !alternatives.some(alternative => alternative.hreflang === 'x-default')
+          ? [...alternatives, { ...defaultAlternative, hreflang: 'x-default' }]
+          : alternatives
       }
     }
     if (e.loc && (!filterPath || filterPath(e.loc, e._path?.pathname)))

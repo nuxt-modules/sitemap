@@ -214,8 +214,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       delete e.locale
       return {
         ...e,
-        ...(alternatives.length ? { alternatives } : {}),
-        ...(config.multiDomainLocales && alternatives.length ? { _i18nGenerated: true } : {}),
+        ...(alternatives.length
+          ? { alternatives: config.multiDomainLocales ? alternatives.map(alternative => ({ ...alternative, _i18nGenerated: alternative.href })) : alternatives }
+          : {}),
       }
     })
   }).filter(Boolean).flat() as SitemapUrlInput[]

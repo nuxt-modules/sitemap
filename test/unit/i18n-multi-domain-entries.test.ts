@@ -42,6 +42,26 @@ describe('request domain sitemap entries', () => {
     expect(entries[0]?.alternatives).toEqual(alternatives)
   })
 
+  it('preserves alternatives replaced by a sitemap input hook', () => {
+    const alternatives = [{ hreflang: 'de', href: 'https://german-brand.de/ueber' }, { hreflang: 'x-default', href: 'https://select-brand.com/' }]
+    const inputs = appRoutes(autoI18n).map(entry => typeof entry === 'string' ? { loc: entry, alternatives } : ({ ...entry, alternatives }))
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n, isI18nMapped: true }, resolvers)
+    for (const entry of entries)
+      expect(entry.alternatives).toEqual(alternatives)
+  })
+
+  it('preserves generated alternatives edited by a sitemap input hook', () => {
+    const inputs = appRoutes(autoI18n).map(entry => typeof entry === 'string'
+      ? entry
+      : ({
+          ...entry,
+          alternatives: entry.alternatives?.map(alternative => ({ ...alternative, href: alternative.hreflang === 'x-default' ? 'https://select-brand.com/' : alternative.href })),
+        }))
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n, isI18nMapped: true }, resolvers)
+    for (const entry of entries)
+      expect(entry.alternatives).toContainEqual(expect.objectContaining({ hreflang: 'x-default', href: 'https://select-brand.com/' }))
+  })
+
   it('keeps locale-like ordinary sitemap names', () => {
     const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [{ loc: '/de/about', _sitemap: 'en-news' }], { autoI18n, isI18nMapped: false }, resolvers)
     expect(entries.map(e => ({ loc: e.loc, sitemap: e._sitemap }))).toEqual([{ loc: 'https://english-brand.com/de/about', sitemap: 'en-news' }])
