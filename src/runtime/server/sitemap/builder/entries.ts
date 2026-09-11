@@ -8,7 +8,8 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
-import { createPathFilter, resolveI18nRouteEntries, splitForLocales } from '../../../utils-pure'
+import { parseURL } from 'ufo'
+import { createPathFilter, resolveI18nRouteEntries, resolveI18nSitemapLocaleKey, splitForLocales } from '../../../utils-pure'
 import { preNormalizeEntry } from '../urlset/normalise'
 
 export interface NormalizedI18n extends ResolvedSitemapUrl {
@@ -29,10 +30,39 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         exclude: sitemap.exclude,
       }, baseURL || '/')
     : undefined
+  const domainLocaleCodes = autoI18n?.multiDomainLocales && autoI18n.strategy !== 'no_prefix' ? new Set(autoI18n.locales.map(l => l.code)) : undefined
+  const domainLocaleKeys = autoI18n?.multiDomainLocales ? autoI18n.locales.map(l => l._sitemap) : []
   // 1. normalise
   const _urls: ResolvedSitemapUrl[] = []
   for (const _e of urls) {
     const e = preNormalizeEntry(_e, resolvers)
+    if (autoI18n && domainLocaleCodes && !e._abs && !e._i18nTransform) {
+      const prefix = splitForLocales(e._path?.pathname || '/', domainLocaleCodes)[0]
+      const localeCode = prefix || autoI18n.defaultLocale
+      const sitemapLocale = typeof e._sitemap === 'string' ? resolveI18nSitemapLocaleKey(e._sitemap, domainLocaleKeys) : null
+      const locale = autoI18n.locales.find(l => l.code === localeCode)
+      // Nuxt emits every domain's default route. Keep only this domain's valid variant.
+      if (autoI18n.strategy === 'prefix_except_default' && prefix === autoI18n.defaultLocale)
+        continue
+      if (sitemapLocale && sitemapLocale !== locale?._sitemap)
+        continue
+      if (e.alternatives?.length) {
+        const alternatives = e.alternatives.filter((alternative) => {
+          if (alternative.hreflang === 'x-default')
+            return false
+          const alternateLocale = autoI18n.locales.find(l => l._hreflang === alternative.hreflang)
+          if (!alternateLocale)
+            return true
+          const alternatePrefix = splitForLocales(parseURL(alternative.href.toString()).pathname || '/', domainLocaleCodes)[0]
+          if (autoI18n.strategy === 'prefix_except_default' && alternatePrefix === autoI18n.defaultLocale)
+            return false
+          return (alternatePrefix || autoI18n.defaultLocale) === alternateLocale.code
+        })
+        const defaultHreflang = autoI18n.locales.find(l => l.code === autoI18n.defaultLocale)?._hreflang
+        const defaultAlternative = alternatives.find(a => a.hreflang === defaultHreflang)
+        e.alternatives = defaultAlternative ? [...alternatives, { ...defaultAlternative, hreflang: 'x-default' }] : alternatives
+      }
+    }
     if (e.loc && (!filterPath || filterPath(e.loc, e._path?.pathname)))
       _urls.push(e)
   }
@@ -93,7 +123,13 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       else if (e._i18nTransform) {
         delete e._i18nTransform
-        const routeEntries = resolveI18nRouteEntries(e._relativeLoc, autoI18n, href => !filterPath || filterPath(href))
+        const routeEntries = resolveI18nRouteEntries(e._relativeLoc, autoI18n.multiDomainLocales
+          ? {
+              ...autoI18n,
+              multiDomainLocales: false,
+              locales: autoI18n.locales.map(({ domain: _, domains: __, defaultForDomains: ___, ...locale }) => locale),
+            }
+          : autoI18n, href => !filterPath || filterPath(href))
         // keep single entry, just add alternatvies
         if (hasDifferentDomains) {
           e.alternatives = routeEntries[0]?.alternatives

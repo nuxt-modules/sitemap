@@ -237,6 +237,7 @@ interface LocaleObject extends Record<string, any> {
 }
 
 export interface AutoI18nConfig {
+  multiDomainLocales?: boolean
   differentDomains?: boolean
   locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
   defaultLocale: string

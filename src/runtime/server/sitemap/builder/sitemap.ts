@@ -38,7 +38,11 @@ export async function buildResolvedSitemapUrls(
   runtimeConfig: ModuleRuntimeConfig,
   nitro?: NitroApp,
 ): Promise<ResolvedSitemapUrlsResult> {
-  const { sitemaps, autoI18n, isI18nMapped, isMultiSitemap, sortEntries } = runtimeConfig
+  const { sitemaps, isI18nMapped, isMultiSitemap, sortEntries } = runtimeConfig
+  const requestDefaultLocale = resolvers.event?.context.nuxtI18n?.vueI18nOptions?.defaultLocale
+  const autoI18n = runtimeConfig.autoI18n?.multiDomainLocales && typeof requestDefaultLocale === 'string'
+    ? { ...runtimeConfig.autoI18n, defaultLocale: requestDefaultLocale }
+    : runtimeConfig.autoI18n
 
   let sourcesInput = effectiveSitemap.includeAppSources
     ? [...await globalSitemapSources(), ...await childSitemapSources(effectiveSitemap)]
@@ -138,7 +142,7 @@ export const buildResolvedSitemapUrlsCached = defineCachedFunction(
     base: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     getKey: (event, _effectiveSitemap, matchName, isChunked) => {
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
       return `resolved-${isChunked ? 'chunked-' : ''}${matchName}-${proto}-${host}`
     },

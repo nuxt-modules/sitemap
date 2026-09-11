@@ -263,6 +263,23 @@ export default defineNuxtModule<ModuleOptions>({
           urls: [],
         }
         for (const pageLocales of Object.values(nuxtI18nConfig?.pages as Record<string, Record<string, string>>)) {
+          if (nuxtI18nConfig.multiDomainLocales && nuxtI18nConfig.strategy !== 'no_prefix') {
+            // A domain's default locale is only known when its sitemap is requested.
+            const sourceLocale = normalisedLocales.find(l => typeof pageLocales[l.code] === 'string' && !pageLocales[l.code]!.includes('['))
+            if (sourceLocale) {
+              i18nPagesSources.urls!.push({
+                loc: generatePathForI18nPages({
+                  localeCode: sourceLocale.code,
+                  pageLocales: pageLocales[sourceLocale.code]!,
+                  nuxtI18nConfig,
+                  normalisedLocales,
+                  forcedStrategy: 'prefix',
+                }),
+                _i18nTransform: true,
+              })
+            }
+            continue
+          }
           for (const localeCode in pageLocales) {
             const locale = normalisedLocales.find(l => l.code === localeCode)
             // add root entry for default locale and ignore dynamic routes
@@ -311,6 +328,7 @@ export default defineNuxtModule<ModuleOptions>({
       if (!hasSetAutoI18n && !hasDisabledAutoI18n && hasI18nConfigForAlternatives) {
         resolvedAutoI18n = {
           differentDomains: nuxtI18nConfig.differentDomains,
+          multiDomainLocales: nuxtI18nConfig.multiDomainLocales,
           defaultLocale: nuxtI18nConfig.defaultLocale!,
           locales: normalisedLocales,
           strategy: nuxtI18nConfig.strategy as 'prefix' | 'prefix_except_default' | 'prefix_and_default',
