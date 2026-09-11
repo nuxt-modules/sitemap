@@ -162,7 +162,7 @@ export function normaliseEntry(_e: ResolvedSitemapUrl, defaults?: Omit<SitemapUr
 
   // correct alternative hrefs
   if (e.alternatives) {
-    const alternatives = e.alternatives.map(a => ({ ...a }))
+    const alternatives = e.alternatives.map(({ _i18nGenerated: _, ...alternative }) => alternative)
     for (const alt of alternatives) {
       if (typeof alt.href === 'string') {
         alt.href = resolve(alt.href, resolvers)

@@ -215,7 +215,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       return {
         ...e,
         ...(alternatives.length
-          ? { alternatives: config.multiDomainLocales ? alternatives.map(alternative => ({ ...alternative, _i18nGenerated: alternative.href })) : alternatives }
+          ? { alternatives: config.multiDomainLocales ? alternatives.map(alternative => ({ ...alternative, _i18nGenerated: JSON.stringify([alternative.hreflang, alternative.href]) })) : alternatives }
           : {}),
       }
     })

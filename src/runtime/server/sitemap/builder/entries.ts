@@ -18,6 +18,10 @@ export interface NormalizedI18n extends ResolvedSitemapUrl {
   _index?: number
 }
 
+function isGeneratedAlternative(alternative: AlternativeEntry): boolean {
+  return alternative._i18nGenerated !== undefined && alternative._i18nGenerated === JSON.stringify([alternative.hreflang, alternative.href.toString()])
+}
+
 export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers, baseURL?: string): ResolvedSitemapUrl[] {
   const {
     autoI18n,
@@ -57,9 +61,9 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         continue
       if (sitemapLocale && sitemapLocale !== locale?._sitemap)
         continue
-      if (e.alternatives?.some(alternative => alternative._i18nGenerated === alternative.href.toString())) {
+      if (e.alternatives?.some(isGeneratedAlternative)) {
         const alternatives = e.alternatives.filter((alternative) => {
-          if (alternative._i18nGenerated !== alternative.href.toString())
+          if (!isGeneratedAlternative(alternative))
             return true
           if (alternative.hreflang === 'x-default')
             return false

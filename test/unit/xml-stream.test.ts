@@ -37,6 +37,14 @@ afterEach(() => {
 })
 
 describe('streaming XML serializers', () => {
+  it.each(['buffered', 'streamed'])('omits internal alternative metadata from %s XML', async (mode) => {
+    const input = [{ ...urls[0]!, alternatives: [{ hreflang: 'en', href: 'https://example.com/about', _i18nGenerated: '/about' }] }]
+    const xml = mode === 'streamed'
+      ? await new Response(urlsToXmlStream(input, resolvers, config)).text()
+      : urlsToXml(input, resolvers, config)
+    expect(xml.match(/<xhtml:link[^>]+\/>/g)).toEqual(['<xhtml:link rel="alternate" hreflang="en" href="https://example.com/about" />'])
+  })
+
   it.each([false, true])('matches buffered URL XML when minify is %s', async (minify) => {
     vi.useFakeTimers()
     vi.setSystemTime('2026-07-21T12:00:00.000Z')

@@ -474,7 +474,7 @@ export type SitemapItemDefaults = Omit<SitemapUrl, 'loc'>
 export type SitemapStrict = Required<SitemapUrl>
 
 export interface AlternativeEntry {
-  /** Original generated href. Hook replacements and edits keep their explicit targets. */
+  /** Original generated hreflang and href. Hook edits keep their explicit targets. */
   _i18nGenerated?: string
   hreflang: string
   href: string | URL

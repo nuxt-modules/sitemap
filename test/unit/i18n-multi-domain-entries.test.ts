@@ -62,6 +62,15 @@ describe('request domain sitemap entries', () => {
       expect(entry.alternatives).toContainEqual(expect.objectContaining({ hreflang: 'x-default', href: 'https://select-brand.com/' }))
   })
 
+  it('preserves generated alternative languages edited by a sitemap input hook', () => {
+    const inputs = appRoutes(autoI18n).map(entry => typeof entry === 'string'
+      ? entry
+      : ({ ...entry, alternatives: entry.alternatives?.filter(alternative => alternative.hreflang === 'en' && alternative.href === '/about').map(alternative => ({ ...alternative, hreflang: 'de' })) }))
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n, isI18nMapped: true }, resolvers)
+    for (const entry of entries)
+      expect(entry.alternatives).toContainEqual(expect.objectContaining({ hreflang: 'de', href: '/about' }))
+  })
+
   it('keeps locale-like ordinary sitemap names', () => {
     const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [{ loc: '/de/about', _sitemap: 'en-news' }], { autoI18n, isI18nMapped: false }, resolvers)
     expect(entries.map(e => ({ loc: e.loc, sitemap: e._sitemap }))).toEqual([{ loc: 'https://english-brand.com/de/about', sitemap: 'en-news' }])
