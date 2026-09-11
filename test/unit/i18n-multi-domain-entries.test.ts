@@ -124,6 +124,55 @@ describe('request domain sitemap entries', () => {
     expect(entries).toEqual([])
   })
 
+  it.each([
+    { defaultLocale: 'en', strategy: 'prefix_except_default', exclude: ['/en/**'], expected: ['/about', '/de/ueber'], languages: ['de', 'en', 'x-default'] },
+    { defaultLocale: 'en', strategy: 'prefix_except_default', include: ['/about', '/de/**'], expected: ['/about', '/de/ueber'], languages: ['de', 'en', 'x-default'] },
+    { defaultLocale: 'en', strategy: 'prefix_except_default', exclude: ['/de/**'], expected: ['/about'], languages: ['en', 'x-default'] },
+    { defaultLocale: 'de', strategy: 'prefix_except_default', exclude: ['/en/**'], expected: ['/ueber'], languages: ['de', 'x-default'] },
+    { defaultLocale: 'de', strategy: 'prefix_except_default', include: ['/ueber'], expected: ['/ueber'], languages: ['de', 'x-default'] },
+    { defaultLocale: 'en', strategy: 'prefix_and_default', exclude: ['/en/**'], expected: ['/about', '/de/ueber'], languages: ['de', 'en', 'x-default'] },
+    { defaultLocale: 'de', strategy: 'prefix_and_default', exclude: ['/de/**'], expected: ['/en/about', '/ueber'], languages: ['de', 'en', 'x-default'] },
+    { defaultLocale: 'en', strategy: 'prefix_and_default', include: ['/en/**'], expected: ['/en/about'], languages: [] },
+    { defaultLocale: 'de', strategy: 'prefix_and_default', include: ['/de/**'], expected: ['/de/ueber'], languages: [] },
+    { defaultLocale: 'en', strategy: 'prefix_except_default', exclude: ['/**'], expected: [], languages: [] },
+  ] as const)('filters expanded custom pages: $defaultLocale $strategy $include $exclude', ({ defaultLocale, strategy, expected, languages, ...filters }) => {
+    const config: AutoI18nConfig = {
+      ...autoI18n,
+      defaultLocale,
+      strategy,
+      locales: autoI18n.locales.filter(locale => locale.code !== 'it'),
+      pages: { about: { en: '/about', de: '/ueber' } },
+    }
+    const host = config.locales.find(locale => locale.code === defaultLocale)!.defaultForDomains![0]!
+    const entries = resolveSitemapEntries({
+      sitemapName: 'sitemap.xml',
+      ...('include' in filters ? { include: [...filters.include] } : { exclude: [...filters.exclude] }),
+    }, [{ loc: '/en/about', _i18nTransform: true }], { autoI18n: config, isI18nMapped: true }, {
+      ...resolvers,
+      canonicalUrlResolver: (path: string) => new URL(path, `https://${host}`).href,
+    })
+    expect(entries.map(entry => entry.loc).sort()).toEqual(expected.map(path => `https://${host}${path}`).sort())
+    for (const entry of entries) {
+      expect(entry.alternatives?.map(alternative => alternative.hreflang).sort()).toEqual([...languages].sort())
+      const translatedPaths = { en: '/about', de: '/ueber' }
+      expect(entry.alternatives?.map(alternative => alternative.href).sort()).toEqual(languages.map((language) => {
+        const locale = language === 'x-default' ? defaultLocale : language as 'en' | 'de'
+        return `${locale === defaultLocale ? '' : `/${locale}`}${translatedPaths[locale]}`
+      }).sort())
+    }
+  })
+
+  it('does not infer filtered alternatives from deferred custom page seeds', () => {
+    const config: AutoI18nConfig = { ...autoI18n, pages: { about: { en: '/about', de: '/ueber', it: false } } }
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml', exclude: ['/en/**'] }, [
+      '/de/about',
+      { loc: '/en/about', _i18nTransform: true },
+    ], { autoI18n: config, isI18nMapped: true }, resolvers)
+    expect(entries.map(entry => entry.loc)).toContain('https://english-brand.com/de/ueber')
+    for (const entry of entries)
+      expect(entry.alternatives?.map(alternative => alternative.href)).not.toContain('https://english-brand.com/en/about')
+  })
+
   it('keeps both generated default route variants', () => {
     const config: AutoI18nConfig = { ...autoI18n, strategy: 'prefix_and_default' }
     const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, appRoutes(config), { autoI18n: config, isI18nMapped: true }, resolvers)

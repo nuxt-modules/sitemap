@@ -84,7 +84,9 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
           : alternatives
       }
     }
-    if (e.loc && (!filterPath || filterPath(e.loc, e._path?.pathname)))
+    // Transform seeds may use a prefix that no final URL keeps on this domain.
+    const needsExpansion = e._i18nTransform && !e._abs && autoI18n && autoI18n.strategy !== 'no_prefix'
+    if (e.loc && (needsExpansion || !filterPath || filterPath(e.loc, e._path?.pathname)))
       _urls.push(e)
   }
 
@@ -117,8 +119,8 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       e._index = i
       e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path?.search || ''}`
       withoutPrefixPaths[pathWithoutPrefix] = withoutPrefixPaths[pathWithoutPrefix] || []
-      // need to make sure the locale doesn't already exist
-      if (!withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
+      // Only actual routes can supply inferred alternatives, never transformation seeds.
+      if (!e._i18nTransform && !withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
         withoutPrefixPaths[pathWithoutPrefix].push(e)
       validI18nUrlsForTransform.push(e)
     }
@@ -210,5 +212,5 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
         _urls[e._index] = e
     }
   }
-  return unavailableEntries.size ? _urls.filter(entry => !unavailableEntries.has(entry)) : _urls
+  return _urls.filter(entry => !unavailableEntries.has(entry) && (!filterPath || filterPath(entry.loc, entry._path?.pathname)))
 }
