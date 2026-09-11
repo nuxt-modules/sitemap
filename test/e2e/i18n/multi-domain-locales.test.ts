@@ -47,4 +47,23 @@ describe('multi domain locales', () => {
       }
     }
   })
+
+  it('serves each forwarded domain its own sitemap index behind a rewriting proxy', async () => {
+    const fetchIndex = (host: string) => new Promise<string>((resolve, reject) => {
+      get(url('/sitemap_index.xml'), { headers: { 'host': 'proxy.internal', 'x-forwarded-host': host } }, (response) => {
+        let body = ''
+        response.setEncoding('utf8')
+        response.on('data', chunk => body += chunk)
+        response.on('end', () => resolve(body))
+        response.on('error', reject)
+      }).on('error', reject)
+    })
+    const indexes = { 'english-brand.com': await fetchIndex('english-brand.com'), 'german-brand.de': await fetchIndex('german-brand.de') }
+    for (const [host, xml] of Object.entries(indexes)) {
+      const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]!))
+      expect(locs.length).toBeGreaterThan(0)
+      for (const loc of locs)
+        expect(loc.host).toBe(host)
+    }
+  })
 })
