@@ -27,7 +27,7 @@ describe('multi domain locales', () => {
       })
       const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]!).pathname)
       const prefix = locale === defaultLocale ? '' : `/${locale}`
-      expect(paths.sort()).toEqual([prefix || '/', `${prefix}/about`, `${prefix}/extra`].sort())
+      expect(paths.sort()).toEqual([prefix || '/', `${prefix}/about`, `${prefix}/extra`, ...(locale === defaultLocale ? ['/privacy'] : [])].sort())
       for (const match of xml.matchAll(/<url>([\s\S]+?)<\/url>/g)) {
         const loc = new URL(/<loc>([^<]+)<\/loc>/.exec(match[1]!)![1]!)
         expect(loc.host).toBe(host)
@@ -37,7 +37,7 @@ describe('multi domain locales', () => {
           const href = /href="([^"]+)"/.exec(link[1]!)![1]!
           return { hreflang, href }
         })
-        const expected = [...locales, 'x-default'].map((hreflang) => {
+        const expected = (basePath === '/privacy' ? [defaultLocale!, 'x-default'] : [...locales, 'x-default']).map((hreflang) => {
           const alternateLocale = hreflang === 'x-default' ? defaultLocale : hreflang
           const alternatePrefix = alternateLocale === defaultLocale ? '' : `/${alternateLocale}`
           const path = alternatePrefix ? `${alternatePrefix}${basePath === '/' ? '' : basePath}` : basePath

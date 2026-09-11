@@ -173,7 +173,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
           return false
         const defaultLocale = config.normalisedLocales.find(l => l.code === config.defaultLocale)
-        if (defaultLocale && config.isI18nMapped)
+        // Nonlocalized pages use the request default on multi-domain sites.
+        if (defaultLocale && config.isI18nMapped && (!config.multiDomainLocales || config.strategy === 'no_prefix'))
           e._sitemap = defaultLocale._sitemap
         delete e.page
         delete e.locale
@@ -192,7 +193,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
               hreflang: locale?._hreflang,
               href,
             }
-          }).filter(Boolean)
+          }).filter(alternative => alternative !== false)
         : []
       if (config.autoI18n) {
         const xDefault = entries.find(a => a.locale === config.defaultLocale)

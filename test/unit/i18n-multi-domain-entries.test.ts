@@ -32,6 +32,25 @@ function appRoutes(config: AutoI18nConfig) {
 }
 
 describe('request domain sitemap entries', () => {
+  it.each(['en', 'de', 'it'])('keeps nonlocalized pages on the %s default domain', (defaultLocale) => {
+    const inputs = convertNuxtPagesToSitemapEntries([{ name: 'privacy', path: '/privacy' }], {
+      normalisedLocales: autoI18n.locales,
+      multiDomainLocales: true,
+      defaultLocale: 'en',
+      strategy: 'prefix_except_default',
+      autoI18n: true,
+      autoLastmod: false,
+      isI18nMapped: true,
+      filter: {},
+    })
+    const host = autoI18n.locales.find(locale => locale.code === defaultLocale)!.defaultForDomains![0]!
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n: { ...autoI18n, defaultLocale }, isI18nMapped: true }, {
+      ...resolvers,
+      canonicalUrlResolver: (path: string) => new URL(path, `https://${host}`).href,
+    })
+    expect(entries.map(entry => ({ loc: entry.loc, sitemap: entry._sitemap }))).toEqual([{ loc: `https://${host}/privacy`, sitemap: defaultLocale }])
+  })
+
   it('preserves supplied remote alternatives and x-default', () => {
     const alternatives = [
       { hreflang: 'en', href: 'https://english-brand.com/about' },
