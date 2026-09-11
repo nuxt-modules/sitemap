@@ -980,6 +980,7 @@ export default defineNuxtModule<ModuleOptions>({
         strategy: nuxtI18nConfig.strategy || 'no_prefix',
         routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
         normalisedLocales,
+        multiDomainLocales: nuxtI18nConfig.multiDomainLocales,
         filter: {
           include: serializeFilters(config.include || [], '@nuxtjs/sitemap') as (string | RegExp)[],
           exclude: serializeFilters(config.exclude || [], '@nuxtjs/sitemap') as (string | RegExp)[],

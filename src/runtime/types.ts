@@ -447,6 +447,8 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
+  /** Alternatives generated from Nuxt routes need request-domain filtering. */
+  _i18nGenerated?: boolean
   /**
    * Route this URL to a specific sitemap. The name must exist in the sitemap config,
    * either set in `nuxt.config` or registered with the `sitemap:sitemaps-resolved` hook.

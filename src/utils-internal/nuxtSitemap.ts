@@ -43,6 +43,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   isI18nMapped: boolean
   filter: { include?: FilterInput[], exclude?: FilterInput[] }
   autoI18n: boolean
+  multiDomainLocales?: boolean
 }
 
 interface PageEntry extends SitemapUrl {
@@ -117,7 +118,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       return p
     })
 
-  if (config.strategy === 'prefix_and_default') {
+  if (config.strategy === 'prefix_and_default' && !config.multiDomainLocales) {
     // filter out any pages started with the default locale
     flattenedPages = flattenedPages.filter((p) => {
       if (p.page?.name) {
@@ -214,6 +215,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       return {
         ...e,
         ...(alternatives.length ? { alternatives } : {}),
+        ...(config.multiDomainLocales && alternatives.length ? { _i18nGenerated: true } : {}),
       }
     })
   }).filter(Boolean).flat() as SitemapUrlInput[]
