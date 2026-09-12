@@ -347,7 +347,7 @@ packages:
         optional: true
 
   '@nuxtjs/sitemap@file:module.tgz':
-    resolution: {integrity: sha512-5nw7l1tzYAQnz2mwip0p7zAMpVhyGBFFdYZfjDCpZ9vvGpKQj4w9Kfi3XxybDH7aUoGMmtM7NG29R5RIrGEy3w==, tarball: file:module.tgz}
+    resolution: {integrity: sha512-5sHXhqmm0aU/9vUbH1XjV6z8SbIaG36tARimSvmcw4rlPhYBQrw3Qr3Jn/M79lYCgBBAPD1pmepTP+ZCzLUZew==, tarball: file:module.tgz}
     version: 8.5.0
     engines: {node: '>=18.0.0'}
     peerDependencies:

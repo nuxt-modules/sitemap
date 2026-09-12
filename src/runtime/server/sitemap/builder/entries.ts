@@ -46,7 +46,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   const unavailableEntries = new Set<ResolvedSitemapUrl>()
   for (const _e of urls) {
     const e = preNormalizeEntry(_e, resolvers)
-    if (autoI18n && domainLocaleCodes && !e._abs && !e._i18nTransform) {
+    if (autoI18n && domainLocaleCodes && !e._abs && !e._i18nTransform && !e._i18nUnlocalized) {
       const prefix = splitForLocales(e._path?.pathname || '/', domainLocaleCodes)[0]
       const localeCode = prefix || autoI18n.defaultLocale
       const sitemapLocale = isI18nMapped && typeof e._sitemap === 'string' ? resolveI18nSitemapLocaleKey(e._sitemap, domainLocaleKeys) : null
@@ -101,7 +101,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       const _e = _urls[i]!
       if (_e._abs)
         continue
-      const split = splitForLocales(_e._relativeLoc, localeCodes)
+      const split = _e._i18nUnlocalized ? [null, _e._relativeLoc] as const : splitForLocales(_e._relativeLoc, localeCodes)
       let localeCode = split[0]
       const pathWithoutPrefix = split[1]
       if (!localeCode)
@@ -117,7 +117,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       e._key = `${e._sitemap || ''}${e._path?.pathname || '/'}${e._path?.search || ''}`
       withoutPrefixPaths[pathWithoutPrefix] = withoutPrefixPaths[pathWithoutPrefix] || []
       // Only actual routes can supply inferred alternatives, never transformation seeds.
-      if (!e._i18nTransform && !withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
+      if (!e._i18nTransform && !e._i18nUnlocalized && !withoutPrefixPaths[pathWithoutPrefix].some(e => e._locale.code === locale.code))
         withoutPrefixPaths[pathWithoutPrefix].push(e)
       validI18nUrlsForTransform.push(e)
     }
@@ -126,7 +126,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       // let's try and find other urls that we can use for alternatives
       if (!e._i18nTransform && !e.alternatives?.length) {
         const alternatives: AlternativeEntry[] = []
-        for (const u of withoutPrefixPaths[e._pathWithoutPrefix] || []) {
+        for (const u of e._i18nUnlocalized ? [e] : withoutPrefixPaths[e._pathWithoutPrefix] || []) {
           if (autoI18n.multiDomainLocales && availableLocales && !availableLocales.includes(u._locale))
             continue
           if (u._locale.code === defaultLocale) {

@@ -447,6 +447,8 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
+  /** Nuxt left this route outside locale routing. */
+  _i18nUnlocalized?: true
   /**
    * Route this URL to a specific sitemap. The name must exist in the sitemap config,
    * either set in `nuxt.config` or registered with the `sitemap:sitemaps-resolved` hook.

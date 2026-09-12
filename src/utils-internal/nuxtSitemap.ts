@@ -172,6 +172,8 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         // for example this will fix the `/` if the configuration is set to `prefix`
         if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
           return false
+        if (config.multiDomainLocales)
+          e._i18nUnlocalized = true
         const defaultLocale = config.normalisedLocales.find(l => l.code === config.defaultLocale)
         // Nonlocalized pages use the request default on multi-domain sites.
         if (defaultLocale && config.isI18nMapped && (!config.multiDomainLocales || config.strategy === 'no_prefix'))

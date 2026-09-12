@@ -68,6 +68,47 @@ describe('request domain sitemap entries', () => {
     expect(entries.map(entry => ({ loc: entry.loc, sitemap: entry._sitemap }))).toEqual([{ loc: `https://${host}/privacy`, sitemap: defaultLocale }])
   })
 
+  it.each(['en', 'de', 'it'])('keeps a nonlocalized locale-like path on the %s host', (defaultLocale) => {
+    const config = { ...autoI18n, locales: autoI18n.locales.map(locale => ({ ...locale, domains: locale.defaultForDomains })) }
+    const inputs = convertNuxtPagesToSitemapEntries([{ name: 'legal', path: '/en/legal' }], {
+      normalisedLocales: config.locales,
+      multiDomainLocales: true,
+      defaultLocale: 'en',
+      strategy: 'prefix_except_default',
+      autoI18n: true,
+      autoLastmod: false,
+      isI18nMapped: true,
+      filter: {},
+    })
+    const host = config.locales.find(locale => locale.code === defaultLocale)!.defaultForDomains![0]!
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n: config, isI18nMapped: true }, {
+      ...resolvers,
+      canonicalUrlResolver: path => new URL(path, `https://${host}`).href,
+    })
+    expect(entries.map(entry => ({ loc: entry.loc, sitemap: entry._sitemap })))
+      .toEqual([{ loc: `https://${host}/en/legal`, sitemap: defaultLocale }])
+    expect(entries[0]?.alternatives?.map(alternative => alternative.hreflang).sort()).toEqual([defaultLocale, 'x-default'].sort())
+  })
+
+  it('does not infer a translation from a nonlocalized locale-like path', () => {
+    const inputs = convertNuxtPagesToSitemapEntries([{ name: 'legal', path: '/en/legal' }], {
+      normalisedLocales: autoI18n.locales,
+      multiDomainLocales: true,
+      defaultLocale: 'en',
+      strategy: 'prefix_except_default',
+      autoI18n: true,
+      autoLastmod: false,
+      isI18nMapped: true,
+      filter: {},
+    })
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [...inputs, { loc: '/de/en/legal' }], { autoI18n, isI18nMapped: true }, resolvers)
+
+    expect(entries.find(entry => entry.loc.endsWith('/en/legal') && entry._sitemap === 'en')?.alternatives?.map(alternative => alternative.hreflang).sort())
+      .toEqual(['en', 'x-default'])
+    expect(entries.find(entry => entry._sitemap === 'de')?.alternatives?.map(alternative => alternative.hreflang))
+      .toEqual(['de'])
+  })
+
   it('preserves supplied remote alternatives and x-default', () => {
     const alternatives = [
       { hreflang: 'en', href: 'https://english-brand.com/about' },
