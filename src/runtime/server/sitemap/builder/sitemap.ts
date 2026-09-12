@@ -138,7 +138,7 @@ export const buildResolvedSitemapUrlsCached = defineCachedFunction(
     base: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     getKey: (event, _effectiveSitemap, matchName, isChunked) => {
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
       return `resolved-${isChunked ? 'chunked-' : ''}${matchName}-${proto}-${host}`
     },

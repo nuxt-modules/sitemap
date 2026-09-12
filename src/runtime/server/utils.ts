@@ -82,7 +82,7 @@ const resolveSitemapSitemapsCached = defineCachedFunction(
     base: 'sitemap',
     // nitro calls getKey with the full fn args (event, nitro)
     getKey: (e?: H3Event) => {
-      const host = (e && (getHeader(e, 'host') || getHeader(e, 'x-forwarded-host'))) || ''
+      const host = (e && (getHeader(e, 'x-forwarded-host') || getHeader(e, 'host'))) || ''
       const proto = (e && getHeader(e, 'x-forwarded-proto')) || 'https'
       return `runtime-sitemaps-${proto}-${host}`
     },

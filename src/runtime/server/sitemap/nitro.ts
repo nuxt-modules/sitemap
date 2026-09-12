@@ -266,7 +266,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 
 function getSitemapCacheKey(event: H3Event, definition: SitemapDefinition) {
   // Include headers that can affect absolute URL generation in the cache key.
-  const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+  const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
   const proto = getHeader(event, 'x-forwarded-proto') || 'https'
   const sitemapName = definition.sitemapName || 'default'
   return `${sitemapName}-${proto}-${host}`

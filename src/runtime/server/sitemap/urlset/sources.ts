@@ -160,7 +160,7 @@ const fetchSourceUrlsCached = defineCachedFunction(
     base: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     getKey: (event: H3Event, key: string) => {
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
+      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
       return `source-${proto}-${host}-${hashCacheKey(key)}`
     },

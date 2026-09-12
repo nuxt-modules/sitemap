@@ -237,6 +237,7 @@ interface LocaleObject extends Record<string, any> {
 }
 
 export interface AutoI18nConfig {
+  multiDomainLocales?: boolean
   differentDomains?: boolean
   locales: (LocaleObject & { _sitemap: string, _hreflang: string })[]
   defaultLocale: string
@@ -446,6 +447,8 @@ export interface SitemapUrl {
   images?: Array<ImageEntry>
   videos?: Array<VideoEntry>
   _i18nTransform?: boolean
+  /** Nuxt left this route outside locale routing. */
+  _i18nUnlocalized?: true
   /**
    * Route this URL to a specific sitemap. The name must exist in the sitemap config,
    * either set in `nuxt.config` or registered with the `sitemap:sitemaps-resolved` hook.
@@ -473,6 +476,8 @@ export type SitemapItemDefaults = Omit<SitemapUrl, 'loc'>
 export type SitemapStrict = Required<SitemapUrl>
 
 export interface AlternativeEntry {
+  /** Original generated hreflang and href. Hook edits keep their explicit targets. */
+  _i18nGenerated?: string
   hreflang: string
   href: string | URL
 }

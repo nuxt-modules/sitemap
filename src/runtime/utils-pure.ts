@@ -1,4 +1,4 @@
-import type { LocaleAlternate, RuntimeI18nConfig } from 'nuxtseo-shared/i18n-runtime'
+import type { LocaleAlternate, RuntimeI18nConfig, RuntimeRouteContext } from 'nuxtseo-shared/i18n-runtime'
 import type { AlternativeEntry, AutoI18nConfig, FilterInput } from './types'
 import { createDefu } from 'defu'
 import { computeLocaleAlternates, resolveLocaleFromRoute } from 'nuxtseo-shared/i18n-runtime'
@@ -109,10 +109,10 @@ function localeAlternateHref(alternate: LocaleAlternate): string {
     : alternate.path
 }
 
-export function resolveI18nRouteEntries(route: string, i18n: AutoI18nConfig, includeHref: (href: string) => boolean = () => true): ResolvedI18nRouteEntry[] {
+export function resolveI18nRouteEntries(route: string, i18n: AutoI18nConfig, includeHref: (href: string) => boolean = () => true, context: RuntimeRouteContext = {}): ResolvedI18nRouteEntry[] {
   const runtimeConfig = toRuntimeI18nConfig(i18n)
-  const currentLocale = resolveLocaleFromRoute(route, runtimeConfig).locale
-  const alternates = computeLocaleAlternates(route, runtimeConfig, { locale: currentLocale })
+  const currentLocale = resolveLocaleFromRoute(route, runtimeConfig, context).locale
+  const alternates = computeLocaleAlternates(route, runtimeConfig, { ...context, locale: currentLocale })
   const localizedAlternates = alternates.map(alternate => ({
     alternate,
     href: localeAlternateHref(alternate),

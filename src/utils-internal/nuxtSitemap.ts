@@ -43,6 +43,7 @@ export interface NuxtPagesToSitemapEntriesOptions {
   isI18nMapped: boolean
   filter: { include?: FilterInput[], exclude?: FilterInput[] }
   autoI18n: boolean
+  multiDomainLocales?: boolean
 }
 
 interface PageEntry extends SitemapUrl {
@@ -117,7 +118,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       return p
     })
 
-  if (config.strategy === 'prefix_and_default') {
+  if (config.strategy === 'prefix_and_default' && !config.multiDomainLocales) {
     // filter out any pages started with the default locale
     flattenedPages = flattenedPages.filter((p) => {
       if (p.page?.name) {
@@ -171,8 +172,11 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
         // for example this will fix the `/` if the configuration is set to `prefix`
         if (localeGroups[name]?.some(a => a.locale === config.defaultLocale))
           return false
+        if (config.multiDomainLocales)
+          e._i18nUnlocalized = true
         const defaultLocale = config.normalisedLocales.find(l => l.code === config.defaultLocale)
-        if (defaultLocale && config.isI18nMapped)
+        // Nonlocalized pages use the request default on multi-domain sites.
+        if (defaultLocale && config.isI18nMapped && (!config.multiDomainLocales || config.strategy === 'no_prefix'))
           e._sitemap = defaultLocale._sitemap
         delete e.page
         delete e.locale
@@ -191,7 +195,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
               hreflang: locale?._hreflang,
               href,
             }
-          }).filter(Boolean)
+          }).filter(alternative => alternative !== false)
         : []
       if (config.autoI18n) {
         const xDefault = entries.find(a => a.locale === config.defaultLocale)
@@ -213,7 +217,9 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
       delete e.locale
       return {
         ...e,
-        ...(alternatives.length ? { alternatives } : {}),
+        ...(alternatives.length
+          ? { alternatives: config.multiDomainLocales ? alternatives.map(alternative => ({ ...alternative, _i18nGenerated: JSON.stringify([alternative.hreflang, alternative.href]) })) : alternatives }
+          : {}),
       }
     })
   }).filter(Boolean).flat() as SitemapUrlInput[]

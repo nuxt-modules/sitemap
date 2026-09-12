@@ -2,6 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { normaliseEntry, preNormalizeEntry } from '../../src/runtime/server/sitemap/urlset/normalise'
 
 describe('normalise', () => {
+  it('removes generated alternative provenance from final entries', () => {
+    const source = preNormalizeEntry({ loc: '/about', alternatives: [{ hreflang: 'en', href: '/about', _i18nGenerated: '/about' }] })
+    const result = normaliseEntry(source)
+    expect(result.alternatives).toEqual([{ hreflang: 'en', href: '/about' }])
+    expect(source.alternatives?.[0]?._i18nGenerated).toBe('/about')
+  })
+
   it('normalises without defaults without mutating the source entry', () => {
     const source = preNormalizeEntry({
       loc: '/page',
