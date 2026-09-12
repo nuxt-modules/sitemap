@@ -205,9 +205,13 @@ describe('request domain sitemap entries', () => {
 
   it.each(['en', 'de'])('keeps both default custom page variants for %s', (defaultLocale) => {
     const config: AutoI18nConfig = { ...autoI18n, defaultLocale, strategy: 'prefix_and_default', pages: { about: { en: '/about', de: '/ueber', it: '/informazioni' } } }
-    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [{ loc: '/en/about', _i18nTransform: true }], { autoI18n: config, isI18nMapped: true }, resolvers)
+    const host = config.locales.find(locale => locale.code === defaultLocale)!.defaultForDomains![0]!
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [{ loc: '/en/about', _i18nTransform: true }], { autoI18n: config, isI18nMapped: true }, {
+      ...resolvers,
+      canonicalUrlResolver: (path: string) => new URL(path, `https://${host}`).href,
+    })
     expect(entries.map(e => e.loc).sort()).toEqual((defaultLocale === 'en'
       ? ['/about', '/en/about', '/de/ueber', '/it/informazioni']
-      : ['/ueber', '/en/about', '/de/ueber', '/it/informazioni']).map(path => `https://english-brand.com${path}`).sort())
+      : ['/ueber', '/en/about', '/de/ueber', '/it/informazioni']).map(path => `https://${host}${path}`).sort())
   })
 })

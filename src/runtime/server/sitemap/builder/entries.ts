@@ -8,6 +8,7 @@ import type {
   SitemapUrl,
   SitemapUrlInput,
 } from '../../../types'
+import { resolveI18nDomain } from 'nuxtseo-shared/i18n-runtime'
 import { parseURL } from 'ufo'
 import { createPathFilter, resolveI18nRouteEntries, resolveI18nSitemapLocaleKey, splitForLocales } from '../../../utils-pure'
 import { preNormalizeEntry } from '../urlset/normalise'
@@ -24,9 +25,13 @@ function isGeneratedAlternative(alternative: AlternativeEntry): boolean {
 
 export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapUrlInput[], runtimeConfig: Pick<ModuleRuntimeConfig, 'autoI18n' | 'isI18nMapped'>, resolvers?: NitroUrlResolvers, baseURL?: string): ResolvedSitemapUrl[] {
   const {
-    autoI18n,
+    autoI18n: configuredI18n,
     isI18nMapped,
   } = runtimeConfig
+  const requestHost = configuredI18n?.multiDomainLocales && resolvers ? parseURL(resolvers.canonicalUrlResolver('/')).host : undefined
+  const domain = configuredI18n?.multiDomainLocales ? resolveI18nDomain(requestHost, configuredI18n) : undefined
+  const autoI18n = configuredI18n && domain ? { ...configuredI18n, defaultLocale: domain.defaultLocale } : configuredI18n
+  const availableLocales = domain?.locales || autoI18n?.locales
   const hasFilters = !!sitemap.include?.length || !!sitemap.exclude?.length
   const filterPath = hasFilters
     ? createPathFilter({
@@ -35,15 +40,6 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }, baseURL || '/')
     : undefined
   const domainLocaleCodes = autoI18n?.multiDomainLocales && autoI18n.strategy !== 'no_prefix' ? new Set(autoI18n.locales.map(l => l.code)) : undefined
-  const requestHost = autoI18n?.multiDomainLocales && resolvers ? parseURL(resolvers.canonicalUrlResolver('/')).host?.toLowerCase() : undefined
-  const localeDomains = (locale: AutoI18nConfig['locales'][number]) => (locale.domains || (locale.domain ? [locale.domain] : []))
-    .map(domain => parseURL(domain.includes('://') ? domain : `https://${domain}`).host?.toLowerCase())
-  const knownHost = requestHost && autoI18n && autoI18n.locales.some(locale => localeDomains(locale).includes(requestHost))
-  const availableLocales = autoI18n && autoI18n.locales.filter((locale) => {
-    const domains = localeDomains(locale)
-    // Nuxt serves locales without domain restrictions on every host.
-    return !autoI18n.multiDomainLocales || !knownHost || !domains.length || domains.includes(requestHost!)
-  })
   const domainLocaleKeys = autoI18n?.multiDomainLocales ? autoI18n.locales.map(l => l._sitemap) : []
   // 1. normalise
   const _urls: ResolvedSitemapUrl[] = []
@@ -149,20 +145,10 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
       else if (e._i18nTransform) {
         delete e._i18nTransform
-        let routeEntries = resolveI18nRouteEntries(e._relativeLoc, autoI18n.multiDomainLocales
-          ? {
-              ...autoI18n,
-              multiDomainLocales: false,
-              locales: autoI18n.locales.map(({ domain: _, domains: __, defaultForDomains: ___, ...locale }) => locale),
-            }
-          : autoI18n, href => !filterPath || filterPath(href))
-        if (autoI18n.multiDomainLocales && availableLocales) {
-          const availableCodes = new Set(availableLocales.map(locale => locale.code))
-          const availableHreflangs = new Set(availableLocales.map(locale => locale._hreflang))
-          routeEntries = routeEntries.filter(entry => availableCodes.has(entry.locale.code)).map(entry => ({
-            ...entry,
-            alternatives: entry.alternatives.filter(alternative => alternative.hreflang === 'x-default' || availableHreflangs.has(alternative.hreflang)),
-          }))
+        const routeEntries = resolveI18nRouteEntries(e._relativeLoc, autoI18n, href => !filterPath || filterPath(href), autoI18n.multiDomainLocales
+          ? { host: requestHost || '', domainMode: 'request' }
+          : {})
+        if (autoI18n.multiDomainLocales) {
           if (!routeEntries.length) {
             unavailableEntries.add(e)
             continue

@@ -38,11 +38,7 @@ export async function buildResolvedSitemapUrls(
   runtimeConfig: ModuleRuntimeConfig,
   nitro?: NitroApp,
 ): Promise<ResolvedSitemapUrlsResult> {
-  const { sitemaps, isI18nMapped, isMultiSitemap, sortEntries } = runtimeConfig
-  const requestDefaultLocale = resolvers.event?.context.nuxtI18n?.vueI18nOptions?.defaultLocale
-  const autoI18n = runtimeConfig.autoI18n?.multiDomainLocales && typeof requestDefaultLocale === 'string'
-    ? { ...runtimeConfig.autoI18n, defaultLocale: requestDefaultLocale }
-    : runtimeConfig.autoI18n
+  const { sitemaps, autoI18n, isI18nMapped, isMultiSitemap, sortEntries } = runtimeConfig
 
   let sourcesInput = effectiveSitemap.includeAppSources
     ? [...await globalSitemapSources(), ...await childSitemapSources(effectiveSitemap)]
