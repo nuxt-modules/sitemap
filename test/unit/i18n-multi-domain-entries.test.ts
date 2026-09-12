@@ -32,6 +32,23 @@ function appRoutes(config: AutoI18nConfig) {
 }
 
 describe('request domain sitemap entries', () => {
+  it.each(['prefix_except_default', 'prefix_and_default'] as const)('retains prefixes without a shared domain default for %s', (strategy) => {
+    const config: AutoI18nConfig = {
+      ...autoI18n,
+      strategy,
+      locales: autoI18n.locales.map(locale => ({ ...locale, domains: [locale.code === 'en' ? 'english-brand.com' : 'shared.example'], defaultForDomains: [] })),
+    }
+    for (const inputs of [appRoutes(config), [{ loc: '/about', _i18nTransform: true }]]) {
+      const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n: config, isI18nMapped: true }, {
+        ...resolvers,
+        canonicalUrlResolver: path => new URL(path, 'https://shared.example').href,
+      })
+      expect(entries.map(entry => entry.loc).sort()).toEqual(['https://shared.example/de/about', 'https://shared.example/it/about'])
+      for (const entry of entries)
+        expect(entry.alternatives?.map(alternative => alternative.href).sort()).toEqual(['/de/about', '/it/about'])
+    }
+  })
+
   it.each(['en', 'de', 'it'])('keeps nonlocalized pages on the %s default domain', (defaultLocale) => {
     const inputs = convertNuxtPagesToSitemapEntries([{ name: 'privacy', path: '/privacy' }], {
       normalisedLocales: autoI18n.locales,

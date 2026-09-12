@@ -24,8 +24,8 @@ importers:
         specifier: ^4.1.4
         version: 4.1.4(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3)
       nuxtseo-shared:
-        specifier: https://pkg.pr.new/nuxtseo-shared@ac9e521
-        version: https://pkg.pr.new/nuxtseo-shared@ac9e521(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(nuxt-site-config@4.1.4(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3)
+        specifier: https://pkg.pr.new/nuxtseo-shared@d3e6504
+        version: https://pkg.pr.new/nuxtseo-shared@d3e6504(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(nuxt-site-config@4.1.4(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3)
       vue:
         specifier: ^3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -353,7 +353,7 @@ packages:
         optional: true
 
   '@nuxtjs/sitemap@file:module.tgz':
-    resolution: {integrity: sha512-+bXKoJS0Nw/6awuQPQ33Pa/Fi04ds9AiuRuHp+BrrgOiLmbhH6aY5ezU3JfWBu50Zfk1CypXwRwttTEJtARnfQ==, tarball: file:module.tgz}
+    resolution: {integrity: sha512-Tba3MkKzqLZgmSC5CjQnVd8B0KUlWXe00r0w8+RzE9AFA1hCCTrXA2MxSFG+EE0iqxBhZhB4y/3N8RbD3tOBag==, tarball: file:module.tgz}
     version: 8.5.0
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -1328,8 +1328,8 @@ packages:
       zod:
         optional: true
 
-  nuxtseo-shared@https://pkg.pr.new/nuxtseo-shared@ac9e521:
-    resolution: {integrity: sha512-+FU4zlZJpxOYoBSOyC+DFpCp+GneTAUqUVM1QIot+5LmFKCxox2IUKW/7BUIFVl5yrKc+Pxwep7mHPKJH7k9Lg==, tarball: https://pkg.pr.new/nuxtseo-shared@ac9e521}
+  nuxtseo-shared@https://pkg.pr.new/nuxtseo-shared@d3e6504:
+    resolution: {integrity: sha512-1cW3NmKf45KJlnnQuLoFKvv7r3ornj7x9LlSU7fI+fLOcTYFM85EXXfRdxYfk0sxtd9ZZM/GzqwXa4/K3bW8CA==, tarball: https://pkg.pr.new/nuxtseo-shared@d3e6504}
     version: 5.3.13
     peerDependencies:
       '@nuxt/schema': ^3.16.0 || ^4.0.0 || ^5.0.0
@@ -2142,7 +2142,7 @@ snapshots:
   '@dxup/nuxt@0.5.5(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(vite@8.2.0)':
     dependencies:
       '@dxup/unimport': 0.1.2
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
       '@vue/compiler-dom': 3.5.40
       chokidar: 5.0.0
       knitwork: 1.3.0
@@ -2269,7 +2269,7 @@ snapshots:
 
   '@nuxt/devtools-kit@4.0.0-alpha.7(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)':
     dependencies:
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
       tinyexec: 1.3.0
       vite: 8.2.0(@vitejs/devtools@0.4.10)(jiti@2.7.0)(yaml@2.9.0)
     transitivePeerDependencies:
@@ -2281,7 +2281,7 @@ snapshots:
 
   '@nuxt/devtools-kit@4.0.0-alpha.9(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)':
     dependencies:
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
       nostics: 1.2.0
       tinyexec: 1.3.0
       vite: 8.2.0(@vitejs/devtools@0.4.10)(jiti@2.7.0)(yaml@2.9.0)
@@ -2297,7 +2297,7 @@ snapshots:
       '@devframes/plugin-code-server': 0.7.16(devframe@0.7.16(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3))(vite@8.2.0)
       '@devframes/plugin-data-inspector': 0.7.16(devframe@0.7.16(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3))(vite@8.2.0)
       '@nuxt/devtools-kit': 4.0.0-alpha.9(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
       '@vitejs/devtools': 0.4.10(crossws@0.4.10(srvx@0.11.22))(srvx@0.11.22)(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(vite@8.2.0)
       '@vitejs/devtools-kit': 0.4.10(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0)
       '@vue/devtools-core': 8.2.1(vue@3.5.40(typescript@6.0.3))
@@ -2324,7 +2324,7 @@ snapshots:
       unstorage: 1.17.5(db0@0.3.4)
       verkit: 0.2.0
       vite: 8.2.0(@vitejs/devtools@0.4.10)(jiti@2.7.0)(yaml@2.9.0)
-      vite-plugin-inspect: 12.0.2(@nuxt/kit@4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0)))(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0)
+      vite-plugin-inspect: 12.0.2(@nuxt/kit@4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0)))(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0)
       vite-plugin-vue-tracer: 1.4.0(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))
       ws: 8.21.1
     transitivePeerDependencies:
@@ -3610,7 +3610,7 @@ snapshots:
 
   nuxt-site-config-kit@4.1.4(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vue@3.5.40(typescript@6.0.3)):
     dependencies:
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
       site-config-stack: 4.1.4(vue@3.5.40(typescript@6.0.3))
       std-env: 4.2.0
       ufo: 1.6.4
@@ -3746,7 +3746,7 @@ snapshots:
       - unplugin
       - vite
 
-  nuxtseo-shared@https://pkg.pr.new/nuxtseo-shared@ac9e521(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(nuxt-site-config@4.1.4(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3):
+  nuxtseo-shared@https://pkg.pr.new/nuxtseo-shared@d3e6504(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(nuxt-site-config@4.1.4(@nuxt/schema@4.5.1)(magic-string@1.1.0)(magicast@0.5.4)(nuxt-nightly@5.0.0-29762711.192612c7)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)(vue@3.5.40(typescript@6.0.3))(zod@4.4.3):
     dependencies:
       '@clack/prompts': 1.7.0
       '@nuxt/devtools-kit': 4.0.0-alpha.7(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))(vite@8.2.0)
@@ -4158,7 +4158,7 @@ snapshots:
       typescript: 6.0.3
       vue-tsc: 3.3.9(typescript@6.0.3)
 
-  vite-plugin-inspect@12.0.2(@nuxt/kit@4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0)))(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0):
+  vite-plugin-inspect@12.0.2(@nuxt/kit@4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0)))(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0):
     dependencies:
       '@vitejs/devtools-kit': 0.4.10(cac@7.0.0)(srvx@0.11.22)(typescript@6.0.3)(vite@8.2.0)
       ansis: 4.3.1
@@ -4171,7 +4171,7 @@ snapshots:
       unplugin-utils: 0.3.2
       vite: 8.2.0(@vitejs/devtools@0.4.10)(jiti@2.7.0)(yaml@2.9.0)
     optionalDependencies:
-      '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
+      '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(rolldown@1.2.1)(vite@8.2.0))
     transitivePeerDependencies:
       - '@modelcontextprotocol/sdk'
       - cac
