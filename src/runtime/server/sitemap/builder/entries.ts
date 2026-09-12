@@ -82,7 +82,9 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
       }
     }
     // Transform seeds may use a prefix that no final URL keeps on this domain.
-    const needsExpansion = e._i18nTransform && !e._abs && autoI18n && autoI18n.strategy !== 'no_prefix'
+    // A seed can also be absolute (multi-domain i18n bakes the source locale's
+    // domain into the loc), so expansion uses _relativeLoc and drops the origin.
+    const needsExpansion = e._i18nTransform && autoI18n && autoI18n.strategy !== 'no_prefix'
     if (e.loc && (needsExpansion || !filterPath || filterPath(e.loc, e._path?.pathname)))
       _urls.push(e)
   }
@@ -99,7 +101,7 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
     const validI18nUrlsForTransform: NormalizedI18n[] = []
     for (let i = 0; i < _urls.length; i++) {
       const _e = _urls[i]!
-      if (_e._abs)
+      if (_e._abs && !_e._i18nTransform)
         continue
       const split = _e._i18nUnlocalized ? [null, _e._relativeLoc] as const : splitForLocales(_e._relativeLoc, localeCodes)
       let localeCode = split[0]

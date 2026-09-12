@@ -255,6 +255,22 @@ describe('request domain sitemap entries', () => {
       expect(entry.alternatives?.map(alternative => alternative.href)).not.toContain('https://english-brand.com/en/about')
   })
 
+  it.each(['en', 'de'])('expands the absolute custom page seed on the %s domain', (requestLocale) => {
+    const host = requestLocale === 'en' ? 'english-brand.com' : 'german-brand.de'
+    const config: AutoI18nConfig = {
+      ...autoI18n,
+      pages: { about: { en: '/about', de: '/ueber', it: '/informazioni' } },
+      locales: autoI18n.locales.map((locale, i) => ({ code: locale.code, _hreflang: locale.code, _sitemap: locale.code, domain: domains[i]! })),
+    }
+    // the module emits one seed per pages entry with the source locale's domain baked in
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, [{ loc: 'https://english-brand.com/en/about', _i18nTransform: true }], { autoI18n: config, isI18nMapped: true }, {
+      ...resolvers,
+      canonicalUrlResolver: path => new URL(path, `https://${host}`).href,
+    })
+    expect(entries.map(entry => entry.loc)).toEqual([requestLocale === 'en' ? 'https://english-brand.com/about' : 'https://german-brand.de/ueber'])
+    expect(entries[0]?.alternatives?.map(alternative => alternative.hreflang).sort()).toEqual([requestLocale, 'x-default'].sort())
+  })
+
   it('keeps both generated default route variants', () => {
     const config: AutoI18nConfig = { ...autoI18n, strategy: 'prefix_and_default' }
     const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, appRoutes(config), { autoI18n: config, isI18nMapped: true }, resolvers)
