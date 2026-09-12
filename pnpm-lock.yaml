@@ -82,8 +82,8 @@ catalogs:
       specifier: ^5.3.14
       version: 5.3.14
     nuxtseo-shared:
-      specifier: ^5.3.15
-      version: 5.3.15
+      specifier: ^5.3.16
+      version: 5.3.16
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
@@ -149,7 +149,7 @@ importers:
         version: 4.2.3(2ad2906d2b0c8985281adebd4e4c5547)
       nuxtseo-shared:
         specifier: 'catalog:'
-        version: 5.3.15(301c423810fe1defc49de434267e903e)
+        version: 5.3.16(301c423810fe1defc49de434267e903e)
       ofetch:
         specifier: 'catalog:'
         version: 1.5.1
@@ -5813,8 +5813,8 @@ packages:
       zod:
         optional: true
 
-  nuxtseo-shared@5.3.15:
-    resolution: {integrity: sha512-QAenIPP0lHAENPDpkAQzQ3++BMAzE1djOUyXx67KnMLjTFOOnNhFt9BPnRL/pIx0EgjbkuZYXOv8wh2mLUGcfQ==}
+  nuxtseo-shared@5.3.16:
+    resolution: {integrity: sha512-0Ood/aB/6PtWHFx6JB4Ub/InEbilW29cvTFGX5pIWyGf9Wewyil0T4481F/IUhvabHUGssWqErmn+mKoY/z6qA==}
     peerDependencies:
       '@nuxt/schema': ^3.16.0 || ^4.0.0 || ^5.0.0
       nuxt: ^3.16.0 || ^4.0.0 || ^5.0.0
@@ -9867,7 +9867,7 @@ snapshots:
       defu: 6.1.7
       h3: 1.15.11
       nuxt-site-config: 4.2.3(2ad2906d2b0c8985281adebd4e4c5547)
-      nuxtseo-shared: 5.3.15(301c423810fe1defc49de434267e903e)
+      nuxtseo-shared: 5.3.16(301c423810fe1defc49de434267e903e)
       pathe: 2.0.3
       pkg-types: 2.3.1
       ufo: 1.6.4
@@ -14312,7 +14312,7 @@ snapshots:
       defu: 6.1.7
       h3: 1.15.11
       nuxt-site-config-kit: 4.2.3(magic-string@1.2.2)(magicast@0.5.4)(oxc-parser@0.141.0)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.4)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
-      nuxtseo-shared: 5.3.15(301c423810fe1defc49de434267e903e)
+      nuxtseo-shared: 5.3.16(301c423810fe1defc49de434267e903e)
       pathe: 2.0.3
       pkg-types: 2.3.1
       site-config-stack: 4.2.3(vue@3.5.41(typescript@6.0.3))
@@ -14596,7 +14596,7 @@ snapshots:
       - unplugin
       - vite
 
-  nuxtseo-shared@5.3.15(301c423810fe1defc49de434267e903e):
+  nuxtseo-shared@5.3.16(301c423810fe1defc49de434267e903e):
     dependencies:
       '@clack/prompts': 1.7.0
       '@nuxt/devtools-kit': 4.0.0-alpha.7(magic-string@1.2.2)(magicast@0.5.4)(oxc-parser@0.141.0)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.4)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
