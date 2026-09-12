@@ -110,13 +110,13 @@ describe('request domain sitemap entries', () => {
   it.each([
     { domains: undefined },
     { domains: [] },
-  ])('excludes locales without assigned domains: $domains', ({ domains }) => {
+  ])('keeps locales without domain restrictions: $domains', ({ domains }) => {
     const config = { ...autoI18n, locales: autoI18n.locales.map(l => l.code === 'it' ? { ...l, domains } : l) }
     for (const inputs of [appRoutes(config), [{ loc: '/about', _i18nTransform: true }]]) {
       const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n: config, isI18nMapped: true }, resolvers)
-      expect(entries.map(e => e.loc).sort()).toEqual(['https://english-brand.com/about', 'https://english-brand.com/de/about'])
+      expect(entries.map(e => e.loc).sort()).toEqual(['https://english-brand.com/about', 'https://english-brand.com/de/about', 'https://english-brand.com/it/about'])
       for (const entry of entries)
-        expect(entry.alternatives?.map(a => a.hreflang).sort()).toEqual(['de', 'en', 'x-default'])
+        expect(entry.alternatives?.map(a => a.hreflang).sort()).toEqual(['de', 'en', 'it', 'x-default'])
     }
   })
 

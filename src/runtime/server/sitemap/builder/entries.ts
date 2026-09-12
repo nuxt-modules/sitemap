@@ -41,7 +41,8 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   const knownHost = requestHost && autoI18n && autoI18n.locales.some(locale => localeDomains(locale).includes(requestHost))
   const availableLocales = autoI18n && autoI18n.locales.filter((locale) => {
     const domains = localeDomains(locale)
-    return !autoI18n.multiDomainLocales || !knownHost || domains.includes(requestHost!)
+    // Nuxt serves locales without domain restrictions on every host.
+    return !autoI18n.multiDomainLocales || !knownHost || !domains.length || domains.includes(requestHost!)
   })
   const domainLocaleKeys = autoI18n?.multiDomainLocales ? autoI18n.locales.map(l => l._sitemap) : []
   // 1. normalise
