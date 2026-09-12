@@ -5,7 +5,7 @@ import type {
   SitemapIndexEntry,
 } from '../../../types'
 import { joinURL } from 'ufo'
-import { getHeader } from '#nuxtseo/h3'
+import { getHeader, getRequestHost } from '#nuxtseo/h3'
 import { defineCachedFunction } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
@@ -28,7 +28,7 @@ const buildSitemapIndexCached = defineCachedFunction(
     base: 'sitemap', // Use the sitemap storage
     getKey: (event: H3Event) => {
       // Include headers that could affect the output in the cache key
-      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
+      const host = getRequestHost(event, { xForwardedHost: true }) || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
       return `sitemap-index-${proto}-${host}`
     },

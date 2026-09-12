@@ -37,11 +37,11 @@ export function resolveSitemapEntries(sitemap: SitemapDefinition, urls: SitemapU
   const domainLocaleCodes = autoI18n?.multiDomainLocales && autoI18n.strategy !== 'no_prefix' ? new Set(autoI18n.locales.map(l => l.code)) : undefined
   const requestHost = autoI18n?.multiDomainLocales && resolvers ? parseURL(resolvers.canonicalUrlResolver('/')).host?.toLowerCase() : undefined
   const localeDomains = (locale: AutoI18nConfig['locales'][number]) => (locale.domains || (locale.domain ? [locale.domain] : []))
-    .map(domain => domain.replace(/^https?:\/\//i, '').toLowerCase())
+    .map(domain => parseURL(domain.includes('://') ? domain : `https://${domain}`).host?.toLowerCase())
   const knownHost = requestHost && autoI18n && autoI18n.locales.some(locale => localeDomains(locale).includes(requestHost))
   const availableLocales = autoI18n && autoI18n.locales.filter((locale) => {
     const domains = localeDomains(locale)
-    return !autoI18n.multiDomainLocales || !knownHost || !domains.length || domains.includes(requestHost!)
+    return !autoI18n.multiDomainLocales || !knownHost || domains.includes(requestHost!)
   })
   const domainLocaleKeys = autoI18n?.multiDomainLocales ? autoI18n.locales.map(l => l._sitemap) : []
   // 1. normalise

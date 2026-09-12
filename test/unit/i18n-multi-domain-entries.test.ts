@@ -107,6 +107,30 @@ describe('request domain sitemap entries', () => {
     }
   })
 
+  it.each([
+    { domains: undefined },
+    { domains: [] },
+  ])('excludes locales without assigned domains: $domains', ({ domains }) => {
+    const config = { ...autoI18n, locales: autoI18n.locales.map(l => l.code === 'it' ? { ...l, domains } : l) }
+    for (const inputs of [appRoutes(config), [{ loc: '/about', _i18nTransform: true }]]) {
+      const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, inputs, { autoI18n: config, isI18nMapped: true }, resolvers)
+      expect(entries.map(e => e.loc).sort()).toEqual(['https://english-brand.com/about', 'https://english-brand.com/de/about'])
+      for (const entry of entries)
+        expect(entry.alternatives?.map(a => a.hreflang).sort()).toEqual(['de', 'en', 'x-default'])
+    }
+  })
+
+  it.each(['https://ENGLISH-brand.com/', 'ENGLISH-brand.com/', 'https://english-brand.com/path?query=value'])('normalizes configured domain %s', (domain) => {
+    const config = {
+      ...autoI18n,
+      locales: autoI18n.locales.map(l => ({ ...l, domains: [l.code === 'it' ? 'italian-brand.it' : domain] })),
+    }
+    const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, appRoutes(config), { autoI18n: config, isI18nMapped: true }, resolvers)
+    expect(entries.map(e => e.loc).sort()).toEqual(['https://english-brand.com/about', 'https://english-brand.com/de/about'])
+    for (const entry of entries)
+      expect(entry.alternatives?.map(a => a.hreflang).sort()).toEqual(['de', 'en', 'x-default'])
+  })
+
   it('does not infer unavailable alternatives from transformation seeds', () => {
     const config = { ...autoI18n, locales: autoI18n.locales.map(l => l.code === 'it' ? { ...l, domains: ['italian-brand.it'] } : l) }
     const entries = resolveSitemapEntries({ sitemapName: 'sitemap.xml' }, ['/extra', { loc: '/it/extra', _i18nTransform: true }], { autoI18n: config, isI18nMapped: true }, resolvers)
