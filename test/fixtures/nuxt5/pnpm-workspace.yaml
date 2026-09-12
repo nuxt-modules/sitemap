@@ -12,3 +12,8 @@ minimumReleaseAgeExclude:
   - nuxtseo-shared@5.3.9
   # nuxt-site-config@4.1.4 still resolves this transitive version.
   - nuxtseo-shared@5.3.7
+
+# Install the pinned shared preview directly until its stable release.
+# pnpm blocks URL dependencies declared by the packed Sitemap package.
+overrides:
+  '@nuxtjs/sitemap>nuxtseo-shared': '-'

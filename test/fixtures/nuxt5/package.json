@@ -10,6 +10,7 @@
     "@nuxtjs/sitemap": "file:./module.tgz",
     "nitro": "3.0.260610-beta",
     "nuxt-site-config": "^4.1.4",
+    "nuxtseo-shared": "https://pkg.pr.new/nuxtseo-shared@ac9e521",
     "nuxt": "npm:nuxt-nightly@5.0.0-29762711.192612c7",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
