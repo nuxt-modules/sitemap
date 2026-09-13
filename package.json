@@ -2,7 +2,7 @@
   "name": "@nuxtjs/sitemap",
   "type": "module",
   "version": "8.5.1",
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.26.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
     "name": "Harlan Wilton",
@@ -67,7 +67,7 @@
     "prepare": "skilld prepare || true"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "zod": ">=3.25.76"
   },
   "peerDependenciesMeta": {
     "zod": {
