@@ -48,11 +48,13 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     nuxt.options.nitro.prerender.routes.push('/__sitemap__/debug.json')
     logger.info('Adding debug route for sitemap generation:', colors.cyan('/__sitemap__/debug.json'))
   }
-  // need to filter it out of the config as we render it after all other routes
+  // filter the sitemap out of the config as we render it after all other routes,
+  // even when we don't hook into prerendering: a user-listed sitemap route would
+  // otherwise be prerendered directly and fail without a build-time site URL (#677)
+  nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
   if (!shouldHookIntoPrerender) {
     return
   }
-  nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes.filter(r => r && !includesSitemapRoot(options.sitemapName, [r]))
 
   const runtimeAssetsPath = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/sitemap')
   const localeCodes = options.autoI18n ? new Set(options.autoI18n.locales.map(l => l.code)) : undefined

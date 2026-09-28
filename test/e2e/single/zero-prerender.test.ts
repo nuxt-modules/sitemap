@@ -18,4 +18,19 @@ describe('zeroPrerender', () => {
     // the sitemap is left to runtime
     await expect(readdir(output)).resolves.not.toContain('sitemap.xml')
   }, 600000)
+
+  it('filters a user-listed sitemap route out of prerendering without crawlLinks', async () => {
+    const { resolve } = createResolver(import.meta.url)
+    const rootDir = resolve('../../fixtures/zero-prerender-routes')
+    const nuxt = await loadNuxt({ rootDir })
+
+    // the explicit `/sitemap.xml` prerender route must not fail the build (#677)
+    await buildNuxt(nuxt)
+
+    const output = resolve(rootDir, '.output/public')
+    // the listed page is prerendered
+    await access(resolve(output, 'index.html'))
+    // the sitemap is left to runtime
+    await expect(readdir(output)).resolves.not.toContain('sitemap.xml')
+  }, 600000)
 })
