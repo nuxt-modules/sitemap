@@ -161,6 +161,7 @@ export default defineNuxtModule<ModuleOptions>({
     sources: [],
     excludeAppSources: [],
     zeroRuntime: false,
+    zeroPrerender: false,
   },
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -441,8 +442,21 @@ export default defineNuxtModule<ModuleOptions>({
       prerenderSitemap = true
     }
 
+    // zeroPrerender opts out of prerendering sitemaps entirely (#675)
+    if (config.zeroPrerender) {
+      if (isNuxtGenerate()) {
+        logger.warn('`zeroPrerender` is set while running `nuxt generate`. Sitemaps will be missing from the static output, they will only render when a server runs.')
+      }
+      if (resolveNitroPreset() === 'vercel-edge') {
+        logger.warn('`zeroPrerender` is not supported on Vercel Edge as runtime sitemaps are not supported there. Remove `zeroPrerender`.')
+      }
+      if (config.zeroRuntime) {
+        logger.warn('`zeroRuntime` requires prerendered sitemaps and cannot be combined with `zeroPrerender`. Remove one of the two options.')
+      }
+      prerenderSitemap = false
+    }
     // zeroRuntime forces prerendering
-    if (config.zeroRuntime && !prerenderSitemap) {
+    if (config.zeroRuntime && !config.zeroPrerender && !prerenderSitemap) {
       prerenderSitemap = true
       addPrerenderRoutes('/sitemap.xml')
       if (!nuxt.options.dev)
