@@ -5,11 +5,11 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-<a href="https://skilld.dev/gh/nuxt-modules/sitemap/nuxtjs-sitemap">
+<a href="https://skilld.dev/gh/nuxt-modules/sitemap">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://skilld.dev/b/nuxt-modules/sitemap/nuxtjs-sitemap?theme=dark">
-    <source media="(prefers-color-scheme: light)" srcset="https://skilld.dev/b/nuxt-modules/sitemap/nuxtjs-sitemap?theme=light">
-    <img alt="Skill repository on skilld.dev" src="https://skilld.dev/b/nuxt-modules/sitemap/nuxtjs-sitemap?theme=light">
+    <source media="(prefers-color-scheme: dark)" srcset="https://skilld.dev/b/nuxt-modules/sitemap?theme=dark">
+    <source media="(prefers-color-scheme: light)" srcset="https://skilld.dev/b/nuxt-modules/sitemap?theme=light">
+    <img alt="Skill repository on skilld.dev" src="https://skilld.dev/b/nuxt-modules/sitemap?theme=light">
   </picture>
 </a>
 
@@ -48,7 +48,7 @@ npx nuxi@latest module add sitemap
 ```
 
 > [!TIP]
-> Using an AI agent? Get the @nuxtjs/sitemap Skill on [skilld.dev/gh/nuxt-modules/sitemap/nuxtjs-sitemap](https://skilld.dev/gh/nuxt-modules/sitemap/nuxtjs-sitemap).
+> Using an AI agent? Get the @nuxtjs/sitemap Skill on [skilld.dev/gh/nuxt-modules/sitemap](https://skilld.dev/gh/nuxt-modules/sitemap).
 
 💡 Generated your sitemap? Check which URLs Google has indexed with the free [Sitemap Validator](https://nuxtseo.com/tools/xml-sitemap-validator), or monitor indexing continuously with [Nuxt SEO Pro](https://nuxtseo.com/pro).
 
