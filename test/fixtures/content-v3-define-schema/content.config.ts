@@ -25,6 +25,11 @@ export default defineContentConfig({
               return false
             return true
           },
+          // method shorthand, the form the content guide shows
+          onUrl(url) {
+            if (url.loc === '/bar')
+              url.changefreq = 'weekly'
+          },
         }),
       }),
     }),

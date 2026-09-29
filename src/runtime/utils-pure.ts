@@ -191,3 +191,17 @@ export function createPathFilter(options: { include?: (FilterInput | string | Re
     return urlFilter(withLeadingSlash(path))
   }
 }
+
+const ROBOTS_BLOCKING_DIRECTIVES = new Set(['noindex', 'none'])
+
+/**
+ * Whether a page level `robots` value keeps the page out of search results.
+ * Accepts the frontmatter forms: `false`, or a directive string such as `noindex, nofollow`.
+ */
+export function robotsBlocksIndexing(robots: unknown): boolean {
+  if (robots === false)
+    return true
+  if (typeof robots !== 'string')
+    return false
+  return robots.split(',').some(directive => ROBOTS_BLOCKING_DIRECTIVES.has(directive.trim().toLowerCase()))
+}

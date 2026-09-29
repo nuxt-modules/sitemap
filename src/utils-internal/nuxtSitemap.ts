@@ -7,7 +7,7 @@ import { useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
 import { extname } from 'pathe'
 import { withBase, withHttps } from 'ufo'
-import { createPathFilter } from '../runtime/utils-pure'
+import { createPathFilter, robotsBlocksIndexing } from '../runtime/utils-pure'
 import { expandCompactLocaleRoute } from './i18n'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
@@ -291,7 +291,7 @@ export function generateExtraRoutesFromNuxtConfig(nuxt: Nuxt = useNuxt()) {
       // make sure key doesn't use a wildcard and its not for a file
       if (k.includes('*') || k.includes('.') || k.includes(':'))
         return false
-      if ('robots' in v && typeof v.robots === 'boolean' && !v.robots)
+      if ('robots' in v && robotsBlocksIndexing(v.robots))
         return false
       // make sure that we're not redirecting
       return !v.redirect

@@ -1,6 +1,7 @@
 import type { SitemapUrl } from '../../types'
 import { defu } from 'defu'
 import { defineNitroPlugin } from '#nuxtseo/nitro'
+import { robotsBlocksIndexing } from '../../utils-pure'
 import { useSitemapRuntimeConfig } from '../utils'
 
 interface NuxtContentDocument {
@@ -23,7 +24,7 @@ export default defineNitroPlugin((nitroApp) => {
   // @ts-expect-error untyped hook
   nitroApp.hooks.hook('content:file:afterParse', async (content: NuxtContentDocument) => {
     const validExtensions = ['md', 'mdx']
-    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension || '') || content._partial || content.robots === false)
+    if (content.sitemap === false || content._draft || !validExtensions.includes(content._extension || '') || content._partial || robotsBlocksIndexing(content.robots))
       return
 
     // add any top level images

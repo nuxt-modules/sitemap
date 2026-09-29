@@ -35,10 +35,9 @@ export default defineEventHandler(async (e) => {
       .where('sitemap', 'IS NOT NULL')
     if (!needsAllFields)
       query.select('path', 'sitemap')
+    let entries: ContentEntry[]
     try {
-      const entries = await query.all() as ContentEntry[]
-      const filter = filters?.get(collection)
-      return { collection, entries: filter ? entries.filter(filter) : entries }
+      entries = await query.all() as ContentEntry[]
     }
     catch (err) {
       const hint = provider === 'nuxt-content-v3'
@@ -46,6 +45,17 @@ export default defineEventHandler(async (e) => {
         : ''
       // Degrade to an empty source for this collection instead of 500ing the sitemap.
       console.error(`[@nuxtjs/sitemap] Couldn't query content collection "${collection}" for the sitemap, so its URLs will be missing.${hint}`, err)
+      return { collection, entries: [] as ContentEntry[] }
+    }
+    const filter = filters?.get(collection)
+    if (!filter)
+      return { collection, entries }
+    try {
+      return { collection, entries: entries.filter(filter) }
+    }
+    catch (err) {
+      // The query worked, so name the callback instead of blaming the content DB.
+      console.error(`[@nuxtjs/sitemap] The \`filter\` callback of collection "${collection}" threw, so its URLs will be missing.`, err)
       return { collection, entries: [] as ContentEntry[] }
     }
   }))
@@ -59,7 +69,14 @@ export default defineEventHandler(async (e) => {
           loc: entry.path,
           ...(typeof entry.sitemap === 'object' && entry.sitemap ? entry.sitemap : {}),
         }
-        onUrl?.(url, entry, collection)
+        if (onUrl) {
+          try {
+            onUrl(url, entry, collection)
+          }
+          catch (err) {
+            throw new Error(`[@nuxtjs/sitemap] The \`onUrl\` callback of collection "${collection}" threw for "${entry.path}".`, { cause: err })
+          }
+        }
         return url
       })
   })

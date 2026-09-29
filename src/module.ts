@@ -38,7 +38,9 @@ import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-s
 import { setupDevToolsUI } from './devtools'
 import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
+import { robotsBlocksIndexing } from './runtime/utils-pure'
 import { registerTypeTemplates } from './templates'
+import { serializeContentCallback } from './utils-internal/contentCallbacks'
 import {
   generatePathForI18nPages,
   normalizeLocales,
@@ -528,7 +530,9 @@ export default defineNuxtModule<ModuleOptions>({
             ctx.content.sitemap = null
             return
           }
-          if (ctx.content.robots === false) {
+          // `robots` is a schema field when the collection declares it, and lands in
+          // `meta` with the other undeclared frontmatter keys when it does not.
+          if (robotsBlocksIndexing(content.robots ?? content.meta?.robots)) {
             ctx.content.sitemap = null
             return
           }
@@ -561,12 +565,12 @@ export default defineNuxtModule<ModuleOptions>({
         const filterEntries: string[] = []
         if (globalThis.__sitemapCollectionFilters) {
           for (const [name, filterFn] of globalThis.__sitemapCollectionFilters.entries())
-            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${filterFn.toString()})`)
+            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${serializeContentCallback(filterFn, { collection: name, kind: 'filter' })})`)
         }
         const onUrlEntries: string[] = []
         if (globalThis.__sitemapCollectionOnUrlFns) {
           for (const [name, fn] of globalThis.__sitemapCollectionOnUrlFns.entries())
-            onUrlEntries.push(`onUrlFns.set(${JSON.stringify(name)}, ${fn.toString()})`)
+            onUrlEntries.push(`onUrlFns.set(${JSON.stringify(name)}, ${serializeContentCallback(fn, { collection: name, kind: 'onUrl' })})`)
         }
 
         nitroConfig.virtual = nitroConfig.virtual || {}

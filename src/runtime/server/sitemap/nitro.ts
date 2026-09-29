@@ -19,7 +19,7 @@ import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
-import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
+import { logger, mergeOnKey, robotsBlocksIndexing, splitForLocales } from '../../utils-pure'
 import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
 import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
@@ -118,7 +118,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
     // Skip invalid entries
     if (routeRules.sitemap === false)
       continue
-    if (typeof routeRules.robots !== 'undefined' && !routeRules.robots)
+    if (robotsBlocksIndexing(routeRules.robots))
       continue
 
     let hasRobotsDisabled = false
