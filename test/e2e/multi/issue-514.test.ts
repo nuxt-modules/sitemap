@@ -61,6 +61,18 @@ describe('issue 514 - multi sitemap with chunks and / prefix', () => {
     }
   })
 
+  it('serves chunks past the 20th', async () => {
+    const index = await $fetch<string>('/sitemap_index.xml')
+    expect(index).toContain('<loc>https://example.com/many-24.xml</loc>')
+    const chunk = await $fetch<string>('/many-24.xml')
+    expect(chunk).toContain('<loc>https://example.com/many/25</loc>')
+  })
+
+  it('leaves other xml routes alone', async () => {
+    const feed = await $fetch<string>('/feed.xml')
+    expect(feed).toContain('<rss')
+  })
+
   it('regular page routes still work', async () => {
     const about = await $fetch('/about')
     expect(about).toContain('About page')

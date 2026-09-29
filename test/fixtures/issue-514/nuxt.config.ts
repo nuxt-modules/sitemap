@@ -18,6 +18,10 @@ export default defineNuxtConfig({
         sources: ['/api/urls'],
         chunks: 10,
       },
+      many: {
+        sources: ['/api/many'],
+        chunks: 1,
+      },
     },
   },
 })

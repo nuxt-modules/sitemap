@@ -1,7 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { ConsolaInstance } from 'consola'
 import type { NuxtPage } from 'nuxt/schema'
-import type { AppSourceContext, AutoI18nConfig, FilterInput, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
+import type { AppSourceContext, AutoI18nConfig, FilterInput, ModuleOptions, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { statSync } from 'node:fs'
 import { useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -90,6 +90,65 @@ function deepForEachPage(
   })
 }
 
+/**
+ * Paths of pages that opt out with `definePageMeta({ sitemap: false })`.
+ *
+ * The page source drops these itself. Prerendered routes reach the sitemap by a
+ * second path, so the module removes these paths from them too.
+ */
+export function resolvePageMetaExcludedPaths(pages: NuxtPage[], config: Pick<NuxtPagesToSitemapEntriesOptions, 'normalisedLocales' | 'routesNameSeparator'>): Set<string> {
+  const excluded = new Set<string>()
+  deepForEachPage(
+    pages,
+    (page, loc) => {
+      if (page.meta?.sitemap === false)
+        excluded.add(loc)
+    },
+    { ...config, routesNameSeparator: config.routesNameSeparator || '___' } as NuxtPagesToSitemapEntriesOptions,
+  )
+  return excluded
+}
+
+/**
+ * Whether chunk URLs need the root chunk middleware.
+ *
+ * Only a root prefix (`/` or `false`) with a chunked sitemap puts chunks at
+ * `/<name>-<index>.xml`, where the router cannot match them. Every other config
+ * skips the middleware, so it costs nothing per request.
+ */
+export function needsRootChunkMiddleware(config: Pick<ModuleOptions, 'sitemapsPathPrefix' | 'sitemaps'>): boolean {
+  if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/')
+    return false
+  if (!config.sitemaps || typeof config.sitemaps !== 'object')
+    return false
+  return Object.entries(config.sitemaps)
+    .some(([name, definition]) => name !== 'index' && !!(definition as Partial<SitemapDefinition> | undefined)?.chunks)
+}
+
+/**
+ * Top level keys that multi sitemap mode ignores, so the module can warn about them.
+ *
+ * Top level `sources` are not ignored when a child sitemap sets `includeAppSources`:
+ * that sitemap reads them with the app sources.
+ */
+export function resolveIgnoredMultiSitemapKeys(config: Pick<ModuleOptions, 'sources' | 'includeAppSources' | 'sitemaps'>): ('sources' | 'includeAppSources')[] {
+  if (!config.sitemaps || typeof config.sitemaps !== 'object')
+    return []
+  const sitemapNames = Object.keys(config.sitemaps)
+  // a config with only `index` lists remote sitemaps and keeps the app sitemap as is
+  if (!sitemapNames.length || (sitemapNames.length === 1 && sitemapNames[0] === 'index'))
+    return []
+  const children = Object.entries(config.sitemaps)
+    .filter(([name]) => name !== 'index')
+    .map(([, definition]) => definition as Partial<SitemapDefinition> | undefined)
+  const ignored: ('sources' | 'includeAppSources')[] = []
+  if (config.sources?.length && !children.some(child => child?.includeAppSources))
+    ignored.push('sources')
+  if (config.includeAppSources !== undefined)
+    ignored.push('includeAppSources')
+  return ignored
+}
+
 export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: NuxtPagesToSitemapEntriesOptions) {
   const pathFilter = createPathFilter(config.filter)
   const routesNameSeparator = config.routesNameSeparator || '___'
@@ -129,7 +188,7 @@ export function convertNuxtPagesToSitemapEntries(pages: NuxtPage[], config: Nuxt
     })
   }
 
-  const pagesWithMeta = flattenedPages.map((p) => {
+  const pagesWithMeta = flattenedPages.filter(p => p.page?.meta?.sitemap !== false).map((p) => {
     if (config.autoLastmod && p.page!.file) {
       const stats = statSync(p.page!.file, { throwIfNoEntry: false })
       if (stats?.mtime)
