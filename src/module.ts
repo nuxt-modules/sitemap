@@ -46,7 +46,7 @@ import {
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, needsRootChunkMiddleware, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -673,34 +673,26 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         // when prefix is '/' or false, register individual sitemap routes
-        // and explicit chunk routes since h3 doesn't support wildcard patterns
-        const sitemapNames = Object.keys(config.sitemaps || {})
-        let hasChunkedSitemaps = false
-        for (const sitemapName of sitemapNames) {
+        // (chunks go through the root chunk middleware below)
+        for (const sitemapName of Object.keys(config.sitemaps || {})) {
           if (sitemapName === 'index')
             continue
-          const sitemapConfig = config.sitemaps![sitemapName as keyof typeof config.sitemaps] as MultiSitemapEntry[string]
-
-          // Register the base sitemap route
           addServerHandler({
             route: withLeadingSlash(`${sitemapName}.xml`),
             handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
             lazy: true,
             middleware: false,
           })
-
-          if (sitemapConfig.chunks)
-            hasChunkedSitemaps = true
         }
-
-        // Chunks are `/<name>-<index>.xml` at the root. The router has no pattern for a
-        // partial segment there, so a middleware serves every chunk index.
-        if (hasChunkedSitemaps) {
-          addServerHandler({
-            handler: resolve(`${routesPath}/sitemap/root-chunks`),
-            middleware: true,
-          })
-        }
+      }
+      // Chunks are `/<name>-<index>.xml` at the root. The router has no pattern for a
+      // partial segment there, so a middleware serves every chunk index. Other
+      // configs never register it.
+      if (needsRootChunkMiddleware(config)) {
+        addServerHandler({
+          handler: resolve(`${routesPath}/sitemap/root-chunks`),
+          middleware: true,
+        })
       }
       sitemaps.index = {
         sitemapName: 'index',

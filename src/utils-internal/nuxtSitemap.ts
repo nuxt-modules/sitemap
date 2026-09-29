@@ -110,6 +110,22 @@ export function resolvePageMetaExcludedPaths(pages: NuxtPage[], config: Pick<Nux
 }
 
 /**
+ * Whether chunk URLs need the root chunk middleware.
+ *
+ * Only a root prefix (`/` or `false`) with a chunked sitemap puts chunks at
+ * `/<name>-<index>.xml`, where the router cannot match them. Every other config
+ * skips the middleware, so it costs nothing per request.
+ */
+export function needsRootChunkMiddleware(config: Pick<ModuleOptions, 'sitemapsPathPrefix' | 'sitemaps'>): boolean {
+  if (config.sitemapsPathPrefix && config.sitemapsPathPrefix !== '/')
+    return false
+  if (!config.sitemaps || typeof config.sitemaps !== 'object')
+    return false
+  return Object.entries(config.sitemaps)
+    .some(([name, definition]) => name !== 'index' && !!(definition as Partial<SitemapDefinition> | undefined)?.chunks)
+}
+
+/**
  * Top level keys that multi sitemap mode ignores, so the module can warn about them.
  *
  * Top level `sources` are not ignored when a child sitemap sets `includeAppSources`:
