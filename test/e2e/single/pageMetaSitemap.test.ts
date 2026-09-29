@@ -16,4 +16,10 @@ describe('definePageMeta sitemap', () => {
     expect(sitemap).toContain('<changefreq>daily</changefreq>')
     expect(sitemap).toContain('<priority>0.8</priority>')
   }, 60000)
+
+  it('excludes a page with definePageMeta({ sitemap: false })', async () => {
+    const sitemap = await $fetch<string>('/sitemap.xml')
+    expect(sitemap).toContain('<loc>https://nuxtseo.com/about</loc>')
+    expect(sitemap).not.toContain('/hidden')
+  }, 60000)
 })

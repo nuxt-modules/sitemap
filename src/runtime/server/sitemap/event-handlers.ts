@@ -1,8 +1,8 @@
 import type { H3Event } from '#nuxtseo/h3'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
+import { joinURL, withBase, withLeadingSlash, withoutBase, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect } from '#nuxtseo/h3'
 import { useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
-import { useResolvedSitemapRuntimeConfig } from '../utils'
+import { useResolvedSitemapRuntimeConfig, useSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
 import { createSitemap, renderSitemapOutput, setSitemapResponseHeaders, useNitroUrlResolvers } from './nitro'
@@ -103,4 +103,21 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
 
   const sitemapConfig = getSitemapConfig(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize || undefined)
   return createSitemap(e, sitemapConfig, runtimeConfig)
+}
+
+const ROOT_CHUNK_PATH_RE = /^\/(.+)-\d+\.xml$/
+
+/**
+ * Serves `/<name>-<index>.xml` for chunked sitemaps when `sitemapsPathPrefix` is `/`.
+ *
+ * The router cannot match a partial segment such as `/<name>-*.xml` at the root, and a
+ * `/**` route would shadow the app. So this runs as middleware and passes on every
+ * request that is not a chunk of a chunked sitemap.
+ */
+export async function sitemapRootChunkEventHandler(e: H3Event) {
+  const pathname = withoutBase(getRequestURL(e).pathname, useRuntimeConfig(e).app.baseURL)
+  const name = ROOT_CHUNK_PATH_RE.exec(pathname)?.[1]
+  if (!name || !useSitemapRuntimeConfig(e).sitemaps[name]?.chunks)
+    return
+  return sitemapChildXmlEventHandler(e)
 }
