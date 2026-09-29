@@ -27,6 +27,8 @@ describe.skipIf(process.env.CI)('generate', () => {
     const sitemap = (await readFile(resolve(rootDir, '.output/public/sitemap.xml'), 'utf-8')).replace(/lastmod>(.*?)</g, 'lastmod><')
     // verify /noindex is not in the sitemap
     expect(sitemap).not.toContain('/noindex')
+    // definePageMeta({ sitemap: false }) excludes a prerendered page
+    expect(sitemap).not.toContain('/hidden')
 
     // #568: verify definePageMeta sitemap data is preserved during generate
     expect(sitemap).toContain('<loc>https://nuxtseo.com/about</loc>')
