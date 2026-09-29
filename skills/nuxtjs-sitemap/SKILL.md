@@ -21,7 +21,7 @@ If `@nuxtjs/robots` is installed, the module adds the sitemap to `robots.txt`. I
 
 - Every static page is listed. Dynamic pages, such as `pages/blog/[slug].vue`, are not listed. Add them with a source.
 - Prerendered routes are added, including routes the prerender crawler finds.
-- A route with the `robots: false` route rule is dropped.
+- A route with the `robots: false` route rule is dropped. So is a `robots` string with `noindex` or `none`.
 - When a page is prerendered, `<img>` and `<video>` inside `<main>` become image and video entries. `article:modified_time` becomes `lastmod`.
 - Entries are sorted by path depth, then alphabetically. Set `sortEntries: false` to keep source order.
 - An invalid `lastmod` is dropped from the entry. Dev prints an XML comment in its place.
