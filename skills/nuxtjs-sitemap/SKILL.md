@@ -5,7 +5,7 @@ description: Generate, split, and debug XML sitemaps in a Nuxt app with the @nux
 
 # @nuxtjs/sitemap
 
-Tested against `@nuxtjs/sitemap` 8.5.1 on Nuxt 4.5.2 (the module requires Nuxt `>=3.9.0`).
+Tested against the `@nuxtjs/sitemap` release that ships this Skill, on Nuxt 4.5.2 (the module requires Nuxt `>=3.9.0`).
 The module serves `/sitemap.xml`, built from app pages, route rules, prerendered routes, and your sources.
 Docs: https://nuxtseo.com/docs/sitemap
 
@@ -73,7 +73,7 @@ export default defineNuxtConfig({
 })
 ```
 
-`definePageMeta({ sitemap: { priority: 0.8 } })` sets values for that page. `definePageMeta({ sitemap: false })` does not remove it; see Traps.
+`definePageMeta({ sitemap: { priority: 0.8 } })` sets values for that page. `definePageMeta({ sitemap: false })` removes it, also when it is prerendered.
 
 ## Multiple sitemaps
 
@@ -91,6 +91,7 @@ export default defineNuxtConfig({
 
 - The index is `/sitemap_index.xml`. `/sitemap.xml` redirects to it.
 - Child sitemaps are at `/__sitemap__/<name>.xml`. Chunks are `/__sitemap__/posts-0.xml`, `posts-1.xml`, and so on.
+- `sitemapsPathPrefix: '/'` moves them to the root: `/pages.xml`, `/posts-0.xml`.
 - App sources (pages, route rules, prerender) go only to a sitemap with `includeAppSources: true`.
 - Top level `sources` also go only to sitemaps with `includeAppSources: true`.
 - An entry with `_sitemap: 'posts'` goes only to that sitemap. An unknown name logs an error and drops the entry.
@@ -113,13 +114,10 @@ In both modes, sources are fetched once at build. New CMS entries do not appear 
 
 ## Traps
 
-- **`definePageMeta({ sitemap: false })` does not remove the page.** Use `routeRules: { '/page': { sitemap: false } }` or `exclude`.
 - **String filters match whole path segments only.** `exclude: ['/blog/draft-*']` removes nothing. Use a RegExp such as `/^\/blog\/draft-/`.
 - **A dynamic route is not in the sitemap** until a source, `urls`, or the prerender crawler provides its URLs.
-- **Top level `sources` with `sitemaps` logs "This will be ignored".** The warning is wrong when a sitemap has `includeAppSources: true`: that sitemap uses them.
-- **`sitemapsPathPrefix: '/'` serves only 20 chunks per sitemap.** The index lists every chunk, and chunk 20 and later return 404. Keep the default prefix, or raise the chunk size.
 - **A prerendered or `zeroRuntime` sitemap never refetches sources.** Use the runtime server for CMS data that changes between deploys.
-- **Nuxt Content `filter` and `onUrl` cannot use outside variables or method shorthand.** See [references/nuxt-content.md](references/nuxt-content.md).
+- **Nuxt Content `filter` and `onUrl` cannot read outside variables.** The build fails and names the variable. See [references/nuxt-content.md](references/nuxt-content.md).
 - **`lastmod` set to the current date on every build tells crawlers nothing.** Use a real content update time.
 
 ## Config
