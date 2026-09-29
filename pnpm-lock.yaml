@@ -87,6 +87,12 @@ catalogs:
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
+    oxc-parser:
+      specifier: ^0.141.0
+      version: 0.141.0
+    oxc-walker:
+      specifier: ^1.1.1
+      version: 1.1.1
     pathe:
       specifier: ^2.0.3
       version: 2.0.3
@@ -153,6 +159,12 @@ importers:
       ofetch:
         specifier: 'catalog:'
         version: 1.5.1
+      oxc-parser:
+        specifier: 'catalog:'
+        version: 0.141.0
+      oxc-walker:
+        specifier: 'catalog:'
+        version: 1.1.1(@oxc-project/types@0.146.0)(oxc-parser@0.141.0)(rolldown@1.2.5)
       pathe:
         specifier: 'catalog:'
         version: 2.0.3

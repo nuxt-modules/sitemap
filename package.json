@@ -81,6 +81,8 @@
     "nuxt-site-config": "catalog:",
     "nuxtseo-shared": "catalog:",
     "ofetch": "catalog:",
+    "oxc-parser": "catalog:",
+    "oxc-walker": "catalog:",
     "pathe": "catalog:",
     "pkg-types": "catalog:",
     "radix3": "catalog:",
