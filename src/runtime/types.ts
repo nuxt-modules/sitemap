@@ -173,6 +173,17 @@ export interface ModuleOptions extends SitemapDefinition {
    * @default false
    */
   zeroRuntime?: boolean
+  /**
+   * When enabled, sitemaps are never prerendered.
+   *
+   * Use this when you prerender pages but only know the site URL at runtime.
+   * Prerendering pages with `nitro.prerender.crawlLinks` normally pulls the
+   * sitemap into the prerender, which fails without a build-time site URL.
+   * The sitemap routes stay dynamic and resolve the site URL at request time.
+   *
+   * @default false
+   */
+  zeroPrerender?: boolean
 }
 
 export interface IndexSitemapRemotes {
