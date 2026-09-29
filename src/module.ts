@@ -38,7 +38,9 @@ import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-s
 import { setupDevToolsUI } from './devtools'
 import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
+import { robotsBlocksIndexing } from './runtime/utils-pure'
 import { registerTypeTemplates } from './templates'
+import { serializeContentCallback } from './utils-internal/contentCallbacks'
 import {
   generatePathForI18nPages,
   normalizeLocales,
@@ -46,7 +48,7 @@ import {
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
 import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveExcludedAppSources, resolveUrls } from './utils-internal/nuxtSitemap'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -194,25 +196,10 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     // warn about bad config
-    const normalizedSitemaps = typeof config.sitemaps === 'boolean' ? {} : config.sitemaps || {}
-    if (!nuxt.options._prepare && Object.keys(normalizedSitemaps).length) {
-      // if the only key of config.sitemaps is `index` then we can skip this logic
-      const isSitemapIndexOnly = typeof normalizedSitemaps?.index !== 'undefined' && Object.keys(normalizedSitemaps).length === 1
-      if (!isSitemapIndexOnly) {
-        // if the user is doing multi-sitempas using the sitemaps config, we warn when root keys are used as they won't do anything
-        const warnForIgnoredKey = (key: string) => {
-          logger.warn(`You are using multiple-sitemaps but have provided \`sitemap.${key}\` in your Nuxt config. This will be ignored, please move it to the child sitemap config.`)
-          logger.warn('Learn more at: https://nuxtseo.com/sitemap/guides/multi-sitemaps')
-        }
-
-        switch (true) {
-          case (config?.sources?.length || 0) > 0:
-            warnForIgnoredKey('sources')
-            break
-          case config?.includeAppSources !== undefined:
-            warnForIgnoredKey('includeAppSources')
-            break
-        }
+    if (!nuxt.options._prepare) {
+      for (const key of resolveIgnoredMultiSitemapKeys(config)) {
+        logger.warn(`You are using multiple-sitemaps but have provided \`sitemap.${key}\` in your Nuxt config. This will be ignored, please move it to the child sitemap config.`)
+        logger.warn('Learn more at: https://nuxtseo.com/sitemap/guides/multi-sitemaps')
       }
     }
 
@@ -543,7 +530,9 @@ export default defineNuxtModule<ModuleOptions>({
             ctx.content.sitemap = null
             return
           }
-          if (ctx.content.robots === false) {
+          // `robots` is a schema field when the collection declares it, and lands in
+          // `meta` with the other undeclared frontmatter keys when it does not.
+          if (robotsBlocksIndexing(content.robots ?? content.meta?.robots)) {
             ctx.content.sitemap = null
             return
           }
@@ -576,12 +565,12 @@ export default defineNuxtModule<ModuleOptions>({
         const filterEntries: string[] = []
         if (globalThis.__sitemapCollectionFilters) {
           for (const [name, filterFn] of globalThis.__sitemapCollectionFilters.entries())
-            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${filterFn.toString()})`)
+            filterEntries.push(`filters.set(${JSON.stringify(name)}, ${serializeContentCallback(filterFn, { collection: name, kind: 'filter' })})`)
         }
         const onUrlEntries: string[] = []
         if (globalThis.__sitemapCollectionOnUrlFns) {
           for (const [name, fn] of globalThis.__sitemapCollectionOnUrlFns.entries())
-            onUrlEntries.push(`onUrlFns.set(${JSON.stringify(name)}, ${fn.toString()})`)
+            onUrlEntries.push(`onUrlFns.set(${JSON.stringify(name)}, ${serializeContentCallback(fn, { collection: name, kind: 'onUrl' })})`)
         }
 
         nitroConfig.virtual = nitroConfig.virtual || {}
@@ -708,28 +697,13 @@ export default defineNuxtModule<ModuleOptions>({
             hasChunkedSitemaps = true
         }
 
-        // For chunked sitemaps, register individual routes for each chunk index
-        // since h3 doesn't support wildcard patterns like /sitemap-*.xml at root level.
-        // This is a limitation when using sitemapsPathPrefix: '/' - we pre-register routes
-        // for up to 20 chunks per sitemap (20,000 URLs with default chunk size of 1000).
-        // For larger sitemaps, use a different prefix like '/sitemaps/' instead of '/'.
+        // Chunks are `/<name>-<index>.xml` at the root. The router has no pattern for a
+        // partial segment there, so a middleware serves every chunk index.
         if (hasChunkedSitemaps) {
-          const maxChunks = 20
-          for (const sitemapName of sitemapNames) {
-            if (sitemapName === 'index')
-              continue
-            const sitemapConfig = config.sitemaps![sitemapName as keyof typeof config.sitemaps] as MultiSitemapEntry[string]
-            if (sitemapConfig.chunks) {
-              for (let i = 0; i < maxChunks; i++) {
-                addServerHandler({
-                  route: `/${sitemapName}-${i}.xml`,
-                  handler: resolve(`${routesPath}/sitemap/[sitemap].xml`),
-                  lazy: true,
-                  middleware: false,
-                })
-              }
-            }
-          }
+          addServerHandler({
+            handler: resolve(`${routesPath}/sitemap/root-chunks`),
+            middleware: true,
+          })
         }
       }
       sitemaps.index = {
@@ -953,6 +927,12 @@ export default defineNuxtModule<ModuleOptions>({
       const { routeRules } = generateExtraRoutesFromNuxtConfig()
       const nitro = await nitroPromise
       const prerenderedRoutes = nitro._prerenderedRoutes || []
+      const pages = await pagesPromise
+      // `definePageMeta({ sitemap: false })` also removes a page that was prerendered
+      const pageMetaExcludedPaths = resolvePageMetaExcludedPaths(pages, {
+        normalisedLocales,
+        routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
+      })
       const prerenderUrlsFinal = [
         ...prerenderedRoutes
           .filter(isValidPrerenderRoute)
@@ -968,12 +948,13 @@ export default defineNuxtModule<ModuleOptions>({
               return undefined
             return { loc: r.route }
           })
-          .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false)),
+          .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false))
+          .filter(entry => !pageMetaExcludedPaths.has(typeof entry === 'string' ? entry : entry!.loc)),
       ]
       if (config.debug) {
         logger.info('Prerendered routes:', prerenderUrlsFinal)
       }
-      const pageSource = convertNuxtPagesToSitemapEntries(await pagesPromise, {
+      const pageSource = convertNuxtPagesToSitemapEntries(pages, {
         isI18nMapped,
         autoLastmod: config.autoLastmod,
         defaultLocale: nuxtI18nConfig.defaultLocale || 'en',

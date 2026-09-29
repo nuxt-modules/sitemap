@@ -35,4 +35,19 @@ describe('nuxt/content v3 defineSitemapSchema', () => {
     expect(foo).toBeDefined()
     expect(foo.priority).toBe(0.5)
   })
+
+  it('runs a method shorthand onUrl', async () => {
+    const urls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
+    expect(urls.find(u => u.loc === '/bar')?.changefreq).toBe('weekly')
+    expect(urls.find(u => u.loc === '/foo')?.changefreq).toBeUndefined()
+  })
+
+  it('excludes pages whose robots frontmatter blocks indexing', async () => {
+    const urls = await $fetch<any[]>('/__sitemap__/nuxt-content-urls.json')
+    const paths = urls.map(u => u.loc)
+    expect(paths).not.toContain('/robots-false')
+    expect(paths).not.toContain('/robots-noindex')
+    expect(paths).not.toContain('/robots-noindex-nofollow')
+    expect(paths).toContain('/robots-index-nofollow')
+  })
 })
