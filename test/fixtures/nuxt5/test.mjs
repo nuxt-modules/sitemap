@@ -13,7 +13,7 @@ await once(portServer, 'close')
 
 const origin = `http://127.0.0.1:${port}`
 const nitroManifest = JSON.parse(await readFile(new URL('.output/nitro.json', import.meta.url), 'utf8'))
-assert.equal(nitroManifest.versions.nitro, '3.0.260610-beta')
+assert.equal(nitroManifest.versions.nitro, '3.0.260903-beta')
 
 const server = spawn(process.execPath, ['.output/server/index.mjs'], {
   cwd: import.meta.dirname,
@@ -38,6 +38,8 @@ async function waitForServer() {
 try {
   const sitemap = await (await waitForServer()).text()
   assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/included/)
+  // served by the `pages/` directory scan
+  assert.match(sitemap, /<loc>https:\/\/nuxt5\.example\.com\/<\/loc>/)
   const routeRule = await fetch(`${origin}/api/compat`).then(response => response.json())
   assert.deepEqual(routeRule, { sitemap: false })
 }
