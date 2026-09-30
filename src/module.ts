@@ -1,4 +1,5 @@
 import type { FileAfterParseHook } from '@nuxt/content'
+import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type {
   ModuleOptions as _ModuleOptions,
@@ -47,7 +48,7 @@ import {
   resolveI18nFilterPaths,
   splitPathForI18nLocales,
 } from './utils-internal/i18n'
-import { createNitroPromise, createPagesPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
+import { createNitroPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
 import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, needsRootChunkMiddleware, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap'
 
 declare global {
@@ -912,7 +913,25 @@ export default defineNuxtModule<ModuleOptions>({
     addServerImports(imports)
 
     // we may not have pages
-    const pagesPromise = createPagesPromise()
+    // Nuxt 5 resolves pages before `modules:done`, so hooking `pages:resolved`
+    // from within `modules:done` (as `createPagesPromise` does) misses the event
+    // and never settles, failing template compilation with NUXT_B1022 (#684).
+    // Register from setup instead and fall back to the app pages at `modules:done`.
+    const pagesPromise = new Promise<NuxtPage[]>((resolve) => {
+      let settled = false
+      nuxt.hooks.hook('pages:resolved', (pages) => {
+        settled = true
+        resolve(pages)
+      })
+      nuxt.hooks.hook('modules:done', () => {
+        if (settled)
+          return
+        if (nuxt.options.pages === false || (typeof nuxt.options.pages === 'object' && !nuxt.options.pages.enabled))
+          resolve([])
+        else if (nuxt.apps.default?.pages?.length)
+          resolve(nuxt.apps.default.pages)
+      })
+    })
     const nitroPromise = createNitroPromise()
     let resolvedConfigUrls = false
 
@@ -1121,6 +1140,17 @@ export async function readSourcesFromFilesystem() {
       // Virtual templates provide the initial build-time sources. During
       // prerender, the filesystem handoff replaces them with the final sources
       // after all routes have been crawled.
+      //
+      // `nuxt prepare` never initialises Nitro, so the async content below
+      // would wait on `nitro:init` forever and fail the template compilation
+      // with NUXT_B1022 (#684). Sources are irrelevant during prepare, use
+      // static stubs matching the runtime export shape.
+      if (nuxt.options._prepare) {
+        nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = `export const sources = []`
+        nitroConfig.virtual['#sitemap-virtual/child-sources.mjs'] = `export const sources = {}`
+        return
+      }
+
       nitroConfig.virtual['#sitemap-virtual/global-sources.mjs'] = async () => {
         const globalSources = await generateGlobalSources()
         return `export const sources = ${JSON.stringify(globalSources, null, 4)}`
