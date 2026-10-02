@@ -9,6 +9,126 @@ import {
 const encoder = new TextEncoder()
 
 describe('sitemap reader', () => {
+  it.each(['network', 'wire_limit', 'timeout', 'cancelled'] as const)('records streamed %s failures and continues healthy siblings', async (code) => {
+    const error = Object.assign(new Error('body interrupted'), { code })
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('<urlset>'))
+      },
+      pull(controller) {
+        controller.error(error)
+      },
+    })
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({
+        _tag: 'body',
+        url,
+        body: url.endsWith('broken.xml') ? body : '<urlset><url><loc>https://example.com/a</loc></url></urlset>',
+      }),
+    })
+    await expect(reader.walk(['https://example.com/broken.xml', 'https://example.com/healthy.xml'])).resolves.toMatchObject({
+      _tag: 'partial',
+      reasons: ['read_failure'],
+      entries: [{ loc: 'https://example.com/a' }],
+      failures: [{ result: { reason: 'load', code, detail: 'body interrupted' } }],
+    })
+    expect(body.locked).toBe(false)
+  })
+
+  it('records async iterable body failures as network errors', async () => {
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({
+        _tag: 'body',
+        url,
+        body: (async function* () {
+          yield '<urlset>'
+          throw new Error('connection reset')
+        })(),
+      }),
+    })
+    await expect(reader.read('https://example.com/sitemap.xml')).resolves.toMatchObject({
+      _tag: 'failure',
+      reason: 'load',
+      code: 'network',
+      detail: 'connection reset',
+    })
+  })
+
+  it.each([
+    ['AbortError', 'cancelled'],
+    ['TimeoutError', 'timeout'],
+  ])('records streamed %s using its load failure code', async (name, code) => {
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({
+        _tag: 'body',
+        url,
+        body: new ReadableStream({
+          start(controller) { controller.error(new DOMException('request stopped', name)) },
+        }),
+      }),
+    })
+    await expect(reader.read('https://example.com/sitemap.xml')).resolves.toMatchObject({
+      _tag: 'failure',
+      reason: 'load',
+      code,
+      detail: 'request stopped',
+    })
+  })
+
+  it('keeps parser configuration errors as exceptions', async () => {
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({ _tag: 'body', url, body: '<urlset/>' }),
+    })
+    await expect(reader.read('https://example.com/sitemap.xml', { maxEntries: -1 })).rejects.toThrow(RangeError)
+  })
+
+  it('keeps gzip transport failures separate from malformed gzip documents', async () => {
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({
+        _tag: 'body',
+        url,
+        body: (async function* () {
+          yield new Uint8Array([0x1F, 0x8B])
+          if (url.endsWith('broken.xml.gz'))
+            throw Object.assign(new Error('connection reset'), { code: 'network' })
+        })(),
+      }),
+    })
+    await expect(reader.read('https://example.com/broken.xml.gz')).resolves.toMatchObject({
+      _tag: 'failure',
+      reason: 'load',
+      code: 'network',
+      detail: 'connection reset',
+    })
+    await expect(reader.read('https://example.com/malformed.xml.gz')).resolves.toMatchObject({
+      _tag: 'failure',
+      reason: 'document',
+    })
+  })
+
+  it('cancels and unlocks a body when parsing stops early', async () => {
+    let cancelled = false
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(encoder.encode('<urlset><url><loc>https://example.com/a</loc></url>')) },
+      cancel() { cancelled = true },
+    })
+    const reader = createSitemapReader({
+      authorizeTarget: async () => ({ _tag: 'allow' }),
+      loadDocument: async ({ url }) => ({ _tag: 'body', url, body }),
+    })
+    await expect(reader.read('https://example.com/sitemap.xml', { maxEntries: 0 })).resolves.toMatchObject({
+      _tag: 'ok',
+      parse: { completeness: { _tag: 'partial', reason: 'entry_limit' } },
+    })
+    expect(cancelled).toBe(true)
+    expect(body.locked).toBe(false)
+  })
+
   it('parses robots Sitemap directives without product policy', () => {
     expect(parseRobotsSitemaps(
       'User-agent: *\nSitemap: /sitemap.xml\nsitemap: https://cdn.example.com/index.xml\nSitemap: /sitemap.xml',

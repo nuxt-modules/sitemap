@@ -64,6 +64,12 @@ an unexpected loader or authorizer exception aborts active reads and rejects
 `walk()` with the original error. Tagged read failures remain values in the
 walk result.
 
+Body stream and iterator failures return a read failure with `reason: 'load'`.
+The reader preserves recognized loader `code` values and maps other body failures to `network`.
+Native `AbortError` and `TimeoutError` failures map to `cancelled` and `timeout`.
+Traversal records these failures and continues eligible sibling documents.
+Parser configuration errors and unexpected loader or authorizer exceptions still reject the operation.
+
 Partial results expose a breadth-first `frontier`. Pass that frontier into a
 later `walk()` together with the previously committed document URLs to continue
 without resetting depth or reading a document twice:
