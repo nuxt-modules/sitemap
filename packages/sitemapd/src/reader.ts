@@ -1,5 +1,6 @@
-import type { SitemapReference, SitemapUrlRecord } from './parse'
+import type { SitemapChunk, SitemapInput, SitemapReference, SitemapUrlRecord } from './parse'
 import type {
+  SitemapLoadFailureCode,
   SitemapLoadRequest,
   SitemapReader,
   SitemapReaderOptions,
@@ -22,6 +23,82 @@ const DEFAULT_MAX_WIRE_BYTES = 50 * 1024 * 1024
 const DEFAULT_MAX_DEPTH = 3
 const DEFAULT_MAX_DOCUMENTS = 100
 const DEFAULT_MAX_URLS = 50_000
+
+function observeBody(input: SitemapInput) {
+  let failure: { _tag: 'none' } | { _tag: 'failed', error: unknown } = { _tag: 'none' }
+  const recordFailure = (error: unknown): never => {
+    failure = { _tag: 'failed', error }
+    throw error
+  }
+  async function* chunks(): AsyncGenerator<SitemapChunk> {
+    if (typeof input === 'string' || input instanceof Uint8Array) {
+      yield input
+      return
+    }
+    if ('getReader' in input) {
+      const reader = input.getReader()
+      let settled = false
+      try {
+        while (!settled) {
+          const next = await reader.read().catch((error: unknown) => {
+            settled = true
+            return recordFailure(error)
+          })
+          settled = next.done
+          if (next.value !== undefined)
+            yield next.value
+        }
+      }
+      finally {
+        try {
+          if (!settled)
+            await reader.cancel('sitemap input stopped before completion')
+        }
+        finally {
+          reader.releaseLock()
+        }
+      }
+      return
+    }
+    const iterator = Symbol.asyncIterator in input ? input[Symbol.asyncIterator]() : input[Symbol.iterator]()
+    let done = false
+    try {
+      while (!done) {
+        let next: IteratorResult<SitemapChunk>
+        try {
+          next = await iterator.next()
+        }
+        catch (error) {
+          done = true
+          return recordFailure(error)
+        }
+        done = Boolean(next.done)
+        if (!next.done)
+          yield next.value
+      }
+    }
+    finally {
+      if (!done)
+        await iterator.return?.()
+    }
+  }
+  return {
+    input: typeof input === 'string' || input instanceof Uint8Array ? input : chunks(),
+    failure: () => failure,
+  }
+}
+
+function bodyFailureCode(error: unknown): SitemapLoadFailureCode {
+  if (error && typeof error === 'object') {
+    if ('code' in error && (error.code === 'wire_limit' || error.code === 'timeout' || error.code === 'cancelled' || error.code === 'network' || error.code === 'content_type'))
+      return error.code
+    if ('name' in error && error.name === 'AbortError')
+      return 'cancelled'
+    if ('name' in error && error.name === 'TimeoutError')
+      return 'timeout'
+  }
+  return 'network'
+}
 
 function parseLimit(value: number | undefined, fallback: number, name: string): number {
   if (value === undefined)
@@ -154,11 +231,29 @@ export function createSitemapReader(options: SitemapReaderOptions): SitemapReade
 
       const maxDecodedBytes = readOptions.maxDecodedBytes ?? options.limits?.maxDecodedBytes
       const maxEntries = readOptions.maxEntries ?? options.limits?.maxEntries
-      const parsed = await collectSitemap(loaded.body, {
+      const body = observeBody(loaded.body)
+      const parsed = await collectSitemap(body.input, {
         ...(readOptions.formatHint ? { formatHint: readOptions.formatHint } : {}),
         ...(maxDecodedBytes !== undefined ? { maxDecodedBytes } : {}),
         ...(maxEntries !== undefined ? { maxEntries } : {}),
+      }).catch((error: unknown) => {
+        const failure = body.failure()
+        if (failure._tag === 'failed' && failure.error === error)
+          return undefined
+        throw error
       })
+      const failure = body.failure()
+      if (failure._tag === 'failed') {
+        return {
+          _tag: 'failure',
+          url,
+          reason: 'load',
+          code: bodyFailureCode(failure.error),
+          detail: failure.error instanceof Error ? failure.error.message : String(failure.error),
+        }
+      }
+      if (!parsed)
+        throw new Error('Sitemap parser ended without a result')
       if (parsed._tag !== 'document') {
         return {
           _tag: 'failure',
