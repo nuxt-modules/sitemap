@@ -23,3 +23,5 @@ jobs:
     uses: harlan-zw/nuxt-seo/.github/workflows/reusable-ci.yml@226c091a0744b7286ef721ac035eed53856bfaa5
     with:
       migration: true
+      test-command: pnpm test
+      playwright: false
