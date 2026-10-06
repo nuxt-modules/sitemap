@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     resolve: { dedupe: ['nuxt', 'vue', 'vue-router'] },
     server: { fs: { allow: [resolve(import.meta.dirname, '../../..')] } },
   },
+  nitro: { noExternals: [resolve(import.meta.dirname, '../../..')] },
   modules: [NuxtSitemap],
   site: {
     url: 'https://nuxt5.example.com',
