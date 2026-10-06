@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@11.20.0",
   "scripts": {
-    "test": "nuxt cleanup && nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.server.json && nuxt build && node test.mjs && nuxt cleanup && nuxt generate && node test-generate.mjs"
+    "test": "nuxt cleanup && nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.server.json && node --experimental-strip-types test-dev.ts && nuxt build && node test.mjs && nuxt cleanup && nuxt generate && node test-generate.mjs"
   },
   "dependencies": {
     "@nuxtjs/sitemap": "file:./module.tgz",
