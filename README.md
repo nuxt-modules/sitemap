@@ -1,17 +1,10 @@
-<h1>@nuxtjs/sitemap</h1>
+<h1><a href="https://nuxtseo.com"><img src=".github/assets/icon.svg" width="40" height="40" alt="Nuxt SEO" align="top"></a> @nuxtjs/sitemap</h1>
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
-
-<a href="https://skilld.dev/gh/nuxt-modules/sitemap">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://skilld.dev/b/nuxt-modules/sitemap?theme=dark">
-    <source media="(prefers-color-scheme: light)" srcset="https://skilld.dev/b/nuxt-modules/sitemap?theme=light">
-    <img alt="Skill repository on skilld.dev" src="https://skilld.dev/b/nuxt-modules/sitemap?theme=light">
-  </picture>
-</a>
+[![Skill repository on skilld.dev][skilld-src]][skilld-href]
 
 Nuxt Sitemap is a module for generating best-practice XML sitemaps that are consumed by the robots crawling your site.
 
@@ -76,14 +69,17 @@ npx nuxi@latest module add sitemap
 Licensed under the [MIT license](https://github.com/nuxt-modules/sitemap/blob/main/LICENSE.md).
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/@nuxtjs/sitemap/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-version-src]: https://img.shields.io/npm/v/@nuxtjs/sitemap/latest.svg?style=flat&labelColor=16152b&color=00a63e
 [npm-version-href]: https://npmjs.com/package/@nuxtjs/sitemap
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/@nuxtjs/sitemap.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-downloads-src]: https://img.shields.io/npm/dm/@nuxtjs/sitemap.svg?style=flat&labelColor=16152b&color=00a63e
 [npm-downloads-href]: https://npmjs.com/package/@nuxtjs/sitemap
 
-[license-src]: https://img.shields.io/github/license/nuxt-modules/sitemap.svg?style=flat&colorA=18181B&colorB=28CF8D
+[license-src]: https://img.shields.io/github/license/nuxt-modules/sitemap.svg?style=flat&labelColor=16152b&color=00a63e
 [license-href]: https://github.com/nuxt-modules/sitemap/blob/main/LICENSE.md
 
-[nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt
+[nuxt-src]: https://img.shields.io/badge/Nuxt-16152b?logo=nuxt&style=flat
 [nuxt-href]: https://nuxt.com
+
+[skilld-src]: https://skilld.dev/b/nuxt-modules/sitemap?style=flat&labelColor=16152b&color=00a63e&logoColor=ffffff
+[skilld-href]: https://skilld.dev/gh/nuxt-modules/sitemap

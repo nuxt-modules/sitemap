@@ -1,5 +1,4 @@
 import type { FileAfterParseHook } from '@nuxt/content'
-import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type {
   ModuleOptions as _ModuleOptions,
@@ -41,6 +40,7 @@ import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { robotsBlocksIndexing } from './runtime/utils-pure'
 import { registerTypeTemplates } from './templates'
+import { createAppPagesReader } from './utils-internal/appPages'
 import { serializeContentCallback } from './utils-internal/contentCallbacks'
 import {
   generatePathForI18nPages,
@@ -922,27 +922,17 @@ export default defineNuxtModule<ModuleOptions>({
     ]
     addServerImports(imports)
 
-    // we may not have pages
-    // Nuxt 5 resolves pages before `modules:done`, so hooking `pages:resolved`
-    // from within `modules:done` (as `createPagesPromise` does) misses the event
-    // and never settles, failing template compilation with NUXT_B1022 (#684).
-    // Register from setup instead and fall back to the app pages at `modules:done`.
-    const pagesPromise = new Promise<NuxtPage[]>((resolve) => {
-      let settled = false
-      nuxt.hooks.hook('pages:resolved', (pages) => {
-        settled = true
-        resolve(pages)
-      })
-      nuxt.hooks.hook('modules:done', () => {
-        if (settled)
-          return
-        if (nuxt.options.pages === false || (typeof nuxt.options.pages === 'object' && !nuxt.options.pages.enabled))
-          resolve([])
-        else if (nuxt.apps.default?.pages?.length)
-          resolve(nuxt.apps.default.pages)
-      })
-    })
+    // Nuxt 5 inspects virtual sources before resolving app pages during development.
+    // Read the latest snapshot on each compilation instead of waiting for that later phase.
+    const readAppPages = createAppPagesReader(nuxt)
     const nitroPromise = createNitroPromise()
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:init', (nitro) => {
+        nuxt.hooks.hookOnce('build:done', () => {
+          nuxt.hook('pages:resolved', () => nitro.hooks.callHook('rollup:reload'))
+        })
+      })
+    }
     let resolvedConfigUrls = false
 
     const isValidPrerenderRoute = (r: any) => {
@@ -962,7 +952,7 @@ export default defineNuxtModule<ModuleOptions>({
       const { routeRules } = generateExtraRoutesFromNuxtConfig()
       const nitro = await nitroPromise
       const prerenderedRoutes = nitro._prerenderedRoutes || []
-      const pages = await pagesPromise
+      const pages = readAppPages()
       // `definePageMeta({ sitemap: false })` also removes a page that was prerendered
       const pageMetaExcludedPaths = resolvePageMetaExcludedPaths(pages, {
         normalisedLocales,
