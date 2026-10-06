@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { describe, it } from 'vitest'
 import { collectSitemap, parseSitemap } from '../src/parse'
 
 function sitemapBytes(urlCount: number, pathSegments: number): Uint8Array {
@@ -33,13 +33,19 @@ const tenMiB = sitemapBytes(50_000, 8)
 const tenMiBString = new TextDecoder().decode(tenMiB)
 const mib = (bytes: Uint8Array) => (bytes.byteLength / 1024 / 1024).toFixed(1)
 
+function benchmark(name: string, fn: () => Promise<void>, iterations: number) {
+  it(name, async ({ bench }) => {
+    await bench(name, fn).run({ iterations })
+  })
+}
+
 describe('incremental sitemap parsing', () => {
-  bench(`${mib(oneMiB)} MiB stream, 10k URLs`, () => consume(oneMiB), { iterations: 10 })
-  bench(`${mib(tenMiB)} MiB stream, 50k URLs`, () => consume(tenMiB), { iterations: 5 })
-  bench(`${mib(tenMiB)} MiB string, 50k URLs`, async () => {
+  benchmark(`${mib(oneMiB)} MiB stream, 10k URLs`, () => consume(oneMiB), 10)
+  benchmark(`${mib(tenMiB)} MiB stream, 50k URLs`, () => consume(tenMiB), 5)
+  benchmark(`${mib(tenMiB)} MiB string, 50k URLs`, async () => {
     for await (const _event of parseSitemap(tenMiBString)) {
       // Consume without retaining entries.
     }
-  }, { iterations: 5 })
-  bench(`${mib(tenMiB)} MiB retained, 50k URLs`, () => collect(tenMiB), { iterations: 5 })
+  }, 5)
+  benchmark(`${mib(tenMiB)} MiB retained, 50k URLs`, () => collect(tenMiB), 5)
 })
