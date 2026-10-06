@@ -7,6 +7,8 @@ export default defineNuxtConfig({
     url: 'https://nuxt5.example.com',
   },
   sitemap: {
+    experimentalCompression: true,
+    experimentalStreaming: true,
     credits: false,
     urls: ['/included'],
     sources: [['/api/source', { headers: { authorization: 'Bearer fixture' }, query: { locale: 'en' } }]],

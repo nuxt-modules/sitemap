@@ -1,7 +1,6 @@
 import { defineEventHandler, getRequestHeader as getHeader, getQuery as h3GetQuery } from 'nuxt/server'
 import { getQuery, parseURL, withQuery } from 'ufo'
-import { getSiteConfig } from '#site-config/server/composables'
-import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { createSitePathResolver, getSiteConfig } from '#site-config/server'
 import { useSitemapRuntimeConfig, xmlEscape } from '../utils'
 
 export default defineEventHandler(async (e) => {

@@ -3,7 +3,7 @@ import { addTemplate, addTypeTemplate, hasNuxtModule } from '@nuxt/kit'
 import { renderNitroTypeAugmentations } from 'nuxtseo-shared/kit'
 
 export function registerTypeTemplates(nitroCompatibility: NitroRuntimeCompatibility) {
-  const hasRobotsModule = hasNuxtModule('@nuxtjs/robots') || hasNuxtModule('nuxt-simple-robots')
+  const hasRobotsModule = hasNuxtModule('@nuxtjs/robots')
   // Type augmentations for existing modules
   addTypeTemplate({
     filename: 'types/nuxt-sitemap-augments.d.ts',

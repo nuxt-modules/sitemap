@@ -120,7 +120,7 @@ catalog:
   '@nuxt/test-utils': ^4.3.3
   '@nuxt/ui': ^4.10.0
   '@nuxtjs/i18n': ^10.6.0
-  '@nuxtjs/robots': ^6.1.5
+  '@nuxtjs/robots': ^7.0.0
   '@vue/test-utils': ^2.4.11
   autocannon: ^8.0.0
   better-sqlite3: ^13.0.3

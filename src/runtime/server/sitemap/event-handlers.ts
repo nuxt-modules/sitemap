@@ -5,6 +5,7 @@ import { useNitroApp } from '#nuxtseo/nitro'
 import { useResolvedSitemapRuntimeConfig, useSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
+import { compressSitemapOutput } from './compression'
 import { createSitemap, renderSitemapOutput, setSitemapResponseHeaders, useNitroUrlResolvers } from './nitro'
 import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
@@ -49,7 +50,7 @@ export async function sitemapIndexXmlEventHandler(e: RequestEvent) {
   )
 
   setSitemapResponseHeaders(e, runtimeConfig)
-  return output
+  return compressSitemapOutput(e, output, !!runtimeConfig.experimentalCompression)
 }
 
 export async function sitemapChildXmlEventHandler(e: RequestEvent) {

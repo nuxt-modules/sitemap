@@ -12,15 +12,14 @@ import { defu } from 'defu'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { createError, getRequestHeader as getHeader, getQuery, useRuntimeConfig } from 'nuxt/server'
 import { createNitroRouteRuleMatcher } from 'nuxtseo-shared/server'
-// @ts-expect-error virtual
-import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
 import { defineCachedFunction, useNitroApp } from '#nuxtseo/nitro'
-import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
-import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { getPathRobotConfig } from '#robots/server'
+import { createSitePathResolver, getSiteConfig } from '#site-config/server'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, mergeOnKey, robotsBlocksIndexing, splitForLocales } from '../../utils-pure'
 import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
+import { compressSitemapOutput } from './compression'
 import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
@@ -89,6 +88,10 @@ async function buildSitemapRenderPlan(event: RequestEvent, definition: SitemapDe
   }
 
   const routeRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>(useRuntimeConfig())
+  const headerRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>({
+    app: useRuntimeConfig().app,
+    nitro: { routeRules: runtimeConfig.routeRuleHeaders || {} },
+  })
   const { autoI18n } = runtimeConfig
   const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
     ? new Set(autoI18n.locales.map(l => l.code))
@@ -106,6 +109,7 @@ async function buildSitemapRenderPlan(event: RequestEvent, definition: SitemapDe
       continue
 
     let routeRules = routeRuleMatcher(path)
+    let headerRules = headerRuleMatcher(path)
 
     // Apply top-level path without prefix
     if (localeCodes) {
@@ -113,6 +117,8 @@ async function buildSitemapRenderPlan(event: RequestEvent, definition: SitemapDe
       const pathWithoutPrefix = match[1]
       if (pathWithoutPrefix && pathWithoutPrefix !== path)
         routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
+      if (pathWithoutPrefix && pathWithoutPrefix !== path)
+        headerRules = defu(headerRules, headerRuleMatcher(pathWithoutPrefix))
     }
 
     // Skip invalid entries
@@ -122,7 +128,7 @@ async function buildSitemapRenderPlan(event: RequestEvent, definition: SitemapDe
       continue
 
     let hasRobotsDisabled = false
-    const headers = routeRules.headers
+    const headers = headerRules.headers
     if (headers) {
       for (const name in headers) {
         if (name.toLowerCase() === 'x-robots-tag' && headers[name]!.toLowerCase().includes('noindex')) {
@@ -350,5 +356,5 @@ export async function createSitemap(event: RequestEvent, definition: SitemapDefi
   }
 
   setSitemapResponseHeaders(event, runtimeConfig)
-  return xml
+  return compressSitemapOutput(event, xml, !!runtimeConfig.experimentalCompression)
 }

@@ -1,8 +1,9 @@
+import NuxtSeoShared from 'nuxtseo-shared'
 import NuxtSiteConfig from 'nuxt-site-config'
 import NuxtSitemap from '@nuxtjs/sitemap'
 
 // Stable support excludes prereleases. This fixture enables only its pinned nightly.
-for (const module of [NuxtSitemap, NuxtSiteConfig]) {
+for (const module of [NuxtSitemap, NuxtSiteConfig, NuxtSeoShared]) {
   const meta = await module.getMeta?.()
   if (!meta)
     throw new Error('Fixture module metadata unavailable')
@@ -15,6 +16,8 @@ export default defineNuxtConfig({
     url: 'https://nuxt5.example.com',
   },
   sitemap: {
+    experimentalCompression: true,
+    experimentalStreaming: true,
     credits: false,
     urls: ['/included'],
     sources: [['/api/source', { headers: { authorization: 'Bearer fixture' }, query: { locale: 'en' } }]],
