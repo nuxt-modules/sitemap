@@ -120,7 +120,7 @@ catalog:
   '@nuxt/test-utils': ^4.3.3
   '@nuxt/ui': ^4.10.0
   '@nuxtjs/i18n': ^10.6.0
-  '@nuxtjs/robots': ^6.1.5
+  '@nuxtjs/robots': ^7.0.0
   '@vue/test-utils': ^2.4.11
   autocannon: ^8.0.0
   better-sqlite3: ^13.0.3
@@ -133,9 +133,9 @@ catalog:
   happy-dom: ^20.11.6
   nuxt: 4.6.0
   nuxt-i18n-micro: ^3.28.0
-  nuxt-site-config: ^4.2.3
+  nuxt-site-config: ^5.0.0
   nuxtseo-layer-devtools: ^5.3.14
-  nuxtseo-shared: ^5.3.16
+  nuxtseo-shared: ^6.0.0
   ofetch: ^1.5.1
   oxc-parser: ^0.141.0
   oxc-walker: ^1.1.1
