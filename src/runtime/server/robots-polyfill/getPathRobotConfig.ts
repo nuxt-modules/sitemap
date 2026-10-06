@@ -1,5 +1,5 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
 
-export function getPathRobotConfig(_e: H3Event, _options: any) {
+export function getPathRobotConfig(_e: RequestEvent, _options: any) {
   return { indexable: true, rule: 'index, follow' }
 }

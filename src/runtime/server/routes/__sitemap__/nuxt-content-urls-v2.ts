@@ -1,6 +1,6 @@
+import { defineEventHandler } from 'nuxt/server'
 // @ts-expect-error alias module
 import { serverQueryContent } from '#content/server'
-import { defineEventHandler } from '#nuxtseo/h3'
 
 interface ContentWithSitemap {
   sitemap?: unknown

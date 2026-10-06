@@ -1,6 +1,6 @@
+import type { RequestEvent } from 'nuxt/server'
 import type { FetchError } from 'ofetch'
 import type { SitemapUrlRecord } from 'sitemapd/parse'
-import type { H3Event } from '#nuxtseo/h3'
 import type {
   Changefreq,
   ModuleRuntimeConfig,
@@ -11,11 +11,13 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { defu } from 'defu'
+import { getRequestHeader as getHeader, getRequestHost } from 'nuxt/server'
+import { fetchWithEvent } from 'nuxtseo-shared/fetch'
 import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
-import { getHeader, getRequestHost } from '#nuxtseo/h3'
-import { defineCachedFunction, fetchWithEvent } from '#nuxtseo/nitro'
+import { defineCachedFunction } from '#nuxtseo/nitro'
+
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger } from '../../../utils-pure'
@@ -71,7 +73,7 @@ export function normalizeSourceInput(source: SitemapSourceInput): SitemapSourceB
   return source
 }
 
-async function tryFetchWithFallback(url: string, options: any, event?: H3Event): Promise<any> {
+async function tryFetchWithFallback(url: string, options: any, event?: RequestEvent): Promise<any> {
   const isExternalUrl = !url.startsWith('/')
   // For external URLs, try different fetch strategies
   if (isExternalUrl) {
@@ -121,7 +123,7 @@ const prerenderSourceFetches = import.meta.prerender
 
 // Several named sitemaps can list the same source URL. Memoize so the endpoint is fetched once
 // instead of once per sitemap. Request scoped at runtime, build scoped while prerendering.
-function useSourceFetchMemo(event?: H3Event): Map<string, Promise<SourceFetchResult>> | undefined {
+function useSourceFetchMemo(event?: RequestEvent): Map<string, Promise<SourceFetchResult>> | undefined {
   if (import.meta.prerender)
     return prerenderSourceFetches
   const context = event?.context as Record<string, unknown> | undefined
@@ -153,13 +155,13 @@ function hashCacheKey(key: string): string {
 }
 
 const fetchSourceUrlsCached = defineCachedFunction(
-  (event: H3Event, _key: string, url: string, options: any) => fetchSourceUrls(url, options, event),
+  (event: RequestEvent, _key: string, url: string, options: any) => fetchSourceUrls(url, options, event),
   {
     name: 'sitemap:source-urls',
     group: 'sitemap',
     base: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
-    getKey: (event: H3Event, key: string) => {
+    getKey: (event: RequestEvent, key: string) => {
       const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'
       return `source-${proto}-${host}-${hashCacheKey(key)}`
@@ -181,7 +183,7 @@ function isSourceCacheEnabled(): boolean {
   return typeof cacheMaxAgeSeconds === 'number' && cacheMaxAgeSeconds > 0
 }
 
-export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: H3Event): Promise<SitemapSourceResolved> {
+export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceResolved, event?: RequestEvent): Promise<SitemapSourceResolved> {
   const context = typeof input.context === 'string' ? { name: input.context } : input.context || { name: 'fetch' }
   const url = typeof input.fetch === 'string' ? input.fetch : input.fetch![0]
   const options = typeof input.fetch === 'string' ? {} : input.fetch![1]
@@ -204,7 +206,7 @@ export async function fetchDataSource(input: SitemapSourceBase | SitemapSourceRe
   return { ...input, context, ...result }
 }
 
-async function fetchSourceUrls(url: string, options: any, event?: H3Event): Promise<SourceFetchResult> {
+async function fetchSourceUrls(url: string, options: any, event?: RequestEvent): Promise<SourceFetchResult> {
   const start = Date.now()
 
   // Get external source configuration
@@ -293,7 +295,7 @@ async function fetchSourceUrls(url: string, options: any, event?: H3Event): Prom
         url,
         timeout,
         error: error.message,
-        statusCode: error.response?.status,
+        status: error.response?.status,
         statusText: error.response?.statusText,
         method: options?.method || 'GET',
       }
@@ -363,7 +365,7 @@ export async function childSitemapSources(definition: ModuleRuntimeConfig['sitem
   return [...(m.sources[definition.sitemapName] || [])]
 }
 
-export async function resolveSitemapSources(sources: SitemapSourceInput[], event?: H3Event) {
+export async function resolveSitemapSources(sources: SitemapSourceInput[], event?: RequestEvent) {
   return await Promise.all(
     sources.map((source) => {
       const normalized = normalizeSourceInput(source)

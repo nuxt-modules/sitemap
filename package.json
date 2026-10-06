@@ -1,7 +1,7 @@
 {
   "name": "@nuxtjs/sitemap",
   "type": "module",
-  "version": "8.6.1",
+  "version": "9.0.0",
   "packageManager": "pnpm@12.8.1",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
@@ -46,7 +46,7 @@
     "skills"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "lint": "eslint .",
@@ -60,15 +60,17 @@
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground && pnpm run client:build",
     "release": "pnpm build && bumpp -x \"npx changelogen --output=CHANGELOG.md\"",
     "release:sitemapd": "pnpm --filter sitemapd release",
-    "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw && pnpm run test:nuxt5",
+    "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw && pnpm run test:nuxt5 && pnpm run test:nuxt46",
     "test:unit": "vitest --project=unit",
-    "test:nuxt5": "pnpm pack --out test/fixtures/nuxt5/module.tgz && pnpm install --dir test/fixtures/nuxt5 --no-frozen-lockfile --update-checksums && pnpm --dir test/fixtures/nuxt5 test",
+    "test:nuxt5": "node scripts/test-nuxt-lanes.ts nuxt5",
     "test:attw": "attw --pack && pnpm --filter sitemapd test:attw",
     "typecheck": "pnpm --filter sitemapd typecheck && nuxt typecheck",
-    "prepare": "skilld prepare || true"
+    "prepare": "skilld prepare || true",
+    "test:nuxt46": "node scripts/test-nuxt-lanes.ts nuxt4 && node scripts/test-nuxt-lanes.ts future5"
   },
   "peerDependencies": {
-    "zod": ">=3"
+    "nuxt": "^4.6.0 || ^5.0.0",
+    "zod": "^4.4.3"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -84,8 +86,6 @@
     "ofetch": "catalog:",
     "oxc-parser": "catalog:",
     "oxc-walker": "catalog:",
-    "pathe": "catalog:",
-    "pkg-types": "catalog:",
     "radix3": "catalog:",
     "sitemapd": "workspace:^",
     "ufo": "catalog:",
@@ -118,5 +118,10 @@
     "vitest": "catalog:",
     "vue-tsc": "catalog:",
     "zod": "catalog:"
+  },
+  "build": {
+    "externals": [
+      "nuxt/server"
+    ]
   }
 }

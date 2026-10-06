@@ -1,7 +1,6 @@
-import { fileURLToPath } from 'node:url'
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 
-const currentDir = fileURLToPath(new URL('.', import.meta.url))
+const currentDir = import.meta.dirname
 
 // Nuxt SEO devtools panel, shipped as a layer (Model C). Components flat-registered
 // so intra-panel references resolve by name.

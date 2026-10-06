@@ -15,6 +15,8 @@ import type {
   SitemapSourceResolved,
   SitemapUrl,
 } from './runtime/types'
+import { readFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import {
   addPrerenderRoutes,
   addServerHandler,
@@ -32,8 +34,6 @@ import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { isPathFile } from 'nuxt-site-config/urls'
 import { setupNitroRuntimeCompatibility, useModuleLogger } from 'nuxtseo-shared/kit'
 import { serializeFilters } from 'nuxtseo-shared/utils'
-import { dirname } from 'pathe'
-import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-sources'
 import { setupDevToolsUI } from './devtools'
@@ -107,7 +107,7 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/sitemap',
     compatibility: {
-      nuxt: '>=3.9.0',
+      nuxt: '^4.6.0 || ^5.0.0',
     },
     configKey: 'sitemap',
   },
@@ -121,7 +121,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     'nuxt-site-config': {
-      version: '>=3.2',
+      version: '^5.0.0',
     },
     '@nuxt/content': {
       version: '>=2',
@@ -168,13 +168,25 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
-    const { name, version } = await readPackageJSON(resolve('../package.json'))
+    const { name, version } = JSON.parse(await readFile(resolve('../package.json'), 'utf8'))
     const logger = useModuleLogger(name!, config, nuxt)
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
       return
     }
     const nitroCompatibility = setupNitroRuntimeCompatibility(nuxt)
+    if (nitroCompatibility._tag !== 'nitro-v3') {
+      nuxt.options.nitro.externals ||= {}
+      nuxt.options.nitro.externals.inline ||= []
+      nuxt.options.nitro.externals.inline.push(resolve('./runtime'))
+    }
+    else if ((nuxt.options.nitro as { noExternals?: boolean | (string | RegExp)[] }).noExternals !== true) {
+      const nitro = nuxt.options.nitro as { noExternals?: boolean | (string | RegExp)[] }
+      const inline = Array.isArray(nitro.noExternals) ? nitro.noExternals : []
+      if (!inline.includes('@nuxtjs/sitemap'))
+        inline.push('@nuxtjs/sitemap')
+      nitro.noExternals = inline
+    }
     // /_nuxt/
     config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')

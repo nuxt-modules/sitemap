@@ -37,7 +37,9 @@ async function waitForServer() {
 
 try {
   const sitemap = await (await waitForServer()).text()
+  assert.doesNotMatch(sitemap, /<loc>[^<]*\/excluded<\/loc>/)
   assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/included/)
+  assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/authenticated-source/)
   // served by the `pages/` directory scan
   assert.match(sitemap, /<loc>https:\/\/nuxt5\.example\.com\/<\/loc>/)
   const routeRule = await fetch(`${origin}/api/compat`).then(response => response.json())

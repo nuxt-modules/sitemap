@@ -1,5 +1,7 @@
-import type { EventHandlerRequest, EventHandlerResponse } from '#nuxtseo/h3'
+import type { EventHandler } from 'nuxt/server'
 import type { SitemapUrlInput } from '../../types'
-import { defineEventHandler } from '#nuxtseo/h3'
+import { defineEventHandler } from 'nuxt/server'
 
-export const defineSitemapEventHandler: typeof defineEventHandler<EventHandlerRequest, EventHandlerResponse<SitemapUrlInput[]>> = defineEventHandler
+export function defineSitemapEventHandler(handler: EventHandler<SitemapUrlInput[] | Promise<SitemapUrlInput[]>>) {
+  return defineEventHandler(handler)
+}

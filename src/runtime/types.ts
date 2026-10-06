@@ -1,5 +1,5 @@
 import type { NuxtI18nOptions } from '@nuxtjs/i18n'
-import type { H3Event } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
 import type { FetchOptions } from 'ofetch'
 import type { ParsedURL } from 'ufo'
 
@@ -392,35 +392,35 @@ export interface SitemapDefinition {
   _chunkCount?: number
 }
 
-interface NitroBaseHook<Event = H3Event> {
+interface NitroBaseHook<Event = RequestEvent> {
   event: Event
 }
 
-export interface SitemapIndexRenderCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapIndexRenderCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   sitemaps: SitemapIndexEntry[]
 }
 
-export interface SitemapRenderCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapRenderCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   sitemapName: string
   urls: ResolvedSitemapUrl[]
 }
 
-export interface SitemapInputCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapInputCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   sitemapName: string
   urls: SitemapUrlInput[]
 }
 
-export interface SitemapOutputHookCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapOutputHookCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   sitemapName: string
   sitemap: string
 }
 
-export interface SitemapSourcesHookCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapSourcesHookCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   sitemapName: string
   sources: SitemapSourceInput[]
 }
 
-export interface SitemapsResolvedCtx<Event = H3Event> extends NitroBaseHook<Event> {
+export interface SitemapsResolvedCtx<Event = RequestEvent> extends NitroBaseHook<Event> {
   /**
    * The sitemaps config about to be used to build the sitemap index and serve child
    * sitemaps. Static definitions from nuxt.config are already present.
@@ -568,7 +568,7 @@ export interface Platform {
 }
 
 export interface NitroUrlResolvers {
-  event: H3Event
+  event: RequestEvent
   canonicalUrlResolver: (path: string) => string
   relativeBaseUrlResolver: (path: string) => string
   fixSlashes: (path: string) => string

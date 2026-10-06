@@ -1,8 +1,8 @@
 import type { ContentRuntime } from 'nuxtseo-shared/content-runtime'
 import type { SitemapUrl } from '../../../types'
+import { defineEventHandler } from 'nuxt/server'
 // @ts-expect-error setupContentRuntime() aliases this to the detected provider's shim
 import * as contentRuntime from '#nuxtseo/content'
-import { defineEventHandler } from '#nuxtseo/h3'
 import { filters } from '#sitemap/content-filters'
 import { onUrlFns } from '#sitemap/content-on-url'
 
