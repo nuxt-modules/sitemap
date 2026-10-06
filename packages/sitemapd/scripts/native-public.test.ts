@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+// Native Node verifies the public workspace export without a Vitest transform.
+// eslint-disable-next-line test/no-import-node-test
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
