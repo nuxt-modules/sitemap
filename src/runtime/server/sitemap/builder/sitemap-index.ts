@@ -1,12 +1,13 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
   SitemapIndexEntry,
 } from '../../../types'
+import { getRequestHeader as getHeader, getRequestHost } from 'nuxt/server'
 import { joinURL } from 'ufo'
-import { getHeader, getRequestHost } from '#nuxtseo/h3'
 import { defineCachedFunction } from '#nuxtseo/nitro'
+
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normaliseDate } from '../urlset/normalise'
@@ -18,7 +19,7 @@ type NitroApp = ReturnType<typeof import('#nuxtseo/nitro').useNitroApp>
 
 // Create cached wrapper for sitemap index building
 const buildSitemapIndexCached = defineCachedFunction(
-  async (event: H3Event, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) => {
+  async (event: RequestEvent, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) => {
     return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
   },
   {
@@ -26,7 +27,7 @@ const buildSitemapIndexCached = defineCachedFunction(
     group: 'sitemap',
     maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap', // Use the sitemap storage
-    getKey: (event: H3Event) => {
+    getKey: (event: RequestEvent) => {
       // Include headers that could affect the output in the cache key
       const host = getRequestHost(event, { xForwardedHost: true }) || ''
       const proto = getHeader(event, 'x-forwarded-proto') || 'https'

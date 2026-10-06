@@ -1,4 +1,4 @@
-import { defineEventHandler } from '#nuxtseo/h3'
+import { defineEventHandler } from 'nuxt/server'
 import { sitemapXmlEventHandler } from '../sitemap/event-handlers'
 
 export default defineEventHandler(sitemapXmlEventHandler)

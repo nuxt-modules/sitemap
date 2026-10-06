@@ -14,7 +14,7 @@ Nitro hooks can be added to modify the output of your sitemaps at runtime.
 
 ## `'sitemap:input'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; urls: SitemapUrlInput[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; urls: SitemapUrlInput[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggers once the raw list of URLs is collected from sources.
 
@@ -39,7 +39,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; urls: ResolvedSitemapUrl[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; urls: ResolvedSitemapUrl[]; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the XML is generated, provides the URLs as objects.
 
@@ -72,7 +72,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:index-resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; sitemaps: { sitemap: string, lastmod?: string }[] }) => void | Promise<void>`{lang="ts"}
 
 Triggered once the final structure of the sitemap index is generated, provides the sitemaps as objects.
 
@@ -116,7 +116,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:sitemaps-resolved'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; sitemaps: Record<string, SitemapDefinition> }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; sitemaps: Record<string, SitemapDefinition> }) => void | Promise<void>`{lang="ts"}
 
 Runs before the sitemap index is built and before child sitemaps are served. Add definitions to `ctx.sitemaps` to register sitemaps at runtime, or delete a key to remove one (static definitions included).
 
@@ -146,7 +146,7 @@ See the [runtime registration guide](/docs/sitemap/advanced/chunking-sources) fo
 
 ## `'sitemap:output'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; sitemap: string; sitemapName: string }) => void | Promise<void>`{lang="ts"}
 
 Triggered before the sitemap is sent to the client.
 It provides the sitemap as an XML string.
@@ -166,7 +166,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ## `'sitemap:sources'`{lang="ts"}
 
-**Type:** `async (ctx: { event: H3Event; sitemapName: string; sources: SitemapSourceInput[] }) => void | Promise<void>`{lang="ts"}
+**Type:** `async (ctx: { event: RequestEvent; sitemapName: string; sources: SitemapSourceInput[] }) => void | Promise<void>`{lang="ts"}
 
 Triggered before resolving sitemap sources. This hook allows you to:
 - Add new sources dynamically
@@ -198,7 +198,7 @@ export default defineNitroPlugin((nitroApp) => {
         const [url, options = {}] = Array.isArray(source.fetch) ? source.fetch : [source.fetch, {}]
 
         // Add headers from original request
-        const authHeader = ctx.event.node.req.headers.authorization
+        const authHeader = ctx.event.req.headers.get('authorization')
         if (authHeader) {
           options.headers = options.headers || {}
           options.headers.Authorization = authHeader

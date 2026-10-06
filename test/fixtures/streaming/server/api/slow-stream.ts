@@ -1,4 +1,5 @@
-import { defineEventHandler, setResponseHeader } from 'h3'
+import { defineEventHandler } from 'nuxt/server'
+import { compressSitemapOutput } from '../../../../../src/runtime/server/sitemap/compression'
 import { recordStreamCancellation, recordStreamPull, resetStreamState } from '../utils/stream-state'
 
 function createIncompressibleChunk(size: number): Uint8Array {
@@ -18,9 +19,9 @@ const chunk = createIncompressibleChunk(256 * 1024)
 export default defineEventHandler((event) => {
   resetStreamState()
   event.context._isSitemap = true
-  setResponseHeader(event, 'Content-Type', 'application/octet-stream')
+  event.res.headers.set('Content-Type', 'application/octet-stream')
 
-  return new ReadableStream<Uint8Array>({
+  const stream = new ReadableStream<Uint8Array>({
     cancel() {
       recordStreamCancellation()
     },
@@ -31,4 +32,5 @@ export default defineEventHandler((event) => {
         controller.close()
     },
   })
+  return compressSitemapOutput(event, stream, true)
 })

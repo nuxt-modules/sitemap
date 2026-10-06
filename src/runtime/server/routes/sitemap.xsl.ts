@@ -1,18 +1,17 @@
+import { defineEventHandler, getRequestHeader as getHeader, getQuery as h3GetQuery } from 'nuxt/server'
 import { getQuery, parseURL, withQuery } from 'ufo'
-import { defineEventHandler, getHeader, getQuery as h3GetQuery, setHeader } from '#nuxtseo/h3'
-import { getSiteConfig } from '#site-config/server/composables'
-import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { createSitePathResolver, getSiteConfig } from '#site-config/server'
 import { useSitemapRuntimeConfig, xmlEscape } from '../utils'
 
 export default defineEventHandler(async (e) => {
   const fixPath = createSitePathResolver(e, { absolute: false, withBase: true })
 
   const { sitemapName: fallbackSitemapName, cacheMaxAgeSeconds, version, xslColumns, xslTips } = useSitemapRuntimeConfig()
-  setHeader(e, 'Content-Type', 'application/xslt+xml')
+  e.res.headers.set('Content-Type', 'application/xslt+xml')
   if (cacheMaxAgeSeconds)
-    setHeader(e, 'Cache-Control', `public, max-age=${cacheMaxAgeSeconds}, must-revalidate`)
+    e.res.headers.set('Cache-Control', `public, max-age=${cacheMaxAgeSeconds}, must-revalidate`)
   else
-    setHeader(e, 'Cache-Control', `no-cache, no-store`)
+    e.res.headers.set('Cache-Control', `no-cache, no-store`)
 
   const { name: siteName, url: siteUrl } = getSiteConfig(e)
 

@@ -5,14 +5,13 @@ import type { ModuleRuntimeConfig, SitemapUrl } from './runtime/types'
 import { once } from 'node:events'
 import { readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { MessageChannel, Worker } from 'node:worker_threads'
 import { useNuxt } from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { withSiteUrl } from 'nuxt-site-config/kit'
-import { dirname } from 'pathe'
 import { withBase } from 'ufo'
 import { splitForLocales } from './runtime/utils-pure'
 import { isNuxtGenerate } from './utils-internal/kit'
@@ -36,7 +35,7 @@ export function includesSitemapRoot(sitemapName: string, routes: string[]) {
 
 const NuxtRedirectHtmlRegex = /<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=([^"]+)"><\/head><\/html>/ // eslint-disable-line regexp/no-unused-capturing-group
 
-export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: ConsolaInstance, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any>, prerenderSitemap: boolean }, nuxt: Nuxt = useNuxt()) {
+export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeConfig, logger: Pick<ConsolaInstance, 'info'>, generateGlobalSources: () => Promise<any>, generateChildSources: () => Promise<any>, prerenderSitemap: boolean }, nuxt: Nuxt = useNuxt()) {
   const { runtimeConfig: options, logger, generateGlobalSources, generateChildSources, prerenderSitemap } = _options
   nuxt.options.nitro.prerender = nuxt.options.nitro.prerender || {}
   nuxt.options.nitro.prerender.routes = nuxt.options.nitro.prerender.routes || []
@@ -64,7 +63,7 @@ export function setupPrerenderHandler(_options: { runtimeConfig: ModuleRuntimeCo
     nitroConfig.virtual = nitroConfig.virtual || {}
     nitroConfig.virtual['#sitemap-virtual/read-sources.mjs'] = `
 import { readFile } from 'node:fs/promises'
-import { join } from 'pathe'
+import { join } from 'node:path'
 
 export async function readSourcesFromFilesystem(filename) {
   if (!import.meta.prerender) {

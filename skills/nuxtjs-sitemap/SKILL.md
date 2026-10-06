@@ -5,7 +5,7 @@ description: Generate, split, and debug XML sitemaps in a Nuxt app with the @nux
 
 # @nuxtjs/sitemap
 
-Tested against the `@nuxtjs/sitemap` release that ships this Skill, on Nuxt 4.5.2 (the module requires Nuxt `>=3.9.0`).
+Use Nuxt `^4.6.0 || ^5.0.0` and Node `^22.22.3 || ^24.15.0 || >=26.0.0`.
 The module serves `/sitemap.xml`, built from app pages, route rules, prerendered routes, and your sources.
 Docs: https://nuxtseo.com/docs/sitemap
 

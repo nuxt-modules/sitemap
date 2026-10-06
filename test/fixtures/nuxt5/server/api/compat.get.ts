@@ -1,10 +1,10 @@
-import type { NitroRouteConfig } from 'nitro/types'
-import { eventHandler } from 'nitro/h3'
+import type { AppRouteRules } from 'nuxt/server'
+import { defineEventHandler } from 'nuxt/server'
 
-type SitemapRouteConfig = NitroRouteConfig & { sitemap?: boolean }
+type SitemapRouteConfig = AppRouteRules & { sitemap?: boolean }
 
 const routeRule = {
   sitemap: false,
 } satisfies SitemapRouteConfig
 
-export default eventHandler(() => routeRule)
+export default defineEventHandler(() => routeRule)

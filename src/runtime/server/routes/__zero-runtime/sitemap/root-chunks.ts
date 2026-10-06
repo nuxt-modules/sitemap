@@ -1,4 +1,4 @@
-import { defineEventHandler } from '#nuxtseo/h3'
+import { defineEventHandler } from 'nuxt/server'
 
 // Chunks are prerendered files at runtime; the middleware only serves dev and prerender.
 export default defineEventHandler(async (e) => {

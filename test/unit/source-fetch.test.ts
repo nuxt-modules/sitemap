@@ -7,12 +7,8 @@ const { fetchWithEventMock, cachedFunctions } = vi.hoisted(() => ({
   cachedFunctions: [] as Array<{ name: string, opts: Record<string, any> }>,
 }))
 
-vi.mock('#nuxtseo/h3', () => ({
-  getRequestHost: vi.fn(),
-  getHeader: vi.fn(() => 'test-host'),
-}))
+vi.mock('nuxtseo-shared/fetch', () => ({ fetchWithEvent: fetchWithEventMock }))
 vi.mock('#nuxtseo/nitro', () => ({
-  fetchWithEvent: fetchWithEventMock,
   defineCachedFunction: (fn: unknown, opts: Record<string, any> = {}) => {
     cachedFunctions.push({ name: opts.name, opts })
     return fn
@@ -54,9 +50,9 @@ describe('fetchDataSource', () => {
     expect(fetchSpy).toHaveBeenCalledOnce()
   })
 
-  it('uses the Nitro compatibility fetch for internal sources', async () => {
+  it('uses the portable request fetch for internal sources', async () => {
     const { fetchDataSource } = await import('../../src/runtime/server/sitemap/urlset/sources')
-    const event = {} as any
+    const event = { req: new Request('https://test-host', { headers: { host: 'test-host' } }), context: {} } as any
     const result = await fetchDataSource({
       fetch: '/api/urls',
     }, event)
@@ -84,7 +80,7 @@ describe('fetchDataSource', () => {
     const sourceCache = cachedFunctions.find(c => c.name === 'sitemap:source-urls')
     expect(sourceCache).toBeDefined()
 
-    const event = {} as any
+    const event = { req: new Request('https://test-host', { headers: { host: 'test-host' } }), context: {} } as any
     const key = await sourceCache!.opts.getKey(event, '/api/urls::{"headers":{"Authorization":"Bearer secret-token"}}')
 
     expect(key).toContain('test-host')

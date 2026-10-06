@@ -1,4 +1,4 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -10,17 +10,16 @@ import type {
 } from '../../types'
 import { defu } from 'defu'
 import { fixSlashes } from 'nuxt-site-config/urls'
+import { createError, getRequestHeader as getHeader, getQuery, useRuntimeConfig } from 'nuxt/server'
 import { createNitroRouteRuleMatcher } from 'nuxtseo-shared/server'
-// @ts-expect-error virtual
-import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
-import { createError, getHeader, getQuery, setHeader } from '#nuxtseo/h3'
-import { defineCachedFunction, useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
-import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
-import { createSitePathResolver } from '#site-config/server/composables/utils'
+import { defineCachedFunction, useNitroApp } from '#nuxtseo/nitro'
+import { getPathRobotConfig } from '#robots/server'
+import { createSitePathResolver, getSiteConfig } from '#site-config/server'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, mergeOnKey, robotsBlocksIndexing, splitForLocales } from '../../utils-pure'
 import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
+import { compressSitemapOutput } from './compression'
 import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
@@ -42,7 +41,7 @@ interface SitemapRouteRules {
   sitemap?: SitemapItemDefaults | false
 }
 
-export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
+export function useNitroUrlResolvers(e: RequestEvent): NitroUrlResolvers {
   const canonicalQuery = getQuery(e).canonical
   const isShowingCanonical = typeof canonicalQuery !== 'undefined' && canonicalQuery !== 'false'
   const siteConfig = getSiteConfig(e)
@@ -61,7 +60,7 @@ export function useNitroUrlResolvers(e: H3Event): NitroUrlResolvers {
 
 // Shared sitemap resolution and normalization. This work must finish before response
 // streaming begins because hooks, filtering, deduplication, and sorting can affect any URL.
-async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+async function buildSitemapRenderPlan(event: RequestEvent, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const { sitemapName } = definition
   const nitro = useNitroApp() as SitemapNitroApp
   if (import.meta.prerender) {
@@ -71,8 +70,8 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
       logger.error('Sitemap Site URL missing!')
       logger.info('To fix this please add `{ site: { url: \'site.com\' } }` to your Nuxt config or a `NUXT_PUBLIC_SITE_URL=site.com` to your .env. Learn more at https://nuxtseo.com/site-config/getting-started/how-it-works')
       throw createError({
-        statusMessage: 'You must provide a site URL to prerender a sitemap.',
-        statusCode: 500,
+        statusText: 'You must provide a site URL to prerender a sitemap.',
+        status: 500,
       })
     }
   }
@@ -83,12 +82,16 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
 
   if (import.meta.prerender && failedSources.length) {
     throw createError({
-      statusCode: 500,
+      status: 500,
       message: `Sitemap generation failed due to ${failedSources.length} failed sources: ${failedSources.map(s => `"${s.url}" (${s.error})`).join(', ')}`,
     })
   }
 
-  const routeRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>(useRuntimeConfig(event))
+  const routeRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>(useRuntimeConfig())
+  const headerRuleMatcher = createNitroRouteRuleMatcher<SitemapRouteRules>({
+    app: useRuntimeConfig().app,
+    nitro: { routeRules: runtimeConfig.routeRuleHeaders || {} },
+  })
   const { autoI18n } = runtimeConfig
   const localeCodes = autoI18n?.locales && autoI18n.strategy !== 'no_prefix'
     ? new Set(autoI18n.locales.map(l => l.code))
@@ -106,6 +109,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
       continue
 
     let routeRules = routeRuleMatcher(path)
+    let headerRules = headerRuleMatcher(path)
 
     // Apply top-level path without prefix
     if (localeCodes) {
@@ -113,6 +117,8 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
       const pathWithoutPrefix = match[1]
       if (pathWithoutPrefix && pathWithoutPrefix !== path)
         routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix))
+      if (pathWithoutPrefix && pathWithoutPrefix !== path)
+        headerRules = defu(headerRules, headerRuleMatcher(pathWithoutPrefix))
     }
 
     // Skip invalid entries
@@ -122,7 +128,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
       continue
 
     let hasRobotsDisabled = false
-    const headers = routeRules.headers
+    const headers = headerRules.headers
     if (headers) {
       for (const name in headers) {
         if (name.toLowerCase() === 'x-robots-tag' && headers[name]!.toLowerCase().includes('noindex')) {
@@ -195,7 +201,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
       // If this is a chunk and we have no URLs, it means the chunk doesn't exist
       if (urls.length === 0 && chunkIndex > 0) {
         throw createError({
-          statusCode: 404,
+          status: 404,
           message: `Sitemap chunk ${chunkIndex} for "${baseSitemapName}" does not exist.`,
         })
       }
@@ -214,7 +220,7 @@ async function buildSitemapRenderPlan(event: H3Event, definition: SitemapDefinit
 
 export async function renderSitemapOutput(
   nitro: NitroApp,
-  event: H3Event,
+  event: RequestEvent,
   sitemapName: string,
   renderString: () => string,
   renderStream: () => ReadableStream<Uint8Array>,
@@ -247,7 +253,7 @@ export async function renderSitemapOutput(
   await nitro.hooks.callHook('sitemap:output', ctx)
 
   if (debug)
-    setHeader(event, 'X-Sitemap-Render-Mode', buffered ? 'buffered-hook' : 'stream')
+    event.res.headers.set('X-Sitemap-Render-Mode', buffered ? 'buffered-hook' : 'stream')
 
   return buffered
     ? createChunkedXmlStream([sitemap!])
@@ -255,7 +261,7 @@ export async function renderSitemapOutput(
 }
 
 // Shared buffered sitemap building logic used by the legacy response and full XML cache.
-async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
+async function buildSitemapXml(event: RequestEvent, definition: SitemapDefinition, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig) {
   const { errorInfo, sitemapName, urls } = await buildSitemapRenderPlan(event, definition, resolvers, runtimeConfig)
   const sitemap = urlsToXml(urls, resolvers, runtimeConfig, errorInfo)
 
@@ -264,7 +270,7 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   return ctx.sitemap
 }
 
-function getSitemapCacheKey(event: H3Event, definition: SitemapDefinition) {
+function getSitemapCacheKey(event: RequestEvent, definition: SitemapDefinition) {
   // Include headers that can affect absolute URL generation in the cache key.
   const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
   const proto = getHeader(event, 'x-forwarded-proto') || 'https'
@@ -300,25 +306,25 @@ const buildSitemapXmlCached = defineCachedFunction(
   },
 )
 
-export function setSitemapResponseHeaders(event: H3Event, runtimeConfig: ModuleRuntimeConfig) {
-  setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')
+export function setSitemapResponseHeaders(event: RequestEvent, runtimeConfig: ModuleRuntimeConfig) {
+  event.res.headers.set('Content-Type', 'text/xml; charset=UTF-8')
   if (runtimeConfig.cacheMaxAgeSeconds) {
-    setHeader(event, 'Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
+    event.res.headers.set('Cache-Control', `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`)
     const now = new Date()
-    setHeader(event, 'X-Sitemap-Generated', now.toISOString())
-    setHeader(event, 'X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
+    event.res.headers.set('X-Sitemap-Generated', now.toISOString())
+    event.res.headers.set('X-Sitemap-Cache-Duration', `${runtimeConfig.cacheMaxAgeSeconds}s`)
     const expiryTime = new Date(now.getTime() + (runtimeConfig.cacheMaxAgeSeconds * 1000))
-    setHeader(event, 'X-Sitemap-Cache-Expires', expiryTime.toISOString())
+    event.res.headers.set('X-Sitemap-Cache-Expires', expiryTime.toISOString())
     const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000)
-    setHeader(event, 'X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
+    event.res.headers.set('X-Sitemap-Cache-Remaining', `${remainingSeconds}s`)
   }
   else {
-    setHeader(event, 'Cache-Control', `no-cache, no-store`)
+    event.res.headers.set('Cache-Control', `no-cache, no-store`)
   }
   event.context._isSitemap = true
 }
 
-export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
+export async function createSitemap(event: RequestEvent, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
   const shouldStream = !!runtimeConfig.experimentalStreaming && !import.meta.prerender
 
@@ -350,5 +356,5 @@ export async function createSitemap(event: H3Event, definition: SitemapDefinitio
   }
 
   setSitemapResponseHeaders(event, runtimeConfig)
-  return xml
+  return compressSitemapOutput(event, xml, !!runtimeConfig.experimentalCompression)
 }

@@ -1,7 +1,7 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
 import type { FilterInput, ModuleRuntimeConfig, SitemapsResolvedCtx } from '../types'
-import { getHeader } from '#nuxtseo/h3'
-import { defineCachedFunction, useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
+import { getRequestHeader as getHeader, useRuntimeConfig } from 'nuxt/server'
+import { defineCachedFunction, useNitroApp } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normalizeRuntimeFilters } from '../utils-pure'
@@ -15,8 +15,8 @@ type NitroApp = ReturnType<typeof useNitroApp>
 const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 // Event-overridable fields only; the rest of the config comes from the static virtual module.
-function dynamicRuntimeConfig(e?: H3Event) {
-  return useRuntimeConfig(e).sitemap as Partial<ModuleRuntimeConfig> | undefined
+function dynamicRuntimeConfig(_e?: RequestEvent) {
+  return useRuntimeConfig().sitemap as Partial<ModuleRuntimeConfig> | undefined
 }
 
 function copyStaticSitemaps(): ModuleRuntimeConfig['sitemaps'] {
@@ -31,7 +31,7 @@ function copyStaticSitemaps(): ModuleRuntimeConfig['sitemaps'] {
   ) as ModuleRuntimeConfig['sitemaps']
 }
 
-export function useSitemapRuntimeConfig(e?: H3Event): ModuleRuntimeConfig {
+export function useSitemapRuntimeConfig(e?: RequestEvent): ModuleRuntimeConfig {
   return Object.freeze({
     ...staticConfig,
     sitemaps: copyStaticSitemaps(),
@@ -55,7 +55,7 @@ function serializeFilters(filters?: FilterInput[]): FilterInput[] | undefined {
 // Runs the sitemap:sitemaps-resolved hook so apps can register sitemaps at runtime. Returns the
 // sitemaps record only: definitions are small (static sources are stripped at build time), while
 // the surrounding config can embed large i18n page maps that must stay out of cache storage.
-async function resolveSitemapSitemaps(e: H3Event, nitro: NitroApp): Promise<ModuleRuntimeConfig['sitemaps']> {
+async function resolveSitemapSitemaps(e: RequestEvent, nitro: NitroApp): Promise<ModuleRuntimeConfig['sitemaps']> {
   const ctx: SitemapsResolvedCtx = { sitemaps: copyStaticSitemaps(), event: e }
   await nitro.hooks.callHook('sitemap:sitemaps-resolved', ctx)
   const sitemaps = { ...ctx.sitemaps } as ModuleRuntimeConfig['sitemaps']
@@ -81,7 +81,7 @@ const resolveSitemapSitemapsCached = defineCachedFunction(
     maxAge: SERVER_CACHE_MAX_AGE,
     base: 'sitemap',
     // nitro calls getKey with the full fn args (event, nitro)
-    getKey: (e?: H3Event) => {
+    getKey: (e?: RequestEvent) => {
       const host = (e && (getHeader(e, 'x-forwarded-host') || getHeader(e, 'host'))) || ''
       const proto = (e && getHeader(e, 'x-forwarded-proto')) || 'https'
       return `runtime-sitemaps-${proto}-${host}`
@@ -90,7 +90,7 @@ const resolveSitemapSitemapsCached = defineCachedFunction(
   },
 )
 
-export async function useResolvedSitemapRuntimeConfig(e: H3Event): Promise<ModuleRuntimeConfig> {
+export async function useResolvedSitemapRuntimeConfig(e: RequestEvent): Promise<ModuleRuntimeConfig> {
   // Cheap gate before any config work: dynamic copy first (env-overridable), static fallback.
   const maxAge = dynamicRuntimeConfig(e)?.cacheMaxAgeSeconds ?? staticConfig.cacheMaxAgeSeconds
   // Dev and prerender always re-run the hook so newly registered sitemaps are visible

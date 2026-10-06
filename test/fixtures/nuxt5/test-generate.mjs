@@ -7,3 +7,5 @@ assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/included/)
 // served by the `pages/` directory scan
 assert.match(sitemap, /<loc>https:\/\/nuxt5\.example\.com\/<\/loc>/)
 assert.doesNotMatch(sitemap, /excluded/)
+
+assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/authenticated-source/)

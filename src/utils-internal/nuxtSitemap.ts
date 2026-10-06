@@ -3,14 +3,14 @@ import type { ConsolaInstance } from 'consola'
 import type { NuxtPage } from 'nuxt/schema'
 import type { AppSourceContext, AutoI18nConfig, FilterInput, ModuleOptions, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { statSync } from 'node:fs'
+import { extname } from 'node:path'
 import { useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
-import { extname } from 'pathe'
 import { withBase, withHttps } from 'ufo'
 import { createPathFilter, robotsBlocksIndexing } from '../runtime/utils-pure'
 import { expandCompactLocaleRoute } from './i18n'
 
-export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: ConsolaInstance, path: string }): Promise<SitemapUrlInput[]> {
+export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: Pick<ConsolaInstance, 'error'>, path: string }): Promise<SitemapUrlInput[]> {
   try {
     if (typeof urls === 'function')
       urls = urls()

@@ -14,6 +14,8 @@ import type {
   SitemapSourceResolved,
   SitemapUrl,
 } from './runtime/types'
+import { readFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import {
   addPrerenderRoutes,
   addServerHandler,
@@ -29,10 +31,8 @@ import {
 import { defu } from 'defu'
 import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { isPathFile } from 'nuxt-site-config/urls'
-import { setupNitroRuntimeCompatibility, useModuleLogger } from 'nuxtseo-shared/kit'
+import { setupNitroRuntimeCompatibility, setupRuntimeAliases, useModuleLogger } from 'nuxtseo-shared/kit'
 import { serializeFilters } from 'nuxtseo-shared/utils'
-import { dirname } from 'pathe'
-import { readPackageJSON } from 'pkg-types'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-sources'
 import { setupDevToolsUI } from './devtools'
@@ -107,7 +107,7 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/sitemap',
     compatibility: {
-      nuxt: '>=3.9.0',
+      nuxt: '^4.6.0 || ^5.0.0',
     },
     configKey: 'sitemap',
   },
@@ -121,7 +121,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     'nuxt-site-config': {
-      version: '>=3.2',
+      version: '>=5.0.0',
     },
     '@nuxt/content': {
       version: '>=2',
@@ -132,7 +132,7 @@ export default defineNuxtModule<ModuleOptions>({
       optional: true,
     },
     '@nuxtjs/robots': {
-      version: '>=4',
+      version: '>=7.0.0',
       optional: true,
     },
   },
@@ -168,18 +168,31 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup(config, nuxt) {
     const { resolve } = createResolver(import.meta.url)
-    const { name, version } = await readPackageJSON(resolve('../package.json'))
+    const { name, version } = JSON.parse(await readFile(resolve('../package.json'), 'utf8'))
     const logger = useModuleLogger(name!, config, nuxt)
     if (config.enabled === false) {
       logger.debug('The module is disabled, skipping setup.')
       return
     }
     const nitroCompatibility = setupNitroRuntimeCompatibility(nuxt)
+    if (nitroCompatibility._tag !== 'nitro-v3') {
+      nuxt.options.nitro.externals ||= {}
+      nuxt.options.nitro.externals.inline ||= []
+      nuxt.options.nitro.externals.inline.push(resolve('./runtime'))
+    }
+    else if ((nuxt.options.nitro as { noExternals?: boolean | (string | RegExp)[] }).noExternals !== true) {
+      const nitro = nuxt.options.nitro as { noExternals?: boolean | (string | RegExp)[] }
+      const inline = Array.isArray(nitro.noExternals) ? nitro.noExternals : []
+      if (!inline.includes('@nuxtjs/sitemap'))
+        inline.push('@nuxtjs/sitemap')
+      nitro.noExternals = inline
+    }
     // /_nuxt/
     config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
     nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
     nuxt.options.nitro.alias['#sitemap'] = resolve('./runtime')
+    setupRuntimeAliases({ namespace: '#sitemap', server: resolve('./runtime/server') }, nuxt)
     nuxt.options.experimental.extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys || []
     nuxt.options.experimental.extraPageMetaExtractionKeys.push('sitemap')
     config.xslColumns = config.xslColumns || [
@@ -392,30 +405,27 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
 
-    // @ts-expect-error untyped
+    // Capture explicit headers before Robots derives transport headers for a non-indexable site.
+    const captureRouteRuleHeaders = () => Object.fromEntries(
+      Object.entries(defu(nuxt.options.routeRules, nuxt.options.nitro.routeRules || {}) as Record<string, NitroRouteConfig>)
+        .filter(([, rules]) => rules.headers)
+        .map(([path, rules]) => [path, { headers: { ...rules.headers } }]),
+    )
+    // @ts-expect-error optional Robots hook
     nuxt.hooks.hook('robots:config', (robotsConfig) => {
+      const routeRuleHeaders = captureRouteRuleHeaders()
+      runtimeConfig.routeRuleHeaders = routeRuleHeaders
+      staticRuntimeConfig.routeRuleHeaders = routeRuleHeaders
       robotsConfig.sitemap.push(usingMultiSitemaps ? '/sitemap_index.xml' : `/${config.sitemapName}`)
     })
     // avoid issues with module order
-    nuxt.hooks.hook('modules:done', async () => {
-      const robotsModuleName = ['nuxt-simple-robots', '@nuxtjs/robots'].find(s => hasNuxtModule(s))
-      let needsRobotsPolyfill = true
-      if (robotsModuleName) {
-        const robotsVersion = await getNuxtModuleVersion(robotsModuleName)
-        // we want to keep versions in sync
-        if (robotsVersion && !await hasNuxtModuleCompatibility(robotsModuleName, '>=4'))
-          logger.warn(`You are using ${robotsModuleName} v${robotsVersion}. For the best compatibility, please upgrade to ${robotsModuleName} v4.0.0 or higher.`)
-        else
-          needsRobotsPolyfill = false
-      }
-      // this is added in v4 of Nuxt Robots
-      if (needsRobotsPolyfill) {
-        nuxt.options.nitro.alias = nuxt.options.nitro.alias || {}
-        nuxt.options.nitro.alias['#internal/nuxt-robots'] = resolve('./runtime/server/robots-polyfill')
+    nuxt.hooks.hook('modules:done', () => {
+      if (!hasNuxtModule('@nuxtjs/robots', nuxt)) {
+        setupRuntimeAliases({ namespace: '#robots', server: resolve('./runtime/server/robots-polyfill') }, nuxt)
         addServerImports([{
           name: 'getPathRobotConfig',
           as: 'getPathRobotConfig',
-          from: resolve('./runtime/server/robots-polyfill/getPathRobotConfig'),
+          from: '#robots/server',
         }])
       }
     })
@@ -500,9 +510,7 @@ export default defineNuxtModule<ModuleOptions>({
     if (!config.zeroRuntime) {
       if (config.experimentalWarmUp)
         addServerPlugin(resolve('./runtime/server/plugins/warm-up'))
-      if (config.experimentalCompression)
-        addServerPlugin(resolve('./runtime/server/plugins/compression'))
-      if (config.experimentalStreaming || config.experimentalCompression)
+      if (nitroCompatibility._tag !== 'nitro-v3' && (config.experimentalStreaming || config.experimentalCompression))
         addServerPlugin(resolve('./runtime/server/plugins/stream-transport'))
     }
 
@@ -826,6 +834,8 @@ export default defineNuxtModule<ModuleOptions>({
       excludeAppSources: config.excludeAppSources,
       cacheMaxAgeSeconds: nuxt.options.dev ? 0 : config.cacheMaxAgeSeconds,
       experimentalStreaming: config.experimentalStreaming,
+      experimentalCompression: config.experimentalCompression,
+      routeRuleHeaders: captureRouteRuleHeaders(),
 
       autoLastmod: config.autoLastmod,
       defaultSitemapsChunkSize: config.defaultSitemapsChunkSize,
@@ -902,11 +912,11 @@ export default defineNuxtModule<ModuleOptions>({
 
     const imports: typeof nuxt.options.imports.imports = [
       {
-        from: resolve('./runtime/server/composables/defineSitemapEventHandler'),
+        from: '#sitemap/server',
         name: 'defineSitemapEventHandler',
       },
       {
-        from: resolve('./runtime/server/composables/asSitemapUrl'),
+        from: '#sitemap/server',
         name: 'asSitemapUrl',
       },
     ]

@@ -1,14 +1,15 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
+import { createError, getRequestURL, getRouterParam, sendRedirect, useRuntimeConfig } from 'nuxt/server'
 import { joinURL, withBase, withLeadingSlash, withoutBase, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
-import { appendHeader, createError, getRequestURL, getRouterParam, sendRedirect } from '#nuxtseo/h3'
-import { useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
+import { useNitroApp } from '#nuxtseo/nitro'
 import { useResolvedSitemapRuntimeConfig, useSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
+import { compressSitemapOutput } from './compression'
 import { createSitemap, renderSitemapOutput, setSitemapResponseHeaders, useNitroUrlResolvers } from './nitro'
 import { getSitemapConfig, parseChunkInfo } from './utils/chunk'
 
-export async function sitemapXmlEventHandler(e: H3Event) {
+export async function sitemapXmlEventHandler(e: RequestEvent) {
   const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
   if ('index' in sitemaps)
@@ -17,15 +18,14 @@ export async function sitemapXmlEventHandler(e: H3Event) {
   return createSitemap(e, Object.values(sitemaps)[0]!, runtimeConfig)
 }
 
-export async function sitemapIndexXmlEventHandler(e: H3Event) {
+export async function sitemapIndexXmlEventHandler(e: RequestEvent) {
   const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const nitro = useNitroApp()
   const resolvers = useNitroUrlResolvers(e)
   const { entries: sitemaps, failedSources } = await buildSitemapIndex(resolvers, runtimeConfig, nitro)
 
   if (import.meta.prerender) {
-    appendHeader(
-      e,
+    e.res.headers.append(
       'x-nitro-prerender',
       sitemaps.filter(entry => !!entry._sitemapName)
         .map(entry => encodeURIComponent(joinURL(runtimeConfig.sitemapsPathPrefix || '', `/${entry._sitemapName}.xml`))).join(', '),
@@ -50,10 +50,10 @@ export async function sitemapIndexXmlEventHandler(e: H3Event) {
   )
 
   setSitemapResponseHeaders(e, runtimeConfig)
-  return output
+  return compressSitemapOutput(e, output, !!runtimeConfig.experimentalCompression)
 }
 
-export async function sitemapChildXmlEventHandler(e: H3Event) {
+export async function sitemapChildXmlEventHandler(e: RequestEvent) {
   // Only process .xml requests - pass through for other paths
   const pathname = getRequestURL(e).pathname
   if (!pathname.endsWith('.xml'))
@@ -62,7 +62,7 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
-  let sitemapName = getRouterParam(e, 'sitemap')
+  let sitemapName = getRouterParam(e, 'sitemap', { decode: true })
   if (!sitemapName) {
     const match = pathname.match(/(?:\/__sitemap__\/)?(.+)\.xml$/)
     if (match)
@@ -70,7 +70,7 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   }
 
   if (!sitemapName)
-    throw createError({ statusCode: 400, message: 'Invalid sitemap request' })
+    throw createError({ status: 400, message: 'Invalid sitemap request' })
 
   sitemapName = sitemapName.replace(/\.xml$/, '')
   sitemapName = withLeadingSlash(sitemapName)
@@ -90,15 +90,15 @@ export async function sitemapChildXmlEventHandler(e: H3Event) {
   const sitemapExists = Object.hasOwn(sitemaps, sitemapName) || Object.hasOwn(sitemaps, chunkInfo.baseSitemapName) || isAutoChunked
 
   if (!sitemapExists)
-    throw createError({ statusCode: 404, message: `Sitemap "${sitemapName}" not found.` })
+    throw createError({ status: 404, message: `Sitemap "${sitemapName}" not found.` })
 
   if (chunkInfo.isChunked && chunkInfo.chunkIndex !== undefined) {
     const baseSitemap = sitemaps[chunkInfo.baseSitemapName]
     if (baseSitemap && !baseSitemap.chunks && !baseSitemap._isChunking)
-      throw createError({ statusCode: 404, message: `Sitemap "${chunkInfo.baseSitemapName}" does not support chunking.` })
+      throw createError({ status: 404, message: `Sitemap "${chunkInfo.baseSitemapName}" does not support chunking.` })
 
     if (baseSitemap?._chunkCount !== undefined && chunkInfo.chunkIndex >= baseSitemap._chunkCount)
-      throw createError({ statusCode: 404, message: `Chunk ${chunkInfo.chunkIndex} does not exist for sitemap "${chunkInfo.baseSitemapName}".` })
+      throw createError({ status: 404, message: `Chunk ${chunkInfo.chunkIndex} does not exist for sitemap "${chunkInfo.baseSitemapName}".` })
   }
 
   const sitemapConfig = getSitemapConfig(sitemapName, sitemaps, runtimeConfig.defaultSitemapsChunkSize || undefined)
@@ -114,8 +114,8 @@ const ROOT_CHUNK_PATH_RE = /^\/(.+)-\d+\.xml$/
  * `/**` route would shadow the app. So this runs as middleware and passes on every
  * request that is not a chunk of a chunked sitemap.
  */
-export async function sitemapRootChunkEventHandler(e: H3Event) {
-  const pathname = withoutBase(getRequestURL(e).pathname, useRuntimeConfig(e).app.baseURL)
+export async function sitemapRootChunkEventHandler(e: RequestEvent) {
+  const pathname = withoutBase(getRequestURL(e).pathname, useRuntimeConfig().app.baseURL)
   const name = ROOT_CHUNK_PATH_RE.exec(pathname)?.[1]
   if (!name || !useSitemapRuntimeConfig(e).sitemaps[name]?.chunks)
     return

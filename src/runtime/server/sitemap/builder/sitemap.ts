@@ -1,4 +1,4 @@
-import type { H3Event } from '#nuxtseo/h3'
+import type { RequestEvent } from 'nuxt/server'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -8,9 +8,9 @@ import type {
   SitemapSourcesHookCtx,
 } from '../../../types'
 import { resolveSitePath } from 'nuxt-site-config/urls'
+import { getRequestHeader as getHeader, useRuntimeConfig } from 'nuxt/server'
 import { withHttps } from 'ufo'
-import { getHeader } from '#nuxtseo/h3'
-import { defineCachedFunction, useRuntimeConfig } from '#nuxtseo/nitro'
+import { defineCachedFunction } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, resolveI18nSitemapLocaleKey } from '../../../utils-pure'
@@ -124,7 +124,7 @@ export async function buildResolvedSitemapUrls(
 
 export const buildResolvedSitemapUrlsCached = defineCachedFunction(
   async (
-    _event: H3Event,
+    _event: RequestEvent,
     effectiveSitemap: SitemapDefinition,
     matchName: string,
     isChunked: boolean,

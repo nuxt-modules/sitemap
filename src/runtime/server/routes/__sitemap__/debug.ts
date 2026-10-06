@@ -1,6 +1,6 @@
 import type { SitemapDefinition, SitemapSourceResolved } from '../../../types'
-import { defineEventHandler } from '#nuxtseo/h3'
-import { getNitroOrigin, getSiteConfig } from '#site-config/server/composables'
+import { defineEventHandler } from 'nuxt/server'
+import { getNitroOrigin, getSiteConfig } from '#site-config/server'
 import { validateSitemapUrl } from '../../sitemap/urlset/normalise'
 import {
   childSitemapSources,

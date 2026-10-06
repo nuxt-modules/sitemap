@@ -3,19 +3,19 @@ import { addTemplate, addTypeTemplate, hasNuxtModule } from '@nuxt/kit'
 import { renderNitroTypeAugmentations } from 'nuxtseo-shared/kit'
 
 export function registerTypeTemplates(nitroCompatibility: NitroRuntimeCompatibility) {
-  const hasRobotsModule = hasNuxtModule('@nuxtjs/robots') || hasNuxtModule('nuxt-simple-robots')
+  const hasRobotsModule = hasNuxtModule('@nuxtjs/robots')
   // Type augmentations for existing modules
   addTypeTemplate({
     filename: 'types/nuxt-sitemap-augments.d.ts',
     getContents: () => {
       const robotsType = hasRobotsModule ? '' : 'robots?: boolean\n'
       const routeRules = `${robotsType}sitemap?: SitemapItemDefaults | false`
-      const runtimeHooks = `'sitemap:index-resolved': (ctx: SitemapIndexRenderCtx<${nitroCompatibility.eventType}>) => void | Promise<void>
-'sitemap:input': (ctx: SitemapInputCtx<${nitroCompatibility.eventType}>) => void | Promise<void>
-'sitemap:resolved': (ctx: SitemapRenderCtx<${nitroCompatibility.eventType}>) => void | Promise<void>
-'sitemap:output': (ctx: SitemapOutputHookCtx<${nitroCompatibility.eventType}>) => void | Promise<void>
-'sitemap:sources': (ctx: SitemapSourcesHookCtx<${nitroCompatibility.eventType}>) => void | Promise<void>
-'sitemap:sitemaps-resolved': (ctx: SitemapsResolvedCtx<${nitroCompatibility.eventType}>) => void | Promise<void>`
+      const runtimeHooks = `'sitemap:index-resolved': (ctx: SitemapIndexRenderCtx) => void | Promise<void>
+'sitemap:input': (ctx: SitemapInputCtx) => void | Promise<void>
+'sitemap:resolved': (ctx: SitemapRenderCtx) => void | Promise<void>
+'sitemap:output': (ctx: SitemapOutputHookCtx) => void | Promise<void>
+'sitemap:sources': (ctx: SitemapSourcesHookCtx) => void | Promise<void>
+'sitemap:sitemaps-resolved': (ctx: SitemapsResolvedCtx) => void | Promise<void>`
       const nitroTypes = renderNitroTypeAugmentations(nitroCompatibility, {
         nitroInterfaces: {
           PrerenderRoute: '_sitemap?: SitemapUrl',

@@ -36,12 +36,19 @@ async function waitForServer() {
 }
 
 try {
-  const sitemap = await (await waitForServer()).text()
+  const response = await waitForServer()
+  assert.equal(response.headers.get('content-encoding'), 'gzip')
+  assert.match(response.headers.get('vary') || '', /accept-encoding/i)
+  const sitemap = await response.text()
+  assert.doesNotMatch(sitemap, /<loc>[^<]*\/excluded<\/loc>/)
   assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/included/)
+  assert.match(sitemap, /https:\/\/nuxt5\.example\.com\/authenticated-source/)
   // served by the `pages/` directory scan
   assert.match(sitemap, /<loc>https:\/\/nuxt5\.example\.com\/<\/loc>/)
   const routeRule = await fetch(`${origin}/api/compat`).then(response => response.json())
   assert.deepEqual(routeRule, { sitemap: false })
+  const alias = await fetch(`${origin}/api/alias`).then(response => response.json())
+  assert.deepEqual(alias, [{ loc: 'https://nuxt5.example.com/alias-proof' }])
 }
 finally {
   server.kill()
