@@ -44,13 +44,13 @@ export async function sitemapIndexXmlEventHandler(e: RequestEvent) {
     e,
     'sitemap',
     () => urlsToIndexXml(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo),
-    () => urlsToIndexXmlStream(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo),
-    !!runtimeConfig.experimentalStreaming && !import.meta.prerender,
+    import.meta._sitemapStreaming ? () => urlsToIndexXmlStream(indexResolvedCtx.sitemaps, resolvers, runtimeConfig, errorInfo) : undefined,
+    import.meta._sitemapStreaming && !import.meta.prerender,
     runtimeConfig.debug,
   )
 
   setSitemapResponseHeaders(e, runtimeConfig)
-  return compressSitemapOutput(e, output, !!runtimeConfig.experimentalCompression)
+  return import.meta._sitemapCompression ? compressSitemapOutput(e, output, true) : output
 }
 
 export async function sitemapChildXmlEventHandler(e: RequestEvent) {

@@ -223,11 +223,11 @@ export async function renderSitemapOutput(
   event: RequestEvent,
   sitemapName: string,
   renderString: () => string,
-  renderStream: () => ReadableStream<Uint8Array>,
+  renderStream: (() => ReadableStream<Uint8Array>) | undefined,
   shouldStream: boolean,
   debug: boolean,
 ): Promise<string | ReadableStream<Uint8Array>> {
-  if (!shouldStream) {
+  if (!import.meta._sitemapStreaming || !shouldStream || !renderStream) {
     const ctx: SitemapOutputHookCtx = { sitemap: renderString(), sitemapName, event }
     await nitro.hooks.callHook('sitemap:output', ctx)
     return ctx.sitemap
@@ -281,17 +281,19 @@ function getSitemapCacheKey(event: RequestEvent, definition: SitemapDefinition) 
 // Streaming responses cannot cache a serialized XML string without restoring the
 // full-response allocation. Cache the finalized URL plan instead, then serialize
 // and optionally compress it as a pull-driven stream for each response.
-const buildSitemapRenderPlanCached = defineCachedFunction(
-  buildSitemapRenderPlan,
-  {
-    name: 'sitemap:render-plan',
-    group: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    base: 'sitemap',
-    getKey: getSitemapCacheKey,
-    swr: true,
-  },
-)
+const buildSitemapRenderPlanCached = import.meta._sitemapStreaming
+  ? defineCachedFunction(
+      buildSitemapRenderPlan,
+      {
+        name: 'sitemap:render-plan',
+        group: 'sitemap',
+        maxAge: SERVER_CACHE_MAX_AGE,
+        base: 'sitemap',
+        getKey: getSitemapCacheKey,
+        swr: true,
+      },
+    )
+  : buildSitemapRenderPlan
 
 // Create cached function for building sitemap XML
 const buildSitemapXmlCached = defineCachedFunction(
@@ -326,7 +328,7 @@ export function setSitemapResponseHeaders(event: RequestEvent, runtimeConfig: Mo
 
 export async function createSitemap(event: RequestEvent, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
-  const shouldStream = !!runtimeConfig.experimentalStreaming && !import.meta.prerender
+  const shouldStream = import.meta._sitemapStreaming && !import.meta.prerender
 
   // Choose between cached or direct generation.
   // Skip caching during prerender so the final filesystem source handoff can replace
@@ -356,5 +358,5 @@ export async function createSitemap(event: RequestEvent, definition: SitemapDefi
   }
 
   setSitemapResponseHeaders(event, runtimeConfig)
-  return compressSitemapOutput(event, xml, !!runtimeConfig.experimentalCompression)
+  return import.meta._sitemapCompression ? compressSitemapOutput(event, xml, true) : xml
 }

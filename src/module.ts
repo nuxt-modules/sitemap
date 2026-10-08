@@ -879,6 +879,10 @@ export default defineNuxtModule<ModuleOptions>({
     // @ts-expect-error untyped
     nuxt.options.runtimeConfig.sitemap = dynamicRuntimeConfig
     nuxt.hook('nitro:config', (nitroConfig) => {
+      // Literal capabilities let both server builders remove disabled response paths.
+      nitroConfig.replace ||= {}
+      nitroConfig.replace['import.meta._sitemapStreaming'] = JSON.stringify(!!config.experimentalStreaming)
+      nitroConfig.replace['import.meta._sitemapCompression'] = JSON.stringify(!!config.experimentalCompression)
       nitroConfig.virtual = nitroConfig.virtual || {}
       nitroConfig.virtual['#sitemap-virtual/static-config.mjs']
         = `export default ${JSON.stringify(staticRuntimeConfig)}`
