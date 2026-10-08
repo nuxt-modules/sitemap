@@ -4,7 +4,8 @@ import type { NuxtPage } from 'nuxt/schema'
 import type { AppSourceContext, AutoI18nConfig, FilterInput, ModuleOptions, SitemapDefinition, SitemapUrl, SitemapUrlInput } from '../runtime/types'
 import { statSync } from 'node:fs'
 import { extname } from 'node:path'
-import { useNuxt } from '@nuxt/kit'
+import { pathToFileURL } from 'node:url'
+import { importModule, resolveModule, useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
 import { withBase, withHttps } from 'ufo'
 import { createPathFilter, robotsBlocksIndexing } from '../runtime/utils-pure'
@@ -96,17 +97,32 @@ function deepForEachPage(
  * The page source drops these itself. Prerendered routes reach the sitemap by a
  * second path, so the module removes these paths from them too.
  */
-export function resolvePageMetaExcludedPaths(pages: NuxtPage[], config: Pick<NuxtPagesToSitemapEntriesOptions, 'normalisedLocales' | 'routesNameSeparator'>): Set<string> {
+export async function resolvePageMetaExcludedPaths(pages: NuxtPage[], config: Pick<NuxtPagesToSitemapEntriesOptions, 'normalisedLocales' | 'routesNameSeparator'>, nuxt: Nuxt): Promise<{ has: (path: string) => boolean }> {
   const excluded = new Set<string>()
+  const routes: { path: string, name: string, meta: { excluded: boolean } }[] = []
   deepForEachPage(
     pages,
     (page, loc) => {
       if (page.meta?.sitemap === false)
         excluded.add(loc)
+      routes.push({ path: loc, name: String(routes.length), meta: { excluded: page.meta?.sitemap === false } })
     },
     { ...config, routesNameSeparator: config.routesNameSeparator || '___' } as NuxtPagesToSitemapEntriesOptions,
   )
-  return excluded
+  if (![...excluded].some(path => path.includes(':')))
+    return excluded
+
+  // Use the app's router only for dynamic exclusions. Its parser preserves optional,
+  // repeatable and custom-regexp params, and its ranking lets static siblings win.
+  // Resolving through Nuxt also works when the app has no direct vue-router dependency.
+  const nuxtEntry = resolveModule('nuxt', { url: pathToFileURL(`${nuxt.options.rootDir}/package.json`) })
+  const { createRouterMatcher } = await importModule<{
+    createRouterMatcher: (records: typeof routes, options: Record<string, never>) => {
+      resolve: (location: { path: string }, currentLocation: { path: string }) => { meta: { excluded?: boolean } }
+    }
+  }>('vue-router', { url: pathToFileURL(nuxtEntry) })
+  const matcher = createRouterMatcher(routes, {})
+  return { has: path => matcher.resolve({ path }, { path: '/' }).meta.excluded === true }
 }
 
 /**

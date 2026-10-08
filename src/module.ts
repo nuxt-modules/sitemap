@@ -958,13 +958,14 @@ export default defineNuxtModule<ModuleOptions>({
       const prerenderedRoutes = nitro._prerenderedRoutes || []
       const pages = readAppPages()
       // `definePageMeta({ sitemap: false })` also removes a page that was prerendered
-      const pageMetaExcludedPaths = resolvePageMetaExcludedPaths(pages, {
+      const pageMetaExcludedPaths = await resolvePageMetaExcludedPaths(pages, {
         normalisedLocales,
         routesNameSeparator: nuxtI18nConfig.routesNameSeparator,
-      })
+      }, nuxt)
       const prerenderUrlsFinal = [
         ...prerenderedRoutes
           .filter(isValidPrerenderRoute)
+          .filter(route => !pageMetaExcludedPaths.has(route.route))
           .map((r) => {
             if (r._sitemap)
               return r._sitemap
@@ -977,8 +978,7 @@ export default defineNuxtModule<ModuleOptions>({
               return undefined
             return { loc: r.route }
           })
-          .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false))
-          .filter(entry => !pageMetaExcludedPaths.has(typeof entry === 'string' ? entry : entry!.loc)),
+          .filter(entry => entry && (typeof entry === 'string' || entry._sitemap !== false)),
       ]
       if (config.debug) {
         logger.info('Prerendered routes:', prerenderUrlsFinal)
