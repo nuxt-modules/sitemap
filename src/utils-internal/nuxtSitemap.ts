@@ -97,31 +97,36 @@ function deepForEachPage(
  * The page source drops these itself. Prerendered routes reach the sitemap by a
  * second path, so the module removes these paths from them too.
  */
-export async function resolvePageMetaExcludedPaths(pages: NuxtPage[], config: Pick<NuxtPagesToSitemapEntriesOptions, 'normalisedLocales' | 'routesNameSeparator'>, nuxt: Nuxt): Promise<{ has: (path: string) => boolean }> {
-  const excluded = new Set<string>()
-  const routes: { path: string, name: string, meta: { excluded: boolean } }[] = []
-  deepForEachPage(
-    pages,
-    (page, loc) => {
-      if (page.meta?.sitemap === false)
-        excluded.add(loc)
-      routes.push({ path: loc, name: String(routes.length), meta: { excluded: page.meta?.sitemap === false } })
-    },
-    { ...config, routesNameSeparator: config.routesNameSeparator || '___' } as NuxtPagesToSitemapEntriesOptions,
-  )
-  if (![...excluded].some(path => path.includes(':')))
-    return excluded
+export async function resolvePageMetaExcludedPaths(pages: NuxtPage[], _config: Pick<NuxtPagesToSitemapEntriesOptions, 'normalisedLocales' | 'routesNameSeparator'>, nuxt: Nuxt): Promise<{ has: (path: string) => boolean }> {
+  const hasExcluded = (entries: NuxtPage[]): boolean => entries.some(page => page.meta?.sitemap === false || (!!page.children?.length && hasExcluded(page.children)))
+  if (!hasExcluded(pages))
+    return new Set<string>()
 
-  // Use the app's router only for dynamic exclusions. Its parser preserves optional,
-  // repeatable and custom-regexp params, and its ranking lets static siblings win.
+  interface PageRecord { path: string, name: string, alias: string | string[], meta: { excluded: boolean }, children?: PageRecord[] }
+  let nextName = 0
+  const records = (entries: NuxtPage[]): PageRecord[] => entries.map(page => ({
+    path: page.path,
+    name: String(nextName++),
+    alias: page.alias || [],
+    meta: { excluded: page.meta?.sitemap === false },
+    children: page.children ? records(page.children) : undefined,
+  }))
+
+  // Match static variants and dynamic params with the app's router options.
+  // Its parser preserves optional, repeatable and custom-regexp params.
   // Resolving through Nuxt also works when the app has no direct vue-router dependency.
   const nuxtEntry = resolveModule('nuxt', { url: pathToFileURL(`${nuxt.options.rootDir}/package.json`) })
   const { createRouterMatcher } = await importModule<{
-    createRouterMatcher: (records: typeof routes, options: Record<string, never>) => {
+    createRouterMatcher: (records: PageRecord[], options: { sensitive?: boolean, strict?: boolean, end?: boolean }) => {
       resolve: (location: { path: string }, currentLocation: { path: string }) => { meta: { excluded?: boolean } }
     }
   }>('vue-router', { url: pathToFileURL(nuxtEntry) })
-  const matcher = createRouterMatcher(routes, {})
+  const { sensitive, strict, end } = nuxt.options.router.options
+  const matcher = createRouterMatcher(records(pages), {
+    ...(sensitive === undefined ? {} : { sensitive }),
+    ...(strict === undefined ? {} : { strict }),
+    ...(end === undefined ? {} : { end }),
+  })
   return { has: path => matcher.resolve({ path }, { path: '/' }).meta.excluded === true }
 }
 
