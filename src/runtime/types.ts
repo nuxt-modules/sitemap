@@ -577,3 +577,10 @@ export interface NitroUrlResolvers {
 }
 
 export type I18nIntegrationOptions = NuxtI18nOptions
+
+declare global {
+  interface ImportMeta {
+    readonly _sitemapStreaming: boolean
+    readonly _sitemapCompression: boolean
+  }
+}
