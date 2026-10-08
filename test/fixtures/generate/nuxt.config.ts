@@ -25,9 +25,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   nitro: {
+    hooks: {
+      'prerender:generate'(route) {
+        if (route.route === '/private/one')
+          route._sitemap = { loc: 'https://alternate.example/private/one' }
+        if (route.route === '/dynamic/public')
+          route._sitemap = { loc: 'https://alternate.example/dynamic/public' }
+      },
+    },
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/about', '/noindex', '/hidden', '/sub/page'],
+      routes: ['/', '/about', '/noindex', '/hidden', '/sub/page', '/private/one', '/private/public', '/dynamic/public', '/optional', '/optional/one', '/repeated/one/two', '/mixed/prefix-one', '/numeric/42', '/nested/private/one'],
     },
   },
 

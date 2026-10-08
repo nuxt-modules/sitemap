@@ -29,6 +29,14 @@ describe.skipIf(process.env.CI)('generate', () => {
     expect(sitemap).not.toContain('/noindex')
     // definePageMeta({ sitemap: false }) excludes a prerendered page
     expect(sitemap).not.toContain('/hidden')
+    expect(sitemap).not.toContain('/private/one')
+    expect(sitemap).not.toContain('/optional')
+    expect(sitemap).not.toContain('/repeated/one/two')
+    expect(sitemap).not.toContain('/mixed/prefix-one')
+    expect(sitemap).not.toContain('/numeric/42')
+    expect(sitemap).not.toContain('/nested/private/one')
+    expect(sitemap).toContain('<loc>https://nuxtseo.com/private/public</loc>')
+    expect(sitemap).toContain('<loc>https://alternate.example/dynamic/public</loc>')
 
     // #568: verify definePageMeta sitemap data is preserved during generate
     expect(sitemap).toContain('<loc>https://nuxtseo.com/about</loc>')
