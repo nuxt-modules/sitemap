@@ -1,6 +1,8 @@
 ---
 name: nuxtjs-sitemap
 description: Generate, split, and debug XML sitemaps in a Nuxt app with the @nuxtjs/sitemap module. Use when a task mentions sitemap.xml, sitemap_index.xml, the sitemap config key, defineSitemapEventHandler, dynamic sitemap URLs from a CMS or API, multiple or chunked sitemaps, zeroRuntime, hreflang in sitemaps with @nuxtjs/i18n, defineSitemapSchema for Nuxt Content, or a page that is missing from or wrongly present in the sitemap.
+license: MIT
+compatibility: "Requires a project using @nuxtjs/sitemap. Requires Node.js ^22.22.3 || ^24.15.0 || >=26.0.0. Requires Nuxt ^4.6.0 || ^5.0.0."
 ---
 
 # @nuxtjs/sitemap
