@@ -16,6 +16,7 @@ import type {
 } from './runtime/types'
 import { readFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   addPrerenderRoutes,
   addServerHandler,
@@ -29,7 +30,6 @@ import {
   resolveModule,
 } from '@nuxt/kit'
 import { defu } from 'defu'
-import { installNuxtSiteConfig } from 'nuxt-site-config/kit'
 import { isPathFile } from 'nuxt-site-config/urls'
 import { setupNitroRuntimeCompatibility, setupRuntimeAliases, useModuleLogger } from 'nuxtseo-shared/kit'
 import { serializeFilters } from 'nuxtseo-shared/utils'
@@ -120,7 +120,7 @@ export default defineNuxtModule<ModuleOptions>({
       version: '>=1',
       optional: true,
     },
-    'nuxt-site-config': {
+    [fileURLToPath(import.meta.resolve('nuxt-site-config'))]: {
       version: '>=5.0.0',
     },
     '@nuxt/content': {
@@ -218,8 +218,6 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
 
-    // for trailing slashes / canonical absolute urls
-    await installNuxtSiteConfig()
     const userGlobalSources: SitemapSourceInput[] = [
       ...config.sources || [],
     ]

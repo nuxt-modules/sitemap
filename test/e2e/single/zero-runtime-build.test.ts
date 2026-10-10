@@ -47,7 +47,16 @@ describe('zeroRuntime', () => {
                 <loc>https://nuxtseo.com/crawled</loc>
             </url>
             <url>
+                <loc>https://nuxtseo.com/nested</loc>
+            </url>
+            <url>
+                <loc>https://alternate.example/dynamic/public</loc>
+            </url>
+            <url>
                 <loc>https://nuxtseo.com/dynamic/crawled</loc>
+            </url>
+            <url>
+                <loc>https://nuxtseo.com/private/public</loc>
             </url>
             <url>
                 <loc>https://nuxtseo.com/sub/page</loc>
