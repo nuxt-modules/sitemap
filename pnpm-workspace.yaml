@@ -69,44 +69,44 @@ packages:
 
 overrides:
   '@nuxtjs/robots': https://pkg.pr.new/nuxt-modules/robots/@nuxtjs/robots@24f4dcdbf3cd8d4c19a210b62eec8295eb4772a7
-  '@vitejs/plugin-vue': ^6.0.8
-  cssnano: 9.2.2
-  cssnano-preset-default: 9.2.2
-  cssnano-utils: 8.1.0
+  '@vitejs/plugin-vue': ^6.0.9
+  cssnano: 9.5.0
+  cssnano-preset-default: 9.5.0
+  cssnano-utils: 8.2.1
   nuxt-site-config: https://pkg.pr.new/harlan-zw/nuxt-site-config/nuxt-site-config@59e27b8dc55b21407ce19dfdbb7be0c6571e9490
   nuxt-site-config-kit: https://pkg.pr.new/harlan-zw/nuxt-site-config/nuxt-site-config-kit@59e27b8dc55b21407ce19dfdbb7be0c6571e9490
   nuxtseo-shared: https://pkg.pr.new/harlan-zw/nuxt-seo/nuxtseo-shared@226c091a0744b7286ef721ac035eed53856bfaa5
 
   postcss-calc: 11.2.2
-  postcss-colormin: 9.0.6
-  postcss-convert-values: 9.0.7
-  postcss-discard-comments: 9.0.6
-  postcss-discard-duplicates: 9.0.5
-  postcss-discard-empty: 9.0.5
-  postcss-discard-overridden: 9.0.5
-  postcss-merge-longhand: 9.2.0
-  postcss-merge-rules: 9.0.8
-  postcss-minify-font-values: 9.0.7
-  postcss-minify-gradients: 9.0.6
-  postcss-minify-params: 9.0.6
-  postcss-minify-selectors: 9.0.6
-  postcss-normalize-charset: 9.0.5
-  postcss-normalize-display-values: 9.0.5
-  postcss-normalize-positions: 9.0.6
-  postcss-normalize-repeat-style: 9.0.5
-  postcss-normalize-string: 9.0.5
-  postcss-normalize-timing-functions: 9.0.5
-  postcss-normalize-unicode: 9.0.5
-  postcss-normalize-url: 9.0.5
-  postcss-normalize-whitespace: 9.0.5
-  postcss-ordered-values: 9.0.6
-  postcss-reduce-initial: 9.0.6
-  postcss-reduce-transforms: 9.0.4
-  postcss-svgo: 9.0.4
-  postcss-unique-selectors: 9.0.5
+  postcss-colormin: 9.0.7
+  postcss-convert-values: 9.0.8
+  postcss-discard-comments: 9.0.7
+  postcss-discard-duplicates: 9.0.6
+  postcss-discard-empty: 9.0.7
+  postcss-discard-overridden: 9.0.6
+  postcss-merge-longhand: 9.3.0
+  postcss-merge-rules: 9.1.3
+  postcss-minify-font-values: 9.0.8
+  postcss-minify-gradients: 9.0.7
+  postcss-minify-params: 9.0.7
+  postcss-minify-selectors: 9.0.7
+  postcss-normalize-charset: 9.0.6
+  postcss-normalize-display-values: 9.0.6
+  postcss-normalize-positions: 9.0.7
+  postcss-normalize-repeat-style: 9.0.6
+  postcss-normalize-string: 9.0.6
+  postcss-normalize-timing-functions: 9.0.6
+  postcss-normalize-unicode: 9.1.0
+  postcss-normalize-url: 9.0.6
+  postcss-normalize-whitespace: 9.0.7
+  postcss-ordered-values: 9.0.8
+  postcss-reduce-initial: 9.0.7
+  postcss-reduce-transforms: 9.0.5
+  postcss-svgo: 9.0.5
+  postcss-unique-selectors: 9.0.6
   site-config-stack: https://pkg.pr.new/harlan-zw/nuxt-site-config/site-config-stack@59e27b8dc55b21407ce19dfdbb7be0c6571e9490
-  stylehacks: 9.0.7
-  vite: ^8.3.3
+  stylehacks: 9.0.8
+  vite: ^8.3.4
 
 patchedDependencies:
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
@@ -129,7 +129,7 @@ onlyBuiltDependencies:
 catalog:
   '@antfu/eslint-config': ^9.5.1
   '@arethetypeswrong/cli': ^0.18.5
-  '@harlan-zw/comark-content': ^0.2.0
+  '@harlan-zw/comark-content': ^0.2.1
   '@nuxt/content': ^3.16.1
   '@nuxt/devtools-kit': 4.0.0-beta.4
   '@nuxt/kit': ^4.6.0
@@ -147,7 +147,7 @@ catalog:
   eslint: ^10.12.0
   eslint-plugin-harlanzw: ^0.23.0
   fast-xml-parser: ^5.11.2
-  happy-dom: ^20.14.5
+  happy-dom: ^20.14.6
   nuxt: ^4.6.0
   nuxt-i18n-micro: ^3.30.0
   nuxt-site-config: ^5.0.0
