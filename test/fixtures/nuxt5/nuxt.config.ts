@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     server: { fs: { allow: [resolve(import.meta.dirname, '../../..')] } },
   },
   nitro: { noExternals: [resolve(import.meta.dirname, '../../..')] },
-  modules: [NuxtSitemap],
+  modules: [NuxtSiteConfig, NuxtSitemap],
   site: {
     url: 'https://nuxt5.example.com',
   },
