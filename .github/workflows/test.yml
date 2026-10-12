@@ -6,11 +6,13 @@ on:
   push:
     branches:
       - main
+      - v7
     paths-ignore:
       - '**/README.md'
   pull_request:
     branches:
       - main
+      - v7
 
 jobs:
   build:
