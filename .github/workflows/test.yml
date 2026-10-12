@@ -1,14 +1,10 @@
 name: CI
 
 on:
+  # No paths-ignore: reusable-ci.yml skips its jobs when only docs change, so
+  # their checks still report.
   push:
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
   pull_request:
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -21,3 +17,7 @@ jobs:
   ci:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     uses: harlan-zw/nuxt-seo/.github/workflows/reusable-ci.yml@main
+    with:
+      paths-ignore: |
+        **/*.md
+        docs/**
