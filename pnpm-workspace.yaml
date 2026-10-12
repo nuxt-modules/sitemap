@@ -158,7 +158,7 @@ catalog:
   oxc-walker: ^1.1.1
   radix3: ^1.1.2
   std-env: ^4.3.0
-  typescript: 6.0.3
+  typescript: 7.0.2
   ufo: ^1.6.4
   ultrahtml: ^1.7.0
   unbuild: ^3.6.1
