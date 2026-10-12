@@ -236,6 +236,9 @@ catalogs:
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
+    ohash:
+      specifier: ^2.0.11
+      version: 2.0.12
     oxc-parser:
       specifier: ^0.153.0
       version: 0.153.0
@@ -338,6 +341,9 @@ importers:
       ofetch:
         specifier: 'catalog:'
         version: 1.5.1
+      ohash:
+        specifier: 'catalog:'
+        version: 2.0.12
       oxc-parser:
         specifier: 'catalog:'
         version: 0.153.0

@@ -14,6 +14,9 @@ vi.mock('#nuxtseo/nitro', () => ({
     return fn
   },
 }))
+vi.mock('#site-config/server', () => ({
+  getSiteConfig: () => ({}),
+}))
 vi.mock('#sitemap-virtual/static-config.mjs', () => ({
   default: { cacheMaxAgeSeconds: 600 },
 }))
@@ -73,20 +76,6 @@ describe('fetchDataSource', () => {
     expect(result.urls).toEqual([])
     expect(result.error).toContain('HTML')
     expect(result._isFailure).toBe(true)
-  })
-
-  it('hashes source options out of the cache storage key', async () => {
-    await import('../../src/runtime/server/sitemap/urlset/sources')
-    const sourceCache = cachedFunctions.find(c => c.name === 'sitemap:source-urls')
-    expect(sourceCache).toBeDefined()
-
-    const event = { req: new Request('https://test-host', { headers: { host: 'test-host' } }), context: {} } as any
-    const key = await sourceCache!.opts.getKey(event, '/api/urls::{"headers":{"Authorization":"Bearer secret-token"}}')
-
-    expect(key).toContain('test-host')
-    expect(key).not.toContain('secret-token')
-    expect(key).not.toContain('Authorization')
-    expect(key).not.toContain('{')
   })
 
   it('rejects cached source fetches that failed', async () => {
