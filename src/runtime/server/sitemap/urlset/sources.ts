@@ -14,11 +14,12 @@ import { defu } from 'defu'
 import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
 import { parseURL } from 'ufo'
-import { getHeader, getRequestHost } from '#nuxtseo/h3'
-import { defineCachedFunction, fetchWithEvent } from '#nuxtseo/nitro'
+import { getRequestHost } from '#nuxtseo/h3'
+import { fetchWithEvent } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger } from '../../../utils-pure'
+import { defineSitemapCachedFunction } from '../../cache'
 
 const changeFrequencies = new Set<Changefreq>([
   'always',
@@ -109,7 +110,6 @@ interface SourceFetchResult {
 }
 
 const SOURCE_FETCH_MEMO_KEY = '_sitemapSourceFetches'
-const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 // Prerendering issues one request per sitemap, so an event-scoped memo cannot span them. A build
 // resolves a fixed data set, so a process-wide memo is correct for the length of the build.
@@ -136,41 +136,16 @@ function useSourceFetchMemo(event?: H3Event): Map<string, Promise<SourceFetchRes
 }
 
 // Keyed by source URL rather than by sitemap name, so sitemaps sharing a source share one entry.
-// Host is part of the key because an internal source resolves against the incoming host.
-// Nitro stores custom keys verbatim in the cache driver, so the source key is hashed: fetch
-// options may carry Authorization headers, and those must not reach redis or KV in plaintext.
-function hashCacheKey(key: string): string {
-  let h1 = 0xDEADBEEF
-  let h2 = 0x41C6CE57
-  for (let i = 0; i < key.length; i++) {
-    const ch = key.charCodeAt(i)
-    h1 = Math.imul(h1 ^ ch, 2654435761)
-    h2 = Math.imul(h2 ^ ch, 1597334677)
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
-  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36)
-}
-
-const fetchSourceUrlsCached = defineCachedFunction(
+// The origin is part of the key because an internal source resolves against the incoming host.
+// The key is hashed, so fetch options such as an Authorization header never reach cache storage.
+const fetchSourceUrlsCached = defineSitemapCachedFunction(
   (event: H3Event, _key: string, url: string, options: any) => fetchSourceUrls(url, options, event),
   {
     name: 'sitemap:source-urls',
-    group: 'sitemap',
-    base: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    getKey: (event: H3Event, key: string) => {
-      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
-      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      return `source-${proto}-${host}-${hashCacheKey(key)}`
-    },
-    swr: true,
+    keyParts: (_event, key) => [key],
     // A failed fetch must never be served again, otherwise one outage empties the sitemap for a
     // whole cache window.
-    validate: (entry) => {
-      const value = entry.value as SourceFetchResult | undefined
-      return value !== undefined && !value._isFailure
-    },
+    validate: entry => entry.value !== undefined && !entry.value._isFailure,
   },
 )
 

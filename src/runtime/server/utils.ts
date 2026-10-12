@@ -1,18 +1,14 @@
 import type { H3Event } from '#nuxtseo/h3'
 import type { FilterInput, ModuleRuntimeConfig, SitemapsResolvedCtx } from '../types'
-import { getHeader } from '#nuxtseo/h3'
-import { defineCachedFunction, useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
+import { useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { normalizeRuntimeFilters } from '../utils-pure'
+import { defineSitemapCachedFunction } from './cache'
 
 export * from '../utils-pure'
 
 type NitroApp = ReturnType<typeof useNitroApp>
-
-// Read at module init: defineCachedFunction takes a static maxAge. Falls back to 10 minutes
-// when caching is disabled in static config (still bypassed at request time via shouldCache).
-const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 // Event-overridable fields only; the rest of the config comes from the static virtual module.
 function dynamicRuntimeConfig(e?: H3Event) {
@@ -73,22 +69,7 @@ async function resolveSitemapSitemaps(e: H3Event, nitro: NitroApp): Promise<Modu
 
 // Registration hooks commonly query a database. Cache the resolved record for the same window
 // as the rendered XML so the hook cost stays proportional to cacheMaxAgeSeconds.
-const resolveSitemapSitemapsCached = defineCachedFunction(
-  resolveSitemapSitemaps,
-  {
-    name: 'sitemap:runtime-sitemaps',
-    group: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    base: 'sitemap',
-    // nitro calls getKey with the full fn args (event, nitro)
-    getKey: (e?: H3Event) => {
-      const host = (e && (getHeader(e, 'x-forwarded-host') || getHeader(e, 'host'))) || ''
-      const proto = (e && getHeader(e, 'x-forwarded-proto')) || 'https'
-      return `runtime-sitemaps-${proto}-${host}`
-    },
-    swr: true,
-  },
-)
+const resolveSitemapSitemapsCached = defineSitemapCachedFunction(resolveSitemapSitemaps, { name: 'sitemap:runtime-sitemaps' })
 
 export async function useResolvedSitemapRuntimeConfig(e: H3Event): Promise<ModuleRuntimeConfig> {
   // Cheap gate before any config work: dynamic copy first (env-overridable), static fallback.
