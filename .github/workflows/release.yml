@@ -60,6 +60,7 @@ jobs:
           echo "tag=${npm_tag}" >> "$GITHUB_OUTPUT"
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter sitemapd build
       - run: pnpm --filter sitemapd typecheck
       - run: pnpm --filter sitemapd test
       - run: pnpm --filter sitemapd test:attw
