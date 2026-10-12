@@ -126,7 +126,7 @@ export default defineNuxtModule<ModuleOptions>({
       version: '>=5.0.0',
     },
     '@nuxt/content': {
-      version: '>=2',
+      version: '>=3',
       optional: true,
     },
     '@harlan-zw/comark-content': {
@@ -154,7 +154,6 @@ export default defineNuxtModule<ModuleOptions>({
     sitemapsPathPrefix: '/__sitemap__/',
     xsl: '/__sitemap__/style.xsl',
     xslTips: true,
-    strictNuxtContentPaths: false,
     runtimeCacheStorage: true,
     sitemapName: 'sitemap.xml',
     // cacheControlHeader: 'max-age=600, must-revalidate',
@@ -514,11 +513,10 @@ export default defineNuxtModule<ModuleOptions>({
         addServerPlugin(resolve('./runtime/server/plugins/stream-transport'))
     }
 
-    // @ts-expect-error untyped
-    const isNuxtContentDocumentDriven = (!!nuxt.options.content?.documentDriven || config.strictNuxtContentPaths)
     const contentProvider = await resolveContentProvider(nuxt)
     const isNuxtContentV3 = contentProvider._tag === 'NuxtContent' && contentProvider.version === 3
-    const isNuxtContentV2 = contentProvider._tag === 'NuxtContent' && contentProvider.version === 2
+    if (contentProvider._tag === 'NuxtContent' && contentProvider.version === 2)
+      logger.warn('Nuxt Content v2 is not supported, so its pages are not in the sitemap. Upgrade to Nuxt Content v3.')
     const isComarkContent = contentProvider._tag === 'Comark'
     const nuxtV3Collections = new Set<string>()
     setupContentRuntime(contentProvider, nuxt)
@@ -620,9 +618,6 @@ export default defineNuxtModule<ModuleOptions>({
         route: '/__sitemap__/nuxt-content-urls.json',
         handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
       })
-      if (config.strictNuxtContentPaths) {
-        logger.warn('You have set `strictNuxtContentPaths: true` but are using @nuxt/content v3. This is not required, please remove it.')
-      }
       appGlobalSources.push({
         context: {
           name: '@nuxt/content@v3:urls',
@@ -641,9 +636,6 @@ export default defineNuxtModule<ModuleOptions>({
         route: COMARK_CONTENT_SITEMAP_ROUTE,
         handler: resolve('./runtime/server/routes/__sitemap__/content-urls'),
       })
-      if (config.strictNuxtContentPaths) {
-        logger.warn('You have set `strictNuxtContentPaths: true` but are using comark-content. This is not required, please remove it.')
-      }
       appGlobalSources.push({
         context: {
           name: COMARK_CONTENT_SOURCE,
@@ -653,30 +645,6 @@ export default defineNuxtModule<ModuleOptions>({
             : ['No collections found. Set `sitemap: false` on a collection to keep it out.'],
         },
         fetch: COMARK_CONTENT_SITEMAP_ROUTE,
-      })
-    }
-    else if (isNuxtContentV2) {
-      addServerPlugin(resolve('./runtime/server/plugins/nuxt-content-v2'))
-      addServerHandler({
-        route: '/__sitemap__/nuxt-content-urls.json',
-        handler: resolve('./runtime/server/routes/__sitemap__/nuxt-content-urls-v2'),
-      })
-      const tips: string[] = []
-      // @ts-expect-error untyped
-      if (nuxt.options.content?.documentDriven)
-        tips.push('Enabled because you\'re using `@nuxt/content` with `documentDriven: true`.')
-      else if (config.strictNuxtContentPaths)
-        tips.push('Enabled because you\'ve set `config.strictNuxtContentPaths: true`.')
-      else
-        tips.push('You can provide a `sitemap` key in your markdown frontmatter to configure specific URLs. Make sure you include a `loc`.')
-
-      appGlobalSources.push({
-        context: {
-          name: '@nuxt/content@v2:urls',
-          description: 'Generated from your markdown files.',
-          tips,
-        },
-        fetch: '/__sitemap__/nuxt-content-urls.json',
       })
     }
 
@@ -847,9 +815,6 @@ export default defineNuxtModule<ModuleOptions>({
       discoverImages: config.discoverImages,
       discoverVideos: config.discoverVideos,
       sitemapsPathPrefix: config.sitemapsPathPrefix,
-
-      /* @nuxt/content */
-      isNuxtContentDocumentDriven,
 
       /* xsl styling */
       xsl: config.xsl,
