@@ -1,9 +1,7 @@
 import { defu } from 'defu'
 import { joinURL, withQuery } from 'ufo'
-import { defineCachedFunction } from 'nitropack/runtime'
 import type { NitroApp } from 'nitropack/types'
 import type { H3Event } from 'h3'
-import { getHeader } from 'h3'
 import type {
   ModuleRuntimeConfig,
   NitroUrlResolvers,
@@ -12,6 +10,7 @@ import type {
   SitemapUrl,
   SitemapSourcesHookCtx,
 } from '../../../types'
+import { defineSitemapCachedFunction } from '../../cache'
 import { normaliseDate } from '../urlset/normalise'
 import { globalSitemapSources, childSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { sortInPlace } from '../urlset/sort'
@@ -19,23 +18,11 @@ import { escapeValueForXml } from './xml'
 import { resolveSitemapEntries } from './sitemap'
 
 // Create cached wrapper for sitemap index building
-const buildSitemapIndexCached = defineCachedFunction(
-  async (event: H3Event, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) => {
+const buildSitemapIndexCached = defineSitemapCachedFunction(
+  async (_event: H3Event, resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp) => {
     return buildSitemapIndexInternal(resolvers, runtimeConfig, nitro)
   },
-  {
-    name: 'sitemap:index',
-    group: 'sitemap',
-    maxAge: 60 * 10, // 10 minutes default
-    base: 'sitemap', // Use the sitemap storage
-    getKey: (event: H3Event) => {
-      // Include headers that could affect the output in the cache key
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
-      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      return `sitemap-index-${proto}-${host}`
-    },
-    swr: true, // Enable stale-while-revalidate
-  },
+  { name: 'sitemap:index' },
 )
 
 async function buildSitemapIndexInternal(resolvers: NitroUrlResolvers, runtimeConfig: ModuleRuntimeConfig, nitro?: NitroApp): Promise<{ entries: SitemapIndexEntry[], failedSources: Array<{ url: string, error: string }> }> {

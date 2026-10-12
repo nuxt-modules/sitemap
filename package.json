@@ -73,6 +73,7 @@
     "fast-xml-parser": "^5.3.3",
     "nuxt-site-config": "^3.2.18",
     "ofetch": "^1.5.1",
+    "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "radix3": "^1.1.2",

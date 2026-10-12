@@ -1,8 +1,8 @@
-import { getQuery, setHeader, createError, getHeader } from 'h3'
+import { getQuery, setHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 import { fixSlashes } from 'nuxt-site-config/urls'
 import { defu } from 'defu'
-import { useNitroApp, defineCachedFunction } from 'nitropack/runtime'
+import { useNitroApp } from 'nitropack/runtime'
 import type { NitroApp } from 'nitropack/types'
 import type {
   ModuleRuntimeConfig,
@@ -13,6 +13,7 @@ import type {
 } from '../../types'
 import { logger, mergeOnKey, splitForLocales } from '../../utils-pure'
 import { createNitroRouteRuleMatcher } from '../kit'
+import { defineSitemapCachedFunction } from '../cache'
 import { buildSitemapUrls, urlsToXml } from './builder/sitemap'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
@@ -165,23 +166,10 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
 }
 
 // Create cached function for building sitemap XML
-const buildSitemapXmlCached = defineCachedFunction(
-  buildSitemapXml,
-  {
-    name: 'sitemap:xml',
-    group: 'sitemap',
-    maxAge: 60 * 10, // Default 10 minutes
-    base: 'sitemap', // Use the sitemap storage
-    getKey: (event: H3Event, definition: SitemapDefinition) => {
-      // Include headers that could affect the output in the cache key
-      const host = getHeader(event, 'host') || getHeader(event, 'x-forwarded-host') || ''
-      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      const sitemapName = definition.sitemapName || 'default'
-      return `${sitemapName}-${proto}-${host}`
-    },
-    swr: true, // Enable stale-while-revalidate
-  },
-)
+const buildSitemapXmlCached = defineSitemapCachedFunction(buildSitemapXml, {
+  name: 'sitemap:xml',
+  keyParts: (_event, definition: SitemapDefinition) => [definition.sitemapName || 'default'],
+})
 
 export async function createSitemap(event: H3Event, definition: SitemapDefinition, runtimeConfig: ModuleRuntimeConfig) {
   const resolvers = useNitroUrlResolvers(event)
