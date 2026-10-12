@@ -132,7 +132,7 @@ catalog:
   '@harlan-zw/comark-content': ^0.2.0
   '@nuxt/content': ^3.16.1
   '@nuxt/devtools-kit': 4.0.0-beta.4
-  '@nuxt/kit': ^4.6.0
+  '@nuxt/kit': ^4.6.1
   '@nuxt/module-builder': ^1.0.3
   '@nuxt/test-utils': ^4.3.3
   '@nuxt/ui': ^4.11.3
@@ -148,7 +148,7 @@ catalog:
   eslint-plugin-harlanzw: ^0.23.0
   fast-xml-parser: ^5.11.2
   happy-dom: ^20.14.5
-  nuxt: ^4.6.0
+  nuxt: ^4.6.1
   nuxt-i18n-micro: ^3.30.0
   nuxt-site-config: ^5.0.0
   nuxtseo-layer-devtools: ^5.3.16
