@@ -13,6 +13,9 @@ vi.mock('#nuxtseo/h3', () => ({
 vi.mock('#nuxtseo/nitro', () => ({
   defineCachedFunction: (fn: unknown) => fn,
 }))
+vi.mock('#site-config/server', () => ({
+  getSiteConfig: () => ({}),
+}))
 vi.mock('#sitemap-virtual/static-config.mjs', () => ({
   default: { cacheMaxAgeSeconds: 600 },
 }))

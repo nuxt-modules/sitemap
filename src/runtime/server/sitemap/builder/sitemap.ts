@@ -8,18 +8,15 @@ import type {
   SitemapSourcesHookCtx,
 } from '../../../types'
 import { resolveSitePath } from 'nuxt-site-config/urls'
-import { getRequestHeader as getHeader, useRuntimeConfig } from 'nuxt/server'
+import { useRuntimeConfig } from 'nuxt/server'
 import { withHttps } from 'ufo'
-import { defineCachedFunction } from '#nuxtseo/nitro'
-// @ts-expect-error virtual module
-import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, resolveI18nSitemapLocaleKey } from '../../../utils-pure'
+import { defineSitemapCachedFunction } from '../../cache'
 import { sortInPlace } from '../urlset/sort'
 import { childSitemapSources, globalSitemapSources, resolveSitemapSources } from '../urlset/sources'
 import { parseChunkInfo, sliceUrlsForChunk } from '../utils/chunk'
 import { resolveSitemapEntries } from './entries'
 
-const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 type NitroApp = ReturnType<typeof import('#nuxtseo/nitro').useNitroApp>
 
 export interface ResolvedSitemapUrlsResult {
@@ -122,7 +119,7 @@ export async function buildResolvedSitemapUrls(
   return { urls, failedSources }
 }
 
-export const buildResolvedSitemapUrlsCached = defineCachedFunction(
+export const buildResolvedSitemapUrlsCached = defineSitemapCachedFunction(
   async (
     _event: RequestEvent,
     effectiveSitemap: SitemapDefinition,
@@ -134,21 +131,10 @@ export const buildResolvedSitemapUrlsCached = defineCachedFunction(
   ) => buildResolvedSitemapUrls(effectiveSitemap, matchName, isChunked, resolvers, runtimeConfig, nitro),
   {
     name: 'sitemap:resolved-urls',
-    group: 'sitemap',
-    base: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    getKey: (event, _effectiveSitemap, matchName, isChunked) => {
-      const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
-      const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-      return `resolved-${isChunked ? 'chunked-' : ''}${matchName}-${proto}-${host}`
-    },
-    swr: true,
+    keyParts: (_event, _effectiveSitemap, matchName, isChunked) => [matchName, isChunked],
     // A build with failed sources is never cached: one outage must not pin an empty sitemap
     // for a whole cache window. The next request retries the sources instead.
-    validate: (entry) => {
-      const value = entry.value as ResolvedSitemapUrlsResult | undefined
-      return value !== undefined && !(value.failedSources?.length)
-    },
+    validate: entry => entry.value !== undefined && !(entry.value.failedSources?.length),
   },
 )
 
