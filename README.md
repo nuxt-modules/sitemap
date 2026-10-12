@@ -54,7 +54,6 @@ npx nuxi@latest module add sitemap
 - [Dynamic URLs](https://stackblitz.com/edit/nuxt-starter-dyraxc?file=server%2Fapi%2F_sitemap-urls.ts)
 - [i18n](https://stackblitz.com/edit/nuxt-starter-jwuie4?file=app.vue)
 - [Manual Chunking](https://stackblitz.com/edit/nuxt-starter-umyso3?file=nuxt.config.ts)
-- [Nuxt Content Document Driven](https://stackblitz.com/edit/nuxt-starter-a5qk3s?file=nuxt.config.ts)
 
 ## Sponsors
 

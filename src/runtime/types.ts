@@ -116,12 +116,6 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   autoI18n?: boolean | AutoI18nConfig
   /**
-   * Enable when your nuxt/content files match your pages. This will automatically add sitemap content to the sitemap.
-   *
-   * This is similar behavior to using `nuxt/content` with `documentDriven: true`.
-   */
-  strictNuxtContentPaths: boolean
-  /**
    * Should the sitemap.xml display credits for the module.
    *
    * @default true
@@ -219,7 +213,7 @@ export interface SitemapSourceResolved extends Omit<SitemapSourceBase, 'urls'> {
   _urlWarnings?: { loc: string, message: string }[]
 }
 
-export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | 'nuxt-i18n-micro:pages' | '@nuxt/content@v2:urls' | '@nuxt/content@v3:urls' | '@harlan-zw/comark-content:urls'
+export type AppSourceContext = 'nuxt:pages' | 'nuxt:prerender' | 'nuxt:route-rules' | '@nuxtjs/i18n:pages' | 'nuxt-i18n-micro:pages' | '@nuxt/content@v3:urls' | '@harlan-zw/comark-content:urls'
 
 export type SitemapSourceInput = string | [string, FetchOptions] | SitemapSourceBase | SitemapSourceResolved
 
@@ -260,7 +254,6 @@ export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPr
   /** Explicit header rules captured before Robots generates site-wide transport headers. */
   routeRuleHeaders?: Record<string, { headers: Record<string, string> }>
   version: string
-  isNuxtContentDocumentDriven: boolean
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, SitemapDefinition & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
   hasDisabledAutoI18n?: boolean
