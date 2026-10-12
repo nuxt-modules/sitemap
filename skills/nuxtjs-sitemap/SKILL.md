@@ -13,6 +13,9 @@ Docs: https://nuxtseo.com/docs/sitemap
 
 ## Setup
 
+Install with `npx nuxt module add sitemap`. The config key is `sitemap`.
+Included in `@nuxtjs/seo` v6. If the app uses `@nuxtjs/seo`, configure the `sitemap` key and do not add the module again.
+
 Set `site.url`. Every `<loc>` resolves against it.
 If `site.url` is missing, the production server uses the request `Host` header. The build gives no warning.
 In dev, `<loc>` always uses the dev server host. This is expected.
@@ -32,10 +35,12 @@ If `@nuxtjs/robots` is installed, the module adds the sitemap to `robots.txt`. I
 ## Add dynamic URLs
 
 Return the entries from a server route, then list the route in `sources`.
-`defineSitemapEventHandler()` is auto imported in server code. It adds types only, no cache.
+Import `defineSitemapEventHandler()` from `#sitemap/server`. Server auto imports also resolve it. It adds types only, no cache.
 
 ```ts
 // server/api/__sitemap__/urls.ts
+import { defineSitemapEventHandler } from '#sitemap/server'
+
 export default defineSitemapEventHandler(async () => {
   const posts = await $fetch<{ slug: string, updatedAt: string }[]>('https://cms.example.com/posts')
   return posts.map(post => ({
@@ -122,6 +127,18 @@ In both modes, sources are fetched once at build. New CMS entries do not appear 
 - **Nuxt Content `filter` and `onUrl` cannot read outside variables.** The build fails and names the variable. See [references/nuxt-content.md](references/nuxt-content.md).
 - **`lastmod` set to the current date on every build tells crawlers nothing.** Use a real content update time.
 
+## Version limits
+
+v9 has these breaking changes. Each line gives the fix.
+
+- Nuxt `^4.6.0 || ^5.0.0` and Node `^22.22.3 || ^24.15.0 || >=26.0.0` are required. Upgrade both before the module.
+- Hook contexts and `defineSitemapEventHandler()` receive a `RequestEvent` from `nuxt/server`. `event.node.req` does not exist. Read a header with `ctx.event.req.headers.get('authorization')`.
+- Import `defineSitemapEventHandler()` and `asSitemapUrl()` from `#sitemap/server`. Import `getQuery()` and other request utilities from `nuxt/server`.
+- `@nuxtjs/robots` must be v7. `nuxt-site-config` must be v5. Upgrade them together with the sitemap.
+- The optional `zod` peer is `^4.6.5`. Use Zod 4 with `defineSitemapSchema()`.
+- Nuxt Content v2 is not supported. Upgrade to Nuxt Content v3 and add `defineSitemapSchema()` to each collection.
+- The DevTools Sitemap tab needs the `nuxtseo-devtools-host` dev dependency.
+
 ## Config
 
 - `sources`, `urls`, `include`, `exclude`, `defaults`: top level for one sitemap. With `sitemaps`, set them per sitemap.
@@ -136,5 +153,5 @@ Nitro hooks change output at runtime: `sitemap:sources` (add sources or request 
 ## Debug
 
 - `/__sitemap__/debug.json` lists every source, its URLs, and fetch errors. It exists in dev, or in production with `debug: true`. `zeroRuntime` removes it.
-- Nuxt DevTools has a Sitemap tab with the same data.
+- Nuxt DevTools has a Sitemap tab with the same data. The tab needs `nuxtseo-devtools-host` as a dev dependency: `pnpm add -D nuxtseo-devtools-host`.
 - For a prerendered sitemap, set `debug: true` and read `.output/public/__sitemap__/debug.json`.

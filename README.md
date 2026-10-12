@@ -37,7 +37,7 @@ need these.
 Install `@nuxtjs/sitemap` dependency to your project:
 
 ```bash
-npx nuxi@latest module add sitemap
+npx nuxt module add sitemap
 ```
 
 > [!TIP]
