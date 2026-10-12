@@ -10,12 +10,62 @@ concurrency:
   group: release-${{ github.ref }}
 
 jobs:
+  # The v8 line publishes under the `latest-8` dist-tag, so `latest` keeps pointing at the
+  # newest major. Mirrors harlan-zw/nuxt-seo's reusable release workflow otherwise.
   release:
     if: startsWith(github.ref_name, 'v')
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: write
       id-token: write
-    uses: harlan-zw/nuxt-seo/.github/workflows/reusable-release.yml@main
+    env:
+      NPM_CONFIG_FETCH_RETRIES: '5'
+      NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: '20000'
+      NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: '120000'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@lts
+          cache: true
+          install: false
+
+      - name: Publish release notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for attempt in 1 2 3; do
+            if npx changelogithub; then
+              exit 0
+            fi
+            echo "::warning::changelogithub failed on attempt $attempt"
+            if [ "$attempt" -lt 3 ]; then
+              sleep 15
+            fi
+          done
+          echo "::error::changelogithub failed after 3 attempts"
+          exit 1
+
+      # A new release becomes the latest GitHub release by default. Hand that back to the
+      # newest stable tag.
+      - name: Keep the newest major as the latest GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          newest_tag="$(git tag --list 'v*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)"
+          if [[ -n "$newest_tag" && "$newest_tag" != "$GITHUB_REF_NAME" ]]; then
+            gh release edit "$newest_tag" --latest
+          fi
+
+      - run: pnpm install --frozen-lockfile --trust-lockfile
+
+      - run: pnpm build
+
+      - run: pnpm publish --access public --no-git-checks --provenance --tag latest-8
 
   release-sitemapd:
     if: startsWith(github.ref_name, 'sitemapd-v')

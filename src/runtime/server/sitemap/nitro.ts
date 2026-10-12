@@ -13,23 +13,18 @@ import { fixSlashes } from 'nuxt-site-config/urls'
 import { createNitroRouteRuleMatcher } from 'nuxtseo-shared/server'
 // @ts-expect-error virtual
 import { getPathRobotConfig } from '#internal/nuxt-robots/getPathRobotConfig' // can't solve this
-import { createError, getHeader, getQuery, setHeader } from '#nuxtseo/h3'
-import { defineCachedFunction, useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
+import { createError, getQuery, setHeader } from '#nuxtseo/h3'
+import { useNitroApp, useRuntimeConfig } from '#nuxtseo/nitro'
 import { getSiteConfig } from '#site-config/server/composables/getSiteConfig'
 import { createSitePathResolver } from '#site-config/server/composables/utils'
-// @ts-expect-error virtual module
-import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger, mergeOnKey, robotsBlocksIndexing, splitForLocales } from '../../utils-pure'
+import { defineSitemapCachedFunction } from '../cache'
 import { buildSitemapUrls, urlsToXml, urlsToXmlStream } from './builder/sitemap'
 import { createChunkedXmlStream } from './stream'
 import { normaliseEntry, preNormalizeEntry } from './urlset/normalise'
 import { sortInPlace } from './urlset/sort'
 
 type NitroApp = ReturnType<typeof useNitroApp>
-
-// Read at module init: defineCachedFunction takes a static maxAge. Falls back to 10 minutes
-// when caching is disabled in static config (still bypassed at request time via shouldCache).
-const SERVER_CACHE_MAX_AGE = (staticConfig.cacheMaxAgeSeconds as number | false) || 60 * 10
 
 interface SitemapNitroApp extends NitroApp {
   _sitemapWarned?: boolean
@@ -264,41 +259,17 @@ async function buildSitemapXml(event: H3Event, definition: SitemapDefinition, re
   return ctx.sitemap
 }
 
-function getSitemapCacheKey(event: H3Event, definition: SitemapDefinition) {
-  // Include headers that can affect absolute URL generation in the cache key.
-  const host = getHeader(event, 'x-forwarded-host') || getHeader(event, 'host') || ''
-  const proto = getHeader(event, 'x-forwarded-proto') || 'https'
-  const sitemapName = definition.sitemapName || 'default'
-  return `${sitemapName}-${proto}-${host}`
+function sitemapKeyParts(_event: H3Event, definition: SitemapDefinition) {
+  return [definition.sitemapName || 'default']
 }
 
 // Streaming responses cannot cache a serialized XML string without restoring the
 // full-response allocation. Cache the finalized URL plan instead, then serialize
 // and optionally compress it as a pull-driven stream for each response.
-const buildSitemapRenderPlanCached = defineCachedFunction(
-  buildSitemapRenderPlan,
-  {
-    name: 'sitemap:render-plan',
-    group: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    base: 'sitemap',
-    getKey: getSitemapCacheKey,
-    swr: true,
-  },
-)
+const buildSitemapRenderPlanCached = defineSitemapCachedFunction(buildSitemapRenderPlan, { name: 'sitemap:render-plan', keyParts: sitemapKeyParts })
 
 // Create cached function for building sitemap XML
-const buildSitemapXmlCached = defineCachedFunction(
-  buildSitemapXml,
-  {
-    name: 'sitemap:xml',
-    group: 'sitemap',
-    maxAge: SERVER_CACHE_MAX_AGE,
-    base: 'sitemap', // Use the sitemap storage
-    getKey: getSitemapCacheKey,
-    swr: true, // Enable stale-while-revalidate
-  },
-)
+const buildSitemapXmlCached = defineSitemapCachedFunction(buildSitemapXml, { name: 'sitemap:xml', keyParts: sitemapKeyParts })
 
 export function setSitemapResponseHeaders(event: H3Event, runtimeConfig: ModuleRuntimeConfig) {
   setHeader(event, 'Content-Type', 'text/xml; charset=UTF-8')

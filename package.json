@@ -1,7 +1,7 @@
 {
   "name": "@nuxtjs/sitemap",
   "type": "module",
-  "version": "8.6.1",
+  "version": "8.6.2",
   "packageManager": "pnpm@11.22.0",
   "description": "Powerfully flexible XML Sitemaps that integrate seamlessly, for Nuxt.",
   "author": {
@@ -82,6 +82,7 @@
     "nuxt-site-config": "catalog:",
     "nuxtseo-shared": "catalog:",
     "ofetch": "catalog:",
+    "ohash": "catalog:",
     "oxc-parser": "catalog:",
     "oxc-walker": "catalog:",
     "pathe": "catalog:",
