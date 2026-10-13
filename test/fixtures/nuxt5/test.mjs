@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { readFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
+import { assertRouteRules } from './test-route-rules.ts'
 
 const portServer = createServer()
 portServer.listen(0, '127.0.0.1')
@@ -37,6 +38,7 @@ async function waitForServer() {
 
 try {
   const response = await waitForServer()
+  await assertRouteRules(origin)
   assert.equal(response.headers.get('content-encoding'), 'gzip')
   assert.match(response.headers.get('vary') || '', /accept-encoding/i)
   const sitemap = await response.text()
