@@ -1,7 +1,8 @@
 import type { RequestEvent } from 'nuxt/server'
-import { createError, getRequestURL, getRouterParam, sendRedirect, useRuntimeConfig } from 'nuxt/server'
+import { createError, sendRedirect, useRuntimeConfig } from 'nuxt/server'
 import { joinURL, withBase, withLeadingSlash, withoutBase, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { useNitroApp } from '#nuxtseo/nitro'
+import { getDecodedRouterParam, getRequestPathname } from '../request'
 import { useResolvedSitemapRuntimeConfig, useSitemapRuntimeConfig } from '../utils'
 import { urlsToIndexXml, urlsToIndexXmlStream } from './builder/index-xml'
 import { buildSitemapIndex } from './builder/sitemap-index'
@@ -55,14 +56,14 @@ export async function sitemapIndexXmlEventHandler(e: RequestEvent) {
 
 export async function sitemapChildXmlEventHandler(e: RequestEvent) {
   // Only process .xml requests - pass through for other paths
-  const pathname = getRequestURL(e).pathname
+  const pathname = getRequestPathname(e)
   if (!pathname.endsWith('.xml'))
     return
 
   const runtimeConfig = await useResolvedSitemapRuntimeConfig(e)
   const { sitemaps } = runtimeConfig
 
-  let sitemapName = getRouterParam(e, 'sitemap', { decode: true })
+  let sitemapName = getDecodedRouterParam(e, 'sitemap')
   if (!sitemapName) {
     const match = pathname.match(/(?:\/__sitemap__\/)?(.+)\.xml$/)
     if (match)
@@ -115,7 +116,7 @@ const ROOT_CHUNK_PATH_RE = /^\/(.+)-\d+\.xml$/
  * request that is not a chunk of a chunked sitemap.
  */
 export async function sitemapRootChunkEventHandler(e: RequestEvent) {
-  const pathname = withoutBase(getRequestURL(e).pathname, useRuntimeConfig().app.baseURL)
+  const pathname = withoutBase(getRequestPathname(e), useRuntimeConfig().app.baseURL)
   const name = ROOT_CHUNK_PATH_RE.exec(pathname)?.[1]
   if (!name || !useSitemapRuntimeConfig(e).sitemaps[name]?.chunks)
     return

@@ -11,7 +11,6 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 import { defu } from 'defu'
-import { getRequestHost } from 'nuxt/server'
 import { fetchWithEvent } from 'nuxtseo-shared/fetch'
 import { $fetch } from 'ofetch'
 import { collectSitemap } from 'sitemapd/parse'
@@ -21,6 +20,7 @@ import { parseURL } from 'ufo'
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { logger } from '../../../utils-pure'
 import { defineSitemapCachedFunction } from '../../cache'
+import { getForwardedHost } from '../../request'
 
 const changeFrequencies = new Set<Changefreq>([
   'always',
@@ -206,7 +206,7 @@ async function fetchSourceUrls(url: string, options: any, event?: RequestEvent):
       {
         Accept: isXmlRequest ? 'text/xml' : 'application/json',
       },
-      (event && !isExternalUrl) ? { host: getRequestHost(event, { xForwardedHost: true }) } : {},
+      (event && !isExternalUrl) ? { host: getForwardedHost(event) } : {},
     )
 
     const fetchOptions = {
