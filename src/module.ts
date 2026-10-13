@@ -40,7 +40,6 @@ import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
 import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
 import { robotsBlocksIndexing } from './runtime/utils-pure'
 import { registerTypeTemplates } from './templates'
-import { defineAppConfigFallbackPlugin } from './utils-internal/appConfig'
 import { createAppPagesReader } from './utils-internal/appPages'
 import { serializeContentCallback } from './utils-internal/contentCallbacks'
 import {
@@ -189,17 +188,6 @@ export default defineNuxtModule<ModuleOptions>({
         inline.push('@nuxtjs/sitemap')
       nitro.noExternals = inline
     }
-    // The sitemap runtime imports `nuxt/server`, which pulls app.config into the server bundle.
-    nuxt.hook('nitro:config', (nitroConfig) => {
-      if (nitroConfig.imports !== false)
-        return
-      nitroConfig.rollupConfig ||= {}
-      const plugins = nitroConfig.rollupConfig.plugins
-      nitroConfig.rollupConfig.plugins = [
-        ...(Array.isArray(plugins) ? plugins : plugins ? [plugins] : []),
-        defineAppConfigFallbackPlugin(() => nuxt.apps.default?.configs ?? []),
-      ]
-    })
     // /_nuxt/
     config.exclude!.push(`${withTrailingSlash(nuxt.options.app.buildAssetsDir)}**`)
     nuxt.options.alias['#sitemap'] = resolve('./runtime')
