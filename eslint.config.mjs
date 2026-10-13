@@ -20,4 +20,19 @@ export default antfu(
       'harlanzw/vue-no-faux-composables': 'off',
     },
   },
+  {
+    // On Nuxt 4.6 with Nitro 2, these helpers run through Nuxt's core server module, which
+    // imports app.config. That breaks `compatibilityVersion: 5` builds whose app.config calls
+    // `defineAppConfig`.
+    files: ['src/runtime/**/*.ts'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'nuxt/server',
+          importNames: ['getRequestHost', 'getRequestProtocol', 'getRequestURL', 'getRouterParam', 'getRouterParams', 'useAppConfig', 'getSession', 'useSession', 'updateSession', 'clearSession', 'getValidatedQuery', 'readValidatedBody'],
+          message: 'It pulls app.config into the Nitro 2 server bundle. Use the helpers in src/runtime/server/request.ts.',
+        }],
+      }],
+    },
+  },
 )

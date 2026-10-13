@@ -1,11 +1,11 @@
 import type { RequestEvent } from 'nuxt/server'
 import type { CacheKeyPart, CacheOrigin } from './cache-key'
-import { getRequestHost, getRequestProtocol } from 'nuxt/server'
 import { defineCachedFunction } from '#nuxtseo/nitro'
 import { getSiteConfig } from '#site-config/server'
 // @ts-expect-error virtual module
 import staticConfig from '#sitemap-virtual/static-config.mjs'
 import { createCacheKey, resolveCacheOrigin } from './cache-key'
+import { getForwardedHost, getForwardedProtocol } from './request'
 
 // Read at module init: defineCachedFunction takes a static maxAge. Falls back to 10 minutes
 // when caching is disabled in static config (still bypassed at request time by each caller).
@@ -16,8 +16,8 @@ const REQUEST_SITE_URL_CONTEXT = 'nitro:init'
 
 export function getCacheOrigin(e: RequestEvent): CacheOrigin {
   return resolveCacheOrigin({
-    host: getRequestHost(e, { xForwardedHost: true }),
-    protocol: getRequestProtocol(e, { xForwardedProto: true }),
+    host: getForwardedHost(e),
+    protocol: getForwardedProtocol(e),
     siteUrl: () => {
       const siteConfig = getSiteConfig(e, { debug: true })
       return siteConfig._context?.url === REQUEST_SITE_URL_CONTEXT ? undefined : siteConfig.url
