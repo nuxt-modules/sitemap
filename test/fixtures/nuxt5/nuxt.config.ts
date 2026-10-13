@@ -21,6 +21,9 @@ export default defineNuxtConfig({
     sources: [['/api/source', { headers: { authorization: 'Bearer fixture' }, query: { locale: 'en' } }]],
   },
   routeRules: {
+    '/api/route-rules': {
+      sitemap: { priority: 0.3, changefreq: 'yearly' },
+    },
     '/excluded': {
       sitemap: false,
     },

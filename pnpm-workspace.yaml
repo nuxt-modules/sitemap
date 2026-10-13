@@ -75,7 +75,6 @@ overrides:
   cssnano-utils: 8.1.0
   nuxt-site-config: https://pkg.pr.new/harlan-zw/nuxt-site-config/nuxt-site-config@b8c8a6978ce818d77ecc50c679d412e748fdbdcb
   nuxt-site-config-kit: https://pkg.pr.new/harlan-zw/nuxt-site-config/nuxt-site-config-kit@b8c8a6978ce818d77ecc50c679d412e748fdbdcb
-  nuxtseo-shared: https://pkg.pr.new/harlan-zw/nuxt-seo/nuxtseo-shared@226c091a0744b7286ef721ac035eed53856bfaa5
 
   postcss-calc: 11.2.2
   postcss-colormin: 9.0.6
@@ -152,7 +151,7 @@ catalog:
   nuxt-i18n-micro: ^3.30.0
   nuxt-site-config: ^5.0.0
   nuxtseo-layer-devtools: ^5.3.16
-  nuxtseo-shared: ^6.0.0
+  nuxtseo-shared: ^6.0.3
   ofetch: ^1.5.1
   ohash: ^2.0.11
   oxc-parser: ^0.153.0
