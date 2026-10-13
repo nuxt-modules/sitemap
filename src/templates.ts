@@ -28,6 +28,12 @@ export function registerTypeTemplates(nitroCompatibility: NitroRuntimeCompatibil
 /// <reference path="./nuxt-sitemap-virtual.d.ts" />
 import type { SitemapUrl, SitemapItemDefaults, SitemapIndexRenderCtx, SitemapInputCtx, SitemapRenderCtx, SitemapOutputHookCtx, SitemapSourcesHookCtx, SitemapsResolvedCtx } from '@nuxtjs/sitemap'
 
+declare module '@nuxt/schema' {
+  interface AppRouteRulesExtensions {
+    ${routeRules}
+  }
+}
+
 ${nitroTypes}
 
 declare module 'vue-router' {

@@ -1,9 +1,9 @@
-import type { H3Event } from 'nitro/h3'
+import type { RequestEvent } from 'nuxt/server'
 import { asSitemapUrl, defineSitemapEventHandler } from '#sitemap/server'
 import { getSiteConfig } from '#site-config/server'
 
-// A site utility typed against the Nitro 3 event, as a source handler may call.
-function requestPath(event: H3Event) {
+// A site utility uses Nuxt's portable request event.
+function requestPath(event: RequestEvent) {
   return event.url.pathname
 }
 
