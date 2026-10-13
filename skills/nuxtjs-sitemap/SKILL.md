@@ -28,6 +28,7 @@ If `@nuxtjs/robots` is installed, the module adds the sitemap to `robots.txt`. I
 - Prerendered routes are added, including routes the prerender crawler finds.
 - A route with the `robots: false` route rule is dropped. So is a `robots` string with `noindex` or `none`.
 - When a page is prerendered, `<img>` and `<video>` inside `<main>` become image and video entries. `article:modified_time` becomes `lastmod`.
+- A content page gets `lastmod` from frontmatter: `sitemap.lastmod`, then a modification date (`updatedAt`, `modifiedAt`), then a publication date (`publishedAt`, `date`). `contentLastmod: false` turns this off.
 - Entries are sorted by path depth, then alphabetically. Set `sortEntries: false` to keep source order.
 - An invalid `lastmod` is dropped from the entry. Dev prints an XML comment in its place.
 - In production, the resolved sitemap is cached for `cacheMaxAgeSeconds` (600 by default). Dev and prerender do not cache.

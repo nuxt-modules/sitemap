@@ -32,11 +32,19 @@ describe('nuxt/content v3 default', () => {
           "loc": "/posts/bar",
         },
         {
+          "lastmod": "2023-03-04",
+          "loc": "/posts/dated",
+        },
+        {
           "lastmod": "2021-10-20",
           "loc": "/posts/fallback",
         },
         {
           "loc": "/posts/foo",
+        },
+        {
+          "lastmod": "2024-05-01",
+          "loc": "/posts/published",
         },
         {
           "changefreq": "weekly",
@@ -90,11 +98,19 @@ describe('nuxt/content v3 default', () => {
               <lastmod>2021-10-20</lastmod>
           </url>
           <url>
+              <loc>https://nuxtseo.com/posts/dated</loc>
+              <lastmod>2023-03-04</lastmod>
+          </url>
+          <url>
               <loc>https://nuxtseo.com/posts/fallback</loc>
               <lastmod>2021-10-20</lastmod>
           </url>
           <url>
               <loc>https://nuxtseo.com/posts/foo</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/posts/published</loc>
+              <lastmod>2024-05-01</lastmod>
           </url>
       </urlset>"
     `)

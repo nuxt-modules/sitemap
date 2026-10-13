@@ -42,6 +42,7 @@ import { robotsBlocksIndexing } from './runtime/utils-pure'
 import { registerTypeTemplates } from './templates'
 import { createAppPagesReader } from './utils-internal/appPages'
 import { serializeContentCallback } from './utils-internal/contentCallbacks'
+import { resolveContentLastmod } from './utils-internal/contentLastmod'
 import {
   generatePathForI18nPages,
   normalizeLocales,
@@ -147,6 +148,7 @@ export default defineNuxtModule<ModuleOptions>({
     experimentalStreaming: false,
     defaultSitemapsChunkSize: 1000,
     autoLastmod: false,
+    contentLastmod: true,
     discoverImages: true,
     discoverVideos: true,
     urls: [],
@@ -539,7 +541,6 @@ export default defineNuxtModule<ModuleOptions>({
             body: { value: [string, Record<string, any>][] }
             sitemap?: Partial<SitemapUrl> | false
             path: string
-            updatedAt?: string
           } & Record<string, any>
           nuxtV3Collections.add(ctx.collection.name)
           // ignore .dot files and paths
@@ -568,7 +569,7 @@ export default defineNuxtModule<ModuleOptions>({
             images.push(...discoverContentImages(content.body))
           // Note: videos only supported through prerendering for simpler logic
 
-          const lastmod = content.seo?.articleModifiedTime || content.updatedAt
+          const lastmod = config.contentLastmod === false ? undefined : resolveContentLastmod(content)
           const defaults: Partial<SitemapUrl> = {
             loc: content.path,
           }

@@ -35,6 +35,17 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   autoLastmod: boolean
   /**
+   * Set `lastmod` on content pages from their frontmatter dates.
+   *
+   * A modification date (`updatedAt`, `modifiedAt`, `dateModified`, `lastModified` or
+   * `seo.articleModifiedTime`) wins. Otherwise the publication date (`publishedAt`,
+   * `datePublished`, `date` or `seo.articlePublishedTime`) is used. A `sitemap.lastmod` in
+   * frontmatter always wins. Set `false` to read no frontmatter dates.
+   *
+   * @default true
+   */
+  contentLastmod: boolean
+  /**
    * Sources to exclude from the sitemap.
    */
   excludeAppSources: true | (AppSourceContext[])

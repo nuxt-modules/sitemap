@@ -39,6 +39,10 @@ describe('comark-content default', () => {
         {
           "loc": "/posts/foo",
         },
+        {
+          "lastmod": "2024-05-01",
+          "loc": "/posts/published",
+        },
       ]
     `)
   }, 60000)
@@ -74,6 +78,10 @@ describe('comark-content default', () => {
           </url>
           <url>
               <loc>https://nuxtseo.com/posts/foo</loc>
+          </url>
+          <url>
+              <loc>https://nuxtseo.com/posts/published</loc>
+              <lastmod>2024-05-01</lastmod>
           </url>
       </urlset>"
     `)
