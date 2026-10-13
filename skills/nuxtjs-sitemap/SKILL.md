@@ -132,7 +132,8 @@ In both modes, sources are fetched once at build. New CMS entries do not appear 
 v9 has these breaking changes. Each line gives the fix.
 
 - Nuxt `^4.6.0 || ^5.0.0` and Node `^22.22.3 || ^24.15.0 || >=26.0.0` are required. Upgrade both before the module.
-- Hook contexts and `defineSitemapEventHandler()` receive a `RequestEvent` from `nuxt/server`. `event.node.req` does not exist. Read a header with `ctx.event.req.headers.get('authorization')`.
+- Hook contexts receive a `RequestEvent` from `nuxt/server`. `event.node.req` does not exist there. Read a header with `ctx.event.req.headers.get('authorization')`.
+- `defineSitemapEventHandler()` receives a `RequestEvent` that is also typed as the server builder's `H3Event`. h3 helpers and utilities typed against `H3Event` accept it. `event.req` is the web `Request`.
 - Import `defineSitemapEventHandler()` and `asSitemapUrl()` from `#sitemap/server`. Import `getQuery()` and other request utilities from `nuxt/server`.
 - `@nuxtjs/robots` must be v7. `nuxt-site-config` must be v5. Upgrade them together with the sitemap.
 - The optional `zod` peer is `^4.6.5`. Use Zod 4 with `defineSitemapSchema()`.
