@@ -480,7 +480,12 @@ export default defineNuxtModule<ModuleOptions>({
     // adding measurable overhead on unrelated routes for no benefit.
     const hasRouteRuleContent = Object.keys(routeRules).length > 0
     if (usingMultiSitemaps) {
-      nuxt.options.nitro.routeRules['/sitemap.xml'] = { redirect: withBase('/sitemap_index.xml', nuxt.options.app.baseURL) }
+      // A prerendered redirect is a meta refresh page, which hosts serve to crawlers as HTML.
+      // Static builds get the index itself at /sitemap.xml instead (see prerender.ts).
+      nuxt.options.nitro.routeRules['/sitemap.xml'] = {
+        redirect: withBase('/sitemap_index.xml', nuxt.options.app.baseURL),
+        prerender: false,
+      }
       if (hasRouteRuleContent) {
         nuxt.options.nitro.routeRules['/sitemap_index.xml'] = routeRules
         if (typeof config.sitemaps === 'object') {
