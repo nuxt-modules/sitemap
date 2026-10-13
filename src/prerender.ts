@@ -167,7 +167,13 @@ export async function readSourcesFromFilesystem(filename) {
         : `/${Object.keys(options.sitemaps)[0]}`
       const prerenderServer = await loadPrerenderServer(prerendererNitro)
       await prerenderSitemapsFromEntry(nitro, prerenderServer.fetch, sitemapEntry)
-        .then(sitemaps => nuxt.hooks.callHook('sitemap:prerender:done' as any, { options, sitemaps }))
+        .then(async (sitemaps) => {
+          // A static host cannot redirect /sitemap.xml, so it serves the index there.
+          const index = sitemaps.find(sitemap => sitemap.name === '/sitemap_index.xml')
+          if (options.isMultiSitemap && nitro.options.static && index)
+            await writePrerenderedRoute(nitro, '/sitemap.xml', index.content)
+          await nuxt.hooks.callHook('sitemap:prerender:done' as any, { options, sitemaps })
+        })
         .finally(prerenderServer.close)
     })
   })
@@ -300,7 +306,6 @@ async function prerenderSitemapsFromEntry(nitro: Nitro, fetch: PrerenderFetch, e
 
 export async function prerenderRoute(nitro: Nitro, fetch: PrerenderFetch, route: string) {
   const start = Date.now()
-  const _route: PrerenderRoute = { route, fileName: route }
   const encodedRoute = encodeURI(route)
   const fetchUrl = withBase(encodedRoute, nitro.options.baseURL)
   const res = await fetch(fetchUrl, { 'x-nitro-prerender': encodedRoute })
@@ -311,12 +316,17 @@ export async function prerenderRoute(nitro: Nitro, fetch: PrerenderFetch, route:
     .split(',')
     .map(i => decodeURIComponent(i.trim()))
     .filter(Boolean)
+  const filePath = await writePrerenderedRoute(nitro, route, await res.text(), start)
+  return { filePath, prerenderUrls }
+}
+
+async function writePrerenderedRoute(nitro: Nitro, route: string, content: string, start = Date.now()) {
+  const _route: PrerenderRoute = { route, fileName: route }
   const filePath = join(nitro.options.output.publicDir, _route.fileName!)
   await mkdir(dirname(filePath), { recursive: true })
-  const content = await res.text()
   await writeFile(filePath, content, 'utf8')
   _route.generateTimeMS = Date.now() - start
   nitro._prerenderedRoutes!.push(_route)
   nitro.logger.log(formatPrerenderRoute(_route))
-  return { filePath, prerenderUrls }
+  return filePath
 }

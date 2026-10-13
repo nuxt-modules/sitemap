@@ -96,7 +96,7 @@ export default defineNuxtConfig({
 })
 ```
 
-- The index is `/sitemap_index.xml`. `/sitemap.xml` redirects to it.
+- The index is `/sitemap_index.xml`. On a server, `/sitemap.xml` redirects to it. A static build writes the index to `/sitemap.xml` as well.
 - Child sitemaps are at `/__sitemap__/<name>.xml`. Chunks are `/__sitemap__/posts-0.xml`, `posts-1.xml`, and so on.
 - `sitemapsPathPrefix: '/'` moves them to the root: `/pages.xml`, `/posts-0.xml`.
 - App sources (pages, route rules, prerender) go only to a sitemap with `includeAppSources: true`.
