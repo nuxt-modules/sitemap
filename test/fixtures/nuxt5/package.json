@@ -12,11 +12,11 @@
     "nuxt-site-config": "^5.0.0",
     "nuxtseo-shared": "^6.0.3",
     "nuxt": "npm:nuxt-nightly@5.0.0-2610061032-c7ad8cd",
-    "vue": "^3.5.43",
-    "vue-router": "^5.3.1"
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
   },
   "devDependencies": {
     "typescript": "6.0.3",
-    "vue-tsc": "^3.3.12"
+    "vue-tsc": "^3.3.13"
   }
 }

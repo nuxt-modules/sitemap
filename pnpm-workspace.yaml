@@ -7,14 +7,7 @@ minimumReleaseAgeExclude:
   - nuxt-site-config-kit
   - nuxt-site-config
   - site-config-stack
-  - '@nuxt/kit@4.6.0'
-  - '@nuxt/nitro-server@4.6.0'
   - '@nuxt/schema@4.6.0'
-  - '@nuxt/vite-builder@4.6.0'
-  - nuxt@4.6.0
-  - '@harlan-zw/comark-content@0.2.0'
-  - '@nuxt/cli@4.0.0'
-  - '@nuxt/vite-server@4.6.0'
   - '@nuxt/devtools-kit@4.0.0-beta.4'
   - vite@8.3.3
 
@@ -115,6 +108,7 @@ allowBuilds:
   '@parcel/watcher': true
   better-sqlite3: true
   esbuild: true
+  nuxt-i18n-micro: false
   protobufjs: false
   simple-git-hooks: false
   unrs-resolver: false
@@ -128,13 +122,13 @@ onlyBuiltDependencies:
 catalog:
   '@antfu/eslint-config': ^9.5.1
   '@arethetypeswrong/cli': ^0.18.5
-  '@harlan-zw/comark-content': ^0.2.0
-  '@nuxt/content': ^3.16.1
-  '@nuxt/devtools-kit': 4.0.0-beta.4
-  '@nuxt/kit': ^4.6.0
+  '@harlan-zw/comark-content': ^0.2.2
+  '@nuxt/content': ^3.16.2
+  '@nuxt/devtools-kit': 4.0.0-beta.5
+  '@nuxt/kit': ^4.6.2
   '@nuxt/module-builder': ^1.0.3
-  '@nuxt/test-utils': ^4.3.3
-  '@nuxt/ui': ^4.11.3
+  '@nuxt/test-utils': ^4.3.4
+  '@nuxt/ui': ^4.12.0
   '@nuxtjs/i18n': ^10.6.0
   '@nuxtjs/robots': ^7.0.0
   '@vue/test-utils': ^2.5.1
@@ -143,18 +137,18 @@ catalog:
   bumpp: ^12.3.0
   consola: ^3.4.2
   defu: ^6.1.7
-  eslint: ^10.12.0
+  eslint: ^10.13.0
   eslint-plugin-harlanzw: ^0.23.0
   fast-xml-parser: ^5.11.2
-  happy-dom: ^20.14.5
-  nuxt: ^4.6.0
-  nuxt-i18n-micro: ^3.30.0
+  happy-dom: ^21.0.3
+  nuxt: ^4.6.2
+  nuxt-i18n-micro: ^3.30.1
   nuxt-site-config: ^5.0.0
-  nuxtseo-layer-devtools: ^5.3.16
+  nuxtseo-layer-devtools: ^6.0.2
   nuxtseo-shared: ^6.0.3
   ofetch: ^1.5.1
   ohash: ^2.0.11
-  oxc-parser: ^0.153.0
+  oxc-parser: ^0.154.0
   oxc-walker: ^1.1.1
   radix3: ^1.1.2
   std-env: ^4.3.0
@@ -162,7 +156,7 @@ catalog:
   ufo: ^1.6.4
   ultrahtml: ^1.7.0
   unbuild: ^3.6.1
-  vitest: ^5.0.3
-  vue: ^3.5.43
-  vue-tsc: ^3.3.12
-  zod: ^4.6.5
+  vitest: ^5.0.5
+  vue: ^3.5.44
+  vue-tsc: ^3.3.13
+  zod: ^4.6.7
