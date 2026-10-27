@@ -5,6 +5,10 @@ export default antfu(
   {
     type: 'lib',
     vue: true,
+    rules: {
+      // Preserve existing formatting when upgrading to the v10 preset.
+      'antfu/reasonable-newline': 'off',
+    },
   },
   ...harlanzw({
     // base covers fixtures and playground; docs is its own Nuxt Content site
