@@ -107,6 +107,7 @@ overrides:
   vite: ^8.3.3
 
 patchedDependencies:
+  '@harlan-zw/comark-content@0.2.2': patches/@harlan-zw__comark-content@0.2.2.patch
   '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
 
 allowBuilds:
