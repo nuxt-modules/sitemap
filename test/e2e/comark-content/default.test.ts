@@ -9,6 +9,23 @@ await setup({
 })
 
 describe('comark-content default', () => {
+  it('reads collection assets through the built server storage', async () => {
+    const documents = await $fetch('/__comark_content/query', {
+      method: 'POST',
+      body: {
+        _tag: 'Query',
+        collection: 'content',
+        plan: {
+          operations: [
+            { _tag: 'Path', value: '/posts/published' },
+            { _tag: 'Select', fields: ['path'] },
+          ],
+        },
+      },
+    })
+    expect(documents).toEqual([{ path: '/posts/published' }])
+  })
+
   it('serves collection urls on its own app source route', async () => {
     const urls = await $fetch('/__sitemap__/comark-content-urls.json')
     expect(urls).toMatchInlineSnapshot(`
