@@ -1,0 +1,22 @@
+diff --git a/dist/module.mjs b/dist/module.mjs
+index f26dadcb05d870725bcaeb9d5986ca7bddbe8049..cca5852efe5f91793035ccede804412e0f91cff8 100644
+--- a/dist/module.mjs
++++ b/dist/module.mjs
+@@ -738,7 +738,7 @@ const module$1 = defineNuxtModule({
+     const resolver = createResolver(import.meta.url);
+     if (options.highlight)
+       nuxt.options.css.push(resolver.resolve("./runtime/rangi.css"));
+-    const outputDir = join(nuxt.options.rootDir, "node_modules/.cache/comark-content/generated");
++    const outputDir = join(nuxt.options.buildDir, "comark-content/generated");
+     const cacheFile = join(nuxt.options.rootDir, ".data/comark-content/cache.json");
+     const remoteCacheDir = join(nuxt.options.rootDir, "node_modules/.cache/comark-content/git");
+     const logger = useLogger("comark-content");
+@@ -771,7 +771,7 @@ const module$1 = defineNuxtModule({
+       { name: "queryCollectionItemSurroundings", from: resolver.resolve("./runtime/client") },
+       { name: "queryCollectionSearchSections", from: resolver.resolve("./runtime/client") }
+     ]);
+-    nuxt.options.alias["#comark-content/storage"] = resolveServerVariant({ nitro2: "nitropack/runtime", nitro3: "nitro/storage" });
++    nuxt.options.alias["#comark-content/storage"] = resolveServerVariant({ nitro2: resolver.resolve("./runtime/server/nitro2.js"), nitro3: "nitro/storage" });
+     addServerHandler({ route: "/__comark_content/query", method: "post", handler: resolver.resolve("./runtime/server/api/query.post") });
+     nuxt.hook("nitro:config", (config) => {
+       config.serverAssets ||= [];

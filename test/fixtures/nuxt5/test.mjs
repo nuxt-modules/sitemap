@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { readFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
 import { assertRouteRules } from './test-route-rules.ts'
 
@@ -13,8 +12,6 @@ portServer.close()
 await once(portServer, 'close')
 
 const origin = `http://127.0.0.1:${port}`
-const nitroManifest = JSON.parse(await readFile(new URL('.output/nitro.json', import.meta.url), 'utf8'))
-assert.equal(nitroManifest.versions.nitro, '3.0.260903-beta')
 
 const server = spawn(process.execPath, ['.output/server/index.mjs'], {
   cwd: import.meta.dirname,

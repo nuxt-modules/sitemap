@@ -29,6 +29,9 @@ export function registerTypeTemplates(nitroCompatibility: NitroRuntimeCompatibil
 import type { SitemapUrl, SitemapItemDefaults, SitemapIndexRenderCtx, SitemapInputCtx, SitemapRenderCtx, SitemapOutputHookCtx, SitemapSourcesHookCtx, SitemapsResolvedCtx } from '@nuxtjs/sitemap'
 
 declare module '@nuxt/schema' {
+  interface RouteRuleConfigExtensions {
+    ${routeRules}
+  }
   interface AppRouteRulesExtensions {
     ${routeRules}
   }
