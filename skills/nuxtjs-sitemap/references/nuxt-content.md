@@ -7,6 +7,9 @@ Tested with `@nuxt/content` 3.16.1.
 A collection is in the sitemap only when its schema has a `sitemap` field from `defineSitemapSchema()`.
 A collection without it is left out, with no warning.
 
+For Valibot, install `valibot` and `@valibot/to-json-schema`. Import the helper from `@nuxtjs/sitemap/content/valibot`.
+Use it in `v.object()` with the same `name`, `filter`, and `onUrl` options.
+
 ```ts
 // content.config.ts
 import { defineCollection, defineContentConfig } from '@nuxt/content'
