@@ -25,7 +25,11 @@
       "import": "./dist/module.mjs"
     },
     "./content": "./dist/content.mjs",
-    "./utils": "./dist/utils.mjs"
+    "./utils": "./dist/utils.mjs",
+    "./content/valibot": {
+      "types": "./dist/content-valibot.d.mts",
+      "default": "./dist/content-valibot.mjs"
+    }
   },
   "main": "./dist/module.mjs",
   "typesVersions": {
@@ -38,6 +42,9 @@
       ],
       "utils": [
         "./dist/utils.d.mts"
+      ],
+      "content/valibot": [
+        "dist/content-valibot.d.mts"
       ]
     }
   },
@@ -69,9 +76,13 @@
   },
   "peerDependencies": {
     "nuxt": "^4.6.0 || ^5.0.0",
+    "valibot": "^1.0.0",
     "zod": "^4.6.5"
   },
   "peerDependenciesMeta": {
+    "valibot": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }
@@ -115,6 +126,7 @@
     "std-env": "catalog:",
     "typescript": "catalog:",
     "unbuild": "catalog:",
+    "valibot": "catalog:",
     "vitest": "catalog:",
     "vue-tsc": "catalog:",
     "zod": "catalog:"

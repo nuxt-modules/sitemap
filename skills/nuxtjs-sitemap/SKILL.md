@@ -137,7 +137,7 @@ v9 has these breaking changes. Each line gives the fix.
 - `defineSitemapEventHandler()` receives a `RequestEvent` that is also typed as the server builder's `H3Event`. h3 helpers and utilities typed against `H3Event` accept it. `event.req` is the web `Request`.
 - Import `defineSitemapEventHandler()` and `asSitemapUrl()` from `#sitemap/server`. Import `getQuery()` and other request utilities from `nuxt/server`.
 - `@nuxtjs/robots` must be v7. `nuxt-site-config` must be v5. Upgrade them together with the sitemap.
-- The optional `zod` peer is `^4.6.5`. Use Zod 4 with `defineSitemapSchema()`.
+- For Zod collections, import `defineSitemapSchema()` from `@nuxtjs/sitemap/content` and install `zod` `^4.6.5`.
 - Nuxt Content v2 is not supported. Upgrade to Nuxt Content v3 and add `defineSitemapSchema()` to each collection.
 - The DevTools Sitemap tab needs the `nuxtseo-devtools-host` dev dependency.
 
