@@ -11,7 +11,7 @@ await setup({
       baseURL: '/base',
     },
     sitemap: {
-      xsl: '/__sitemap__/style.xsl',
+      xsl: true,
     },
   },
 })

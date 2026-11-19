@@ -68,13 +68,11 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   appendSitemaps?: (string | SitemapIndexEntry)[]
   /**
-   * Path to the XSL stylesheet for sitemap.xml.
-   *
-   * Set to `'/__sitemap__/style.xsl'` to use the built-in stylesheet.
+   * Use `true` for the built-in stylesheet or pass a custom stylesheet path.
    *
    * @default false
    */
-  xsl: string | false
+  xsl: string | boolean
   /**
    * Toggle the tips displayed in the xsl.
    *
@@ -261,9 +259,10 @@ export interface AutoI18nConfig {
   pages?: Record<string, Record<string, string | false>>
 }
 
-export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'xsl' | 'credits' | 'minify' | 'experimentalStreaming' | 'experimentalCompression'> {
+export interface ModuleRuntimeConfig extends Pick<ModuleOptions, 'sitemapsPathPrefix' | 'cacheMaxAgeSeconds' | 'sitemapName' | 'excludeAppSources' | 'sortEntries' | 'defaultSitemapsChunkSize' | 'xslColumns' | 'xslTips' | 'debug' | 'discoverImages' | 'discoverVideos' | 'autoLastmod' | 'credits' | 'minify' | 'experimentalStreaming' | 'experimentalCompression'> {
   /** Explicit header rules captured before Robots generates site-wide transport headers. */
   routeRuleHeaders?: Record<string, { headers: Record<string, string> }>
+  xsl: string | false
   version: string
   sitemaps: { index?: Pick<SitemapDefinition, 'sitemapName' | '_route'> & { sitemaps: SitemapIndexEntry[] } } & Record<string, SitemapDefinition & { _hasSourceChunk?: boolean }>
   autoI18n?: AutoI18nConfig
