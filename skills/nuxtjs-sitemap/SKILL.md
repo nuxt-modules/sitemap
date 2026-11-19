@@ -147,7 +147,7 @@ v9 has these breaking changes. Each line gives the fix.
 - `excludeAppSources`: `true`, or names such as `['nuxt:pages', 'nuxt:prerender']`.
 - `sitemapName` (`sitemap.xml`): the path of the single sitemap. Ignored with `sitemaps`.
 - `cacheMaxAgeSeconds` (600): server cache and `Cache-Control`. `false` turns both off.
-- `xsl` (`/__sitemap__/style.xsl`): the browser view. Set `false` for raw XML. Browsers show raw i18n XML as text; that is a browser bug.
+- `xsl` defaults to `false` for raw XML. Use `true` for the built-in stylesheet or a string for a custom path. If your browser displays an i18n sitemap as plain text, use View Source to inspect the XML.
 - Other options: https://nuxtseo.com/docs/sitemap/api/config
 
 Nitro hooks change output at runtime: `sitemap:sources` (add sources or request headers), `sitemap:input`, `sitemap:resolved`, `sitemap:output`, and `sitemap:sitemaps-resolved` (register sitemaps at runtime). See https://nuxtseo.com/docs/sitemap/nitro-api/nitro-hooks

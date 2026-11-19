@@ -13,6 +13,9 @@ await setup({
     site: {
       trailingSlash: true,
     },
+    sitemap: {
+      xsl: '/__sitemap__/style.xsl',
+    },
   },
 })
 describe('base url trailing slash', () => {

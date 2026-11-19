@@ -155,7 +155,7 @@ export default defineNuxtModule<ModuleOptions>({
     urls: [],
     sortEntries: true,
     sitemapsPathPrefix: '/__sitemap__/',
-    xsl: '/__sitemap__/style.xsl',
+    xsl: false,
     xslTips: true,
     runtimeCacheStorage: true,
     sitemapName: 'sitemap.xml',
@@ -802,6 +802,8 @@ export default defineNuxtModule<ModuleOptions>({
       sitemap.exclude = serializeFilters(sitemap.exclude || [], '@nuxtjs/sitemap') as FilterInput[]
     }
 
+    const builtInXslPath = '/__sitemap__/style.xsl'
+    const xsl = config.xsl === true ? builtInXslPath : config.xsl
     const runtimeConfig: ModuleRuntimeConfig = {
       isI18nMapped,
       sitemapName: config.sitemapName,
@@ -824,7 +826,7 @@ export default defineNuxtModule<ModuleOptions>({
       sitemapsPathPrefix: config.sitemapsPathPrefix,
 
       /* xsl styling */
-      xsl: config.xsl,
+      xsl,
       xslTips: config.xslTips,
       xslColumns: config.xslColumns,
       credits: config.credits,
@@ -1143,16 +1145,14 @@ export async function readSourcesFromFilesystem() {
       }
     })
 
-    // always add the styles
-    if (config.xsl === '/__sitemap__/style.xsl') {
+    if (xsl === builtInXslPath) {
       addServerHandler({
-        route: config.xsl,
+        route: xsl,
         handler: resolve('./runtime/server/routes/sitemap.xsl'),
       })
-      config.xsl = withBase(config.xsl, nuxt.options.app.baseURL)
 
       if (prerenderSitemap)
-        addPrerenderRoutes(config.xsl)
+        addPrerenderRoutes(withBase(xsl, nuxt.options.app.baseURL))
     }
 
     // either this will redirect to sitemap_index or will render the main sitemap.xml

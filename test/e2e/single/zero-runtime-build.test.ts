@@ -26,6 +26,7 @@ describe('zeroRuntime', () => {
             zeroRuntime: true,
             autoLastmod: false,
             credits: false,
+            xsl: true,
           },
         },
       })
@@ -66,6 +67,8 @@ describe('zeroRuntime', () => {
         </urlset>"
       `)
       expect(sitemap).not.toContain('/noindex')
+      const stylesheet = await readFile(resolve(rootDir, '.output/public/__sitemap__/style.xsl'), 'utf-8')
+      expect(stylesheet).toContain('<xsl:stylesheet')
     }, 1200000)
   })
 })
