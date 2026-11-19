@@ -1,43 +1,14 @@
-import type { Collection, PageCollectionItemBase } from '@nuxt/content'
+import type { Collection } from '@nuxt/content'
 import type { TypeOf } from 'zod'
+import type { SitemapCollectionHooks } from './content-hooks'
 import { createContentSchemaFactory } from 'nuxtseo-shared/content'
 import { z } from 'zod'
+import { registerCollectionHooks } from './content-hooks'
 
-declare global {
-  // eslint-disable-next-line vars-on-top
-  var __sitemapCollectionFilters: Map<string, (entry: any) => boolean> | undefined
-  // eslint-disable-next-line vars-on-top
-  var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
-}
+export type { SitemapCollectionHooks } from './content-hooks'
 
-if (!globalThis.__sitemapCollectionFilters)
-  globalThis.__sitemapCollectionFilters = new Map()
-if (!globalThis.__sitemapCollectionOnUrlFns)
-  globalThis.__sitemapCollectionOnUrlFns = new Map()
-
-const collectionFilters = globalThis.__sitemapCollectionFilters
-const collectionOnUrlFns = globalThis.__sitemapCollectionOnUrlFns
-
-export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> {
+export interface DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> extends SitemapCollectionHooks<TEntry, SitemapSchema> {
   z?: typeof z
-  name?: string
-  filter?: (entry: PageCollectionItemBase & SitemapSchema & TEntry) => boolean
-  onUrl?: (
-    url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
-    entry: PageCollectionItemBase & SitemapSchema & TEntry,
-    collection: string,
-  ) => void
-}
-
-function registerCollectionHooks(options: DefineSitemapSchemaOptions | undefined, callerName: string) {
-  if (!options?.filter && !options?.onUrl)
-    return
-  if (!options.name)
-    throw new Error(`[sitemap] \`name\` is required when using \`filter\` or \`onUrl\` in ${callerName}()`)
-  if (options.filter)
-    collectionFilters.set(options.name, options.filter)
-  if (options.onUrl)
-    collectionOnUrlFns.set(options.name, options.onUrl)
 }
 
 const { defineSchema, asCollection, schema } = createContentSchemaFactory({
@@ -48,24 +19,17 @@ const { defineSchema, asCollection, schema } = createContentSchemaFactory({
   onDefineSchema: (options: DefineSitemapSchemaOptions) => {
     if ('type' in options || 'source' in options)
       throw new Error('[sitemap] `defineSitemapSchema()` returns a schema field, not a collection wrapper. Use it inside your schema: `schema: z.object({ sitemap: defineSitemapSchema() })`. See https://nuxtseo.com/sitemap/guides/content')
-    registerCollectionHooks(options, 'defineSitemapSchema')
+    registerCollectionHooks<Record<string, unknown>, SitemapSchema>(options, 'defineSitemapSchema')
   },
 }, z)
 
 export { defineSchema as defineSitemapSchema, schema }
 
-export type SitemapSchema = TypeOf<typeof schema>
+export interface SitemapSchema { sitemap?: TypeOf<ReturnType<typeof buildSitemapObjectSchema>> }
 
 /** @deprecated Use `defineSitemapSchema()` in your collection schema instead. See https://nuxtseo.com/sitemap/guides/content */
 export function asSitemapCollection<T>(collection: Collection<T>, options?: DefineSitemapSchemaOptions<T>): Collection<T> {
-  if (options?.filter || options?.onUrl) {
-    if (!options.name)
-      throw new Error('[sitemap] `name` is required when using `filter` or `onUrl` in asSitemapCollection()')
-    if (options.filter)
-      collectionFilters.set(options.name, options.filter)
-    if (options.onUrl)
-      collectionOnUrlFns.set(options.name, options.onUrl)
-  }
+  registerCollectionHooks<T, SitemapSchema>(options, 'asSitemapCollection')
   try {
     return asCollection(collection) as Collection<T>
   }

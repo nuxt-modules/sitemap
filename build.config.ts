@@ -4,6 +4,7 @@ export default defineBuildConfig({
   declaration: true,
   entries: [
     { input: 'src/content', name: 'content' },
+    { input: 'src/content-valibot', name: 'content-valibot' },
     { input: 'src/utils', name: 'utils' },
   ],
   externals: [
@@ -25,6 +26,7 @@ export default defineBuildConfig({
     '@nuxt/content',
     '@harlan-zw/comark-content',
     '@harlan-zw/comark-content/server',
+    'valibot',
     'zod',
     'sitemapd',
   ],

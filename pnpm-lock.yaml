@@ -266,6 +266,9 @@ catalogs:
     unbuild:
       specifier: ^3.6.1
       version: 3.6.1
+    valibot:
+      specifier: ^1.4.2
+      version: 1.4.2
     vitest:
       specifier: ^5.1.0
       version: 5.1.0
@@ -435,6 +438,9 @@ importers:
       unbuild:
         specifier: 'catalog:'
         version: 3.6.1(typescript@6.0.3)(vue-sfc-transformer@0.2.5(@volar/typescript@2.4.28(typescript@6.0.3))(@vue/compiler-core@3.5.44)(@vue/language-core@3.3.10)(esbuild@0.28.2)(rolldown@1.2.12)(typescript@6.0.3)(vue@3.5.44(typescript@6.0.3)))(vue-tsc@3.3.14(typescript@6.0.3))(vue@3.5.44(typescript@6.0.3))
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.2(typescript@6.0.3)
       vitest:
         specifier: 'catalog:'
         version: 5.1.0(@types/node@26.2.0)(happy-dom@21.0.4)(vite@8.3.3(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
@@ -19242,7 +19248,6 @@ snapshots:
   valibot@1.4.2(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
-    optional: true
 
   validate-npm-package-name@5.0.1: {}
 
