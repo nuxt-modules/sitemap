@@ -7,12 +7,19 @@ declare global {
   var __sitemapCollectionOnUrlFns: Map<string, (url: any, entry: any, collection: string) => void> | undefined
 }
 
+// Nuxt Content stores the sitemap field as JSON, including nested dates.
+type StoredContentFields<T> = T extends Date
+  ? string
+  : T extends object
+    ? { [K in keyof T]: StoredContentFields<T[K]> }
+    : T
+
 export interface SitemapCollectionHooks<TEntry, TFields> {
   name?: string
-  filter?: (entry: PageCollectionItemBase & TFields & TEntry) => boolean
+  filter?: (entry: PageCollectionItemBase & StoredContentFields<TFields> & TEntry) => boolean
   onUrl?: (
     url: { loc: string, lastmod?: string | Date, changefreq?: string, priority?: number, images?: { loc: string }[], videos?: { content_loc: string }[], [key: string]: unknown },
-    entry: PageCollectionItemBase & TFields & TEntry,
+    entry: PageCollectionItemBase & StoredContentFields<TFields> & TEntry,
     collection: string,
   ) => void
 }

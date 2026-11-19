@@ -9,7 +9,7 @@ export type DefineSitemapSchemaOptions<TEntry = Record<string, unknown>> = Sitem
 interface SitemapSchema { sitemap?: v.InferOutput<ReturnType<typeof buildSitemapSchema>> }
 
 export function defineSitemapSchema<TEntry = Record<string, unknown>>(options?: DefineSitemapSchemaOptions<TEntry>) {
-  registerCollectionHooks(options, 'defineSitemapSchema')
+  registerCollectionHooks<TEntry, SitemapSchema>(options, 'defineSitemapSchema')
   return buildSitemapSchema()
 }
 
