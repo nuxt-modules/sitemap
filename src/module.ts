@@ -155,7 +155,7 @@ export default defineNuxtModule<ModuleOptions>({
     urls: [],
     sortEntries: true,
     sitemapsPathPrefix: '/__sitemap__/',
-    xsl: '/__sitemap__/style.xsl',
+    xsl: false,
     xslTips: true,
     runtimeCacheStorage: true,
     sitemapName: 'sitemap.xml',
@@ -1143,7 +1143,7 @@ export async function readSourcesFromFilesystem() {
       }
     })
 
-    // always add the styles
+    // Register the built-in stylesheet when selected.
     if (config.xsl === '/__sitemap__/style.xsl') {
       addServerHandler({
         route: config.xsl,

@@ -1,19 +1,14 @@
 import { createResolver } from '@nuxt/kit'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { $fetch, fetch, setup } from '@nuxt/test-utils'
 import { describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
 
 await setup({
   rootDir: resolve('../../fixtures/basic'),
-  nuxtConfig: {
-    sitemap: {
-      xsl: false,
-    },
-  },
 })
-describe('xsl false', () => {
-  it('basic', async () => {
+describe('default XSL configuration', () => {
+  it('serves the sitemap without a stylesheet', async () => {
     let sitemap = await $fetch('/sitemap.xml')
 
     // strip lastmod
@@ -39,4 +34,9 @@ describe('xsl false', () => {
       </urlset>"
     `)
   }, 60000)
+
+  it('returns 404 for the built-in stylesheet', async () => {
+    const response = await fetch('/__sitemap__/style.xsl')
+    expect(response.status).toBe(404)
+  })
 })

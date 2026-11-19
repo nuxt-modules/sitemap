@@ -1,5 +1,5 @@
 import { createResolver } from '@nuxt/kit'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { $fetch, fetch, setup } from '@nuxt/test-utils'
 import { describe, expect, it } from 'vitest'
 
 const { resolve } = createResolver(import.meta.url)
@@ -9,6 +9,9 @@ await setup({
   nuxtConfig: {
     app: {
       baseURL: '/base',
+    },
+    sitemap: {
+      xsl: '/__sitemap__/style.xsl',
     },
   },
 })
@@ -37,4 +40,10 @@ describe('base', () => {
       </urlset>"
     `)
   }, 60000)
+
+  it('serves the opt-in stylesheet under the base URL', async () => {
+    const response = await fetch('/base/__sitemap__/style.xsl')
+    expect(response.ok).toBe(true)
+    expect(response.headers.get('content-type')).toContain('application/xslt+xml')
+  })
 })
