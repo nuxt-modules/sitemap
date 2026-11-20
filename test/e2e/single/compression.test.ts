@@ -24,6 +24,13 @@ describe('streaming sitemap compression', () => {
     })
 
     expect(response.headers.get('content-encoding')).toBe('gzip')
-    expect(await response.text()).toContain('<urlset')
+    const xml = await response.text()
+    expect(xml).toContain('<urlset')
+    expect(xml).not.toContain('<?xml-stylesheet')
+  })
+
+  it('omits the built-in stylesheet with xsl disabled', async () => {
+    const response = await fetch('/__sitemap__/style.xsl')
+    expect(response.status).toBe(404)
   })
 })

@@ -8,14 +8,14 @@ await setup({
   rootDir: resolve('../../fixtures/basic'),
 })
 describe('default XSL configuration', () => {
-  it('serves the sitemap without a stylesheet', async () => {
+  it('links the built-in stylesheet from the sitemap', async () => {
     let sitemap = await $fetch('/sitemap.xml')
 
     // strip lastmod
     sitemap = sitemap.replace(/<lastmod>.*<\/lastmod>/g, '')
 
     expect(sitemap).toMatchInlineSnapshot(`
-      "<?xml version="1.0" encoding="UTF-8"?>
+      "<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/__sitemap__/style.xsl"?>
       <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
           <url>
               <loc>https://nuxtseo.com/</loc>
@@ -35,8 +35,9 @@ describe('default XSL configuration', () => {
     `)
   }, 60000)
 
-  it('returns 404 for the built-in stylesheet', async () => {
+  it('serves the built-in stylesheet', async () => {
     const response = await fetch('/__sitemap__/style.xsl')
-    expect(response.status).toBe(404)
+    expect(response.ok).toBe(true)
+    expect(response.headers.get('content-type')).toContain('application/xslt+xml')
   })
 })

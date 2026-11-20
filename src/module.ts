@@ -155,7 +155,7 @@ export default defineNuxtModule<ModuleOptions>({
     urls: [],
     sortEntries: true,
     sitemapsPathPrefix: '/__sitemap__/',
-    xsl: false,
+    xsl: '/__sitemap__/style.xsl',
     xslTips: true,
     runtimeCacheStorage: true,
     sitemapName: 'sitemap.xml',

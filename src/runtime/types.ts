@@ -68,9 +68,9 @@ export interface ModuleOptions extends SitemapDefinition {
    */
   appendSitemaps?: (string | SitemapIndexEntry)[]
   /**
-   * Use `true` for the built-in stylesheet or pass a custom stylesheet path.
+   * Use `false` to serve plain XML, `true` for the built-in stylesheet, or a custom path.
    *
-   * @default false
+   * @default '/__sitemap__/style.xsl'
    */
   xsl: string | boolean
   /**
