@@ -3,7 +3,7 @@ import type {
   SitemapUrlInput,
 } from '../../../types'
 
-const naturalCompare = new Intl.Collator(undefined, { numeric: true }).compare
+let naturalCompare: Intl.Collator['compare'] | undefined
 
 function countPathSegments(loc: string): number {
   let segments = 1
@@ -27,8 +27,8 @@ export function sortInPlace<T extends SitemapUrlInput[] | ResolvedSitemapUrl[]>(
       return aSegments - bSegments
     }
 
-    // Then sort by locale compare with numeric
-    return naturalCompare(aLoc, bLoc)
+    // Defer locale setup until a sitemap needs a numeric comparison.
+    return (naturalCompare ??= new Intl.Collator(undefined, { numeric: true }).compare)(aLoc, bLoc)
   })
 
   return urls
