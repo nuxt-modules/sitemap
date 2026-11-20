@@ -1159,6 +1159,7 @@ export async function readSourcesFromFilesystem() {
     addServerHandler({
       route: `/${config.sitemapName}`,
       handler: resolve(`${routesPath}/sitemap.xml`),
+      lazy: true,
     })
 
     setupPrerenderHandler({ runtimeConfig, logger, generateGlobalSources, generateChildSources, prerenderSitemap })
