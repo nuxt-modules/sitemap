@@ -10,10 +10,10 @@
     "@nuxtjs/sitemap": "link:../../..",
     "nitro": "3.0.261103-rc",
     "nuxt-site-config": "^5.0.4",
-    "nuxtseo-shared": "^6.0.3",
+    "nuxtseo-shared": "^6.0.5",
     "nuxt": "npm:nuxt-nightly@5.0.0-2611040928-8dd2066",
-    "vue": "^3.5.44",
-    "vue-router": "^5.4.0"
+    "vue": "^3.5.46",
+    "vue-router": "^5.5.1"
   },
   "devDependencies": {
     "typescript": "6.0.3",
