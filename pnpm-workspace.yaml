@@ -9,13 +9,6 @@ minimumReleaseAgeExclude:
   - site-config-stack
   - '@nuxt/devtools-kit@4.0.0-beta.4'
   - vite@8.3.3
-  - '@i18n-micro/core@2.0.0'
-  - '@i18n-micro/path-strategy@2.0.0'
-  - '@i18n-micro/route-strategy@2.0.0'
-  - '@i18n-micro/types@2.0.0'
-  - '@i18n-micro/utils@2.0.0'
-  - fast-xml-parser@5.12.0
-  - nuxt-i18n-micro@4.0.0
 
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 262800
@@ -136,7 +129,7 @@ catalog:
   '@nuxtjs/i18n': ^10.6.0
   '@nuxtjs/robots': ^7.0.0
   '@vue/test-utils': ^2.6.0
-  autocannon: ^8.0.0
+  autocannon: ^9.0.0
   better-sqlite3: ^13.2.0
   bumpp: ^12.3.0
   consola: ^3.4.2
