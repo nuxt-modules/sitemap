@@ -6,7 +6,7 @@ export {
   parseSitemapStream,
   parseSitemapXml,
   parseSitemapXmlStream,
-} from './legacySitemap'
+} from './legacySitemap.ts'
 export type {
   SitemapIndexEntry,
   SitemapIndexParseResult,
@@ -20,7 +20,7 @@ export type {
   SitemapXmlInput,
   SitemapXmlStreamEvent,
 } from './legacySitemap'
-export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta'
+export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta.ts'
 export { createSitemapReader } from 'sitemapd'
 export type {
   SitemapDocumentLoader,

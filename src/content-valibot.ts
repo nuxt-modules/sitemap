@@ -1,6 +1,6 @@
 import type { SitemapCollectionHooks } from './content-hooks'
 import * as v from 'valibot'
-import { registerCollectionHooks } from './content-hooks'
+import { registerCollectionHooks } from './content-hooks.ts'
 
 export type { SitemapCollectionHooks } from './content-hooks'
 
