@@ -1,12 +1,4 @@
 export type * from '../runtime/types'
-export {
-  isSitemapIndex,
-  parseSitemapIndex,
-  parseSitemapIndexStream,
-  parseSitemapStream,
-  parseSitemapXml,
-  parseSitemapXmlStream,
-} from './legacySitemap.ts'
 export type {
   SitemapIndexEntry,
   SitemapIndexParseResult,
@@ -20,6 +12,14 @@ export type {
   SitemapXmlInput,
   SitemapXmlStreamEvent,
 } from './legacySitemap'
+export {
+  isSitemapIndex,
+  parseSitemapIndex,
+  parseSitemapIndexStream,
+  parseSitemapStream,
+  parseSitemapXml,
+  parseSitemapXmlStream,
+} from './legacySitemap.ts'
 export { parseHtmlExtractSitemapMeta } from './parseHtmlExtractSitemapMeta.ts'
 export { createSitemapReader } from 'sitemapd'
 export type {

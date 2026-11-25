@@ -763,13 +763,13 @@ export default defineNuxtModule<ModuleOptions>({
     else {
       // note: we don't need urls for the root sitemap, only child sitemaps
       sitemaps[config.sitemapName] = {
-    sitemapName: config.sitemapName,
-    route: withBase(config.sitemapName, nuxt.options.app.baseURL || '/'), // will contain the xml
-    defaults: config.defaults,
-    include: config.include,
-    exclude: config.exclude,
-    includeAppSources: true,
-} as SitemapDefinition
+        sitemapName: config.sitemapName,
+        route: withBase(config.sitemapName, nuxt.options.app.baseURL || '/'), // will contain the xml
+        defaults: config.defaults,
+        include: config.include,
+        exclude: config.exclude,
+        includeAppSources: true,
+      } as SitemapDefinition
     }
 
     // for each sitemap, we need to transform the include and exclude
@@ -1022,9 +1022,9 @@ export default defineNuxtModule<ModuleOptions>({
         ...userGlobalSources.map((s) => {
           if (typeof s === 'string' || Array.isArray(s)) {
             return {
-    sourceType: 'user',
-    fetch: s,
-} as SitemapSourceBase
+              sourceType: 'user',
+              fetch: s,
+            } as SitemapSourceBase
           }
           s.sourceType = 'user'
           return s
@@ -1032,38 +1032,38 @@ export default defineNuxtModule<ModuleOptions>({
         ...(excludedAppSources === true
           ? []
           : [
-    ...appGlobalSources,
-    {
-        context: {
-            name: 'nuxt:pages',
-            description: 'Generated from your static page files.',
-            tips: [
-                'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
-            ],
-        },
-        urls: dedupedPageSource,
-    },
-    {
-        context: {
-            name: 'nuxt:route-rules',
-            description: 'Generated from your route rules config.',
-            tips: [
-                'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
-            ],
-        },
-        urls: routeRules,
-    },
-    {
-        context: {
-            name: 'nuxt:prerender',
-            description: 'Generated at build time when prerendering.',
-            tips: [
-                'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
-            ],
-        },
-        urls: prerenderUrlsFinal,
-    },
-] as typeof appGlobalSources)
+              ...appGlobalSources,
+              {
+                context: {
+                  name: 'nuxt:pages',
+                  description: 'Generated from your static page files.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
+                  ],
+                },
+                urls: dedupedPageSource,
+              },
+              {
+                context: {
+                  name: 'nuxt:route-rules',
+                  description: 'Generated from your route rules config.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
+                  ],
+                },
+                urls: routeRules,
+              },
+              {
+                context: {
+                  name: 'nuxt:prerender',
+                  description: 'Generated at build time when prerendering.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
+                  ],
+                },
+                urls: prerenderUrlsFinal,
+              },
+            ] as typeof appGlobalSources)
           .filter(s =>
             !(excludedAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
             && (!!s.urls?.length || !!s.fetch))
@@ -1095,9 +1095,9 @@ export default defineNuxtModule<ModuleOptions>({
             .map((s) => {
               if (typeof s === 'string' || Array.isArray(s)) {
                 return {
-    sourceType: 'user',
-    fetch: s,
-} as SitemapSourceBase
+                  sourceType: 'user',
+                  fetch: s,
+                } as SitemapSourceBase
               }
               s.sourceType = 'user'
               return s
