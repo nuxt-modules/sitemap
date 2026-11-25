@@ -13,9 +13,9 @@ import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { withSiteUrl } from 'nuxt-site-config/kit'
 import { withBase } from 'ufo'
-import { splitForLocales } from './runtime/utils-pure'
-import { isNuxtGenerate } from './utils-internal/kit'
-import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta'
+import { splitForLocales } from './runtime/utils-pure.ts'
+import { isNuxtGenerate } from './utils-internal/kit.ts'
+import { parseHtmlExtractSitemapMeta } from './utils/parseHtmlExtractSitemapMeta.ts'
 
 function formatPrerenderRoute(route: PrerenderRoute) {
   let str = `  ├─ ${route.route} (${route.generateTimeMS}ms)`

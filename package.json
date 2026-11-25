@@ -59,12 +59,13 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "client:build": "node -e \"const { cpSync } = require('fs'); const { sep } = require('path'); cpSync('devtools','dist/devtools',{recursive:true,filter:src=>!src.split(sep).some(p=>['.data','.nuxt','node_modules'].includes(p))})\"",
-    "prepack": "nuxt-module-build build && npm run client:build",
-    "build": "pnpm --filter sitemapd build && nuxt-module-build build --stub && nuxt-module-build prepare && nuxt-module-build build && npm run client:build",
+    "prepack": "pnpm run build",
+    "build": "pnpm run build:module && pnpm run client:build",
+    "build:module": "pnpm --filter sitemapd build && nuxt-module-build prepare && tsdown",
     "dev": "nuxt dev playground",
     "prepare:fixtures": "nuxt prepare test/fixtures/basic && nuxt prepare test/fixtures/i18n && nuxt prepare test/fixtures/i18n-micro",
     "dev:build": "nuxt build playground",
-    "dev:prepare": "pnpm --filter sitemapd build && nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground && pnpm run client:build",
+    "dev:prepare": "pnpm run build:module && nuxt prepare playground && pnpm run client:build",
     "release": "pnpm build && bumpp -x \"npx changelogen --output=CHANGELOG.md\"",
     "release:sitemapd": "pnpm --filter sitemapd release",
     "test": "pnpm --filter sitemapd test && vitest run && pnpm run test:attw && pnpm run test:nuxt5",
@@ -124,16 +125,11 @@
     "nuxt-i18n-micro": "catalog:",
     "nuxtseo-layer-devtools": "catalog:",
     "std-env": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unbuild": "catalog:",
     "valibot": "catalog:",
     "vitest": "catalog:",
     "vue-tsc": "catalog:",
     "zod": "catalog:"
-  },
-  "build": {
-    "externals": [
-      "nuxt/server"
-    ]
   }
 }

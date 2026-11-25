@@ -15,7 +15,7 @@ import {
   stringifyQuery,
   withoutTrailingSlash,
 } from 'ufo'
-import { mergeOnKey } from '../../../utils-pure'
+import { mergeOnKey } from '../../../utils-pure.ts'
 
 const VALID_CHANGEFREQ = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']
 

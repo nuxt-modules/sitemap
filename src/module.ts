@@ -35,23 +35,23 @@ import { isPathFile } from 'nuxt-site-config/urls'
 import { setupNitroRuntimeCompatibility, setupRuntimeAliases, useModuleLogger } from 'nuxtseo-shared/kit'
 import { serializeFilters } from 'nuxtseo-shared/utils'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
-import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-sources'
-import { setupDevToolsUI } from './devtools'
-import { includesSitemapRoot, setupPrerenderHandler } from './prerender'
-import { normaliseDate } from './runtime/server/sitemap/urlset/normalise'
-import { robotsBlocksIndexing } from './runtime/utils-pure'
-import { registerTypeTemplates } from './templates'
-import { createAppPagesReader } from './utils-internal/appPages'
-import { serializeContentCallback } from './utils-internal/contentCallbacks'
-import { resolveContentLastmod } from './utils-internal/contentLastmod'
+import { COMARK_CONTENT_SITEMAP_ROUTE, COMARK_CONTENT_SOURCE } from './content-sources.ts'
+import { setupDevToolsUI } from './devtools.ts'
+import { includesSitemapRoot, setupPrerenderHandler } from './prerender.ts'
+import { normaliseDate } from './runtime/server/sitemap/urlset/normalise.ts'
+import { robotsBlocksIndexing } from './runtime/utils-pure.ts'
+import { registerTypeTemplates } from './templates.ts'
+import { createAppPagesReader } from './utils-internal/appPages.ts'
+import { serializeContentCallback } from './utils-internal/contentCallbacks.ts'
+import { resolveContentLastmod } from './utils-internal/contentLastmod.ts'
 import {
   generatePathForI18nPages,
   normalizeLocales,
   resolveI18nFilterPaths,
   splitPathForI18nLocales,
-} from './utils-internal/i18n'
-import { createNitroPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit'
-import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, needsRootChunkMiddleware, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap'
+} from './utils-internal/i18n.ts'
+import { createNitroPromise, getNuxtModuleOptions, isNuxtGenerate, resolveContentProvider, resolveNitroPreset, setupContentRuntime } from './utils-internal/kit.ts'
+import { convertNuxtPagesToSitemapEntries, generateExtraRoutesFromNuxtConfig, needsRootChunkMiddleware, resolveExcludedAppSources, resolveIgnoredMultiSitemapKeys, resolvePageMetaExcludedPaths, resolveUrls } from './utils-internal/nuxtSitemap.ts'
 
 declare global {
   // eslint-disable-next-line vars-on-top
@@ -762,14 +762,14 @@ export default defineNuxtModule<ModuleOptions>({
     }
     else {
       // note: we don't need urls for the root sitemap, only child sitemaps
-      sitemaps[config.sitemapName] = <SitemapDefinition> {
+      sitemaps[config.sitemapName] = {
         sitemapName: config.sitemapName,
         route: withBase(config.sitemapName, nuxt.options.app.baseURL || '/'), // will contain the xml
         defaults: config.defaults,
         include: config.include,
         exclude: config.exclude,
         includeAppSources: true,
-      }
+      } as SitemapDefinition
     }
 
     // for each sitemap, we need to transform the include and exclude
@@ -1021,49 +1021,49 @@ export default defineNuxtModule<ModuleOptions>({
       const globalSources: SitemapSourceInput[] = [
         ...userGlobalSources.map((s) => {
           if (typeof s === 'string' || Array.isArray(s)) {
-            return <SitemapSourceBase> {
+            return {
               sourceType: 'user',
               fetch: s,
-            }
+            } as SitemapSourceBase
           }
           s.sourceType = 'user'
           return s
         }),
         ...(excludedAppSources === true
           ? []
-          : <typeof appGlobalSources>[
-            ...appGlobalSources,
-            {
-              context: {
-                name: 'nuxt:pages',
-                description: 'Generated from your static page files.',
-                tips: [
-                  'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
-                ],
+          : [
+              ...appGlobalSources,
+              {
+                context: {
+                  name: 'nuxt:pages',
+                  description: 'Generated from your static page files.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:pages\'] }`.',
+                  ],
+                },
+                urls: dedupedPageSource,
               },
-              urls: dedupedPageSource,
-            },
-            {
-              context: {
-                name: 'nuxt:route-rules',
-                description: 'Generated from your route rules config.',
-                tips: [
-                  'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
-                ],
+              {
+                context: {
+                  name: 'nuxt:route-rules',
+                  description: 'Generated from your route rules config.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:route-rules\'] }`.',
+                  ],
+                },
+                urls: routeRules,
               },
-              urls: routeRules,
-            },
-            {
-              context: {
-                name: 'nuxt:prerender',
-                description: 'Generated at build time when prerendering.',
-                tips: [
-                  'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
-                ],
+              {
+                context: {
+                  name: 'nuxt:prerender',
+                  description: 'Generated at build time when prerendering.',
+                  tips: [
+                    'Can be disabled with `{ excludeAppSources: [\'nuxt:prerender\'] }`.',
+                  ],
+                },
+                urls: prerenderUrlsFinal,
               },
-              urls: prerenderUrlsFinal,
-            },
-          ])
+            ] as typeof appGlobalSources)
           .filter(s =>
             !(excludedAppSources as AppSourceContext[]).includes(s.context.name as AppSourceContext)
             && (!!s.urls?.length || !!s.fetch))
@@ -1094,10 +1094,10 @@ export default defineNuxtModule<ModuleOptions>({
           sitemapSources[sitemapName].push(...(definition.sources || [])
             .map((s) => {
               if (typeof s === 'string' || Array.isArray(s)) {
-                return <SitemapSourceBase> {
+                return {
                   sourceType: 'user',
                   fetch: s,
-                }
+                } as SitemapSourceBase
               }
               s.sourceType = 'user'
               return s

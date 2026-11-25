@@ -8,8 +8,8 @@ import { pathToFileURL } from 'node:url'
 import { importModule, resolveModule, useNuxt } from '@nuxt/kit'
 import { defu } from 'defu'
 import { withBase, withHttps } from 'ufo'
-import { createPathFilter, robotsBlocksIndexing } from '../runtime/utils-pure'
-import { expandCompactLocaleRoute } from './i18n'
+import { createPathFilter, robotsBlocksIndexing } from '../runtime/utils-pure.ts'
+import { expandCompactLocaleRoute } from './i18n.ts'
 
 export async function resolveUrls(urls: Required<SitemapDefinition>['urls'], ctx: { logger: Pick<ConsolaInstance, 'error'>, path: string }): Promise<SitemapUrlInput[]> {
   try {

@@ -3,7 +3,7 @@ import type { TypeOf } from 'zod'
 import type { SitemapCollectionHooks } from './content-hooks'
 import { createContentSchemaFactory } from 'nuxtseo-shared/content'
 import { z } from 'zod'
-import { registerCollectionHooks } from './content-hooks'
+import { registerCollectionHooks } from './content-hooks.ts'
 
 export type { SitemapCollectionHooks } from './content-hooks'
 
