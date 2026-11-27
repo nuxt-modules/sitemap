@@ -89,6 +89,31 @@ function summary(stats: SitemapInputStats, entriesRead: number): SitemapParseSum
   }
 }
 
+/**
+ * UTF-8 size check that only encodes when the UTF-16 length cannot decide it
+ * (one code unit is 1 to 3 UTF-8 bytes).
+ */
+function exceedsBytes(text: string, maxBytes: number): boolean {
+  if (text.length > maxBytes)
+    return true
+  if (text.length * 3 <= maxBytes)
+    return false
+  return new TextEncoder().encode(text).byteLength > maxBytes
+}
+
+function* malformedEnd(
+  message: string,
+  stats: SitemapInputStats,
+  entriesRead: number,
+): Generator<SitemapParseEvent> {
+  yield { _tag: 'issue', issue: issue('malformed', message) }
+  yield {
+    _tag: 'end',
+    completeness: { _tag: 'failed', reason: 'malformed' },
+    summary: summary(stats, entriesRead),
+  }
+}
+
 function findMarkupEnd(input: string, start: number): number {
   let quote = ''
   for (let index = start + 1; index < input.length; index++) {
@@ -525,13 +550,35 @@ export async function* parseSitemap(
             yield { _tag: 'issue', issue: parsed.issue }
           entriesRead++
         }
+        // The unfinished line is searched again on every chunk, so it must
+        // stay bounded like an XML entry.
+        if (exceedsBytes(buffer, maxEntryBytes)) {
+          yield* malformedEnd(`Text sitemap line exceeds ${maxEntryBytes} bytes`, stats, entriesRead)
+          return
+        }
         continue
       }
 
+      // Everything below re-scans the buffer on each chunk. Finished
+      // whitespace, comments and processing instructions are dropped here,
+      // and what is still unfinished (an unclosed comment, processing
+      // instruction, CDATA section, start tag or record) may not grow past
+      // maxEntryBytes, or one small gzip body costs seconds of CPU.
+      const unfinishedTooLarge = (): boolean => {
+        buffer = trimMarkupPrefix(buffer)
+        return exceedsBytes(buffer, maxEntryBytes)
+      }
+      const unfinishedMessage = `Unfinished sitemap markup exceeds ${maxEntryBytes} bytes`
+
       if (!root) {
         const detected = detectRoot(buffer)
-        if (!detected)
+        if (!detected) {
+          if (unfinishedTooLarge()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           continue
+        }
         if ('_tag' in detected) {
           const reason = detected.detail === 'html' ? 'html' : detected.detail === 'unsupported' ? 'unsupported' : 'malformed'
           yield { _tag: 'issue', issue: issue(reason, detected.detail) }
@@ -556,8 +603,13 @@ export async function* parseSitemap(
 
       if (!root.containerReady) {
         const container = prepareRssContainer(buffer)
-        if (!container)
+        if (!container) {
+          if (unfinishedTooLarge()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           continue
+        }
         if ('_tag' in container) {
           yield { _tag: 'issue', issue: issue('malformed', container.detail) }
           yield {
@@ -573,8 +625,13 @@ export async function* parseSitemap(
 
       while (true) {
         const extracted = extractRecord(buffer, root, maxEntryBytes)
-        if (!extracted)
+        if (!extracted) {
+          if (unfinishedTooLarge()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           break
+        }
         if (extracted._tag === 'malformed') {
           yield { _tag: 'issue', issue: issue('malformed', extracted.detail) }
           yield {
