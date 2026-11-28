@@ -36,6 +36,11 @@ When a vulnerability is reported:
 
 ## Scope
 
-This security policy applies to all my Nuxt modules as published on npm.
+This repository publishes two npm packages with different threat models. Target each advisory to the exact affected package so downstream users get accurate alerts.
+
+- **`@nuxtjs/sitemap`**: Generates sitemaps for Nuxt applications. Configured `sources` are treated as developer-controlled inputs, and `/__sitemap__/debug-production.json` runs only in development.
+- **`sitemapd`** (`packages/sitemapd`): Parses sitemaps and traverses sitemap indexes within configured byte and entry limits, including third-party documents. Network access, SSRF/DNS policy, body size limits on caller-supplied strings, and worker isolation remain the host application's responsibility.
+
+When reporting an issue in `sitemapd`, note whether `@nuxtjs/sitemap` reaches that code path in production.
 
 Thank you for helping keep the Nuxt ecosystem secure!
