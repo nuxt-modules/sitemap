@@ -56,7 +56,32 @@ interface ExtractedMalformed {
   detail: string
 }
 
-type Extracted = ExtractedRecord | ExtractedClose | ExtractedSkip | ExtractedMalformed
+type PendingWait
+  = | { _tag: 'text_newline', message: string }
+    | { _tag: 'delimiter', delimiter: '-->' | '?>' | ']]>', message: string }
+    | { _tag: 'tag_end', quote: '' | '"' | '\'', message: string }
+    | { _tag: 'close_tag', closeLower: string, message: string }
+
+interface ExtractedIncomplete {
+  _tag: 'incomplete'
+  wait?: PendingWait | undefined
+}
+
+interface PendingBuffer {
+  wait: PendingWait
+  chunks: string[]
+  bytes: number
+  tail: string
+}
+
+type Extracted = ExtractedRecord | ExtractedClose | ExtractedSkip | ExtractedMalformed | ExtractedIncomplete
+
+type RecordCloseResult
+  = | { _tag: 'found', index: number }
+    | { _tag: 'unclosed_hidden', delimiter: '-->' | ']]>' }
+    | { _tag: 'unclosed_record' }
+
+const MIN_PENDING_WAIT_LENGTH = 64
 
 const RECORD_OPEN_PATTERNS: Record<RootState['recordTag'], RegExp> = {
   url: /^<((?:[\w.-]+:)?url)\b/i,
@@ -89,9 +114,61 @@ function summary(stats: SitemapInputStats, entriesRead: number): SitemapParseSum
   }
 }
 
-function findMarkupEnd(input: string, start: number): number {
-  let quote = ''
-  for (let index = start + 1; index < input.length; index++) {
+function utf8Bytes(text: string): number {
+  let bytes = 0
+  for (let index = 0; index < text.length; index++) {
+    const code = text.charCodeAt(index)
+    if (code <= 0x7F) {
+      bytes++
+    }
+    else if (code <= 0x7FF) {
+      bytes += 2
+    }
+    else if (code >= 0xD800 && code <= 0xDBFF) {
+      const next = text.charCodeAt(index + 1)
+      if (next >= 0xDC00 && next <= 0xDFFF) {
+        bytes += 4
+        index++
+      }
+      else {
+        bytes += 3
+      }
+    }
+    else {
+      bytes += 3
+    }
+  }
+  return bytes
+}
+
+function exceedsBytes(text: string, maxBytes: number): boolean {
+  if (text.length > maxBytes)
+    return true
+  if (text.length * 3 <= maxBytes)
+    return false
+  return utf8Bytes(text) > maxBytes
+}
+
+function* malformedEnd(
+  message: string,
+  stats: SitemapInputStats,
+  entriesRead: number,
+): Generator<SitemapParseEvent> {
+  yield { _tag: 'issue', issue: issue('malformed', message) }
+  yield {
+    _tag: 'end',
+    completeness: { _tag: 'failed', reason: 'malformed' },
+    summary: summary(stats, entriesRead),
+  }
+}
+
+function scanMarkupEnd(
+  input: string,
+  start: number,
+  initialQuote: '' | '"' | '\'' = '',
+): { index: number, quote: '' | '"' | '\'' } {
+  let quote = initialQuote
+  for (let index = start; index < input.length; index++) {
     const character = input[index]!
     if (quote) {
       if (character === quote)
@@ -103,9 +180,82 @@ function findMarkupEnd(input: string, start: number): number {
       continue
     }
     if (character === '>')
-      return index
+      return { index, quote: '' }
   }
-  return -1
+  return { index: -1, quote }
+}
+
+function findMarkupEnd(input: string, start: number): number {
+  return scanMarkupEnd(input, start + 1).index
+}
+
+function createPending(buffer: string, wait: PendingWait): PendingBuffer {
+  const keep = wait._tag === 'delimiter'
+    ? wait.delimiter.length - 1
+    : wait._tag === 'close_tag'
+      ? wait.closeLower.length - 1
+      : 0
+  return {
+    wait,
+    chunks: [],
+    bytes: utf8Bytes(buffer),
+    tail: keep > 0 ? buffer.slice(-keep) : '',
+  }
+}
+
+function advancePending(pending: PendingBuffer, chunk: string): boolean {
+  pending.bytes += utf8Bytes(chunk)
+  const { wait } = pending
+  if (wait._tag === 'text_newline') {
+    if (chunk.includes('\n'))
+      return true
+    pending.chunks.push(chunk)
+    return false
+  }
+  if (wait._tag === 'delimiter') {
+    const window = pending.tail + chunk
+    if (window.includes(wait.delimiter))
+      return true
+    pending.chunks.push(chunk)
+    const keep = wait.delimiter.length - 1
+    pending.tail = window.length > keep ? window.slice(-keep) : window
+    return false
+  }
+  if (wait._tag === 'tag_end') {
+    const scan = scanMarkupEnd(chunk, 0, wait.quote)
+    wait.quote = scan.quote
+    if (scan.index !== -1)
+      return true
+    pending.chunks.push(chunk)
+    return false
+  }
+  const window = pending.tail + chunk
+  if (window.toLowerCase().includes(wait.closeLower))
+    return true
+  pending.chunks.push(chunk)
+  const keep = wait.closeLower.length - 1
+  pending.tail = window.length > keep ? window.slice(-keep) : window
+  return false
+}
+
+function detectUnfinishedWait(
+  buffer: string,
+  maxEntryBytes: number,
+  closed: boolean,
+): PendingWait | undefined {
+  if (buffer.length < MIN_PENDING_WAIT_LENGTH)
+    return undefined
+  const message = `Unfinished sitemap markup exceeds ${maxEntryBytes} bytes`
+  if (buffer.startsWith('<!--'))
+    return { _tag: 'delimiter', delimiter: '-->', message }
+  if (buffer.startsWith('<?'))
+    return { _tag: 'delimiter', delimiter: '?>', message }
+  if (!closed && buffer.startsWith('<')) {
+    const scan = scanMarkupEnd(buffer, 1)
+    if (scan.index === -1)
+      return { _tag: 'tag_end', quote: scan.quote, message }
+  }
+  return undefined
 }
 
 function isXmlWhitespace(character: string | undefined): boolean {
@@ -228,12 +378,20 @@ function prepareRssContainer(input: string): { ready: true, rest: string } | Ext
 function extractFeedMetadata(
   source: string,
   maxEntryBytes: number,
-): ExtractedSkip | ExtractedMalformed | undefined {
+): ExtractedSkip | ExtractedMalformed | ExtractedIncomplete {
+  const unfinishedMessage = `Unfinished sitemap markup exceeds ${maxEntryBytes} bytes`
   if (!source.startsWith('<'))
     return { _tag: 'malformed', detail: 'Unexpected text inside feed' }
-  const openingEnd = findMarkupEnd(source, 0)
-  if (openingEnd === -1)
-    return undefined
+  const openingScan = scanMarkupEnd(source, 1)
+  if (openingScan.index === -1) {
+    return {
+      _tag: 'incomplete',
+      wait: source.length >= MIN_PENDING_WAIT_LENGTH
+        ? { _tag: 'tag_end', quote: openingScan.quote, message: unfinishedMessage }
+        : undefined,
+    }
+  }
+  const openingEnd = openingScan.index
   const opening = /^<([A-Z_][\w.:-]*)\b/i.exec(source)
   if (!opening)
     return { _tag: 'malformed', detail: 'Unexpected markup inside feed' }
@@ -248,28 +406,53 @@ function extractFeedMetadata(
       break
     if (source.startsWith('<!--', markupStart)) {
       const end = source.indexOf('-->', markupStart + 4)
-      if (end === -1)
-        return undefined
+      if (end === -1) {
+        return {
+          _tag: 'incomplete',
+          wait: source.length >= MIN_PENDING_WAIT_LENGTH
+            ? { _tag: 'delimiter', delimiter: '-->', message: unfinishedMessage }
+            : undefined,
+        }
+      }
       cursor = end + 3
       continue
     }
     if (source.startsWith('<![CDATA[', markupStart)) {
       const end = source.indexOf(']]>', markupStart + 9)
-      if (end === -1)
-        return undefined
+      if (end === -1) {
+        return {
+          _tag: 'incomplete',
+          wait: source.length >= MIN_PENDING_WAIT_LENGTH
+            ? { _tag: 'delimiter', delimiter: ']]>', message: unfinishedMessage }
+            : undefined,
+        }
+      }
       cursor = end + 3
       continue
     }
     if (source.startsWith('<?', markupStart)) {
       const end = source.indexOf('?>', markupStart + 2)
-      if (end === -1)
-        return undefined
+      if (end === -1) {
+        return {
+          _tag: 'incomplete',
+          wait: source.length >= MIN_PENDING_WAIT_LENGTH
+            ? { _tag: 'delimiter', delimiter: '?>', message: unfinishedMessage }
+            : undefined,
+        }
+      }
       cursor = end + 2
       continue
     }
-    const markupEnd = findMarkupEnd(source, markupStart)
-    if (markupEnd === -1)
-      return undefined
+    const markupScan = scanMarkupEnd(source, markupStart + 1)
+    if (markupScan.index === -1) {
+      return {
+        _tag: 'incomplete',
+        wait: source.length >= MIN_PENDING_WAIT_LENGTH
+          ? { _tag: 'tag_end', quote: markupScan.quote, message: unfinishedMessage }
+          : undefined,
+      }
+    }
+    const markupEnd = markupScan.index
     const markup = source.slice(markupStart, markupEnd + 1)
     const tag = /^<(\/?)[ \t\r\n]*([A-Z_][\w.:-]*)\b/i.exec(markup)
     if (!tag)
@@ -288,9 +471,14 @@ function extractFeedMetadata(
     cursor = markupEnd + 1
   }
 
-  if (new TextEncoder().encode(source).byteLength > maxEntryBytes)
+  if (exceedsBytes(source, maxEntryBytes))
     return { _tag: 'malformed', detail: `Sitemap metadata element exceeds ${maxEntryBytes} bytes` }
-  return undefined
+  return {
+    _tag: 'incomplete',
+    wait: source.length >= MIN_PENDING_WAIT_LENGTH
+      ? { _tag: 'close_tag', closeLower: `</${stack[0]!}>`, message: `Sitemap metadata element exceeds ${maxEntryBytes} bytes` }
+      : undefined,
+  }
 }
 
 /**
@@ -309,10 +497,10 @@ function extractRecord(
   input: string,
   root: RootState,
   maxEntryBytes: number,
-): Extracted | undefined {
+): Extracted {
   const source = trimMarkupPrefix(input)
   if (source.startsWith('<!--') || source.startsWith('<?'))
-    return undefined
+    return { _tag: 'incomplete' }
   const rootClose = `</${root.qualifiedName}>`
   if (startsWithCI(source, rootClose))
     return { _tag: 'close', rest: source.slice(rootClose.length) }
@@ -323,7 +511,7 @@ function extractRecord(
       return { _tag: 'close', rest: rest.slice(rssClose.length) }
     if (rest.length > 0 && findMarkupEnd(rest, 0) !== -1)
       return { _tag: 'malformed', detail: 'RSS channel is not followed by its closing root' }
-    return undefined
+    return { _tag: 'incomplete' }
   }
 
   const directOpen = `<${root.recordTag}`
@@ -335,16 +523,16 @@ function extractRecord(
   const qualifiedName = directName ?? RECORD_OPEN_PATTERNS[root.recordTag].exec(source)?.[1]
   if (!qualifiedName) {
     if (source.length === 0)
-      return undefined
+      return { _tag: 'incomplete' }
     if (root.name === 'rss' || root.name === 'feed')
       return extractFeedMetadata(source, maxEntryBytes)
     if (findMarkupEnd(source, 0) !== -1)
       return { _tag: 'malformed', detail: `Unexpected element inside ${root.name}` }
-    return undefined
+    return { _tag: 'incomplete' }
   }
   const openingEnd = findMarkupEnd(source, 0)
   if (openingEnd === -1)
-    return undefined
+    return { _tag: 'incomplete' }
   if (isSelfClosingMarkup(source.slice(0, openingEnd + 1))) {
     return {
       _tag: 'record',
@@ -353,17 +541,25 @@ function extractRecord(
     }
   }
   const close = `</${qualifiedName}>`
-  const closeIndex = findRecordClose(source, close, openingEnd + 1)
-  if (closeIndex === -1) {
-    if (new TextEncoder().encode(source).byteLength > maxEntryBytes) {
+  const closeResult = findRecordClose(source, close, openingEnd + 1)
+  if (closeResult._tag !== 'found') {
+    const entryMessage = `Sitemap entry exceeds ${maxEntryBytes} bytes`
+    if (exceedsBytes(source, maxEntryBytes)) {
       return {
         _tag: 'malformed',
-        detail: `Sitemap entry exceeds ${maxEntryBytes} bytes`,
+        detail: entryMessage,
       }
     }
-    return undefined
+    return {
+      _tag: 'incomplete',
+      wait: source.length >= MIN_PENDING_WAIT_LENGTH
+        ? closeResult._tag === 'unclosed_hidden'
+          ? { _tag: 'delimiter', delimiter: closeResult.delimiter, message: entryMessage }
+          : { _tag: 'close_tag', closeLower: close.toLowerCase(), message: entryMessage }
+        : undefined,
+    }
   }
-  const end = closeIndex + close.length
+  const end = closeResult.index + close.length
   return {
     _tag: 'record',
     record: source.slice(0, end),
@@ -394,7 +590,7 @@ function escapeRegExp(value: string): string {
  *
  * Behaviour is unchanged; only the complexity is. Same file, 8.8MB: ~0.55s.
  */
-function findRecordClose(input: string, close: string, start: number): number {
+function findRecordClose(input: string, close: string, start: number): RecordCloseResult {
   let closePattern: RegExp | undefined
   let cursor = start
   while (true) {
@@ -404,7 +600,7 @@ function findRecordClose(input: string, close: string, start: number): number {
       closePattern.lastIndex = cursor
       const match = closePattern.exec(input)
       if (!match)
-        return -1
+        return { _tag: 'unclosed_record' }
       closeIndex = match.index
     }
     const window = input.slice(cursor, closeIndex)
@@ -416,11 +612,11 @@ function findRecordClose(input: string, close: string, start: number): number {
         ? commentIndexRel
         : Math.min(commentIndexRel, cdataIndexRel)
     if (hiddenIndexRel === -1)
-      return closeIndex
+      return { _tag: 'found', index: closeIndex }
     const marker = hiddenIndexRel === commentIndexRel ? '-->' : ']]>'
     const hiddenEnd = input.indexOf(marker, cursor + hiddenIndexRel)
     if (hiddenEnd === -1)
-      return -1
+      return { _tag: 'unclosed_hidden', delimiter: marker }
     cursor = hiddenEnd + marker.length
   }
 }
@@ -491,16 +687,42 @@ export async function* parseSitemap(
   )
   const stats: SitemapInputStats = { bytesRead: 0, compressed: false }
   const chunks = decodedTextChunks(input, maxDecodedBytes, stats)
+  const unfinishedMessage = `Unfinished sitemap markup exceeds ${maxEntryBytes} bytes`
   let entriesRead = 0
   let buffer = ''
+  let pending: PendingBuffer | undefined
   let root: RootState | undefined
   let closed = false
   let sawText = false
 
+  const prepareUnfinished = (explicitWait?: PendingWait): boolean => {
+    buffer = trimMarkupPrefix(buffer)
+    if (exceedsBytes(buffer, maxEntryBytes))
+      return true
+    const wait = explicitWait ?? detectUnfinishedWait(buffer, maxEntryBytes, closed)
+    if (wait)
+      pending = createPending(buffer, wait)
+    return false
+  }
+
   try {
     for await (const chunk of chunks) {
-      buffer += chunk
       sawText ||= chunk.trim().length > 0
+
+      if (pending) {
+        if (!advancePending(pending, chunk)) {
+          if (pending.bytes > maxEntryBytes) {
+            yield* malformedEnd(pending.wait.message, stats, entriesRead)
+            return
+          }
+          continue
+        }
+        buffer += pending.chunks.join('') + chunk
+        pending = undefined
+      }
+      else {
+        buffer += chunk
+      }
 
       if (options.formatHint === 'text') {
         while (true) {
@@ -525,13 +747,26 @@ export async function* parseSitemap(
             yield { _tag: 'issue', issue: parsed.issue }
           entriesRead++
         }
+        if (exceedsBytes(buffer, maxEntryBytes)) {
+          yield* malformedEnd(`Text sitemap line exceeds ${maxEntryBytes} bytes`, stats, entriesRead)
+          return
+        }
+        pending = createPending(buffer, {
+          _tag: 'text_newline',
+          message: `Text sitemap line exceeds ${maxEntryBytes} bytes`,
+        })
         continue
       }
 
       if (!root) {
         const detected = detectRoot(buffer)
-        if (!detected)
+        if (!detected) {
+          if (prepareUnfinished()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           continue
+        }
         if ('_tag' in detected) {
           const reason = detected.detail === 'html' ? 'html' : detected.detail === 'unsupported' ? 'unsupported' : 'malformed'
           yield { _tag: 'issue', issue: issue(reason, detected.detail) }
@@ -547,17 +782,26 @@ export async function* parseSitemap(
         yield { _tag: 'document', format: root.format, kind: root.kind }
         if (isSelfClosingMarkup(root.openTag)) {
           closed = true
-          continue
         }
       }
 
-      if (closed)
+      if (closed) {
+        if (prepareUnfinished()) {
+          yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+          return
+        }
         continue
+      }
 
       if (!root.containerReady) {
         const container = prepareRssContainer(buffer)
-        if (!container)
+        if (!container) {
+          if (prepareUnfinished()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           continue
+        }
         if ('_tag' in container) {
           yield { _tag: 'issue', issue: issue('malformed', container.detail) }
           yield {
@@ -573,8 +817,13 @@ export async function* parseSitemap(
 
       while (true) {
         const extracted = extractRecord(buffer, root, maxEntryBytes)
-        if (!extracted)
+        if (extracted._tag === 'incomplete') {
+          if (prepareUnfinished(extracted.wait)) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           break
+        }
         if (extracted._tag === 'malformed') {
           yield { _tag: 'issue', issue: issue('malformed', extracted.detail) }
           yield {
@@ -587,6 +836,10 @@ export async function* parseSitemap(
         if (extracted._tag === 'close') {
           buffer = extracted.rest
           closed = true
+          if (prepareUnfinished()) {
+            yield* malformedEnd(unfinishedMessage, stats, entriesRead)
+            return
+          }
           break
         }
         if (extracted._tag === 'skip') {
@@ -620,6 +873,11 @@ export async function* parseSitemap(
         }
         buffer = extracted.rest
       }
+    }
+
+    if (pending) {
+      buffer += pending.chunks.join('')
+      pending = undefined
     }
 
     if (options.formatHint === 'text') {

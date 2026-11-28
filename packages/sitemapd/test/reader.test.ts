@@ -139,6 +139,36 @@ describe('sitemap reader', () => {
     ])
   })
 
+  it('keeps accepting robots Sitemap lines with surrounding whitespace and line endings', () => {
+    const bom = String.fromCharCode(0xFEFF)
+    const nbsp = String.fromCharCode(0xA0)
+    const lineSeparator = String.fromCharCode(0x2028)
+    expect(parseRobotsSitemaps(
+      `${bom}Sitemap: /bom.xml\r\n`
+      + '  \tSITEMAP : /indented.xml \t\r\n'
+      + '\n\n   \n'
+      + `sitemap:\t/tab.xml${nbsp}\n`
+      + `Sitemap:/no-space.xml${lineSeparator}`
+      + 'Sitemap: /after-separator.xml',
+      'https://example.com/robots.txt',
+    )).toEqual([
+      { loc: 'https://example.com/bom.xml' },
+      { loc: 'https://example.com/indented.xml' },
+      { loc: 'https://example.com/tab.xml' },
+      { loc: 'https://example.com/no-space.xml' },
+      { loc: 'https://example.com/after-separator.xml' },
+    ])
+  })
+
+  it('does not take a robots Sitemap value from the next line', () => {
+    expect(parseRobotsSitemaps(
+      'Sitemap:\nDisallow-not-a-sitemap\nSitemap: /sitemap.xml\n',
+      'https://example.com/robots.txt',
+    )).toEqual([
+      { loc: 'https://example.com/sitemap.xml' },
+    ])
+  })
+
   it('uses manual redirects and authorizes every root, redirect and index child', async () => {
     const documents = new Map<string, string>([
       ['https://example.com/index.xml', 'redirect:https://cdn.example.com/index.xml'],

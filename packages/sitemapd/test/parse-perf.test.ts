@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { parseRobotsSitemaps } from '../src'
 import { collectSitemap } from '../src/parse'
 
 // Regression guard for a quadratic record scan. `findRecordClose` used to
@@ -57,4 +58,22 @@ describe('parse performance', () => {
     const growth = large.ms / Math.max(small.ms, 1)
     expect(growth).toBeLessThan(10)
   }, 60_000)
+})
+
+// Regression guard for a quadratic robots.txt scan. The Sitemap pattern used
+// `\s*`, which also matches line breaks, so on a body of blank lines every line
+// start scanned to the end of the body. 200,000 newlines took about 13 seconds.
+// The limit is generous: it only has to separate linear from quadratic.
+describe('robots performance', () => {
+  it('parses a robots.txt made of blank lines in linear time', () => {
+    for (const body of ['\n'.repeat(200_000), ' \r\n'.repeat(100_000)]) {
+      const started = performance.now()
+      // No Sitemap line: a match would end the scan early and hide the cost.
+      const entries = parseRobotsSitemaps(`${body}Disallow: /private/`, 'https://example.com/robots.txt')
+      const ms = performance.now() - started
+
+      expect(entries).toEqual([])
+      expect(ms).toBeLessThan(1000)
+    }
+  }, 120_000)
 })
