@@ -98,4 +98,29 @@ describe('unfinished markup', () => {
     if (result._tag === 'document')
       expect(result.document.entries.map(entry => entry.loc)).toEqual(['https://example.com/a', 'https://example.com/b', 'https://example.com/c'])
   })
+
+  it.each([
+    ['unclosed comment after root close', '<urlset></urlset><!--', 'a'],
+    ['trailing non-markup after root close', '<urlset></urlset>', 'a'],
+  ])('bounds %s at maxEntryBytes', async (_label, prefix, filler) => {
+    const result = await collectSitemap(chunked(prefix, filler, 2 * MiB), { maxEntryBytes: 64 * 1024 })
+
+    expect(result._tag).toBe('failure')
+    expect(messages(result)).toMatch(/exceeds 65536 bytes/)
+    expect(result.summary.bytesRead).toBeLessThan(256 * 1024)
+  })
+
+  it.each([
+    ['record start tag', '<urlset><url '],
+    ['record body', '<urlset><url>'],
+    ['comment', '<urlset><!--'],
+  ])('handles small-chunk unfinished %s in linear time up to default maxEntryBytes', async (_label, prefix) => {
+    const started = performance.now()
+    const result = await collectSitemap(chunked(prefix, 'a', 2 * MiB, 256))
+    const ms = performance.now() - started
+
+    expect(result._tag).toBe('failure')
+    expect(messages(result)).toMatch(/exceeds 1048576 bytes/)
+    expect(ms).toBeLessThan(1000)
+  }, 30_000)
 })
