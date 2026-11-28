@@ -1,10 +1,9 @@
 import type { SitemapReference } from './parse'
 
-// `(?:(?!$)\s)*` is whitespace that is not a line break: with the m flag `$`
-// holds before every line terminator. A plain `\s*` also matches line breaks,
-// so `^\s*` ran from every line start across all following blank lines, which
-// made a body of blank lines quadratic. Each match now stays on one line.
-const ROBOTS_SITEMAP_LINE = /^(?:(?!$)\s)*sitemap(?:(?!$)\s)*:(?:(?!$)\s)*(\S+)(?:(?!$)\s)*$/gim
+// Horizontal whitespace only (`[^\S\r\n\u2028\u2029]` excludes every ECMAScript
+// line terminator). A plain `\s*` matches line breaks too, so `^\s*` under `/m`
+// scanned across all following blank lines from every line start in O(n^2) time.
+const ROBOTS_SITEMAP_LINE = /^[^\S\r\n\u2028\u2029]*sitemap[^\S\r\n\u2028\u2029]*:[^\S\r\n\u2028\u2029]*(\S+)[^\S\r\n\u2028\u2029]*$/gim
 
 export function parseRobotsSitemaps(input: string, baseUrl?: string): SitemapReference[] {
   const entries: SitemapReference[] = []
